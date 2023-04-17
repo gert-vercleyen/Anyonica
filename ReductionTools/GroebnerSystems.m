@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-03-17 *)
 
+Package["Anyonica`"]
+
 Options[PentagonGroebnerSystems] =
   Join[
     {

@@ -3,6 +3,9 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2022-02-25 *)
 
+
+Package["Anyonica`"]
+
 (* Check for proper format of solutions *)
 ProperPentagonSolutionQ[ sol_ ] :=
   MatchQ[ sol, { Repeated[ F[__] -> _ ] } ];

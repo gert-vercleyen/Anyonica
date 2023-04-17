@@ -6,6 +6,9 @@
 +---------------------------------------------------------------------------+
 *)
 
+
+Package["Anyonica`"]
+
 (* Check whether an expression is a list of equations *)
 ListOfEquationsQ[ expr_ ] :=
   Head[expr] === List && MatchQ[ expr, { Repeated[_Equal|True|False ] } ];

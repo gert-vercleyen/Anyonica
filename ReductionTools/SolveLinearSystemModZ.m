@@ -1,5 +1,7 @@
 (* ::Package:: *)
 
+Package["Anyonica`"]
+
 Options[ SolveModZSpace ] = {
   "OrthogonalTo" -> None,
   "SimplifyBy"   -> Identity,

@@ -1,5 +1,7 @@
 (* ::Package:: *)
 
+Package["Anyonica`"]
+
 Options[ ReduceByBinomials ] = Options[ SolvePolynomialSystem ];
 ReduceByBinomials[ sumEqns_List, binomialEqns_List, vars_List, symbol_, opts:OptionsPattern[] ] :=
   Module[{

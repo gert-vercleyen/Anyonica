@@ -3,6 +3,9 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2022-09-09 *)
 
+Package["Anyonica`"]
+
+
 (*
 +---------------------------------------------------------------------------+
 |                          Multiplicity-Free Case                           |

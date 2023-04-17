@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2022-09-03 *)
 
+Package["Anyonica`"]
+
 ProperHexagonSolutionQ[ sol_ ] :=
   MatchQ[ sol, { Repeated[ R[__] -> _ ] } ];
 

@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-04-03 *)
 
+Package["Anyonica`"]
+
 IndependentSubsystems[ eqns_, s_ ] :=
   IndepSubsystems[ eqns, GetVars[#,s]& ];
 

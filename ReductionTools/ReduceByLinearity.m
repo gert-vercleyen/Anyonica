@@ -3,6 +3,9 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-03-09 *)
 
+
+Package["Anyonica`"]
+
 Options[ SimplestLinearRule ] =
   { "LinearReductionWeight" -> RationalWeight };
 

@@ -1,5 +1,7 @@
 (* ::Package:: *)
 
+Package["Anyonica`"]
+
 Options[ SolvePolynomialSystem ] = {
   "Symmetries" -> None,
   "NonSingular" -> False,

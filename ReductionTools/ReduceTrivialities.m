@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2022-11-25 *)
 
+Package["Anyonica`"]
+
 Options[ReduceTrivialities] := { "SimplifyBy" -> Identity, "Parameters" -> {} };
 ReduceTrivialities[ eqns_?ListOfEquationsQ, vars_, OptionsPattern[] ] :=
   Module[ { newEqns, newVars, revertVars, s, newSystem, simplify },

@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-03-09 *)
 
+Package["Anyonica`"]
+
 Options[PreparePentagonSolverInput] =
   {
     "FindZerosUsingSums" -> True,

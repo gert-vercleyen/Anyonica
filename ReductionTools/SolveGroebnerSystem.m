@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-04-05 *)
 
+Package["Anyonica`"]
+
 (* Construct solutions to the systems returned by the various GroebnerSystems functions *)
 SolveGroebnerSystem[ system_Association, s_ ] :=
   With[{

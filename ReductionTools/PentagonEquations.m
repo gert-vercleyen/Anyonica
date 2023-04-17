@@ -2,6 +2,10 @@
 (* Created by the Wolfram Language Plugin for IntelliJ, see http://wlplugin.halirutan.de/ *)
 (* :Author: gertvercleyen *)
 (* :Date: 2022-02-18 *)
+
+
+Package["Anyonica`"]
+
 Options[ PentagonEquations ] =
   Options[ PentagonTower ];
 
