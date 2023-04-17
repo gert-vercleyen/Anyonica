@@ -1,0 +1,152 @@
+(* Mathematica Source File *)
+(* Created by the Wolfram Language Plugin for IntelliJ, see http://wlplugin.halirutan.de/ *)
+(* :Author: gertvercleyen *)
+(* :Date: 2023-04-05 *)
+
+(* Construct solutions to the systems returned by the various GroebnerSystems functions *)
+SolveGroebnerSystem[ system_Association, s_ ] :=
+  With[{
+    groebnerBasis = system["GroebnerBasis"],
+    assumptions   = system["Assumptions"],
+    rules         = system["Rules"]
+    },
+    Which[
+      groebnerBasis === { 1 }
+      ,
+        { },
+      groebnerBasis === { }
+      ,
+        If[ TrueQ[ assumptions/.rules ], { rules }, { } ]
+      ,
+      True,
+        With[{
+          solutions =
+            ToNumericRootIsolation @ (* Fix Root expressions with 1 as last arg *)
+            Cases[
+              SolveUsingReduce[
+                Thread[ groebnerBasis == 0 ],
+                GetVars[ groebnerBasis, s ]
+              ],
+              sol_ /; TrueQ[ assumptions/.sol ]
+            ]
+          },
+          rules/.Dispatch[solutions]
+        ]
+    ]
+  ];
+
+(* Solving pentagon equations *)
+Options[SolvePentagonEquations] =
+  Join[
+    Options[SolveGroebnerSystem],
+    Options[PentagonGroebnerSystems]
+  ];
+
+SolvePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
+  Which[
+    (* CHECK proper format injected solution *)
+    !MatchQ[ OptionValue["InjectSolution"], {} | { r_FusionRing, s_?ProperPentagonSolutionQ } ],
+      Message[ SolvePentagonEquations::substitutesolutionwrongformat, ring ]; Return[$Failed],
+
+    (* CHECK multiplicity *)
+    Mult[ring] == 1,
+      SolveMultiplicityFreePentagonEquations[ ring, opts ],
+
+    True,
+      Print["Not implemented yet."]
+  ];
+
+Options[SolveMultiplicityFreePentagonEquations] =
+  Options[SolvePentagonEquations];
+
+SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
+  Module[ { procID, time, result, bases, FindSolutions, z, simplify },
+    procID =
+      ToString[Unique[]];
+    simplify =
+      Composition[
+        If[
+          OptionValue["ReducePowerSums"], PowerSumReduce, Identity
+        ],
+        If[
+          OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
+          SafeRootReduce,
+          Identity
+        ],
+        OptionValue["SimplifyIntermediateResultsBy"]
+      ];
+
+    printlog[ "SMFPE:init", { procID, ring, {opts} } ];
+
+    { time, result } =
+      AbsoluteTiming[
+
+        If[ (* Need special case for trivial ring to avoid errors *)
+          Rank[ring] == 1,
+          Return[ { { F[1,1,1,1,1,1] -> 1 } } ]
+        ];
+
+        bases = simplify @
+          AddOptions[opts][PentagonGroebnerSystems][ ring, z ];
+
+        printlog["SMFPE:solving_systems", { procID } ];
+
+        simplify @
+        Flatten[
+          AddOptions[opts][SolveGroebnerSystem][#,z]& /@
+          bases,
+          1
+        ]
+      ];
+
+    printlog["Gen:results", { procID, result, time } ];
+
+    result
+  ];
+
+Options[SolveHexagonEquations] =
+  Join[
+    Options[SolveGroebnerSystem],
+    Options[HexagonGroebnerSystems]
+  ];
+
+SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
+  Which[
+    Mult[ring] == 1,
+      SolveMultiplicityFreeHexagonEquations[ ring, opts ],
+    True,
+      Print["Can't solve cases with multiplicity yet"]
+  ];
+
+Options[SolveMultiplicityFreeHexagonEquations] =
+  Options[SolveHexagonEquations];
+
+SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, opts:OptionsPattern[] ]:=
+  Module[{ procID, time, result, bases },
+    procID =
+      ToString @ Unique[];
+
+    printlog["SMFHE:init", { procID, ring, { opts } } ];
+
+    { time, result } =
+      AbsoluteTiming[
+        If[
+          Rank[ring] == 1,
+          Return[ { { F[ 1, 1, 1, 1, 1, 1 ] -> 1, R[ 1, 1, 1 ] -> 1 } } ]
+        ];
+
+        bases =
+          AddOptions[opts][HexagonGroebnerSystems][ ring, z ];
+
+        Flatten[
+          AddOptions[opts][SolveGroebnerSystem][#,z]& /@
+          bases,
+          1
+        ]
+      ];
+
+    printlog["Gen:results", { procID, result, time } ];
+
+    result
+
+  ];
