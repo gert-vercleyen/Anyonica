@@ -5,9 +5,17 @@
 
 Package["Anyonica`"]
 
+PackageScope["PreparePentagonSolverInput"]
+
+PreparePentagonSolverInput::usage =
+  "Finds admissible sets of 0 values, gauge fixes the F-symbols, and then returns a list of associations containing all "<>
+  "necessary info to compute solutions to the pentagon equations for these systems.";
+
+PreparePentagonSolverInput::notsubring =
+  "`1` is not isomorphic to any subring of `2`.";
+
 Options[PreparePentagonSolverInput] =
   {
-    "FindZerosUsingSums" -> True,
     "GaugeDemands" -> {},
     "ZeroValues" -> None,
     "NonSingular" -> False,
@@ -19,14 +27,12 @@ Options[PreparePentagonSolverInput] =
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   Module[ {
-    monEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
+    binEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
     unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
-    solverInput, g, dz, solutions, time, procID, zeroEquations,
-    useSumsQ, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
+    g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
     subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols
     },
-    useSumsQ =
-      OptionValue["FindZerosUsingSums"];
+    (* THIS FUNCTIONALITY IS BUGGY AND ONLY WORKED BY ACCIDENT IN THE PREVIOUSLY TESTED CASES: set to FALSE *)
     gaugeDemands =
       OptionValue["GaugeDemands"];
     zeroValues =
@@ -61,6 +67,12 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       inject =
         InjectionForm[ ring, sRing ];
       
+      If[
+        inject === None,
+        Message[PreparePentagonSolverInput::notsubring, sRing, ring ];
+        Abort[]
+      ];
+      
       (* Rename all labels of sSol so they correspond to the labels of the sub-fusion-ring of ring *)
       compatibleSol =
         MapAt[
@@ -84,17 +96,17 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       Complement[
         allFSymbols,
         vacuumSymbols,
-        GetVars[ compatibleSol, F ]
+        GetVariables[ compatibleSol, F ]
       ];
     
     tower =
       PentagonTower[ ring, "Knowns" -> compatibleSol ];
 
-    { monEqns, sumEqns } =
-      MonSumEquationsFromTower[ tower ];
+    { binEqns, sumEqns } =
+      BinSumEquationsFromTower[ tower ];
 
     pentEqns =
-      Join[ monEqns, sumEqns ];
+      Join[ binEqns, sumEqns ];
 
     invMats  =
       FMatrices[ ring ];
@@ -127,28 +139,31 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     (* Find Configurations of non-trivial 0-values *)
     zeros =
       Which[
-        OptionValue["NonSingular"],
-          {{}},
-        OptionValue["ZeroValues"] =!= None,
-          Dispatch @ OptionValue["ZeroValues"],
-        GroupQ[ring],
-          {{}},
-        True,
-          zeroEquations =
-            If[
-              OptionValue[ "FindZerosUsingSums" ],
-              pentEqns,
-              monEqns
-            ];
-          
-          Dispatch[
+        OptionValue["NonSingular"]
+        ,
+        {{}}
+        ,
+        OptionValue["ZeroValues"] =!= None
+        ,
+        Dispatch @ OptionValue["ZeroValues"]
+        ,
+        GroupQ[ring]
+        ,
+        {{}}
+        ,
+        True
+        ,
+        Dispatch[
+          Select[
             Cases[ HoldPattern[ _ -> 0 ] ] /@
             FindZeroValues[
-              zeroEquations,
+              binEqns,
               fSymbols,
               "InvertibleMatrices" -> invMats
-            ]
+            ],
+            ValidZerosQ[pentEqns]
           ]
+        ]
       ];
     
     printlog["PSI:zero_Fs_results", { procID, Normal @ zeros } ];
@@ -201,63 +216,63 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     printlog[ "PSI:fixing_extra_gauges", { procID } ];
     
     If[ (* All gauges are fixed *)
-      remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]],
-      
+      remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]]
+      ,
       (* THEN *)
       printlog[ "PSI:no_gauge_freedom_left", { procID } ];
-      solverInput =
-        Reap[
-          Do[
-            dz =
-              Dispatch[z];
-            
-            Sow[
-              <|
-                "Equations"  -> ( pentEqns/.dz // DeleteCases[True] // DeleteDuplicates ),
-                "Variables"  -> Complement[ fSymbols, z[[;;,1]]  ],
-                "Symmetries"   -> AddZerosToSymmetries[ remainingSym, dz ],
-                "InvertibleMatrices"  -> ( invMats/.dz ),
-                "SpecificFs" -> {},
-                "ExtraFixedFs"-> extraFixedFs,
-                "SubSolution" -> compatibleSol,
-                "Zeros" -> z
-              |>
-            ],
-            { z, Normal[zeros] }
-          ]
-        ][[2,1]],
       
+      Reap[
+        Do[
+          dz =
+            Dispatch[z];
+          
+          Sow[
+            <|
+              "Equations"  -> ( pentEqns/.dz // DeleteCases[True] // DeleteDuplicates ),
+              "Variables"  -> Complement[ fSymbols, z[[;;,1]]  ],
+              "Symmetries"   -> AddZerosToSymmetries[ remainingSym, dz ],
+              "InvertibleMatrices"  -> ( invMats/.dz ),
+              "SpecificFs" -> {},
+              "ExtraFixedFs"-> extraFixedFs,
+              "SubSolution" -> compatibleSol,
+              "Zeros" -> z
+            |>
+          ],
+          { z, Normal[zeros] }
+        ]
+      ][[2,1]]
+      ,
       (* ELSE *)
       printlog[ "PSI:gauge_freedom_left", { procID } ];
-      solverInput =
-        Reap[
-          Do[
-            dz =
-              Dispatch[z];
-            
-            { specificSym, specificFixedFs } =
-              QuietLog[
-                BreakMultiplicativeSymmetry[
-                  AddZerosToSymmetries[ remainingSym, z ]
-                ]
-              ];
+      
+      Reap[
+        Do[
+          dz =
+            Dispatch[z];
+          
+          { specificSym, specificFixedFs } =
+            QuietLog[
+              BreakMultiplicativeSymmetry[
+                AddZerosToSymmetries[ remainingSym, z ]
+              ]
+            ];
 
-            Sow[
-              <|
-                "Equations" -> (pentEqns/.dz/.specificFixedFs // DeleteCases[True] // DeleteDuplicates),
-                "Variables" -> Complement[ fSymbols, specificFixedFs[[;;,1]], z[[;;,1]] ],
-                "Symmetries" -> specificSym,
-                "InvertibleMatrices" -> (invMats/.dz/.specificFixedFs // DeleteCases[ {{n_?NumericQ}} /; n != 0 ]),
-                "SpecificFs" -> specificFixedFs,
-                "ExtraFixedFs" -> extraFixedFs,
-                "SubSolution" -> compatibleSol,
-                "Zeros" -> z
-              |>
-            ],
-            { z, Normal[zeros] }
-          ]
-        ][[2,1]]
-      ]
+          Sow[
+            <|
+              "Equations" -> (pentEqns/.dz/.specificFixedFs // DeleteCases[True] // DeleteDuplicates),
+              "Variables" -> Complement[ fSymbols, specificFixedFs[[;;,1]], z[[;;,1]] ],
+              "Symmetries" -> specificSym,
+              "InvertibleMatrices" -> (invMats/.dz/.specificFixedFs // DeleteCases[ {{n_?NumericQ}} /; n != 0 ]),
+              "SpecificFs" -> specificFixedFs,
+              "ExtraFixedFs" -> extraFixedFs,
+              "SubSolution" -> compatibleSol,
+              "Zeros" -> z
+            |>
+          ],
+          { z, Normal[zeros] }
+        ]
+      ][[2,1]]
+    ]
     ];
     
     printlog["Gen:results", { procID, solutions, time }];
@@ -265,10 +280,19 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     solutions
   ];
 
+ValidZerosQ[ eqns_ ][ zeros_ ] :=
+  FreeQ[ eqns/.zeros, False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
+
+
+PackageScope["PrepareHexagonSolverInput"]
+
+PrepareHexagonSolverInput::usage =
+  "Constructs the hexagon equations and symmetries.";
+
 Options[ PrepareHexagonSolverInput ] =
   Options[ HexagonEquations ];
 
-PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[]  ] :=
+PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations },
     rSymbols =
       R @@@ NZSC[ ring ];
@@ -318,7 +342,7 @@ PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[]  ] :=
 
       <|
         "Equations" ->  equations,
-        "Variables" ->  GetVars[ equations, { R, F } ],
+        "Variables" ->  GetVariables[ equations, { R, F } ],
         "Symmetries" -> gaugeSym,
         "Knowns" ->     knowns
       |>

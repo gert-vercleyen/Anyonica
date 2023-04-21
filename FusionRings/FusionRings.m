@@ -9,7 +9,6 @@ Package["Anyonica`"]
    https://mathematica.stackexchange.com/questions/213618/implement-abstract-algebraic-structure. *)
 
 (* Messages *)
-Print["Loaded FusionRings"];
 
 PackageExport["FusionRing"]
 PackageExport["FusionRingZn"]
@@ -40,7 +39,7 @@ PackageExport["Names"]
 PackageExport["ElementsName"]
 PackageExport["ElementNames"]
 PackageExport["GroupQ"]
-PackageExport["GQ"}
+PackageExport["GQ"]
 PackageExport["Multiplicity"]
 PackageExport["Mult"]
 PackageExport["NNonZeroStructureConstants"]
@@ -79,7 +78,7 @@ PackageExport["UniversalGrading"]
 PackageExport["LeftOrderedFusionTrees"]
 PackageExport["RightOrderedFusionTrees"]
 PackageExport["LeftTreeDiagram"]
-PackageExport["RightTreeDiagram"p
+PackageExport["RightTreeDiagram"]
 PackageExport["PermutedRing"]
 PackageExport["SortedRing"]
 PackageExport["RenameElements"]
@@ -100,7 +99,7 @@ PackageExport["AFRQ"]
 PackageExport["FusionRingByCode"]
 PackageExport["FRBC"]
 
-PackageScope["OptimizedImport"];
+PackageScope["OptimizedImport"]
 (* :Date: 2022-02-18 *)
 
 
@@ -180,6 +179,7 @@ AssociativityMatrixCompiled =
 		CompilationOptions -> {"ExpressionOptimization"->True},
 		"RuntimeOptions" -> "Speed"	
 	];
+
 AssociativeQ[ table_ ] := With[ {
 	truthTab = AssociativityMatrixCompiled[table]},
 	Equal@@Flatten[truthTab] && truthTab[[1,1,1,1]]==0
@@ -1272,10 +1272,10 @@ WD[ r__] := WhichDecompositions[ r ];
 
 (*Finding subrings*)
 (*Check whether the multiplication is internal*)
-InternalMultiplicationQ[ multTab_, particles_ ] := With[{
-	comp = Complement[ Range[ Length[multTab] ], particles ]},
-	MatchQ[ Flatten @ multTab[[ particles, particles, comp ]], {Repeated[0]} ]
-];
+InternalMultiplicationQ[ multTab_, particles_ ] :=
+	With[{ comp = Complement[ Range[ Length[multTab] ], particles ] },
+		MatchQ[ Flatten @ multTab[[ particles, particles, comp ]], { 0 .. } ]
+	];
 
 SubsetChoices[ multTab_ ] := With[{
 	apPairs = Sort /@ ( Position[ multTab[[2;;,2;;,1]], 1 ] + 1)/.{a_,a_}:>{a} },
@@ -1284,12 +1284,14 @@ SubsetChoices[ multTab_ ] := With[{
 	Subsets[ DeleteDuplicates[ apPairs ] ][[2;;-2]] 
 ];
 
-SubRingTables[ multTab_ ] := With[{
-	IMQ = InternalMultiplicationQ[ multTab, # ]&,
-	subsets = SubsetChoices[ multTab ] },
-	<| "Subset"-> #, "MultTab"-> multTab[[#,#,#]] |>& /@
+SubRingTables[ multTab_ ] :=
+	With[{
+		IMQ = InternalMultiplicationQ[ multTab, # ]&,
+		subsets = SubsetChoices[ multTab ]
+		},
+		<| "Subset"-> #, "MultTab"-> multTab[[#,#,#]] |>& /@
 		Select[ subsets, IMQ ]
-];
+	];
 
 RingsFromParams[ nsdnsd_List, mult_Integer, nnzsc_Integer ] :=
 RingsFromParams[ nsdnsd, mult, nnzsc ] = 
@@ -1349,6 +1351,11 @@ InjectionForm[ ring_FusionRing?FusionRingQ, subring_FusionRing?FusionRingQ ] :=
 				SubRingTables[ mt ],
 				EquivalentMultiplicationTableQ[ mts, #["MultTab"] ]&
 			];
+   
+		If[
+			MissingQ[equivTable],
+			Return @ None
+		];
 		
 		possiblePerms =
   		With[ { diagonalChannels = Rest[ Count[ x_/; x > 0 ] /@ Diagonal[ # ] ]& },
@@ -1359,6 +1366,7 @@ InjectionForm[ ring_FusionRing?FusionRingQ, subring_FusionRing?FusionRingQ ] :=
 					] + 1
 				)
 			];
+		
 		permutation =
   		FirstCase[ possiblePerms, s_/; mts[[s,s,s]] == equivTable["MultTab"] ];
     

@@ -5,11 +5,16 @@
 
 Package["Anyonica`"]
 
+
+IndependentSubsystems::usage =
+  "IndependentSubsystems[ eqns, s ] returns lists of subsystems in variables labeled by s that are independent.\n"<>
+  "IndependentSubsystems[ eqns, s, vars ] returns lists of subsystems in the variables vars, labeled by s.";
+
 IndependentSubsystems[ eqns_, s_ ] :=
-  IndepSubsystems[ eqns, GetVars[#,s]& ];
+  IndepSubsystems[ eqns, GetVariables[#,s]& ];
 
 IndependentSubsystems[ eqns_, s_, vars_ ] :=
-  IndepSubsystems[ eqns, Union[ GetVars[ #, s ], vars ]& ];
+  IndepSubsystems[ eqns, Union[ GetVariables[ #, s ], vars ]& ];
 
 (* Finds independent subsystems using func to get variables from eqns *)
 IndepSubsystems[ eqns_, getVars_ ] :=

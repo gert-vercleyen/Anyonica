@@ -6,6 +6,13 @@
 
 Package["Anyonica`"]
 
+PackageExport["PentagonEquations"]
+
+PentagonEquations::usage =
+  "PentagonEquations[ ring ] returns the pentagon equations related to ring.;"
+
+(*   "all trivial and duplicate equations have been removed.";*)
+
 Options[ PentagonEquations ] =
   Options[ PentagonTower ];
 
@@ -16,6 +23,12 @@ PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
       tower["Sum"] // Values
     ] // Flatten
   ];
+
+
+PackageExport["PentagonTower"]
+
+PentagonTower::usage=
+  "Calculates a tower of pentagon equations based on the dimensions of the F-matrices.";
 
 Options[ PentagonTower ] =
   {
@@ -58,6 +71,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
         matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
         Do[
           { a, b, s } = label2[[ { 1, 2, 6 } ]];
+          
           eqn =
             (
               sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
@@ -70,7 +84,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
             dim =
               Max[
                 dimF /@
-                GetVars[ {eqn}, F, "LevelSpec" -> 4 ]
+                GetVariables[ eqn, F ]
               ];
             If[
               eqn[[2,0]] === Plus,
@@ -93,18 +107,25 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     
   ];
 
+PackageScope["BinomialEquationsFromTower"]
 
 BinomialEquationsFromTower[ tower_Association ] :=
   tower["Bin"] //
   Values //
   Flatten;
 
+
+PackageScope["SumEquationsFromTower"]
+
 SumEquationsFromTower[ tower_Association ] :=
   tower["Sum"] //
   Values //
   Flatten;
 
-MonSumEquationsFromTower[ tower_Association ] :=
+
+PackageScope["BinSumEquationsFromTower"]
+
+BinSumEquationsFromTower[ tower_Association ] :=
   Map[
     Flatten,
     {
@@ -113,8 +134,14 @@ MonSumEquationsFromTower[ tower_Association ] :=
     }
   ];
 
+
+PackageExport["PentagonEquationsFromTower"]
+
+PentagonEquationsFromTower::usage =
+  "Flattens tower to a set of pentagon equations.";
+
 PentagonEquationsFromTower[ tower_Association ] :=
-  Join @@ MonSumEquationsFromTower[ tower ];
+  Join @@ BinSumEquationsFromTower[ tower ];
 
 
 DimF[regMats_] :=

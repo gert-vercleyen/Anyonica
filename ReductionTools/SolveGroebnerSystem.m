@@ -27,7 +27,7 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
             Cases[
               SolveUsingReduce[
                 Thread[ groebnerBasis == 0 ],
-                GetVars[ groebnerBasis, s ]
+                GetVariables[ groebnerBasis, s ]
               ],
               sol_ /; TrueQ[ assumptions/.sol ]
             ]
@@ -37,32 +37,41 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
     ]
   ];
 
-(* Solving pentagon equations *)
+
+PackageExport["SolvePentagonEquations"]
+
+SolvePentagonEquations::usage =
+  "SolvePentagonEquations[ring] returns the solutions for the pentagon equations associated to the Fusion Ring ring.";
+
+SolvePentagonEquations::substitutesolutionwrongformat =
+  "\"SubstituteSolution\" should point to a couple { ring, solution } where ring is a fusion ring "<>
+  "isomorphic to a subring of `1` and solution is a solution to the pentagon equations for ring.";
+
 Options[SolvePentagonEquations] =
-  Join[
-    Options[SolveGroebnerSystem],
-    Options[PentagonGroebnerSystems]
-  ];
+  Options[PentagonGroebnerSystems];
 
 SolvePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   Which[
     (* CHECK proper format injected solution *)
-    !MatchQ[ OptionValue["InjectSolution"], {} | { r_FusionRing, s_?ProperPentagonSolutionQ } ],
-      Message[ SolvePentagonEquations::substitutesolutionwrongformat, ring ]; Return[$Failed],
-
-    (* CHECK multiplicity *)
-    Mult[ring] == 1,
-      SolveMultiplicityFreePentagonEquations[ ring, opts ],
-
-    True,
-      Print["Not implemented yet."]
+    !MatchQ[ OptionValue["InjectSolution"], {} | { r_FusionRing, s_?PPSQ } ]
+    ,
+    Message[ SolvePentagonEquations::substitutesolutionwrongformat, ring ]; Abort[]
+    ,
+    Mult[ring] == 1
+    ,
+    SolveMultiplicityFreePentagonEquations[ ring, opts ]
+    ,
+    True
+    ,
+    Print["Not implemented yet."];
+    Abort[]
   ];
 
 Options[SolveMultiplicityFreePentagonEquations] =
   Options[SolvePentagonEquations];
 
 SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  Module[ { procID, time, result, bases, FindSolutions, z, simplify },
+  Module[ { procID, time, result, bases, z, simplify },
     procID =
       ToString[Unique[]];
     simplify =
@@ -106,6 +115,13 @@ SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:Option
     result
   ];
 
+
+PackageExport["SolveHexagonEquations"]
+
+SolveHexagonEquations::usage =
+  "SolveHexagonEquations[r] solves the hexagon equations for the fusion ring r.";
+(*"The option \"Knowns\" can be set to a list of rules of variables that are already known, e.g. a solution to the pentagon equations.";*)
+
 Options[SolveHexagonEquations] =
   Join[
     Options[SolveGroebnerSystem],
@@ -119,6 +135,7 @@ SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     True,
       Print["Can't solve cases with multiplicity yet"]
   ];
+
 
 Options[SolveMultiplicityFreeHexagonEquations] =
   Options[SolveHexagonEquations];

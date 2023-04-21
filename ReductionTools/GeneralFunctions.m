@@ -6,21 +6,37 @@
 +---------------------------------------------------------------------------+
 *)
 
-
 Package["Anyonica`"]
 
-(* Check whether an expression is a list of equations *)
+PackageScope["ListOfEquationsQ"]
+
+ListOfEquationsQ::usage =
+  "Check whether an expression is a list of expressions with head Equal.";
+
 ListOfEquationsQ[ expr_ ] :=
-  Head[expr] === List && MatchQ[ expr, { Repeated[_Equal|True|False ] } ];
+  TrueQ @ MatchQ[ expr, { (_Equal | True | False )... } ];
+
+
+PackageExport["NIntegerQ"]
+
+NIntegerQ::usage =
+  "NIntegerQ[x,acc] numerically checks whether x is an integer with accuracy acc and infinite precision.\n" <>
+  " NIntegerQ[x] is shorthand for NIntegerQ[x,$MachinePrecision]";
 
 (* Numerically check whether a number is a real integer with desired accuracy *)
 NIntegerQ[ x_, accuracy_ ] :=
-With[ { nx = N[ x, { Infinity, accuracy } ] },
-  RealAbs[ Im[ nx ] ] == 0 && nx == Round[nx]
-];
+  With[ { nx = N[ x, { Infinity, accuracy } ] },
+    RealAbs[ Im[ nx ] ] == 0 && nx == Round[nx]
+  ];
 
 NIntegerQ[ x_ ] :=
   NIntegerQ[ x, $MachinePrecision ];
+
+
+PackageExport["MonomialQ"]
+
+MonomialQ::usage =
+  "MonomialQ[rat] returns true if the rational function rat has monomial denominator and numerator.";
 
 MonomialQ[ pol_ ] :=
   With[ {
@@ -29,69 +45,131 @@ MonomialQ[ pol_ ] :=
     Length[ MonomialList[ newPol ] ] === 1
   ];
 
+
+PackageExport["BinomialEquationQ"]
+
+BinomialEquationQ::usage =
+  "BinomialEquationQ[eqn] returns True if the equation is a Binomial equation.";
+
+BinomialEquationQ::notequation =
+  "The argument `1` is not an equation or True/False.";
+
+  (* TODO: check whether it causes problems if False returns True *)
 BinomialEquationQ[True] :=
   True;
-BinomialEquationQ[ eqn_Equal ] :=
-  With[{
-    newEqn = RemoveFractions[eqn]
-    },
-    Which[
-      TrueQ[newEqn],
-        Return[True],
-      newEqn === False,
-        Return[False]
-    ];
 
-    With[{ lhs = newEqn[[1]],  rhs = newEqn[[2]] },
+BinomialEquationQ[ eqn_ ] :=
+  If[
+    Head[eqn] =!= Equal
+    ,
+    False
+    ,
+    With[{ newEqn = RemoveFractions[eqn] },
       Which[
-        lhs =!= 0 && rhs =!= 0,
-          Length[ MonomialList[ lhs ] ] + Length[ MonomialList[ rhs ] ] <= 2,
-        lhs === 0,
-          Length[ MonomialList[ lhs ] ] <= 2,
-        rhs === 0,
-          Length[ MonomialList[ lhs ] ] <= 2
-      ]
-    ]
-  ];
-
-SetAttributes[ ToProperBinomialEquation, Listable ];
-ToProperBinomialEquation[ True ] :=
-  True;
-ToProperBinomialEquation[ eqn_?BinomialEquationQ ] :=
-  With[{
-    noFracEqn = RemoveFractions @ eqn
-    },
-    If[
-      TrueQ[ noFracEqn ],
-      Return[ True ],
-      With[{
-        mList = MonomialList[ First @ noFracEqn ]
-        },
-        If[
-          Length[mList] === 1,
-          mList[[1]] == 0,
-          mList[[1]] == -mList[[2]]
+        TrueQ[newEqn],
+        Return[True],
+        newEqn === False,
+        Return[False]
+      ];
+    
+      With[{ lhs = newEqn[[1]],  rhs = newEqn[[2]] },
+        Which[
+          lhs =!= 0 && rhs =!= 0,
+            Length[ MonomialList[ lhs ] ] + Length[ MonomialList[ rhs ] ] <= 2,
+          lhs === 0,
+            Length[ MonomialList[ lhs ] ] <= 2,
+          rhs === 0,
+            Length[ MonomialList[ lhs ] ] <= 2
         ]
       ]
     ]
   ];
 
 
+PackageScope["ToProperBinomialEquation"]
+
+ToProperBinomialEquation::usage =
+  "ToProperBinomialEquation[binEqn] returns an equivalent binomial "<>
+  "equation of the form LHS == RHS where both RHS and LHS are " <>
+  " non-zero.";
+
+
+ToProperBinomialEquation::notbineqn =
+  "Equation `1` is not a binomial equation.";
+
+SetAttributes[ ToProperBinomialEquation, Listable ];
+
+ToProperBinomialEquation[ True ] :=
+  True;
+
+ToProperBinomialEquation[ eqn_ ] :=
+  If[
+    !BinomialEquationQ[ eqn ]
+    ,
+    Message[ ToProperBinomialEquation::notbineqn, eqn ];
+    Abort[]
+    ,
+    With[{
+      noFracEqn = RemoveFractions @ eqn
+      },
+      If[
+        TrueQ @ noFracEqn
+        ,
+        Return @ True
+        ,
+        With[{ mList = MonomialList[ First @ noFracEqn ] },
+          If[
+            Length[mList] === 1,
+            mList[[1]] == 0,
+            mList[[1]] == -mList[[2]]
+          ]
+        ]
+      ]
+    ]
+  ];
 
 RemoveFractions[ eqn_Equal ] :=
   Expand[ Numerator[ Together[ eqn[[1]] - eqn[[2]] ] ] ] == 0;
+
 RemoveFractions[ True ] =
   True;
+
 RemoveFractions[ False ] =
   False;
+
 RemoveFractions[ pol_ ] :=
   Expand @* Numerator @* Together @ pol;
 
-SetAttributes[ ToPolynomial, Listable ];
-ToPolynomial[ eqn_Equal ] :=
-  First @ RemoveFractions @ eqn;
 
-PolynomialDegree[ n_?NumericQ, _ ] :=
+PackageScope["ToPolynomial"]
+
+ToPolynomial::usage =
+  "ToPolynomial[ equation ] converts a polynomial equation to a polynomial.";
+
+ToPolynomial::notanequation =
+  "The argument `1` must be an equation.";
+
+SetAttributes[ ToPolynomial, Listable ];
+
+ToPolynomial[ eqn_ ] :=
+  If[
+    Head[eqn] =!= Equal
+    ,
+    Message[ ToPolynomial::notanequation, eqn ];
+    Abort[]
+    ,
+    RemoveFractions @
+    ( Subtract @@ eqn )
+  ];
+
+
+PackageExport["PolynomialDegree"]
+
+PolynomialDegree::usage =
+  "PolynomialDegree[ pol, vars ] returns the degree of the polynomial with all vars replaced by a single variable.\n" <>
+  "PolynomialDegree[ pol, s ] equals PolynomialDegree[ pol, GetVariables[ pol, s ] ].";
+
+PolynomialDegree[ n_?NumericQ, _ ] =
   0;
 
 PolynomialDegree[ pol_, vars_ ] :=
@@ -103,12 +181,24 @@ PolynomialDegree[ pol_, vars_ ] :=
   ];
 
 PolynomialDegree[ pol_, s_Symbol ] :=
-  PolynomialDegree[ pol, GetVars[ pol, s ] ];
+  PolynomialDegree[ pol, GetVariables[ pol, s ] ];
 
-BinomialSystemQ[ eqnList_List ] :=
-  FirstCase[ eqnList, eqn_/; !MonomialEquationQ[ eqn ] -> False, True ];
 
-(* Split list in two lists for which f is resp True and False *)
+PackageExport["BinomialSystemQ"]
+
+BinomialSystemQ::usage =
+  "BinomialSystem[ eqnList ] returns True if eqnList is a list of binomial equations.";
+
+BinomialSystemQ[ eqns_ ] :=
+  TrueQ @
+  MatchQ[ eqns, { _?BinomialEquationQ .. } ];
+
+
+PackageScope["BinSplit"]
+
+BinSplit::usage =
+  "Split list l in two lists for which f is resp True and False.";
+  
 BinSplit[ l_List, f_ ] :=
   ReplaceAll[
     GroupBy[
@@ -118,6 +208,13 @@ BinSplit[ l_List, f_ ] :=
     Missing[___] -> {}
   ];
 
+
+PackageExport["BinomialSplit"]
+
+BinomialSplit::usage =
+  "Splits list eqnList into a list of binomial equations and a list non-binomial " <>
+  "equations.";
+
 Options[ BinomialSplit ] =
   {
     "PreEqualCheck" -> Identity
@@ -126,75 +223,155 @@ Options[ BinomialSplit ] =
 BinomialSplit[ eqnList_List, OptionsPattern[] ] :=
   BinSplit[ eqnList, BinomialEquationQ @* OptionValue["PreEqualCheck"] ];
 
-Options[GetVars] = {"LevelSpec" -> Infinity};
-GetVars[ expression_, s_, OptionsPattern[] ] :=
+
+PackageScope["SymbolQ"]
+
+SymbolQ::usage =
+  "Checks whether head of expression is Symbol.";
+
+SymbolQ[expr_] :=
+  Head[expr] === Symbol;
+
+
+(*GetVariables[expr,s,excludedVars] returns a sorted list \
+of the variables s[__] in expr, excluding those given by the list of \
+excludedVars. Options include \"LevelSpec\" -> n to search only for \
+variables up to level n.";*)
+
+PackageExport["GetVariables"]
+
+GetVariables::usage =
+  "GetVariables[expr,s] returns a sorted list of the variables s[__] in expr.\n"<>
+  "GetVariables[expr,s,exclude] is like GetVariables[expr,s] except that it excludes variables from the list exclude";
+
+GetVariables::invalidlevelspec =
+  "`1` must be an integer or Infinity";
+
+Options[GetVariables] =
+  { "LevelSpec" -> Infinity };
+
+GetVariables[ expression_, s_, OptionsPattern[] ] :=
   With[{ n = OptionValue["LevelSpec"] },
     Which[
       !IntegerQ[n] && n =!= Infinity,
-        Message[GetVars::invalidlevelspec,n],
+      Message[GetVariables::invalidlevelspec,n];
+      Abort[],
       True,
-        Cases[ expression, s[__], n ] //
+        Cases[ { expression }, s[__], n ] //
         DeleteDuplicates //
         Sort
     ]
   ];
 
-GetVars[ expression_, s_, excludedVars_List, OptionsPattern[] ] :=
+GetVariables[ expression_, s_, excludedVars_List, OptionsPattern[] ] :=
   With[{
     n = OptionValue["LevelSpec"]},
-    If[ !IntegerQ[n] && n =!= Infinity,
-      (* THEN *)
-      Message[GetVars::invalidlevelspec,n],
-      (* ELSE *)
-      Cases[ expression, s[i__]/; FreeQ[excludedVars, s[i] ], n ] //
+    If[ !IntegerQ[n] && n =!= Infinity
+      ,
+      Message[GetVariables::invalidlevelspec,n];
+      Abort[]
+      ,
+      Cases[ { expression }, s[i__]/; FreeQ[excludedVars, s[i] ], n ] //
       DeleteDuplicates //
       Sort
     ]
   ];
 
-GetVars[ expression_, symbols_List, opts:OptionsPattern[] ] :=
-  Join @@ (GetVars[ expression, # , opts]& /@ symbols );
+GetVariables[ expression_, symbols_List, opts:OptionsPattern[] ] :=
+  Join @@ (GetVariables[ expression, # , opts]& /@ symbols );
 
-GetVars[ expression_, symbols_List, excludedVars_, opts:OptionsPattern[] ] :=
-  Join @@ (GetVars[ expression, #, excludedVars, opts ]& /@ symbols );
+GetVariables[ expression_, symbols_List, excludedVars_, opts:OptionsPattern[] ] :=
+  Join @@ (GetVariables[ expression, #, excludedVars, opts ]& /@ symbols );
 
-Options[CountVars] =
- Options[GetVars];
 
-CountVars[ data__ ] :=
-  Length @ GetVars[ data ];
+PackageExport["CountVariables"]
 
-(* Replace all variables in eqns by single indexed vars in symbol s and return also the old list
- of variables together with a rule to revert the variables to their old forms*)
-SimplifyVariables[ eqns_List, oldVars_List, s_ ] :=
-  With[{ newVars = s /@ Range[ Length[ oldVars ] ] },
-    With[{ r = Thread[ oldVars -> newVars ] },
-      printlog["SV:subs", { ToString[Unique[]], r } ];
-      {
-        eqns/.Dispatch[r],
-        newVars,
-        Dispatch[ Reverse /@ r ]
-      }
-    ]
+CountVariables::usage =
+  "CountVariables[expr,s] returns the number of different variables s[__] that appear in expr."
+
+Options[CountVariables] =
+  Options[GetVariables];
+
+CountVariables[ data__ ] :=
+  Length @ GetVariables[ data ];
+
+
+PackageExport["SimplifyVariables"]
+
+SimplifyVariables::usage =
+  "SimplifyVariables[eqns,oldVars,s] replaces all variables, oldVars, in eqns " <>
+  "by a single indexed variable labeled by s and and returns a " <>
+  "triple of new eqns, new variables, and replacement rules to revert to old " <>
+  "variables.";
+
+SimplifyVariables::varswrongformat =
+  "`1` needs to be a list of variables.";
+
+SimplifyVariables::exprwrongformat =
+  "`1` needs to be a list of expressions";
+
+SimplifyVariables[ exprList_, oldVars_, s_ ] :=
+  Which[
+    !ListQ[exprList]
+    ,
+    Message[ SimplifyVariables::exprwrongformat, exprList ];
+    Abort[]
+    ,
+    !ListQ[oldVars]
+    ,
+    Message[ SimplifyVariables::varswrongformat, oldVars ];
+    Abort[]
+    ,
+    True
+    ,
+      With[
+        { newVars = s /@ Range[ Length[ oldVars ] ] },
+        { r = Thread[ oldVars -> newVars ] },
+        printlog["SV:subs", { ToString[Unique[]], r } ];
+        {
+          exprList/.Dispatch[r],
+          newVars,
+          Dispatch[ Reverse /@ r ]
+        }
+      ]
   ];
 
 (* Replace all equivalent variables by a representative of the equivalence class *)
-ReplaceByReps[ equivClasses_List, reps_, expr_ ] :=
+
+PackageExport["ReplaceByRepresentatives"]
+
+ReplaceByRepresentatives::usage =
+  "ReplaceByRepresentatives[equivClasses, representatives, expr] returns expr" <>
+  " with all occurrences e_i in expr replaced by their representatives" <>
+  " according to the equivalence class that e_i belongs to.\n" <>
+  "ReplaceByRepresentatives[equivClasses, representatives] is the operator form of" <>
+  "ReplaceByRepresentatives";
+
+ReplaceByRepresentatives::repnotinclass =
+  "One or more classes in `1` does not contain an element from `2` at " <>
+  "the same position as the class.";
+
+ReplaceByRepresentatives[ equivClasses_List, reps_, expr_ ] :=
   If[
     And @@ MapThread[ MemberQ, { equivClasses, reps } ],
     With[{
       repRules =
-      MapThread[
-        Table[ expr -> #1, { expr, #2 } ]&,
-        { reps, equivClasses }
-      ] // Flatten
+        MapThread[
+          Table[ expr -> #1, { expr, #2 } ]&,
+          { reps, equivClasses }
+        ] // Flatten
       },
       { ReplaceAll[ expr, Dispatch[ repRules ] ], Dispatch[ Reverse /@ repRules ] }
     ],
-    Message[ ReplaceByReps::repnotinclass, equivClasses, reps ]
+    Message[ ReplaceByRepresentatives::repnotinclass, equivClasses, reps ];
+    Abort[]
   ];
 
-(* Returns the list of equivalent elements to var (including var itself) *)
+PackageScope["Orbit"]
+
+Orbit::usage =
+  "Returns the list of equivalent elements to var (including var itself)"
+
 Orbit[ mapToReps_ ][ var_ ] :=
   If[
     MemberQ[ mapToReps[[;;,2]], var ],
@@ -218,8 +395,8 @@ Orbit[ mapToReps_ ][ var_ -> val_ ] :=
     var -> val
   ];
 
-ValidSystemQ[ eqns_List ] :=
-  !MemberQ[ eqns, False ];
+
+PackageScope["CheckSystemValidity"]
 
 CheckSystemValidity[ eqns_List ] :=
   If[
@@ -228,42 +405,29 @@ CheckSystemValidity[ eqns_List ] :=
     eqns
   ];
 
-(* ADDING OPTIONS TO FUNCTIONS WHERE NON-APPLICABLE OPTIONS ARE LEFT OUT *)
+ValidSystemQ[ eqns_List ] :=
+  FreeQ[ eqns, False ];
+
+
+PackageExport["AddOptions"]
+
+AddOptions::usage =
+  "AddOptions[ opts ][ func ][ args ] returns func[ args, filteredOptions ], where filteredOptions is the"<>
+  " list of those options of opts that are valid for func.";
+
 AddOptions[ opts:OptionsPattern[] ][ head_ ][ args___ ] :=
   head[ args, Sequence @@ FilterRules[ {opts}, Options[head] ] ];
+
 AddOptions[][ head_ ][ args___ ] :=
   head[ args ];
 
-(* REMOVING ZERO ROWS AND COLUMNS FROM MATRICES *)
-RemoveZeroRows[ mat_?MatrixQ ] :=
-  If[
-    mat === {{}},
-    {{}},
-    With[{ newMat = DeleteCases[ Table[ 0, Length[mat[[1]]] ] ] @ mat },
-      If[
-        newMat === {},
-        {{}},
-        newMat
-      ]
-    ]
-  ];
 
-RemoveZeroColumns[ mat_?MatrixQ ] :=
-  Module[{ r },
-    If[
-      mat === {{}},
-      {{}},
-      r = mat // Transpose // RemoveZeroRows;
-      If[
-        r === {{}},
-        {{}},
-        Transpose[r]
-      ]
-    ]
-  ];
+PackageExport["SimplifyUsingRoots"]
 
+SimplifyUsingRoots::usage =
+  "SimplifyUsingRoots[ expr_, acc_ ] attempts to simplify expr by approximating " <>
+  "all non-integers in expr with accuracy acc and replacing them with exact roots of polynomials.";
 
-(* Simplify Exressions using RootApproximant *)
 SimplifyUsingRoots[ expr_, acc_Integer ] :=
   ReplaceAll[
     expr,
@@ -275,10 +439,10 @@ SimplifyUsingRoots[ expr_ ] :=
 
 SimplifyUsingRoots[ expr_, variables_List, acc_Integer ] :=
   Block[{ x, simplerExpr, newVars, revertVars},
-    {simplerExpr, newVars, revertVars} =
+    { simplerExpr, newVars, revertVars} =
       SimplifyVariables[ expr, variables, x ];
 
-    SetAttributes[x, NHoldAll];
+    SetAttributes[ x, NHoldAll ];
 
     ReplaceAll[
       N[ expr, { Infinity, acc } ],
@@ -289,7 +453,12 @@ SimplifyUsingRoots[ expr_, variables_List, acc_Integer ] :=
 SimplifyUsingRoots[ expr_, variables_List ] :=
   SimplifyUsingRoots[ expr, variables, 128 ];
 
-(* Check whether a single solution is correct *)
+
+PackageScope["ValidSolutionQ"]
+
+ValidSolutionQ::usage =
+  "Check whether soln satisfies eqns after applying preEqCheck.";
+
 ValidSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
   With[{
       filledInEqns =
@@ -308,9 +477,14 @@ ValidSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
     ]
   ];
 
+PackageScope["NotInvalidNonZeroSolutionQ"]
 
-(* Check whether a single solution is correct, given that no variables are allowed to be 0*)
-NotInvalidNonZeroSolutionQ[ {}, _ ][ _ ] := True;
+NotInvalidNonZeroSolutionQ::usage =
+  "Checks whether a single solution is correct, given that no variables are allowed to be 0";
+
+NotInvalidNonZeroSolutionQ[ {}, _ ][ _ ] :=
+  True;
+
 NotInvalidNonZeroSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
   With[
     {
@@ -324,7 +498,21 @@ NotInvalidNonZeroSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
     ]
   ];
 
-Options[WithDimension] = {"ColumnDimension" -> False};
+
+PackageExport["WithDimension"]
+
+WithDimension::usage =
+  "WithDimension[ matList, { min, max, step } ] returns all (m x n) matrices in mathList " <>
+  " such that m  is an element of Range[ min, max, step ].\n" <>
+  "WithDimension[ matList_, { min, max } ] returns all (m x n) matrices such that min <= m <= max.\n" <>
+  "WithDimension[ matList_, { k_Integer } ] returns al (m x n) matrices such that m == k.";
+(*   Set \"ColumnDimensions\" -> True to select matrices based on the number of columns.";*)
+
+Options[WithDimension] =
+  {
+    "ColumnDimension" -> False
+  };
+
 WithDimension[ matList_, {min_Integer, max_Integer, step_Integer }, OptionsPattern[] ] :=
   With[ {
     r = Range[min,max,step],
@@ -359,27 +547,78 @@ WithDimension[ matList_, { k_Integer }, OptionsPattern[] ] :=
 WithDimension[ matList_List, k_Integer, opts:OptionsPattern[] ] :=
   WithDimension[ matList, { k }, opts ];
 
+
+PackageExport["WithMinimumDimension"]
+
+WithMinimumDimension::usage =
+  "WithMinimumDimension[ matList, k ] returns all (m x n) matrices in mathList with m >= k."
+
+Options[WithMinimumDimension] =
+  Options[WithDimension];
+
 WithMinimumDimension[ matList_List, k_Integer, opts:OptionsPattern[] ] :=
   WithDimension[ matList, { k, Infinity }, opts ];
+
+
+PackageExport["WithMaximumDimension"]
+
+WithMaximumDimension::usage =
+  "WithMaximumDimension[ matList, k ] returns all (m x n) matrices in mathList with m <= k."
+
+Options[WithMaximumDimension] =
+  Options[WithDimension];
 
 WithMaximumDimension[ matList_List, k_Integer, opts:OptionsPattern[] ] :=
   WithDimension[ matList, { 0, k }, opts ];
 
+
+PackageScope["MatrixDirectSum"]
+
+MatrixDirectSum::usage =
+  "MatrixDirectSum[ listOfMatrices ] returns the direct sum of the matrices in listOfMatrices as a sparse matrix.";
+
+MatrixDirectSum::notlistofmatrices =
+  "`1` should be a list of matrices.";
+
 MatrixDirectSum[ listOfMatrices_ ] :=
-  With[
-    { r = MapIndexed[#2[[1]] {1, 1} -> # &, DeleteCases[ listOfMatrices, {{}} ], 1]},
-    SparseArray`SparseBlockMatrix[r]
+  If[
+    !ListOfMatricesQ[listOfMatrices]
+    ,
+    Message[ MatrixDirectSum::notlistofmatrices, listOfMatrices ];
+    Abort[]
+    ,
+    With[
+      { r = MapIndexed[#2[[1]] {1, 1} -> # &, DeleteCases[ listOfMatrices, {{}} ], 1]},
+      SparseArray`SparseBlockMatrix[r]
+    ]
   ];
+
+ListOfMatricesQ[ l_ ] :=
+  MatchQ[ l, { _?MatrixQ .. } ];
+
+
+PackageScope["ThreadMatrixEquality"]
+
+ThreadMatrixEquality::usage =
+  "ThreadMatrixEquality[ mat1 == mat2 ] returns a list of equations between the individual matrix elements.";
+(*  It is optimized for use with sparse matrices.";*)
+
+ThreadMatrixEquality::dimensionsmismatch =
+  "The dimensions of the two matrices do not coincide.";
 
 ThreadMatrixEquality[ False ] =
   False;
+
 ThreadMatrixEquality[ True ] =
   True;
+
 ThreadMatrixEquality[ m1_?MatrixQ == m2_?MatrixQ ] :=
   Which[
-    Dimensions[m1] != Dimensions[m2],
-      Message[ ThreadMatrixEquality::dimensionsmismatch ];
-      Return[ $Failed ],
+    Dimensions[m1] != Dimensions[m2]
+    ,
+    Message[ ThreadMatrixEquality::dimensionsmismatch ];
+    Abort[]
+    ,
     Head[ m1 ] === Head[ m2 ] === SparseArray,
       Module[ { sparseAssociation, sa1, sa2, k1, k2 },
         sparseAssociation =
@@ -414,10 +653,15 @@ ThreadMatrixEquality[ m1_?MatrixQ == m2_?MatrixQ ] :=
     ]
   ];
 
-(* Generate tuples from a list of ranges of the form
- { { 0, n1 }, { 0, n2 }, ..., { 0, nm } } one by one *)
-NextTuple[ listOfRanges_ ][ tuple_]:=
-  PositionPlus[ listOfRanges, tuple, Length[listOfRanges]];
+
+PackageScope["NextTuple"]
+
+NextTuple::usage =
+  "Generates the the next tuple following tp in the set of tuples generated by listOfRanges.";
+(* Note: tuples are generated one by one *)
+
+NextTuple[ listOfRanges_ ][ tp_]:=
+  PositionPlus[ listOfRanges, tp, Length[listOfRanges] ];
 
 PositionPlus[ listOfRanges_, currentTuple_, n_ ] :=
   With[{ l = Length @ listOfRanges[[n]] },
@@ -437,6 +681,12 @@ PositionPlus[ listOfRanges_, currentTuple_, n_ ] :=
       ]
     ]
   ];
+
+
+PackageExport["SolveUsingReduce"]
+
+SolveUsingReduce::usage =
+  "SolveUsingReduce[ eqns, vars ] solves the system of equations eqns in variables vars using Reduce.";
 
 SolveUsingReduce[ eqns_, vars_, rest___ ] :=
   With[{
@@ -480,6 +730,11 @@ EqualitiesToRules[ expr_, vars_ ] :=
   ];
 
 
+PackageExport["PowerSumReduce"]
+
+PowerSumReduce::usage =
+  "PowerSumReduce[expr] simplifies Root expressions of power sum polynomials, in expr, to their polar form.";
+
 (* Simplify Root expressions of power sum polynomials *)
 PowerSumReduce[ expr_ ] :=
   ReplaceAll[
@@ -501,7 +756,6 @@ PowerSumReduce[ r : Root[ f_, __ ] ] :=
       psr
     ]
   ];
-
 
 PowerSumRoots[ f_, x_ ] :=
   Module[
@@ -550,61 +804,47 @@ PowerSumRoots[ f_, x_ ] :=
     ]
   ];
 
-PowerSumQ[ f_, x_ ] :=
-  Module[
-    { deg , lf, powers, gcd },
-    deg =
-    Exponent[ f, x ];
-    lf =
-    List @@ f;
+PackageScope["QuietCheck"]
 
-    Quiet @
-    Check[
-      If[
-        Not[
-          lf[[1]] === 1 &&
-          MatchQ[ Rest @ lf, { _. * Power[ x, _.] .. } ] ],
-        Return @ False
-      ],
-      Return @ False
-    ];
+QuietCheck::usage =
+  "QuietCheck performs code and silently returns failexpr if messages from msgs are generated.";
 
-    powers =
-      Cases[ Rest @ lf, _. * Power[ x, i_. ] :> i ];
-
-    gcd =
-      GCD @@ powers;
-
-    If[
-      Not[ powers / gcd == Range[ deg / gcd ] ],
-      Return @ False
-    ];
-
-    TrueQ[ Sum[ (lf[[2]])^i, { i, 0, deg / gcd } ] === f ]
-  ];
-
-QuietCheck[ code_, failExpr_, messages_List ] :=
+QuietCheck[ code_, failExpr_, msgs_List ] :=
   Quiet[
     Check[
       code,
       failExpr,
-      messages
+      msgs
     ],
-    messages
+    msgs
   ];
 
 QuietCheck[ code_, failExpr_ ] :=
   Quiet @ Check[ code, failExpr ];
 
+
+PackageExport["ToNumericRootIsolation"]
+
+ToNumericRootIsolation::usage =
+  "Converts Root expressions with symbolic root isolation to those with numeric root isolation.";
 (* Roots with Exact root isolation result in errors for RootReduce.
    Numeric isolation should be fine since the roots are still isolated
-   exactly
+   exactly.
+   
+   Note that this operation might permute roots !!!
 *)
+
 ToNumericRootIsolation[ expr_ ] :=
   ReplaceAll[
     expr,
     Root[ f_, n_, 1 ] :> Root[ f, n, 0 ]
   ];
+
+PackageExport["SafeRootReduce"]
+
+SafeRootReduce::usage =
+  "Applies RootReduce to argument but returns argument if messages are generated. " <>
+  "(Needed in v13.2- due to bug in RootReduce)";
 
 SafeRootReduce =
   Function[
@@ -614,6 +854,11 @@ SafeRootReduce =
     polynomial
   ];
 
+PackageExport["InfN"]
+
+InfN::usage =
+  "InfN[expr,acc] is shorthand for N[ expr, { Infinity, acc } ].\n"<>
+  "InfN[acc] is an operator form of InfN.";
 
 (* Approximate value with accuracy acc and infinite precision *)
 InfN[ expr_, acc_ ] :=

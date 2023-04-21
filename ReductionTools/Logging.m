@@ -13,16 +13,25 @@ Package["Anyonica`"]
 
 (* We add a printlog symbol with attribute HoldAllComplete. When we want to print
    to a log this one will be replaced with an actual function by using Block *)
+PackageScope["printlog"]
+
 Unprotect[printlog];
+
 SetAttributes[ printlog, HoldAllComplete ];
+
 Protect[printlog];
+
 printlog::usage =
 "Inert wrapper that will be replaced by PrintLog if user wants to print log files.";
 
-(* TODO: check whether HoldAllComplete also affects arguments after the first brackets *)
+PackageExport["PrintLog"]
 
-(* The following function can then be wrapped around an arbitrary piece of code
- and will replace all symbols printlog with an actual function MyNotebookPrint *)
+PrintLog::usage =
+  "PrintLog[code] exports information of intermediate results to a notebook with clickable hyperlinks.";
+
+PrintLog::cantcreatedirectory =
+  "Directory `1` could not be found and could not be created.";
+
 Options[PrintLog] =
   {
     "Directory" -> HomeDirectory[],
@@ -30,13 +39,15 @@ Options[PrintLog] =
   };
 
 SetAttributes[ PrintLog, HoldAllComplete ];
+
 PrintLog[ code_ , opts:OptionsPattern[] ] :=
   With[{ dir = OptionValue["Directory"]},
     If[ (* Not an existing directory & can't create directory *)
-      !DirectoryQ[ Evaluate @ dir ] && (Quiet[ CreateDirectory[dir] ] === $Failed),
-      (* THEN *)
-      Message[ PrintLog::cantcreatedirectory, dir ]; Return[$Failed],
-      (* ELSE *)
+      !DirectoryQ[ Evaluate @ dir ] && (Quiet[ CreateDirectory[dir] ] === $Failed)
+      ,
+      Message[ PrintLog::cantcreatedirectory, dir ];
+      Abort[]
+      ,
       Block[{ fileName, ovfn = OptionValue["FileName"], result },
         fileName =
           If[
@@ -321,7 +332,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "Gen:results", { id_, results_, time_ 
     ]
   ];
 
-(* SolveDiophantineEquations *)
+(* SolveDiophantineSystem *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SDE:init", { id_, eqns_, vars_, ranges_, optionList_ } ] :=
   Module[ { fn1, fn2, fn3 },
     fn1 = dataFileName[ id, dir, "Equations" ];
@@ -337,7 +348,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SDE:init", { id_, eqns_, vars_, range
       startCell[
         id,
         dir,
-        "SolveDiophantineEquations",
+        "SolveDiophantineSystem",
         {
           { "Equations",  fn1 },
           { "Variables",  fn2 },
@@ -724,7 +735,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMZS:solutions", { id_, solutions_ } 
     ]
   ];
 
-(*SolveSemiExponentiatedSystem*)
+(*SolveSemiLinModZ*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, optionList_, ___ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "System" ];
@@ -735,7 +746,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, optionLis
        startCell[
          id,
          dir,
-         "SolveSemiExponentiatedSystem",
+         "SolveSemiLinModZ",
          { { "System", fn } },
          optionList
        ]
@@ -1796,7 +1807,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:trivial_gauges", { id_ } ] :=
     ]
   ];
 
-(* DeleteSymmetryEquivalentSolutions *)
+(* DeleteEquivalentSolutions *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:init", { id_, soln_, ring_, sym_, optionList_ } ] :=
   Module[{fn1, fn2, fn3 },
     fn1 = dataFileName[ id, dir, "Solutions" ];
@@ -1812,7 +1823,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:init", { id_, soln_, ring_, sym_
       startCell[
         id,
         dir,
-        "DeleteSymmetryEquivalentSolutions",
+        "DeleteEquivalentSolutions",
         { { "Solutions", fn1 }, { "Ring", fn2 }, { "Symmetries", fn3 } },
         optionList
       ]

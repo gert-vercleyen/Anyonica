@@ -1,5 +1,3 @@
-(* ::Package:: *)
-
 Package["Anyonica`"]
 
 (*
@@ -10,16 +8,66 @@ Package["Anyonica`"]
 +---------------------------------------------------------------------------+
 *)
 
-(* TODO: ADD ERROR MESSAGE FOR WHEN eqns is not a list of equations *)
+PackageExport["SolveDiophantineSystem"]
 
-Options[SolveDiophantineEquations] = { "FileNames" -> {}, "WeighedBy" -> Null, "OnlyCCode" -> False };
-SolveDiophantineEquations[ eqnsList_List, vars_List, ranges_?ProperRangesQ, opts:OptionsPattern[] ] :=
+SolveDiophantineSystem::usage =
+  "SolveDiophantineSystem[eqns,vars,r] solves the system of equations " <>
+  "eqns in the variables vars in the ranges r using external C code";
+
+SolveDiophantineSystem::noteqnlist =
+  "`1` must be a list of equations and or inequalities between polynomials.";
+
+SolveDiophantineSystem::notvarslist =
+  "`1` must be a list of variables.";
+
+SolveDiophantineSystem::nonproperranges =
+  "`1` must be a list of ranges of the form var -> { min, max } where min, max are integers and min <= max.";
+
+SolveDiophantineSystem::compilationerror =
+  "Error during compilation.";
+
+SolveDiophantineSystem::executionerror =
+  "Error during execution.";
+
+SolveDiophantineSystem::wrongfilenameformat =
+  "`1` must be a triple of strings.";
+
+CheckArgs[ eqnList_, vars_, ranges_ ][ code_ ] :=
+  Which[
+    !ListQ[eqnList]
+    ,
+    Message[SolveDiophantineSystem::noteqnlist, eqnList ];
+    Abort[]
+    ,
+    !ListQ[vars]
+    ,
+    Message[SolveDiophantineSystem::notvarslist, vars ];
+    Abort[]
+    ,
+    !ProperRangesQ[ranges]
+    ,
+    Message[SolveDiophantineSystem::nonproperranges, ranges ];
+    Abort[]
+    ,
+    True
+    ,
+      code
+  ];
+
+Options[SolveDiophantineSystem] =
+  {
+    "FileNames" -> {},
+    "WeighedBy" -> Null,
+    "OnlyCCode" -> False
+  };
+
+SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
+  CheckArgs[ eqnsList, vars, ranges ] @
   Module[{
     fileNames = OptionValue["FileNames"],
     w = OptionValue["WeighedBy"],
     eqns, newEqns, newVars, revertVars, CString,tower,sortedVars, freeVariables, freeSolutions,
-    newRanges, absTime, result,
-    sym = Unique["x"], procID = ToString[Unique[]]
+    newRanges, absTime, result, x, procID = ToString[Unique[]]
     },
 
     printlog["SDE:init", {procID,eqnsList,vars,ranges,{opts}}];
@@ -45,10 +93,10 @@ SolveDiophantineEquations[ eqnsList_List, vars_List, ranges_?ProperRangesQ, opts
       ];
   
       { { newEqns, newRanges }, newVars, revertVars } =
-        SimplifyVariables[ { eqns, ranges } , vars, sym  ];
+        SimplifyVariables[ { eqns, ranges } , vars, x  ];
   
       freeVariables =
-        Complement[ newVars, GetVars[ newEqns, sym ] ];
+        Complement[ newVars, GetVariables[ newEqns, x ] ];
   
       freeSolutions =
         Thread[ freeVariables -> #  ]& /@
@@ -65,20 +113,21 @@ SolveDiophantineEquations[ eqnsList_List, vars_List, ranges_?ProperRangesQ, opts
         If[
           w =!= Null,
           (* THEN *)
-          TowerOfExpressions[ newEqns, sym, "LevelSpec" -> 5, "WeighedBy" -> w ],
+          TowerOfExpressions[ newEqns, x, "WeighedBy" -> w ],
           (* ELSE *)
-          TowerOfExpressions[ newEqns, sym, "LevelSpec" -> 5, "WeighedBy" -> SearchSpaceSize[newRanges] ]
+          TowerOfExpressions[ newEqns, x, "WeighedBy" -> SearchSpaceSize[newRanges] ]
         ];
   
       CString =
-        BackTrackCCode[ tower, sym, newRanges ];
+        BacktrackCCode[ tower, x, newRanges ];
 
       If[
         fileNames === {},
         fileNames = { "source.c", "executable", "results.dat" },
         If[
           !MatchQ[ fileNames, {  _String .. } ],
-          Message[SolveDiophantineEquations::wrongfilenameformat,fileNames]
+          Message[ SolveDiophantineSystem::wrongfilenameformat, fileNames ];
+          Abort[]
         ]
       ];
   
@@ -111,21 +160,30 @@ SolveDiophantineEquations[ eqnsList_List, vars_List, ranges_?ProperRangesQ, opts
     result
   ];
 
-ProperRangesQ[ l_ ] :=
-  And[
-    Head[ l ] == List,
-    And @@ Map[ MatchQ[ #, a_ -> { i_Integer, j_Integer }  ]&, l ]
-  ];
+SolveDiophantineSystem[ eqnsList_List, vars_List, { rMin_, rMax_ }, opts:OptionsPattern[] ] :=
+  SolveDiophantineSystem[ eqnsList, vars, (# -> { rMin, rMax } )& /@ vars, opts ];
 
-SolveDiophantineEquations[ eqnsList_List, vars_List, { rMin_, rMax_ }, opts:OptionsPattern[] ] :=
-  SolveDiophantineEquations[ eqnsList, vars, (# -> { rMin, rMax } )& /@ vars, opts ];
+
+ProperRangesQ[ l_ ] :=
+  MatchQ[ l, { Repeated[ _ -> { i_Integer, j_Integer } ] } ];
+
+SearchSpaceSize::usage =
+  "SearchSpaceSize[ ranges_ ]  returns a function that maps a list of variables to the size of the "<>
+  "search space corresponding to those variables.";
 
 SearchSpaceSize[ ranges_ ] :=
   With[{ varsToSize = Dispatch @ MapAt[ Apply[ #2 - #1 + 1 & ], ranges, { All, 2 } ] },
     Times @@ ReplaceAll[ #1, varsToSize  ]&
   ];
 
-BackTrackCCode[ tower_, s_ , ranges_List?ProperRangesQ ] :=
+
+PackageExport["BacktrackCCode"]
+
+BacktrackCCode::usage =
+"BacktrackCCode[ tower, s, r ] takes a tower t of couples of vars labeled by s and equations" <>
+" and produces C code to solve the equations with vars in range r";
+
+BacktrackCCode[ tower_, s_ , ranges_List?ProperRangesQ ] :=
   Module[{ varsList, statementList },
     { varsList, statementList } = Transpose @ DeleteCases[ tower, { {}, _ } ];
     With[{

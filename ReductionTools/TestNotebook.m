@@ -422,7 +422,7 @@ ReduceTrijunctionHexagonEquations[ ring_FusionRing?FusionRingQ, R_, P_, Q_ ] := 
 		
 		(* Simplify the variables to single indexed variables in "r" *)
 		{ { simplerEqns, simplerGaugeSym }, simplerVars, revertVars } = EchoLabel["Renamed variables"] @ 
-			SimplifyVariables[ { hexEqns, gaugeSym}, GetVars[ hexEqns, { R, P, Q } ], r ];
+			SimplifyVariables[ { hexEqns, gaugeSym}, GetVariables[ hexEqns, { R, P, Q } ], r ];
 			
 		(* Solve the binomial equations *)
 		monSoln = EchoLabel["Binomial Solutions"] @
@@ -567,7 +567,7 @@ Export[ "/Users/gertvercleyen/Projects/papers/Graph_Networks/MathematicaWork/Sol
 
 
 Map[
-	GetVars[ #, z ]&, 
+	GetVariables[ #, z ]&,
 	sol,
 	{2}
 ]
@@ -679,7 +679,7 @@ Block[{$MaxExtraPrecision = 10000},
 Table[ 
 	If[ 
 		TrueQ[And@@FullSimplify[t[[i,j]]["System"]["RemainingEquations"]]],
-		Max[ Identity @@@ GetVars[ t[[i,j]]["System"]["BinomialSolutions"], z ] ],
+		Max[ Identity @@@ GetVariables[ t[[i,j]]["System"]["BinomialSolutions"], z ] ],
 		""
 	],
 	{i,7},
@@ -815,7 +815,7 @@ Module[ {
 	(*Print[ TableForm[ gaugeSymmetries["Transforms"] ]/.fancyF ];	*)
 
 	pentSoln = 
-		(*DeleteSymmetryEquivalentSolutions[ gaugeSymmetries, "SimplifyBy" \[Rule] ComplexExpand, "Numeric" \[Rule] True ] @*)
+		(*DeleteEquivalentSolutions[ gaugeSymmetries, "SimplifyBy" \[Rule] ComplexExpand, "Numeric" \[Rule] True ] @*)
 		SolvePolynomialSystem[ pentEqns, FSymbols, z, "Symmetries" -> gaugeSymmetries, "InvertibleMatrices" -> invMats ];
 	Print[pentSoln//TableForm];
 	*)
@@ -846,7 +846,7 @@ Module[ {
 	(*Print[ TableForm[ gaugeSymmetries["Transforms"] ]/.fancyF ];	*)
 
 	pentSoln = 
-		(*DeleteSymmetryEquivalentSolutions[ gaugeSymmetries, "SimplifyBy" \[Rule] ComplexExpand, "Numeric" \[Rule] True ] @*)
+		(*DeleteEquivalentSolutions[ gaugeSymmetries, "SimplifyBy" \[Rule] ComplexExpand, "Numeric" \[Rule] True ] @*)
 		SolvePolynomialSystem[ pentEqns, FSymbols, z, "Symmetries" -> gaugeSymmetries, "InvertibleMatrices" -> invMats ];
 	Print[pentSoln//TableForm];
 	
@@ -904,7 +904,7 @@ soln = Module[ {
 	]
 	(*
 	pentSoln = 
-		(*DeleteSymmetryEquivalentSolutions[ restrictedSym, "SimplifyBy" -> ComplexExpand, "Numeric" -> True ] @ *)
+		(*DeleteEquivalentSolutions[ restrictedSym, "SimplifyBy" -> ComplexExpand, "Numeric" -> True ] @ *)
 		SolvePolynomialSystem[ 
 			restrictedEqns, 
 			restrictedFSymbols, 
@@ -916,7 +916,7 @@ soln = Module[ {
 		*)
 	(*
 	hexSoln =
-		(* SolvePolynomialSystem[ #, GetVars[ #, R ], z, "NonSingular" \[Rule] True ]& /@*)Print @ 
+		(* SolvePolynomialSystem[ #, GetVariables[ #, R ], z, "NonSingular" \[Rule] True ]& /@*)Print @
 		(
 			( MultFreeHexagonEquations[ #, Rank[c["Ring"]], R ][[1]] )& /@ 
 			pentSoln
@@ -998,21 +998,20 @@ Module[ {
 		DeleteCases[True] @ (pentEqns/.{ TrivialFPattern -> 1 }/.Thread[ extraFixedFs -> 1 ]);
 		
 	pentSoln =
-	DeleteSymmetryEquivalentSolutions[ gaugeSymmetries, "SimplifyBy" -> ComplexExpand, "Numeric" -> True ][ 
+	DeleteEquivalentSolutions[ gaugeSymmetries, "SimplifyBy" -> ComplexExpand, "Numeric" -> True ][
 		Sort[ Join[ Thread[ Cases[ FSymbols, TrivialFPattern ] -> 1 ], Thread[ extraFixedFs -> 1 ], # ] ]& /@ 
 		SolvePolynomialSystem[ 
 			restrictedEqns, 
 			restrictedFSymbols, 
 			z, 
 			"Symmetries" -> restrictedSym, 
-			"InvertibleMatrices" -> restrictedInvMats,
-			"FindZerosUsingSums" -> True
+			"InvertibleMatrices" -> restrictedInvMats
 		]
 	];
 	Print[ TableForm[ pentSoln ]/.fancyF ];
 	(*
 	hexSoln = 
-		Join[ #[[1]], SolvePolynomialSystem[ #[[2]], GetVars[#,{R,P,Q}], z, "NonSingular" -> True ][[1]] ]& /@ 
+		Join[ #[[1]], SolvePolynomialSystem[ #[[2]], GetVariables[#,{R,P,Q}], z, "NonSingular" -> True ][[1]] ]& /@
 		(
 			{#,(TrijunctionThreeParticleHexagonEquations[ #, Rank[c["Ring"]], R, P, Q ][[1]])}& /@ 
 			pentSoln

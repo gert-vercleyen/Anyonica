@@ -6,25 +6,55 @@ Package["Anyonica`"]
 (*
 +---------------------------------------------------------------------------+
 |                                                                           |
-|                        SOLVING MONOMIAL EQUATIONS                         |
+|                        SOLVING BINOMIAL EQUATIONS                         |
 |                                                                           |
 +---------------------------------------------------------------------------+
 *)
 
-(* TODO: add "PreEqualCheck" option to SolveBinomialSystem *)
-(* Solve a set of Binomial equations with possible symmetry *)
-Options[SolveBinomialSystem] = {
-  "Symmetries" -> None,
-  "NonSingular" -> False,
-  "InvertibleMatrices" -> {},
-  "PolynomialConstraints" -> {},
-  "ZeroValues" -> None,
-  "UseDatabaseOfSmithDecompositions" -> False,
-  "StoreDecompositions" -> False,
-  "PreEqualCheck" -> Identity
-};
+PackageExport["SolveBinomialSystem"]
 
-SolveBinomialSystem[ eqnList_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
+SolveBinomialSystem::usage =
+  "SolveBinomialSystem[binEqns,vars,s] solves the system of binomial " <>
+  "equations binEqns in variables vars and returns a solution parametrized by s";
+
+SolveBinomialSystem::nonbineqns =
+  "`1` is not a system of binomial polynomial equations.";
+
+SolveBinomialSystem::notlistofvars =
+  "`1` is not a list of variables.";
+
+(* Solve a set of Binomial equations with possible symmetry *)
+Options[SolveBinomialSystem] =
+  {
+    "Symmetries" -> None,
+    "NonSingular" -> False,
+    "InvertibleMatrices" -> {},
+    "PolynomialConstraints" -> {},
+    "ZeroValues" -> None,
+    "UseDatabaseOfSmithDecompositions" -> False,
+    "StoreDecompositions" -> False,
+    "PreEqualCheck" -> Identity
+  };
+
+CheckArgs[ eqnList_, vars_ ][ code_ ] :=
+  Which[
+    !BinomialSystemQ[eqnList]
+    ,
+    Message[ SolveBinomialSystem::nonbineqns, eqnList ];
+    Abort[]
+    ,
+    !ListQ[vars]
+    ,
+    Message[ SolveBinomialSystem::notlistofvars, vars ];
+    Abort[]
+    ,
+    True
+    ,
+    code
+  ];
+
+SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
+  CheckArgs[ eqnList, vars ] @
   Module[{
     invertibleMats, symmetries, polConstraints, useDataBase, storeDecomps, filteredEqns, preEqCheck, s1, gs,
     procID, zeros, unionZeros, sharedBinomialSystem, sharedVars, sharedSolutions, remainingEquations,
@@ -190,7 +220,7 @@ SolveBinomialSystem[ eqnList_?BinomialSystemQ, vars_, param_, opts:OptionsPatter
           },
           Do[
             newVars =
-              GetVars[ ss, s1 ];
+              GetVariables[ ss, s1 ];
             
             updateNonSharedVars =
               With[{

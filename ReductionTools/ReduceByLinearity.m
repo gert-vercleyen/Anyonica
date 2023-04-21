@@ -6,8 +6,49 @@
 
 Package["Anyonica`"]
 
+
 Options[ SimplestLinearRule ] =
   { "LinearReductionWeight" -> RationalWeight };
+
+SimplestLinearRule[ pols_, s_, opts:OptionsPattern[] ] :=
+  With[
+    {
+      cases =
+      Cases[
+        FindLinearRule[ #, s ]& /@ pols,
+        r_/; Head[ r ] =!= Missing
+      ],
+      weightfn =
+        OptionValue["LinearReductionWeight"]
+    },
+    
+    If[
+      cases === {},
+      Return @ Missing[]
+    ];
+    
+    MinimalBy[
+      cases,
+      weightfn[ (#[[2]])["Numerator"], (#[[2]])["Denominator"] ]&,
+      1
+    ][[1]]
+  ];
+
+RationalWeight[ num_, denom_ ] :=
+  Which[
+    MonomialQ[ num ] && MonomialQ[ denom ],
+      { 0, LeafCount @ Cancel[num/denom] },
+    MonomialQ[ denom ],
+      { 1, LeafCount @ Cancel[num/denom] },
+    True,
+      { 2, LeafCount @ denom }
+  ];
+
+
+PackageExport["ReduceByLinearity"]
+
+ReduceByLinearity::usage =
+  "Reduces polList by using polynomials in polList that are linear in one of the variables labeled by s.";
 
 Options[ReduceByLinearity] =
   Join[
@@ -18,7 +59,7 @@ Options[ReduceByLinearity] =
     Options[SimplestLinearRule]
   ];
 
-ReduceByLinearity[ polynomials_List, s_, opts:OptionsPattern[] ] :=
+ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
   Module[
     {
       ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
@@ -33,7 +74,7 @@ ReduceByLinearity[ polynomials_List, s_, opts:OptionsPattern[] ] :=
     id :=
       ToString @ Unique[];
     vars =
-      GetVars[ polynomials, s ];
+      GetVariables[ polList, s ];
     RCF =
       RemoveCommonFactors[ #, s ]&;
 
@@ -41,14 +82,16 @@ ReduceByLinearity[ polynomials_List, s_, opts:OptionsPattern[] ] :=
       parallelQ
       ,
       Quiet[LaunchKernels[]];
-      map = ParallelMap
+      map =
+        ParallelMap
       ,
-      map = Map
+      map =
+        Map
     ];
 
     rootReduce =
       If[
-        MemberQ[ polynomials, _Root, Infinity ],
+        MemberQ[ polList, _Root, Infinity ],
         SafeRootReduce,
         Identity
       ];
@@ -71,7 +114,7 @@ ReduceByLinearity[ polynomials_List, s_, opts:OptionsPattern[] ] :=
       RCF @ PolynomialReduce[ pol, ps, vars ][[2]];
 
     (* Make sure all Kernels know the definitions of the functions to be mapped *)
-    If[ parallelQ, DistributeDefinitions[ RCF, simplify, ToPol, PolRest, GetVars ] ];
+    If[ parallelQ, DistributeDefinitions[ RCF, simplify, ToPol, PolRest, GetVariables ] ];
 
     (* It is assumed that none of the variables are 0 *)
     InvalidPolSystem[ pols_, nonZeroPols_, rules_  ] :=
@@ -176,13 +219,13 @@ ReduceByLinearity[ polynomials_List, s_, opts:OptionsPattern[] ] :=
         ]
       ];
 
-    printlog["RBL:init", { procID, polynomials, s, { opts } } ];
+    printlog["RBL:init", { procID, polList, s, { opts } } ];
 
     { time, result } =
       AbsoluteTiming[
         AddNonZeroPols @@@
         DeleteCases[
-          Reap[ RecursiveReduce[ RCF /@ polynomials, { }, { } ] ][[2]] /. {{x__}} :> {x},
+          Reap[ RecursiveReduce[ RCF /@ polList, { }, { } ] ][[2]] /. {{x__}} :> {x},
           { { 1 }, { }, { } }
         ]
       ];
@@ -195,39 +238,6 @@ ReduceByLinearity[ polynomials_List, s_, opts:OptionsPattern[] ] :=
 
   ];
 
-SimplestLinearRule[ pols_, s_, opts:OptionsPattern[] ] :=
-  With[
-    {
-      cases =
-        Cases[
-          FindLinearRule[ #, s ]& /@ pols,
-          r_/; Head[ r ] =!= Missing
-        ],
-      weightfn =
-        OptionValue["LinearReductionWeight"]
-    },
-
-    If[
-      cases === {},
-      Return @ Missing[]
-    ];
-
-    MinimalBy[
-      cases,
-      weightfn[ (#[[2]])["Numerator"], (#[[2]])["Denominator"] ]&,
-      1
-    ][[1]]
-  ];
-
-RationalWeight[ num_, denom_ ] :=
-  Which[
-    MonomialQ[ num ] && MonomialQ[ denom ],
-      { 0, LeafCount @ Cancel[num/denom] },
-    MonomialQ[ denom ],
-      { 1, LeafCount @ Cancel[num/denom] },
-    True,
-      { 2, LeafCount @ denom }
-  ];
 
 FindLinearRule[ pol_, s_ ] :=
   Module[{ nonLinVars, linVars, var },
@@ -254,7 +264,7 @@ FindLinearRule[ pol_, s_ ] :=
 RemoveCommonFactors[ poly_, s_ ] :=
   Module[ { vars, ce, commonVarNum, minExponents, commonFactor },
     vars =
-      GetVars[ poly, s ];
+      GetVariables[ poly, s ];
     ce =
       CoefficientRules[ poly, vars ][[;; , 1]];
     commonVarNum =
@@ -272,6 +282,10 @@ RemoveCommonFactors[ poly_, s_ ] :=
 
 *)
 
+PackageExport["ReduceByLinearity2"]
+
+ReduceByLinearity2::usage =
+  "For testing.";
 
 Options[ SimplestPol ] =
   { "WeightFunction" -> PolWeight };
@@ -286,7 +300,7 @@ Options[ReduceByLinearity2] =
     Options[SimplestLinearRule]
   ];
 
-ReduceByLinearity2[ polynomials_List, s_, opts:OptionsPattern[] ] :=
+ReduceByLinearity2[ polList_List, s_, opts:OptionsPattern[] ] :=
 Module[
   {
     vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id,
@@ -314,12 +328,12 @@ Module[
   id :=
     ToString @ Unique[];
   vars =
-    GetVars[ polynomials, s ];
+    GetVariables[ polList, s ];
   RCF =
     RemoveCommonFactors[ #, s ]&;
   rootReduce =
     If[
-      MemberQ[ polynomials, _Root, Infinity ],
+      MemberQ[ polList, _Root, Infinity ],
       SafeRootReduce,
       Identity
     ];
@@ -333,12 +347,12 @@ Module[
   PolMod :=
     Function[
       { p1, p2, var },
-      With[{ gb = GroebnerBasis[ { p1, p2 }, GetVars[ { p1, p2 }, s ], { var }  ] },
+      With[{ gb = GroebnerBasis[ { p1, p2 }, GetVariables[ { p1, p2 }, s ], { var }  ] },
         If[ gb === {}, 0, MoldPol @ gb[[1]] ]
       ]
     ];
 
-  If[ parallelQ, DistributeDefinitions[ GetVars, MoldPol, PolMod ] ];
+  If[ parallelQ, DistributeDefinitions[ GetVariables, MoldPol, PolMod ] ];
 
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, linPols_  ] :=
@@ -400,7 +414,7 @@ Module[
       { { 1 }, { }, { } }
     ];
 
-  (* Add denominators appearing in the rules to the set of nonzero polynomials *)
+  (* Add denominators appearing in the rules to the set of nonzero polList *)
   ToAssociation[ pols_, nonZeroPols_, linPols_ ] :=
     <|
       "Polynomials" -> DeleteDuplicates @ Map[ MoldPol, pols ],
@@ -412,7 +426,7 @@ Module[
   RecursiveReduce[
     ps_,    (* Polynomials:          initially RCF /@ pols *)
     nzps_,  (* Non-zero polynomials: initially { } *)
-    lps_     (* Linear polynomials:  initially { } *)
+    lps_    (* Linear polynomials:   initially { } *)
   ] :=
     If[
       InvalidPolSystem[ ps, nzps, lps ],
@@ -420,7 +434,7 @@ Module[
       Return @ Null,
       (* ELSE *)
 
-      With[ { linPol = EchoLabel["LinPol"] @ AddOptions[opts][SimplestPol][ ps, s ] },
+      With[ { linPol = AddOptions[opts][SimplestPol][ ps, s ] },
 
         If[ (* No linear rules in system *)
           MissingQ @ linPol,
@@ -448,13 +462,13 @@ Module[
     ];
 
 
-  printlog["RBL:init", { procID, polynomials, s, { opts } } ];
+  printlog["RBL:init", { procID, polList, s, { opts } } ];
 
   { time, result } =
     AbsoluteTiming[
       ToAssociation @@@
       DeleteCases[
-        Reap[ RecursiveReduce[ RCF /@ polynomials, { }, { } ] ][[2]] /. {{x__}} :> {x},
+        Reap[ RecursiveReduce[ RCF /@ polList, { }, { } ] ][[2]] /. {{x__}} :> {x},
         { { 1 }, { }, { } }
       ]
     ];

@@ -6,23 +6,78 @@
 
 Package["Anyonica`"]
 
+PackageExport["\[ScriptCapitalF]"]
+
+Unprotect[ \[ScriptCapitalF] ];
+
+ClearAll[ \[ScriptCapitalF] ];
+
+SetAttributes[ \[ScriptCapitalF], NHoldAll ];
+
+Protect[ \[ScriptCapitalF] ];
+
+\[ScriptCapitalF]::usage =
+  "Formal symbol that represents an F-symbol.";
+
+
+PackageScope["F"]
+
+F =
+  \[ScriptCapitalF];
+
+
+PackageScope["ProperPentagonSolutionQ"]
+
+ProperPentagonSolutionQ::usage =
+  "Returns True if sol is a list of rules of the pattern \[ScriptCapitalF][__] -> _";
+
 (* Check for proper format of solutions *)
 ProperPentagonSolutionQ[ sol_ ] :=
   MatchQ[ sol, { Repeated[ F[__] -> _ ] } ];
 
+
+PackageScope["PPSQ"]
+
+PPSQ::usage =
+  "Shorthand for ProperPentagonSolutionQ";
+
 PPSQ[ sol_ ] :=
   ProperPentagonSolutionQ[ sol ];
 
+
+PackageScope["ProperListOfPentagonSolutionsQ"]
+
+ProperListOfPentagonSolutionsQ::usage =
+  "Returns True if soln is a list of proper pentagon solutions.";
+
 ProperListOfPentagonSolutionsQ[ soln_ ] :=
+  TrueQ @
   MatchQ[ soln, { Repeated[ _?PPSQ ] } ];
+
+
+PackageScope["PLOPSQ"]
+
+PLOPSQ::usage =
+  "Shorthand for ProperListOfPentagonSolutionsQ";
 
 PLOPSQ[ soln_ ] :=
   ProperListOfPentagonSolutionsQ[ soln ];
 
+
+PackageExport["$VacuumFPattern"]
+
+$VacuumFPattern::usage =
+  "General pattern of vacuum F-symbols";
+
 $VacuumFPattern =
   F[ 1, __ ] | F[ _, 1, __ ] | F[ _, _, 1, __ ];
 
-(* Create a list of F-symbols *)
+
+PackageExport["FSymbols"]
+
+FSymbols::usage =
+  "FSymbols[r] returns a list of well-defined F-symbols of the fusion ring r.";
+
 FSymbols[ ring_FusionRing?FusionRingQ ] :=
   If[
     Mult[ring] == 1,
@@ -87,57 +142,152 @@ FSymbols[ ring_FusionRing?FusionRingQ ] :=
     ]
   ];
 
-(* Create a symbolic sparse F tensor *)
+
+PackageScope["SparseFTensor"]
+
+SparseFTensor::usage  =
+  "Returns a symbolic sparse F tensor.";
+
+SparseFTensor::notmultfree =
+  "`1` should have multiplicity 1.";
+
 SparseFTensor[ ring_FusionRing?FusionRingQ ] :=
-  SparseArray[
-    Map[ ( List @@ # ) -> # &, FSymbols @ ring ],
-    Table[ Rank[ring], 6 ]
+  If[
+    Mult[ring] != 1
+    ,
+    Message[ SparseFTensor::notmultfree, ring ];
+    Abort[]
+    ,
+    SparseArray[
+      Map[ ( List @@ # ) -> # &, FSymbols @ ring ],
+      Table[ Rank[ring], 6 ]
+    ]
   ];
+
+
+PackageExport["FMatrices"]
+
+FMatrices::usage =
+  "Returns a list of symbolic F-matrices.";
+
+FMatrices::notmultfree =
+  "`1` should have multiplicity 1. Use FTensors for higher multiplicities.";
 
 (* Create symbolic F matrices *)
 FMatrices[ ring_FusionRing?FusionRingQ ] :=
-  Module[{ sparseF, r, newMat, mats },
-    r = Rank[ring];
-    sparseF = SparseFTensor[ring];
-    mats =
-    Reap[
-      Do[
-        If[
-          ( newMat =
-          Normal[sparseF][[a,b,c,d,;;,;;]] //
-          RemoveZeroColumns //
-          RemoveZeroRows
-          )
-          =!= {{}} && newMat =!= {{1}},
-          Sow[ newMat ]
-        ],
-        { a, r }, { b, r }, { c, r }, { d, r }
+  If[
+    Mult[ ring ] != 1
+    ,
+    Message[ FMatrices::notmultfree, ring ];
+    Abort[]
+    ,
+    Module[{ sparseF, r, newMat, mats },
+      r = Rank[ring];
+      sparseF = SparseFTensor[ring];
+      mats =
+      Reap[
+        Do[
+          If[
+            ( newMat =
+            Normal[sparseF][[a,b,c,d,;;,;;]] //
+            RemoveZeroColumns //
+            RemoveZeroRows
+            )
+            =!= {{}} && newMat =!= {{1}},
+            Sow[ newMat ]
+          ],
+          { a, r }, { b, r }, { c, r }, { d, r }
+        ]
+      ][[2]];
+      If[
+        mats == {},
+        {},
+        Flatten[ mats, 1 ]
       ]
-    ][[2]];
-    If[
-      mats == {},
-      {},
-      Flatten[ mats, 1 ]
     ]
   ];
 
+RemoveZeroRows[ mat_?MatrixQ ] :=
+  With[{ newMat = DeleteCases[ { 0 .. } ] @ mat },
+    If[
+      newMat === {},
+      {{}},
+      newMat
+    ]
+  ];
+
+RemoveZeroColumns[ mat_?MatrixQ ] :=
+  Module[{ r },
+    If[
+      mat === {{}},
+      {{}},
+      r = mat // Transpose // RemoveZeroRows;
+      If[
+        r === {{}},
+        {{}},
+        Transpose[r]
+      ]
+    ]
+  ];
+
+
+PackageExport["InverseFSymbols"]
+
+InverseFSymbols::usage =
+  "InverseFSymbols[ring,s,fSymbols] returns a list of the inverse F-symbols of the fSymbols of " <>
+  "the Fusion Ring ring expressed via the symbol s";
+
+InverseFSymbols::notasymbol =
+  "`1` should have Head Symbol.";
+
+InverseFSymbols::wrongsolutionformat =
+  "`1` should be a proper solution to the pentagon equations.";
+
+InverseFSymbols::notmultfree =
+  "Function does not yet support rings with multiplicity.";
+
+(*They are of the form symbol[...] -> val.*)
 (* Calculate the inverse F-symbols *)
-InverseFSymbols[ ring_, s_, FSymbols_ ] :=
-  With[
-    { rF = FMatrices[ring] },
-    With[
-      { inverseLabels = Flatten[ rF/.F[x__, e_, f_] :> s[x, f, e] ] },
-      Thread[
-        Rule[
-          inverseLabels,
-          Flatten[ Transpose @* Inverse /@ (rF /. Dispatch[FSymbols])
+InverseFSymbols[ ring_FusionRing, s_, FSymbols_ ] :=
+  Which[
+    !SymbolQ[s]
+    ,
+    Message[ InverseFSymbols::notasymbol, s ];
+    Abort[]
+    ,
+    !PPSQ[FSymbols]
+    ,
+    Message[ InverseFSymbols::wrongsolutionformat, FSymbols ];
+    Abort[]
+    ,
+    Mult[ring] != 1
+    ,
+    Message[ InverseFSymbols::notmultfree ];
+    Abort[]
+    ,
+    True
+    ,
+      With[
+        { rF = FMatrices[ring] },
+        { inverseLabels = Flatten[ rF/.F[x__, e_, f_] :> s[x, f, e] ] },
+        Thread[
+          Rule[
+            inverseLabels,
+            Flatten[ Transpose @* Inverse /@ (rF /. Dispatch[FSymbols])
+            ]
           ]
         ]
       ]
-    ]
   ];
 
-FTensors[ ring_ ] :=
+
+PackageExport["FTensors"]
+
+FTensors::usage =
+  "FTensors[ ring ] returns an association that maps four-tuples {a,b,c,d} to the matrix form of F[a,b,c,d] where "<>
+  "the triples of upper-and lower indices have been flattened to single indices.";
+
+FTensors[ ring_FusionRing ] :=
   Module[
     { gTrees, a, b, c, d, mt, eLabels, fLabels, non0Ns, r, m1, m2, m3, m4 },
     gTrees =
@@ -192,4 +342,4 @@ FTensors[ ring_ ] :=
         , { key, Keys[gTrees] }
       ]
     ][[2, 1]]
-  ]
+  ];

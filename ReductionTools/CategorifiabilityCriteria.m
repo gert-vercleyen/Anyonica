@@ -17,6 +17,14 @@ Package["Anyonica`"]
   The function returns true if the fusion ring cannot be categorified.
 *)
 
+PackageExport["ZSCriterion"]
+
+ZSCriterion::usage =
+  "ZSCriterion[ fusionRing ] returns True if the fusion ring fusionRing cannot be categorified due to " <>
+  "the Zero Spectrum criterion.";
+
+(*See arXiv:2203.06522v1 for more info.";*)
+
 SetAttributes[ ZSC, Listable ];
 
 ZSCriterion[ ring_FusionRing ] :=
@@ -102,6 +110,15 @@ crit3 = Compile[ { { i, _Integer, 1 }, { d, _Integer, 1 }, { mt, _Integer, 3 } }
 	 to consist of the quantum dimensions instead
 	 of the first column. Therefore we test for
 	 the transposed character table. *)
+
+PackageExport["CSPCValue"]
+
+CSPCValue::usage =
+  "CSPCValue[ acc ][ fusionRing ] returns a number that, if lower than 0, indicates that the fusion ring r does not " <>
+  "have a unitary categorification. Here acc stands for the accuracy used to approximate the fusion ring characters.";
+(*See arXiv:1910.12059v5 for more info.";*)
+
+
 CSPCValue[acc_][ring_FusionRing?FusionRingQ] :=
   Module[{ chars, r, s },
     chars =

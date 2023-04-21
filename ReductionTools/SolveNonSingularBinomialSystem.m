@@ -12,17 +12,52 @@ Package["Anyonica`"]
 (* Solve a set of Binomial equations with possible symmetry, assuming none of
 the variables are 0 *)
 
+PackageScope["SolveNonSingularBinomialSystem"]
 
-Options[SolveNonSingularBinomialSystem] = {
-  "Symmetries" -> None,
-  "InvertibleMatrices" -> {},
-  "PolynomialConstraints" -> {},
-  "PreEqualCheck" -> Identity,
-  "UseDatabaseOfSmithDecompositions" -> False,
-  "StoreDecompositions" -> False
-};
+SolveNonSingularBinomialsystem::nonbineqns =
+  "`1` is not a system of binomial polynomial equations.";
+
+SolveNonSingularBinomialSystem::notimplementedyet =
+  "Only symmetries that multiply variables by numbers are implemented at the moment.";
+
+SolveNonSingularBinomialSystem::wrongsymmetriesformat =
+  "The list of variables appearing in the symmetries should be the same list as the list of given variables, " <>
+  "i.e. `1` should be `2`";
+
+SolveNonSingularBinomialSystem::novars =
+  "Nonempty set of equations, `1`, with empty set of variables. Assuming no solutions to system."<>
+  " If equalities are unresolved but True, then adding the option " <>
+  "\"PreEqualCheck\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
+
+Options[SolveNonSingularBinomialSystem] =
+  {
+    "Symmetries" -> None,
+    "InvertibleMatrices" -> {},
+    "PolynomialConstraints" -> {},
+    "PreEqualCheck" -> Identity,
+    "UseDatabaseOfSmithDecompositions" -> False,
+    "StoreDecompositions" -> False
+  };
+
+CheckArgs[ eqns_, vars_ ][ code_ ] :=
+  Which[
+    !BinomialSystemQ[ eqns ]
+    ,
+    Message[ SolveNonSingularBinomialsystem::nonbineqns, eqns ];
+    Abort[]
+    ,
+    Length[vars] === 0
+    ,
+    Message[ SolveNonSingularBinomialsystem::novars, vars ];
+    Abort[]
+    ,
+    True
+    ,
+    code
+  ];
 
 SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
+  CheckArgs[ eqns, vars ] @
   Module[{
     newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
     gaugeMat, polConstraints, symmetries, invertibleMats, memoize, store, preEqCheck, symbol, eqnList, procID,
@@ -65,7 +100,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         vars === {},
         printlog["Gen:no_vars", {procID,eqnList}];
         Message[SolveNonSingularBinomialSystem::novars, eqnList ];
-        Return[{}]
+        Abort[]
       ];
 
       (* Check whether inconsistent system *)
@@ -79,7 +114,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       If[
         symmetries =!= None && symmetries["Transforms"][[;;,1]] =!= vars && symmetries["Transforms"] =!= {},
         Message[ SolveNonSingularBinomialSystem::wrongsymmetriesformat, symmetries["Transforms"][[;;,1]], vars ];
-        Return[$Failed]
+        Abort[]
       ];
 
       (* Rewrite system in terms of single-indexed variables *)
@@ -96,8 +131,8 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       preSolutions =
         Thread[ newVars -> # ]& /@
         Catch[
-          SolveSemiExponentiatedSystem[
-            MonPolEqnsToSemiExponentiatedSystem[
+          SolveSemiLinModZ[
+            BinToSemiLin[
               newEqns,
               Length[newVars],
               symbol,
@@ -141,9 +176,10 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
     result
   ];
 
+PackageScope["DeterminantConditions"]
 
 DeterminantConditions[ mats_List ] :=
-Map[
-  ( Expand[Det[#]] != 0 )&,
-  mats
-];
+  Map[
+    ( Expand[Det[#]] != 0 )&,
+    mats
+  ];

@@ -2,13 +2,18 @@
 
 Package["Anyonica`"]
 
+PackageExport["SolvePolynomialSystem"]
+
+SolvePolynomialSystem::usage =
+  "SolvePolynomialSystem[ eqns, vars, s ] returns the solutions, parametrized by s, "<>
+  "to the system of polynomial equations eqns in the variables vars.";
+
 Options[ SolvePolynomialSystem ] = {
   "Symmetries" -> None,
   "NonSingular" -> False,
   "PolynomialConstraints" -> {},
   "InvertibleMatrices" -> {},
   "ZeroValues" -> None,
-  "FindZerosUsingSums" -> False,
   "SimplifyIntermediateResultsBy" -> Identity,
   "PreEqualCheck" -> Identity,
   "UseDatabaseOfSmithDecompositions" -> False,
@@ -33,7 +38,7 @@ SolvePolynomialSystem[ eqns_List, vars_List, symbol_, opts:OptionsPattern[] ] :=
     zeroVals =
       OptionValue["ZeroValues"];
     useSumsQ =
-      OptionValue["FindZerosUsingSums"];
+      False;
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
     preEqCheck =
@@ -96,7 +101,7 @@ SolvePolynomialSystem[ eqns_List, vars_List, symbol_, opts:OptionsPattern[] ] :=
               eqnSolPair;
 
             lastVars =
-              GetVars[ monSol, symbol ];
+              GetVariables[ monSol, symbol ];
 
             sumSolution =
               SolveUsingReduce[ Join[ sumEqns, Thread[ lastVars != 0 ] ], lastVars ];

@@ -5,10 +5,16 @@
 
 Package["Anyonica`"]
 
+PackageExport["PentagonGroebnerSystems"]
+
+PentagonGroebnerSystems::usage =
+  "PentagonGroebnerSystems[r,z] calculates a Groebner basis for the pentagon equations of the "<>
+  "fusion ring r in variables labeled by z.";
+(*Options include all options for solving the pentagon equations and all options for finding groebner bases.";*)
+
 Options[PentagonGroebnerSystems] =
   Join[
     {
-      "FindZerosUsingSums" -> True,
       "GaugeDemands" -> None,
       "ZeroValues" -> None,
       "NonSingular" -> False,
@@ -17,7 +23,8 @@ Options[PentagonGroebnerSystems] =
       "StoreDecompositions" -> True,
       "InjectSolution" -> {},
       "ReduceRoots" -> True,
-      "ReducePowerSums" -> False
+      "ReducePowerSums" -> False,
+      "SimplifyIntermediateResultsBy" -> Identity
     },
     Options[ReduceByLinearity],
     Options[IncrementalGroebnerBasis]
@@ -26,14 +33,19 @@ Options[PentagonGroebnerSystems] =
 PentagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[] ] :=
   Which[
     (* CHECK proper format injected solution *)
-    !MatchQ[ OptionValue["InjectSolution"], {} | { _FusionRing, _?ProperPentagonSolutionQ } ],
-      Message[ PentagonGroebnerSystems::substitutesolutionwrongformat, ring ]; Return[$Failed],
+    !MatchQ[ OptionValue["InjectSolution"], {} | { _FusionRing, _?PPSQ } ]
+    ,
+    Message[ PentagonGroebnerSystems::substitutesolutionwrongformat, ring ];
+    Abort[]
+    ,
     (* CHECK multiplicity *)
     Mult[ring] == 1,
-      MultiplicityFreePentagonGroebnerSystems[ ring, var, opts ],
+    MultiplicityFreePentagonGroebnerSystems[ ring, var, opts ],
     True,
-      Print["Not implemented yet"]
+    Print["Not implemented yet"];
+    Abort[]
   ];
+
 
 Options[MultiplicityFreePentagonGroebnerSystems] =
   Options[PentagonGroebnerSystems];
@@ -149,6 +161,10 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
 
         reducedSystems =
           Flatten[ ReduceSystems /@ systems ];
+        
+        invertibilityConstraints[ rules_ ] :=
+          And @@
+          DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
 
         printlog["MFPGB:systems", { procID, reducedSystems } ];
 
@@ -157,9 +173,9 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
             "GroebnerBasis" ->
             AddOptions[opts][IncrementalGroebnerBasis][
               sys["Polynomials"],
-              GetVars[ sys["Polynomials"], var ]
+              GetVariables[ sys["Polynomials"], var ]
             ],
-            "Assumptions" -> sys["Assumptions"],
+            "Assumptions" -> sys["Assumptions"] && invertibilityConstraints[ sys["Rules"] ],
             "Rules" -> sys["Rules"]
           |>,
           { sys, reducedSystems }
@@ -173,6 +189,12 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
 
   ];
 
+
+PackageExport["HexagonGroebnerSystems"]
+
+HexagonGroebnerSystems::usage =
+  "HexagonGroebnerSystems[r,z] calculates a Groebner basis for the hexagon equations of the fusion ring r variable z.";
+(*Options include all options for solving the hexagon equations and all options for finding groebner bases.";*)
 
 Options[HexagonGroebnerSystems] =
   Join[
@@ -252,6 +274,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
             ]
         ];
 
+      (* TODO: can be shorter by using AddOptions *)
       sumSystems =
         ReduceByBinomials[
           Sequence @@ SumBinEqns[ equations ],
@@ -260,7 +283,6 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
           opt,
           "Symmetries" ->                       symmetries,
           "SimplifyIntermediateResultsBy" ->    simplify,
-          "FindZerosUsingSums" ->               OptionValue["FindZerosUsingSums"],
           "PreEqualCheck" ->                    OptionValue["PreEqualCheck"],
           "UseDatabaseOfSmithDecompositions" -> OptionValue["UseDatabaseOfSmithDecompositions"],
           "StoreDecompositions" ->              OptionValue["StoreDecompositions"]
@@ -311,7 +333,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
           "GroebnerBasis" ->
             AddOptions[opts][IncrementalGroebnerBasis][
               sys["Polynomials"],
-              GetVars[ sys["Polynomials"], var ]
+              GetVariables[ sys["Polynomials"], var ]
             ],
           "Assumptions" -> sys["Assumptions"],
           "Rules" -> sys["Rules"]
@@ -326,11 +348,19 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
     result
 
   ];
+
+
+PackageExport["ParallelGroebnerBasis"]
+
+ParallelGroebnerBasis::usage =
+  "Calculates Groebner bases with different permutations of the variables on different kernels and returns the "<>
+  "first result found.";
+
 Options[ ParallelGroebnerBasis ] =
   Options[ GroebnerBasis ];
 
 ParallelGroebnerBasis[ pols_, vars_, opts:OptionsPattern[] ] :=
-  Module[ { nKernels, groebner, varsLists, basis },
+  Module[ { Groebner, varsLists, basis },
     Quiet[
       LaunchKernels[];
 
@@ -346,22 +376,29 @@ ParallelGroebnerBasis[ pols_, vars_, opts:OptionsPattern[] ] :=
           Permutations[ vars ]
         ];
 
-      groebner[ variables_ ] :=
+      Groebner[ variables_ ] :=
         GroebnerBasis[ pols, variables, opts ];
 
-      DistributeDefinitions[groebner];
+      DistributeDefinitions[Groebner];
 
       basis =
         ParallelTry[
-          groebner, varsLists
+          Groebner, varsLists
         ];
 
-      CloseKernels[],
+      CloseKernels[]
+      ,
       { LaunchKernels::nodef }
     ];
 
     basis
   ];
+
+
+PackageExport["IncrementalGroebnerBasis"]
+
+IncrementalGroebnerBasis::usage =
+  "Calculates Groebner basis by incrementally taking subsets of pols.";
 
 Options[IncrementalGroebnerBasis] =
   Join[

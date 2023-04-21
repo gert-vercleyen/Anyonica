@@ -3,21 +3,32 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2022-09-05 *)
 
+Package["Anyonica`"]
+
 $SmithDecompositionsLoaded = False;
-$OptimizedSmithDataFileName = FileNameJoin[ { $PentaToolsInstallDirectory, "DatabaseOfSmithDecompositions.mx" } ];
-$SmithDataFileName = FileNameJoin[ { $PentaToolsInstallDirectory, "DatabaseOfSmithDecompositions.wdx" } ];
+
+$ReductionToolsInstallDirectory =
+  DirectoryName[$InputFileName];
+
+$OptimizedSmithDataFileName =
+  FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.mx" } ];
+
+$SmithDataFileName =
+  FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.wdx" } ];
 
 LoadData["SmithDecompositions"] =
-  Module[ { PTID, files, optimizedDataFileName, dataFileName },
-    PTID = $PentaToolsInstallDirectory;
-    files = FileNames[All,PTID];
+  Module[ {files, optimizedDataFileName, dataFileName },
+    files =
+      FileNames[ All, $ReductionToolsInstallDirectory ];
     If[
       !$SmithDecompositionsLoaded,
       If[ (* Optimized version of database exists *)
         MemberQ[ $OptimizedSmithDataFileName ] @ files,
         (* THEN *)
-        $SmithDecompositions = Import[ $OptimizedSmithDataFileName, "MX" ];
-        $SmithDecompositionsLoaded = True,
+        $SmithDecompositions =
+          Import[ $OptimizedSmithDataFileName, "MX" ];
+        $SmithDecompositionsLoaded =
+          True,
         (* ELSE *)
         If[
           (* Non-optimized version of database exists *)
@@ -26,7 +37,7 @@ LoadData["SmithDecompositions"] =
           Export[ $OptimizedSmithDataFileName, $SmithDecompositions = Import[ $SmithDataFileName , "WDX"], "MX" ];
           $SmithDecompositionsLoaded = True,
           (* ELSE *)
-          Print["Neither "<> optimizedDataFileName <> ", nor "<> dataFileName <> " found."]
+          Print["Neither "<> $OptimizedSmithDataFileName <> ", nor "<> $SmithDataFileName <> " found."]
         ]
       ]
     ]
@@ -38,33 +49,41 @@ StoreDecomposition[ mat_, decomp_ ] :=
     Export[ $OptimizedSmithDataFileName, $SmithDecompositions ]
   );
 
-Options[MemoizedSmithDecomposition] = { "StoreDecompositions" -> False };
-MemoizedSmithDecomposition[ mat_?MatrixQ, OptionsPattern[] ] :=
-(
-  If[
-    !$SmithDecompositionsLoaded,
-    LoadData["SmithDecompositions"]
-  ];
-  If[
-    (* Want to store decomposition*)
-    OptionValue[ "StoreDecompositions" ],
-    (* THEN *)
-    Module[ { decomp },
-      If[ (* mat is not known *)
+
+PackageExport["MemoizedSmithDecomposition"]
+
+MemoizedSmithDecomposition::usage =
+  "MemoizedSmithDecomposition[ mat ] checks whether the SmithDecomposition of mat is stored in a database and if so," <>
+  " loads it. If it is not, it calculates it.";
+
+Options[MemoizedSmithDecomposition] =
+  { "StoreDecompositions" -> False };
+
+MemoizedSmithDecomposition[ mat_, OptionsPattern[] ] :=
+  (
+    If[
+      !$SmithDecompositionsLoaded,
+      LoadData["SmithDecompositions"]
+    ];
+    If[
+      (* Want to store decomposition*)
+      OptionValue["StoreDecompositions"],
+      (* THEN *)
+      Module[ { decomp },
+        If[ (* mat is not known *)
+          KeyFreeQ[mat] @ $SmithDecompositions,
+          (* THEN: calc, store, and return SmithDecomposition *)
+          StoreDecomposition[ mat, decomp = SparseArray /@ SmithDecomposition[mat] ];
+          decomp,
+          (* ELSE: load SmithDecomposition *)
+          $SmithDecompositions[mat]
+        ]
+      ],
+      (* ELSE *)
+      If[
         KeyFreeQ[mat] @ $SmithDecompositions,
-        (* THEN: calc, store, and return SmithDecomposition *)
-        StoreDecomposition[ mat, decomp = SparseArray /@ SmithDecomposition[mat] ];
-        decomp,
-        (* ELSE: load SmithDecomposition *)
+        SmithDecomposition[mat],
         $SmithDecompositions[mat]
       ]
-    ],
-    (* ELSE *)
-    If[
-      KeyFreeQ[mat] @ $SmithDecompositions,
-      SmithDecomposition[mat],
-      $SmithDecompositions[mat]
     ]
-  ]
-);
-
+  );

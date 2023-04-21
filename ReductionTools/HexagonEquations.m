@@ -10,6 +10,11 @@ Package["Anyonica`"]
 |                               General Case                                |
 +---------------------------------------------------------------------------+
 *)
+PackageExport["HexagonEquations"]
+
+HexagonEquations::usage =
+  "HexagonEquations[ r ] returns the hexagon equations related to the fusion ring r.";
+(*The \"Knowns\" can be set to a list of rules of variables that are already known, e.g. a solution to the pentagon equations.";*)
 
 Options[HexagonEquations] =
   {
@@ -30,7 +35,9 @@ HexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 +---------------------------------------------------------------------------+
 *)
 
-Options[HexagonEquationsWithoutMultiplicity] = Options[HexagonEquations];
+Options[HexagonEquationsWithoutMultiplicity] =
+  Options[HexagonEquations];
+
 HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
   Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
     rSymbols =
@@ -106,7 +113,8 @@ HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
 +---------------------------------------------------------------------------+
 *)
 
-Options[ HexagonEquationsWithMultiplicity ] = Options[HexagonEquations];
+Options[ HexagonEquationsWithMultiplicity ] =
+  Options[HexagonEquations];
 HexagonEquationsWithMultiplicity[ ring_, OptionsPattern[] ] :=
   Module[ {
     fGroupedLabels, replaceKnowns, matchingLabels, Rt, Ft,

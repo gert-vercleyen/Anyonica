@@ -5,15 +5,25 @@
 
 Package["Anyonica`"]
 
-Options[ReduceTrivialities] := { "SimplifyBy" -> Identity, "Parameters" -> {} };
-ReduceTrivialities[ eqns_?ListOfEquationsQ, vars_, OptionsPattern[] ] :=
+PackageExport["ReduceTrivialities"]
+
+ReduceTrivialities::usage =
+  "Reduces eqnsList recursively by using trivial equalities in eqnList.";
+
+Options[ReduceTrivialities] :=
+  {
+    "SimplifyBy" -> Identity,
+    "Parameters" -> {}
+  };
+
+ReduceTrivialities[ eqnsList_?ListOfEquationsQ, vars_, OptionsPattern[] ] :=
   Module[ { newEqns, newVars, revertVars, s, newSystem, simplify },
     s =
       Unique["x"];
     simplify =
       OptionValue["SimplifyBy"];
     { newEqns, newVars, revertVars } =
-      SimplifyVariables[ eqns, vars, s ];
+      SimplifyVariables[ eqnsList, vars, s ];
 
     newSystem =
       UpdateSystemViaTrivialities[ s, simplify ][ {}, {}, newEqns ];
@@ -27,12 +37,12 @@ ReduceTrivialities[ eqns_?ListOfEquationsQ, vars_, OptionsPattern[] ] :=
 UpdateSystemViaTrivialities[ s_Symbol, simplify_ ][
   knownVars_List,
   mapToReps_List,
-  eqns_?ListOfEquationsQ
+  eqnsList_?ListOfEquationsQ
   ] :=
   With[{
     newSystem =
       Catch[
-        FixedPoint[ MoldEquationsViaTrivialities[s,simplify], { knownVars, mapToReps, eqns } ]
+        FixedPoint[ MoldEquationsViaTrivialities[s,simplify], { knownVars, mapToReps, eqnsList } ]
       ]
     },
     If[
@@ -45,11 +55,11 @@ UpdateSystemViaTrivialities[ s_Symbol, simplify_ ][
 MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][ { knownVars_List, mapToReps_List, {} } ] :=
   { knownVars, mapToReps, {} };
 MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][
-  { knownVars_List, mapToReps_, eqns_?ListOfEquationsQ }
+  { knownVars_List, mapToReps_, eqnsList_?ListOfEquationsQ }
   ] :=
   With[{
     newVarsAndEqns =
-      FixedPoint[ UpdateVariablesAndSystem[s,simplify], {  knownVars, eqns } ]
+      FixedPoint[ UpdateVariablesAndSystem[s,simplify], {  knownVars, eqnsList } ]
     },
     With[{
       newEquivClassesAndEqns =
@@ -69,40 +79,40 @@ MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][
 
 UpdateVariablesAndSystem[ s_Symbol, simplify_ ][ { knownVars_List, {} } ] :=
   { knownVars, {} };
-UpdateVariablesAndSystem[ s_Symbol, simplify_ ][ { knownVars_List, eqns_?ListOfEquationsQ } ] :=
+UpdateVariablesAndSystem[ s_Symbol, simplify_ ][ { knownVars_List, eqnsList_?ListOfEquationsQ } ] :=
   With[{
     newKnownVars =
-      UpdateKnownVars[ knownVars, eqns, s ] //
+      UpdateKnownVars[ knownVars, eqnsList, s ] //
       simplify
     },
     {
       newKnownVars,
-      ReplaceAll[ eqns, Dispatch[newKnownVars] ] //
+      ReplaceAll[ eqnsList, Dispatch[newKnownVars] ] //
       simplify //
       DeleteCases[True] //
       CheckSystemValidity
     }
   ];
 
-UpdateKnownVars[ knownVars_List, eqns_?ListOfEquationsQ , s_Symbol ] :=
+UpdateKnownVars[ knownVars_List, eqnsList_?ListOfEquationsQ , s_Symbol ] :=
   Join[
     knownVars,
-    Cases[ eqns, s[i__] == x_?NumericQ | x_?NumericQ == s[i__] :> ( s[i] -> x ) ]
+    Cases[ eqnsList, s[i__] == x_?NumericQ | x_?NumericQ == s[i__] :> ( s[i] -> x ) ]
   ];
 
-(* Replace all equivalent F symbols by representatives and update eqns *)
+(* Replace all equivalent F symbols by representatives and update eqnsList *)
 UpdateEquivalenceClasses[ s_Symbol, simplify_ ][ { mapToReps_, {} } ] :=
   { mapToReps, {} };
-UpdateEquivalenceClasses[ s_Symbol, simplify_ ][ { mapToReps_, eqns_?ListOfEquationsQ } ] :=
+UpdateEquivalenceClasses[ s_Symbol, simplify_ ][ { mapToReps_, eqnsList_?ListOfEquationsQ } ] :=
   Module[{
     newReps =
       Dispatch @
       MapToReps @
-      CreateEquivalenceClasses[s][ eqns ]
+      CreateEquivalenceClasses[s][ eqnsList ]
     },
     {
       Dispatch @ Join[ Normal @ mapToReps /. newReps, Normal @ newReps ],
-      ( eqns /. newReps ) //
+      ( eqnsList /. newReps ) //
       simplify //
       DeleteCases[True] //
       CheckSystemValidity
@@ -110,10 +120,10 @@ UpdateEquivalenceClasses[ s_Symbol, simplify_ ][ { mapToReps_, eqns_?ListOfEquat
   ];
 
 (* To use all equations of the form s[i__] == s[j__] we construct equivalence classes *)
-CreateEquivalenceClasses[ s_Symbol ][ eqns_?ListOfEquationsQ ] :=
+CreateEquivalenceClasses[ s_Symbol ][ eqnsList_?ListOfEquationsQ ] :=
   ConnectedComponents @
   Graph @
-  Cases[ eqns, s[a__] == s[b__] :> UndirectedEdge[ s[a], s[b] ] ];
+  Cases[ eqnsList, s[a__] == s[b__] :> UndirectedEdge[ s[a], s[b] ] ];
 
 MapToReps[ equivClasses_List ] :=
   Flatten[
