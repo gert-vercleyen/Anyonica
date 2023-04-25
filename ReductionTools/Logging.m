@@ -24,6 +24,7 @@ Protect[printlog];
 printlog::usage =
 "Inert wrapper that will be replaced by PrintLog if user wants to print log files.";
 
+
 PackageExport["PrintLog"]
 
 PrintLog::usage =
@@ -321,6 +322,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "Gen:failed", { id_ } ] :=
     nbo,
     failedCell[id]
   ];
+
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "Gen:results", { id_, results_, time_ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "Results" ];
