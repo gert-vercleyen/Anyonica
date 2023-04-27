@@ -849,9 +849,10 @@ SafeRootReduce::usage =
 SafeRootReduce =
   Function[
     { polynomial },
-    QuietCheck @
-    RootReduce @
-    polynomial
+    QuietCheck[
+      RootReduce @ polynomial,
+      polynomial
+    ]
   ];
 
 PackageExport["InfN"]

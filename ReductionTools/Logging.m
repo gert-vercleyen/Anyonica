@@ -1268,7 +1268,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:solving_systems", { id_ } ] :=
   ];
 (* MultiplicityFreePentagonGroebnerSystems *)
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGB:init", { id_, ring_, var_, optionList_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGS:init", { id_, ring_, var_, optionList_ } ] :=
   Module[ { fn1, fn2 },
     fn1 = dataFileName[ id, dir, "Ring" ];
     safeExport[ fn1, ring ];
@@ -1288,7 +1288,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGB:init", { id_, ring_, var_, opti
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGB:systems", { id_, systems_, ___ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGS:systems", { id_, systems_, ___ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "Systems" ];
     safeExport[ fn, systems ];
@@ -1310,8 +1310,30 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGB:systems", { id_, systems_, ___ 
     ];
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGS:quicksolve", { id_, systems_ } ] :=
+  Module[{fn},
+    fn = dataFileName[ id, dir, "quicksolve" ];
+    safeExport[ fn, systems ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGB:init", { id_, ring_, var_, optionList_ } ] :=
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[
+          {
+            inputStyle["Reduced "],
+            hyperlinkBox[ "Systems", fn ],
+            inputStyle[" by solving those with only 1 variable."]
+          }
+        ],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]
+    ];
+  ];
+
+(* MultiplicityFreeHexagonGroebnerSystems *)
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGS:init", { id_, ring_, var_, optionList_ } ] :=
   Module[ { fn1, fn2 },
     fn1 = dataFileName[ id, dir, "Ring" ];
     safeExport[ fn1, ring ];
@@ -1331,10 +1353,14 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGB:init", { id_, ring_, var_, opti
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGB:systems", { id_, systems_, x___ } ] :=
-  MyNotebookPrint[ dir, fileName, nbo ][ "MFPGB:systems", { id, systems, x } ];
-(* PreparePentagonSolverInput *)
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGS:systems", { id_, systems_, x___ } ] :=
+  MyNotebookPrint[ dir, fileName, nbo ][ "MFPGS:systems", { id, systems, x } ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGS:quicksolve", { id_, systems_ } ] :=
+  MyNotebookPrint[ dir, fileName, nbo ][ "MFPGS:quicksolve", { id, systems } ];
+
+
+(* PreparePentagonSolverInput *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:init", { id_, ring_, optionList_ } ] :=
   Module[ { fn1 },
     fn1 = dataFileName[ id, dir, "Ring" ];

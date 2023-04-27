@@ -53,7 +53,8 @@ Options[MultiplicityFreePentagonGroebnerSystems] :=
 MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
   Module[{
     preEqCheck, useDBQ, storeDecompQ, procID, result, time, solverInput,
-    sumSystems, SumBinEqns, systems, AddValues, ReduceSystems, reducedSystems, simplify
+    sumSystems, SumBinEqns, systems, AddValues, ReduceSystems, reducedSystems1, reducedSystems2, simplify,
+    invertibilityConstraints
     },
     preEqCheck =
       OptionValue["PreEqualCheck"];
@@ -77,7 +78,7 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
     procID =
       ToString[Unique[]];
 
-    printlog[ "MFPGB:init", { procID, ring, var, {opts} } ];
+    printlog[ "MFPGS:init", { procID, ring, var, {opts} } ];
 
     { time, result } =
       AbsoluteTiming[
@@ -159,14 +160,20 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
             ]
           ];
 
-        reducedSystems =
+        reducedSystems1 =
           Flatten[ ReduceSystems /@ systems ];
         
         invertibilityConstraints[ rules_ ] :=
           And @@
           DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
 
-        printlog["MFPGB:systems", { procID, reducedSystems } ];
+        printlog["MFPGS:systems", { procID, reducedSystems1 } ];
+
+        (* If only 1 variable remains it is often faster to solve the system directly *)
+        reducedSystems2 =
+          Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
+
+        printlog["MFPGS:quicksolve", { procID, reducedSystems2 } ];
 
         Table[
           <|
@@ -178,7 +185,7 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
             "Assumptions" -> sys["Assumptions"] && invertibilityConstraints[ sys["Rules"] ],
             "Rules" -> sys["Rules"]
           |>,
-          { sys, reducedSystems }
+          { sys, reducedSystems2 }
         ]
 
       ];
@@ -242,7 +249,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
       ];
 
 
-    printlog["MFHGB:init", { procID, ring, var, { opts } } ];
+    printlog["MFHGS:init", { procID, ring, var, { opts } } ];
 
     { time, result } =
     AbsoluteTiming[
@@ -323,10 +330,16 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
           ]
         ];
 
-      reducedSystems =
+      reducedSystems[1] =
         Flatten[ simplify @* ReduceSystems /@ systems ];
 
-      printlog["MFHGB:systems", { procID, reducedSystems } ];
+      printlog["MFHGS:systems", { procID, reducedSystems[1] } ];
+
+      (* If only 1 variable remains it is often faster to solve the system directly *)
+      reducedSystems[2] =
+        Flatten[ QuickSolve[ #, var ]& /@ reducedSystems[1] ];
+
+      printlog["MFHGS:quicksolve", { procID, reducedSystems[2] } ];
 
       Table[
         <|
@@ -338,7 +351,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
           "Assumptions" -> sys["Assumptions"],
           "Rules" -> sys["Rules"]
         |>,
-        { sys, reducedSystems }
+        { sys, reducedSystems[2] }
       ]
 
     ];
@@ -348,6 +361,49 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
     result
 
   ];
+
+QuickSolve[ system_, var_ ] :=
+  With[{pols = system["Polynomials"] },
+    If[
+      CountVariables[ pols, var ] === 1
+      ,
+      With[
+        {
+          simplestPol =
+            First @
+            Flatten @
+            MinimalBy[ pols, Exponent[ #, var ]&, 1 ],
+          assumptions =
+            system["Assumptions"]
+        },
+        {
+          soln =
+            Cases[
+              ToNumericRootIsolation @
+              SolveUsingReduce[
+                simplestPol == 0,
+                { var }
+              ],
+              sol_ /;
+              And[
+                TrueQ[ assumptions /. sol ],
+                MatchQ[ SafeRootReduce[ pols/.sol ], {0...} ]
+              ]
+            ]
+        },
+        Table[
+          Association @ {
+            "Polynomials" -> {},
+            "Assumptions" -> True,
+            "Rules" -> system["Rules"] /. s
+          },
+          { s, soln }
+        ]
+      ]
+      ,
+      system
+    ]
+  ]
 
 
 PackageExport["ParallelGroebnerBasis"]
