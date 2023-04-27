@@ -94,41 +94,6 @@ AFRQ::usage =
 AFRQ[ r_, m_ ] :=
 	AllFusionRingsQ[ r, m ];
 
-
-
-(* Importing characters  *)
-PackageScope["aCharTabs"]
-
-aCharTabs =
-	OptimizedImport[ "FusionRingSymCharacters", importDirectory ];
-
-
-PackageScope["aNCharTabs"]
-
-aNCharTabs =
-	OptimizedImport[ "FusionRingNCharacters", importDirectory ];
-
-
-(* Importing Modular Data *)
-PackageScope["aSMatrices"]
-
-aSMatrices =
-	OptimizedImport[ "SMatrices", importDirectory ];
-
-
-PackageScope["aTwistFactors"]
-
-aTwistFactors =
-	OptimizedImport[ "TwistFactors", importDirectory ];
-
-
-PackageScope["aModularDatum"]
-
-aModularDatum =
-	OptimizedImport[ "ModData", importDirectory ];
-
-
-
 (* Formatting *)
 
 Format[ ring:FusionRing[r_Association], StandardForm ] :=
