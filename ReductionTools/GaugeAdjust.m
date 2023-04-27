@@ -324,7 +324,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             binomialSolution =
             If[
               numericQ,
-              Thread[ newVars -> InfN[ constVec * zVec * monomials, 2*acc ] ],
+              Thread[ newVars -> InfN[ constVec * zVec, 2 * acc ]* monomials ],
               Thread[ newVars -> constVec * zVec * monomials ]
             ];
             
@@ -384,9 +384,10 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
                 gauge =
                 If[
                   numericQ,
+                  Dispatch @
                   MapAt[
                     InfN[acc],
-                    Dispatch[binomialSolution/.Dispatch[ First @ instance ]/.revertVars],
+                    binomialSolution/.Dispatch[ First @ instance ]/.revertVars,
                     { All, 2 }
                   ],
                   Dispatch[binomialSolution/.Dispatch[ First @ instance ]/.revertVars]
