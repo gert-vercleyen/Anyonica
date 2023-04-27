@@ -155,8 +155,6 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
     
     printlog["Gen:results", {procID,result,absTime}];
 
-    Remove[sym];
-
     result
   ];
 
