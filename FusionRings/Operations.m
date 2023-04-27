@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-04-24 *)
 
+(* TODO: make sure that permutations permute all data *)
+
 Package["Anyonica`"]
 
 (* PERMUTING ELEMENTS OF RINGS *)
@@ -123,6 +125,9 @@ SortedRing[ r_FusionRing?FusionRingQ, OptionsPattern[] ] :=
     PermutedRing[ r, permVec ]
   ];
 
+
+PackageScope["PermVecQD"]
+
 Options[PermVecQD] =
   {"Order" -> "Increasing"};
 
@@ -139,6 +144,8 @@ PermVecQD[r_FusionRing?FusionRingQ, OptionsPattern[] ] :=
       1
     ]
   ];
+
+PackageScope["PermVecSDConj"]
 
 (* Based on anti-particles *)
 Options[PermVecSDConj] = Options[PermVecQD];
@@ -190,6 +197,7 @@ RenameElements[ r_FusionRing?FusionRingQ, list_ ] :=
     "DirectProductDecompositions" -> WhichDecompositions @ r,
     "SubFusionRings"  -> SubFusionRings @ r
   ];
+
 
 PackageExport["AddName"]
 

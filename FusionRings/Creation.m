@@ -14,26 +14,6 @@ Package["Anyonica`"]
    we store the association inside the function FusionRing, which will
    only serve as a wrapper and never return a value *)
 
-Options[ FusionRing ] =
-  Thread[
-    {
-      "MultiplicationTable",
-      "Names",
-      "ElementsName",
-      "ElementNames",
-      "Barcode",
-      "FormalParameters",
-      "DirectProductDecompositions",
-      "SubFusionRings",
-      "QuantumDimensions",
-      "SMatrices",
-      "TwistFactors",
-      "ModularData",
-      "Characters",
-      "NumCharacters"
-    } -> Missing[]
-  ];
-
 PackageExport["FusionRing"]
 
 FusionRing::usage =
@@ -74,10 +54,28 @@ FusionRing::elnameswrongheads =
 FusionRing::badargnames =
   "OptionValue `1` of \"Names\" should be a String or a list of Strings.";
 
+Options[ FusionRing ] =
+  Thread[
+    {
+      "MultiplicationTable",
+      "Names",
+      "ElementsName",
+      "ElementNames",
+      "Barcode",
+      "FormalParameters",
+      "DirectProductDecompositions",
+      "SubFusionRings",
+      "QuantumDimensions",
+      "SMatrices",
+      "TwistFactors",
+      "ModularData",
+      "Characters"
+    } -> Missing[]
+  ];
+
 FusionRing[ ops:OptionsPattern[] ] :=
   FusionRing[ InitializeFusionRing[ ops ] ];
 
-(*TODO: might not want to give user this option*)
 (* Access elements of the fusion ring as if it were an association. *)
 ( FusionRing[ r_ ]?FusionRingQ )[ k_ ] :=
   Lookup[ r, k ];
@@ -97,10 +95,10 @@ InitializeFusionRing[ ops:OptionsPattern[] ] :=
         True, Message[FusionRing::badargnames, # ]
       ]& @ OptionValue["Names"],
     elsName =
-      If[ # =!= Missing[], #, "\[Psi]" ]& @ ("ElementsName" // OptionValue)
-    }, (* TODO: give non-subscripted names *)
+      If[ !MissingQ[#], #, None ]& @ ("ElementsName" // OptionValue)
+    },
     {
-      elNames = If[ # =!= Missing[], #, Table[ elsName <>"["<>ToString[i]<>"]", { i, Length @ multTab }]]& @ OptionValue["ElementNames"],
+      elNames = If[ !MissingQ[#], #, elementName/@ Range[Length[multTab]] ]& @ OptionValue["ElementNames"],
       dualvec = If[ Length[multTab] == 1, {1}, Join[ {1}, multTab[[2;;,2;;,1]] . ( Range[ Length[multTab] - 1 ] + 1 ) ] ]
     },
     Which[
@@ -148,7 +146,7 @@ InitializeFusionRing[ ops:OptionsPattern[] ] :=
       Association[
         "Barcode" -> OptionValue["Barcode"],
         "DirectProductDecompositions" -> OptionValue["DirectProductDecompositions"],
-        "Dual" -> Function[ i, dualvec[[i]] ],
+        "Dual" -> Association[ # -> dualvec[[#]]& /@ Range[Length[multTab]] ],
         "ElementNames" -> elNames,
         "ElementsName" -> elsName,
         "FormalParameters" -> OptionValue["FormalParameters"],
@@ -159,10 +157,17 @@ InitializeFusionRing[ ops:OptionsPattern[] ] :=
         "SMatrices" -> OptionValue["SMatrices"],
         "TwistFactors" -> OptionValue["TwistFactors"],
         "ModularData" -> OptionValue["ModularData"],
-        "Characters" -> OptionValue["Characters"],
-        "NumCharacters" -> OptionValue["NumCharacters"]
+        "Characters" -> OptionValue["Characters"]
       ]
     ]
+  ];
+
+elementName[i_Integer] :=
+  With[{
+    replaceByUnicode =
+      Thread[ Range[10] - 1 -> FromCharacterCode /@ (120811 + Range[10]) ]
+    },
+    StringJoin @@ (IntegerDigits[i] /. replaceByUnicode)
   ];
 
 toString =

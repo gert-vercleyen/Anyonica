@@ -2,6 +2,7 @@
 (* Created by the Wolfram Language Plugin for IntelliJ, see http://wlplugin.halirutan.de/ *)
 (* :Author: gertvercleyen *)
 (* :Date: 2023-04-24 *)
+Package["Anyonica`"]
 
 PackageExport["FusionProduct"]
 
@@ -10,7 +11,7 @@ FusionProduct::usage =
 
 FusionProduct[ r_FusionRing?FusionRingQ, { el1_, el2_ } ] :=
   With[ { tab = MultiplicationTable[r] },
-    Sum[ r[[i]]tab[[ el1, el2, i ]], { i, Rank[r] } ]
+    Sum[ ElementNames[r][[i]]tab[[ el1, el2, i ]], { i, Rank[r] } ]
   ];
 
 

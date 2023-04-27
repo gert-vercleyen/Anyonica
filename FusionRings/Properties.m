@@ -404,14 +404,6 @@ FC::usage =
 FusionRing /: FC[ r_FusionRing?FusionRingQ ] :=
   FormalCode[ r ];
 
-(* multTabCode assigns a number to a fusion ring based on the multiplication table. This
-   number is unique per multiplication table but not invariant under permutations of the
-   elements. The function barcode will then take the maximum of these numbers to make it
-   independent of choice of basis.
-  *)
-multTabCode[ ring_FusionRing?FusionRingQ ] :=
-  multTabCode[ ring ] =
-  FromDigits[ Flatten[ MultiplicationTable[ ring ] ], Rank[ring] + 1 ];
 
 (* If the ring does not have a barcode, either construct a new ring that does have one or never add the info to the
    ring in the first place.
@@ -427,20 +419,41 @@ Barcode::usage =
 
 SetAttributes[ Barcode, Listable ];
 
+(*TODO: reset to old definition after recomputation of all codes *)
 FusionRing /: Barcode[ r_FusionRing?FusionRingQ ] :=
-  If[
+(*If[
     r["Barcode"] =!= Missing[],
     r["Barcode"],
-    Module[{
-      sRing = SortedRing[ r, "SortBy" -> "Selfdual-Conjugates" ],
-      rank = Rank @ r,
-      qds,
-      permutations},
-      qds = Rest @ QuantumDimensions[ sRing ]; (* 1 should be left alone *)
-      permutations = Flatten /@ Tuples[ Permutations /@ (GatherBy[ Range[ rank - 1 ], qds[[#]]& ] + 1) ];
-      Max[ multTabCode[ PermutedRing[ sRing, # ] ]& /@ permutations]
-    ]
-  ];
+    True,*)
+    Module[{ sRing, qds,permutations},
+      sRing =
+        FusionRing[
+          "MultiplicationTable" -> PermuteMultTab[ MT[r], PermVecSDConj[r] ]
+        ];
+
+      qds =
+        Rest @ QuantumDimensions[ sRing ]; (* 1 should be left alone *)
+
+      permutations =
+        Prepend[1] @* Flatten /@
+        Tuples[ Permutations /@ (GatherBy[ Range[ Rank[r] - 1 ], qds[[#]]& ] + 1) ];
+
+      Max[ multTabCode[ PermuteMultTab[ MT[sRing], # ], Mult[r] ]& /@ permutations ]
+    ];
+(*  ];*)
+
+(* multTabCode assigns a number to a fusion ring based on the multiplication table. This
+   number is unique per multiplication table but not invariant under permutations of the
+   elements. The function barcode will then take the maximum of these numbers to make it
+   independent of choice of basis.
+  *)
+
+multTabCode[ mat_List, mult_ ] :=
+  FromDigits[ Flatten[ mat ], mult + 1 ];
+
+multTabCode[ ring_FusionRing?FusionRingQ ] :=
+  multTabCode[ MT @ ring, Mult @ ring ];
+
 
 PackageExport["SubFusionRings"]
 
@@ -988,37 +1001,20 @@ FusionRingCommutator[ ring_FusionRing, subRing_FusionRing ] :=
 PackageExport["FusionRingCharacters"]
 
 FusionRingCharacters::usage =
-  "FusionRingCharacters[r], with r a commutative ring, returns a symbolic character table of r or Missing[] if "<>
+  "FusionRingCharacters[r], with r a commutative ring, returns a symbolic character table of r or a numeric one if "<>
   "no symbolic form was found.";
 
 FusionRingCharacters[ ring_FusionRing?FusionRingQ ] :=
-  aCharTabs[ FormalCode[ ring ] ];
+  ring["Characters"];
 
 
 PackageExport["FRC"]
 
 FRC::usage =
-"Shorthand for FusionRingCharacters";
+  "Shorthand for FusionRingCharacters";
 
 FRC[ ring_FusionRing?FusionRingQ ] :=
   FusionRingCharacters[ ring ];
-
-PackageExport["NFusionRingCharacters"]
-
-NFusionRingCharacters::usage =
-  "NFusionRingCharacters[r], with r a commutative ring, returns a machine precision numeric character table of r.";
-
-NFusionRingCharacters[ ring_FusionRing?FusionRingQ ] :=
-  aNCharTabs[ FormalCode[ring] ];
-
-
-PackageExport["NFRC"]
-
-NFRC::usage =
-"Shorthand for NFusionRingCharacters.";
-
-NFRC[ ring_FusionRing?FusionRingQ ] :=
-  NFusionRingCharacters[ ring ];
 
 
 PackageExport["SMatrices"]
@@ -1029,13 +1025,7 @@ SMatrices::usage =
 SetAttributes[ SMatrices, Listable];
 
 SMatrices[ ring_FusionRing?FusionRingQ ] :=
-  With[ { s = aSMatrices[ FormalCode[ ring ] ] },
-    If[
-      MissingQ @ s ,
-      {},
-      s
-    ]
-  ];
+  ring["SMatrices"]
 
 
 PackageExport["SM"]
@@ -1056,7 +1046,7 @@ TwistFactors::usage =
 SetAttributes[ TwistFactors, Listable];
 
 TwistFactors[ ring_FusionRing?FusionRingQ ] :=
-  aTwistFactors[ FormalCode[ ring ] ];
+  ring["TwistFactors"];
 
 
 PackageExport["TF"]
@@ -1078,13 +1068,8 @@ ModularData::usage =
 SetAttributes[ ModularData, Listable];
 
 ModularData[ ring_FusionRing?FusionRingQ ] :=
-  With[ { data = aModularDatum[ FormalCode[ ring ] ] },
-    If[
-      MissingQ @ data,
-      {},
-      data
-    ]
-  ];
+  ring["ModularData"];
+
 
 PackageExport["MD"]
 
