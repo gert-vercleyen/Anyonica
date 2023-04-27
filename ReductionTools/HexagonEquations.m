@@ -15,6 +15,8 @@ PackageExport["HexagonEquations"]
 HexagonEquations::usage =
   "HexagonEquations[ r ] returns the hexagon equations related to the fusion ring r.";
 (*The \"Knowns\" can be set to a list of rules of variables that are already known, e.g. a solution to the pentagon equations.";*)
+HexagonEquations::badformat =
+  "The argument given to \"Knowns\", `1`, should be a list of rules.";
 
 Options[HexagonEquations] =
   {
@@ -42,15 +44,23 @@ HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
   Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
     rSymbols =
       R @@@ NZSC[ring];
+
     fSymbols =
       FSymbols[ring];
+
     rank =
       Rank[ring];
+
+    If[
+      !MatchQ[ OptionValue["Knowns"], { _Rule ... } ],
+      Message[HexagonEquations::badformat, OptionValue["Knowns"] ]
+    ];
+
     knowns =
       Dispatch @
       Join[
         If[
-          OptionValue["TrivialVacuumSymbols"],
+          TrueQ @ OptionValue["TrivialVacuumSymbols"],
           (* THEN *)
           Thread[
             Cases[ Join[ rSymbols, fSymbols ], $VacuumRPattern | $VacuumFPattern ] -> 1
