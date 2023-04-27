@@ -26,7 +26,7 @@ TowerOfExpressions::notasymbol =
 (*variables are of the form x[__], and \"LevelSpec\" -> n to take only \*)
 (*for variables up to level n into account.";*)
 
-Options[TowerOfExpressions] =
+Options[TowerOfExpressions] :=
   Options[ VarExprPairs ];
 
 TowerOfExpressions[ {}, s_, opts:OptionsPattern[] ] :=
@@ -50,7 +50,7 @@ TowerOfExpressions[ exprList_, s_, opts:OptionsPattern[] ] :=
     GroupExpressions
   ];
 
-Options[VarExprPairs] =
+Options[VarExprPairs] :=
   Options[LeastVarsExpr];
 
 VarExprPairs[ expressions_List, s_, opts:OptionsPattern[] ] :=
@@ -96,7 +96,7 @@ LeastVarsExpr::novarsinexpressions =
 (*variables in excludedVars. Options include \"LevelSpec\" -> n to take \*)
 (*only variables up to level n into account";*)
 
-Options[ LeastVarsExpr ] =
+Options[ LeastVarsExpr ] :=
   Join[
     Options[ GetVariables ],
     { "WeighedBy" -> Function[ { x , y }, Length[x] ] }

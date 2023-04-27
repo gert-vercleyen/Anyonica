@@ -37,7 +37,7 @@ HexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 +---------------------------------------------------------------------------+
 *)
 
-Options[HexagonEquationsWithoutMultiplicity] =
+Options[HexagonEquationsWithoutMultiplicity] :=
   Options[HexagonEquations];
 
 HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
@@ -123,7 +123,7 @@ HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
 +---------------------------------------------------------------------------+
 *)
 
-Options[ HexagonEquationsWithMultiplicity ] =
+Options[ HexagonEquationsWithMultiplicity ] :=
   Options[HexagonEquations];
 HexagonEquationsWithMultiplicity[ ring_, OptionsPattern[] ] :=
   Module[ {

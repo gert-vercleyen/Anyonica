@@ -88,7 +88,7 @@ ToUnitaryGauge::wrongsolformat =
 
 (* TODO: add to possible issues: numeric overrides preequalcheck*)
 
-Options[ToUnitaryGauge] =
+Options[ToUnitaryGauge] :=
   Join[
     {
       "Numeric" -> False,

@@ -289,7 +289,7 @@ PackageScope["PrepareHexagonSolverInput"]
 PrepareHexagonSolverInput::usage =
   "Constructs the hexagon equations and symmetries.";
 
-Options[ PrepareHexagonSolverInput ] =
+Options[ PrepareHexagonSolverInput ] :=
   Options[ HexagonEquations ];
 
 PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=

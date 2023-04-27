@@ -149,7 +149,7 @@ RestrictMultiplicativeSymmetries::usage =
 RestrictMultiplicativeSymmetries::symnotmultiplicative =
   "The symmetries `1` are not multiplicative";
 
-Options[RestrictMultiplicativeSymmetries] =
+Options[RestrictMultiplicativeSymmetries] :=
   Options[SolveModZ];
 
 RestrictMultiplicativeSymmetries[ None, __ ] :=
@@ -469,7 +469,7 @@ GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_
     ]
   ];
 
-Options[TrivialGaugeSymmetryEquivalentQ] =
+Options[TrivialGaugeSymmetryEquivalentQ] :=
   Options[GaugeSymmetryEquivalentQ];
 
 TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
@@ -496,7 +496,7 @@ SymmetryEquivalentQ::usage =
   "SymmetryEquivalentQ returns True if there exists a combination of a gauge transform and a fusion ring " <>
   "automorphism of ring that transforms sol1 into sol2";
 
-Options[SymmetryEquivalentQ] =
+Options[SymmetryEquivalentQ] :=
   Options[GaugeSymmetryEquivalentQ];
 
 SymmetryEquivalentQ[ ring_FusionRing, symmetries_Association, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
@@ -542,7 +542,7 @@ DeleteEquivalentSolutions::usage =
   "equivalence classes of the solutions.";
 (*"Here redundant means that there exists another solution in solList which is equivalent via a combination of a (possibly trivial) gauge transform and (possibly trivial) automorphism of the fusion ring. Possible options are (a) \"SimplifyBy\": function to simplify expressions whose values are checked, (b) \"Numeric\": Set to True to let the function check equality nummerically, (c) \"Accuracy\": Set the accuracy to use when checking values numerically (precision is always infinite).";*)
 
-Options[DeleteEquivalentSolutions] =
+Options[DeleteEquivalentSolutions] :=
   Options[SymmetryEquivalentQ];
 
 DeleteEquivalentSolutions[ soln_, ring_, symmetries_, opts:OptionsPattern[] ] :=

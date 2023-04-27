@@ -50,7 +50,7 @@ PackageExport["ReduceByLinearity"]
 ReduceByLinearity::usage =
   "Reduces polList by using polynomials in polList that are linear in one of the variables labeled by s.";
 
-Options[ReduceByLinearity] =
+Options[ReduceByLinearity] :=
   Join[
     {
       "SimplifyIntermediateResultsBy" -> Identity,
@@ -290,7 +290,7 @@ ReduceByLinearity2::usage =
 Options[ SimplestPol ] =
   { "WeightFunction" -> PolWeight };
 
-Options[ReduceByLinearity2] =
+Options[ReduceByLinearity2] :=
   Join[
     {
       "SimplifyIntermediateResultsBy" -> Identity,

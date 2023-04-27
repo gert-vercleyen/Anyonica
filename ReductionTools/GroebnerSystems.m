@@ -12,7 +12,7 @@ PentagonGroebnerSystems::usage =
   "fusion ring r in variables labeled by z.";
 (*Options include all options for solving the pentagon equations and all options for finding groebner bases.";*)
 
-Options[PentagonGroebnerSystems] =
+Options[PentagonGroebnerSystems] :=
   Join[
     {
       "GaugeDemands" -> None,
@@ -47,7 +47,7 @@ PentagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[
   ];
 
 
-Options[MultiplicityFreePentagonGroebnerSystems] =
+Options[MultiplicityFreePentagonGroebnerSystems] :=
   Options[PentagonGroebnerSystems];
 
 MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
@@ -196,7 +196,7 @@ HexagonGroebnerSystems::usage =
   "HexagonGroebnerSystems[r,z] calculates a Groebner basis for the hexagon equations of the fusion ring r variable z.";
 (*Options include all options for solving the hexagon equations and all options for finding groebner bases.";*)
 
-Options[HexagonGroebnerSystems] =
+Options[HexagonGroebnerSystems] :=
   Join[
     { "ReducePowerSums" -> False },
     { "ReduceRoots" -> True },
@@ -214,7 +214,7 @@ HexagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[]
       Print["Not implemented yet"]
   ];
 
-Options[MultiplicityFreeHexagonGroebnerSystems] =
+Options[MultiplicityFreeHexagonGroebnerSystems] :=
   Options[HexagonGroebnerSystems];
 
 MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPattern[] ] :=
@@ -356,7 +356,7 @@ ParallelGroebnerBasis::usage =
   "Calculates Groebner bases with different permutations of the variables on different kernels and returns the "<>
   "first result found.";
 
-Options[ ParallelGroebnerBasis ] =
+Options[ ParallelGroebnerBasis ] :=
   Options[ GroebnerBasis ];
 
 ParallelGroebnerBasis[ pols_, vars_, opts:OptionsPattern[] ] :=
@@ -400,7 +400,7 @@ PackageExport["IncrementalGroebnerBasis"]
 IncrementalGroebnerBasis::usage =
   "Calculates Groebner basis by incrementally taking subsets of pols.";
 
-Options[IncrementalGroebnerBasis] =
+Options[IncrementalGroebnerBasis] :=
   Join[
     {
       "SimplifyIntermediateResultsBy" -> Identity,

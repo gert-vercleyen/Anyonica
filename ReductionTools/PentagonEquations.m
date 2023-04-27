@@ -13,7 +13,7 @@ PentagonEquations::usage =
 
 (*   "all trivial and duplicate equations have been removed.";*)
 
-Options[ PentagonEquations ] =
+Options[ PentagonEquations ] :=
   Options[ PentagonTower ];
 
 PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
@@ -30,7 +30,7 @@ PackageExport["PentagonTower"]
 PentagonTower::usage=
   "Calculates a tower of pentagon equations based on the dimensions of the F-matrices.";
 
-Options[ PentagonTower ] =
+Options[ PentagonTower ] :=
   {
     "TrivialVacuumSymbols" -> True,
     "Knowns" -> {}
@@ -163,7 +163,9 @@ DimF[regMats_] :=
 +---------------------------------------------------------------------------+
 *)
 
-Options[PentagonEquationsWithMultiplicity] = { "Knowns" -> {} };
+Options[PentagonEquationsWithMultiplicity] =
+  { "Knowns" -> {} };
+
 PentagonEquationsWithMultiplicity[ ring_FusionRing?FusionRingQ, OptionsPattern[] ] :=
   Module[
     { fgGroupedLabels, gGroupedLabels, mt, a, b, c, d, e, l, k, h, replaceKnowns,

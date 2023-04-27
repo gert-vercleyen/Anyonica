@@ -289,7 +289,7 @@ PackageExport["CountVariables"]
 CountVariables::usage =
   "CountVariables[expr,s] returns the number of different variables s[__] that appear in expr."
 
-Options[CountVariables] =
+Options[CountVariables] :=
   Options[GetVariables];
 
 CountVariables[ data__ ] :=
@@ -553,7 +553,7 @@ PackageExport["WithMinimumDimension"]
 WithMinimumDimension::usage =
   "WithMinimumDimension[ matList, k ] returns all (m x n) matrices in mathList with m >= k."
 
-Options[WithMinimumDimension] =
+Options[WithMinimumDimension] :=
   Options[WithDimension];
 
 WithMinimumDimension[ matList_List, k_Integer, opts:OptionsPattern[] ] :=
@@ -565,7 +565,7 @@ PackageExport["WithMaximumDimension"]
 WithMaximumDimension::usage =
   "WithMaximumDimension[ matList, k ] returns all (m x n) matrices in mathList with m <= k."
 
-Options[WithMaximumDimension] =
+Options[WithMaximumDimension] :=
   Options[WithDimension];
 
 WithMaximumDimension[ matList_List, k_Integer, opts:OptionsPattern[] ] :=

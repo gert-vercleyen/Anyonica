@@ -47,7 +47,7 @@ SolvePentagonEquations::substitutesolutionwrongformat =
   "\"SubstituteSolution\" should point to a couple { ring, solution } where ring is a fusion ring "<>
   "isomorphic to a subring of `1` and solution is a solution to the pentagon equations for ring.";
 
-Options[SolvePentagonEquations] =
+Options[SolvePentagonEquations] :=
   Options[PentagonGroebnerSystems];
 
 SolvePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
@@ -67,7 +67,7 @@ SolvePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     Abort[]
   ];
 
-Options[SolveMultiplicityFreePentagonEquations] =
+Options[SolveMultiplicityFreePentagonEquations] :=
   Options[SolvePentagonEquations];
 
 SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
@@ -122,7 +122,7 @@ SolveHexagonEquations::usage =
   "SolveHexagonEquations[r] solves the hexagon equations for the fusion ring r.";
 (*"The option \"Knowns\" can be set to a list of rules of variables that are already known, e.g. a solution to the pentagon equations.";*)
 
-Options[SolveHexagonEquations] =
+Options[SolveHexagonEquations] :=
   Join[
     Options[SolveGroebnerSystem],
     Options[HexagonGroebnerSystems]
@@ -137,7 +137,7 @@ SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   ];
 
 
-Options[SolveMultiplicityFreeHexagonEquations] =
+Options[SolveMultiplicityFreeHexagonEquations] :=
   Options[SolveHexagonEquations];
 
 SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, opts:OptionsPattern[] ]:=

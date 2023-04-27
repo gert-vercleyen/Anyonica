@@ -118,7 +118,7 @@ SolveModZ::usage =
   "mat.(v + mC.cVec) == vec mod iVec, for iVec an arbitrary integer " <>
   "vector and cVec an arbitrary complex vector.";(* Solving pentagon equations *)
 
-Options[ SolveModZ ] =
+Options[ SolveModZ ] :=
   Options[ SolveModZSpace ];
 
 SolveModZ[ mat_?MatrixQ, vec_List, opts:OptionsPattern[] ] :=
@@ -348,7 +348,7 @@ BinToSemiLin::usage =
 BinToSemiLin::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
-Options[ BinToSemiLin ] =
+Options[ BinToSemiLin ] :=
   Join[
     Options[ BinEqnToFactorList ],
     { "Numeric" -> False }
@@ -420,7 +420,7 @@ BinToLin::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
 (* ONLY TAKES SYSTEMS WITH SINGLE INDEXED VARIABLES! so no vars of the form x[ i, j, ... ], only x[i],... *)
-Options[ BinToLin ] =
+Options[ BinToLin ] :=
   Options[ BinEqnToFactorList ];
 
 BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=

@@ -10,7 +10,7 @@ PackageExport["ReduceTrivialities"]
 ReduceTrivialities::usage =
   "Reduces eqnsList recursively by using trivial equalities in eqnList.";
 
-Options[ReduceTrivialities] :=
+Options[ReduceTrivialities] =
   {
     "SimplifyBy" -> Identity,
     "Parameters" -> {}
