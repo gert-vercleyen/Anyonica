@@ -7,6 +7,9 @@ Package["Anyonica`"]
 
 $SmithDecompositionsLoaded = False;
 
+
+PackageScope["$ReductionToolsInstallDirectory"]
+
 $ReductionToolsInstallDirectory =
   DirectoryName[$InputFileName];
 
@@ -16,8 +19,8 @@ $OptimizedSmithDataFileName =
 $SmithDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.wdx" } ];
 
-LoadData["SmithDecompositions"] =
-  Module[ {files, optimizedDataFileName, dataFileName },
+LoadData["SmithDecompositions"] :=
+  Module[ {files },
     files =
       FileNames[ All, $ReductionToolsInstallDirectory ];
     If[

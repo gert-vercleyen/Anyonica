@@ -22,7 +22,8 @@ Options[PreparePentagonSolverInput] =
     "PreEqualCheck" -> Identity,
     "UseDatabaseOfSmithDecompositions" -> True,
     "StoreDecompositions" -> True,
-    "InjectSolution" -> {}
+    "InjectSolution" -> {},
+    "MemoizedZeroValues" -> True
   };
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
@@ -32,7 +33,6 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
     subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols
     },
-    (* THIS FUNCTIONALITY IS BUGGY AND ONLY WORKED BY ACCIDENT IN THE PREVIOUSLY TESTED CASES: set to FALSE *)
     gaugeDemands =
       OptionValue["GaugeDemands"];
     zeroValues =
@@ -138,6 +138,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     
     (* Find Configurations of non-trivial 0-values *)
     zeros =
+      Dispatch @
       Which[
         OptionValue["NonSingular"]
         ,
@@ -145,24 +146,30 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ,
         OptionValue["ZeroValues"] =!= None
         ,
-        Dispatch @ OptionValue["ZeroValues"]
+        OptionValue["ZeroValues"]
         ,
         GroupQ[ring]
         ,
         {{}}
         ,
+        OptionValue["MemoizedZeroValues"]
+        ,
+        MemoizedZeroValues[
+          MT[ring],
+          { binEqns, sumEqns },
+          fSymbols,
+          "InvertibleMatrices" -> invMats
+        ]
+        ,
         True
         ,
-        Dispatch[
-          Select[
-            Cases[ HoldPattern[ _ -> 0 ] ] /@
-            FindZeroValues[
-              binEqns,
-              fSymbols,
-              "InvertibleMatrices" -> invMats
-            ],
-            ValidZerosQ[pentEqns]
-          ]
+        Select[
+          FindZeroValues[
+            binEqns,
+            fSymbols,
+            "InvertibleMatrices" -> invMats
+          ],
+          ValidZerosQ[pentEqns]
         ]
       ];
     
@@ -279,6 +286,9 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     
     solutions
   ];
+
+
+PackageScope["ValidZerosQ"]
 
 ValidZerosQ[ eqns_ ][ zeros_ ] :=
   FreeQ[ eqns/.zeros, False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
