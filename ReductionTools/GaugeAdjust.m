@@ -258,18 +258,18 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
           printlog["TUG:decomposition", {procID,{mU,mD,mV}}];
           
           rankBinomialMat =
-          Length[
-            diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
-          ];
+            Length[
+              diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
+            ];
           
           expRHS =
-          Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+            Inner[ Power, rhsVec, Transpose[ mU ], Times ];
           
           ZSpace =
-          mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
+            mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           
           NonOneCoeff[ l_ ] :=
-          FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
+            FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
           
           If[
             rankBinomialMat < Length[ expRHS ] &&
@@ -289,7 +289,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
           ];
           
           CSpace =
-          IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialGaugeSpace ];
+            IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialGaugeSpace ];
           
           (* The discrete set of solutions to these equations can be too big to handle.
             Since we only need 1 solution that works, we will construct them one by one *)
@@ -311,33 +311,33 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             Exp[ 2 Pi I ( ZSpace . currentTuple ) ];
             
             monomials =
-            If[
-              CSpace === {{}},
-              (* THEN *)
-              ConstantArray[ 1, Length[zVec] ],
-              (* ELSE *)
-              vars =
-              z /@ Range[ Dimensions[ CSpace ][[2]] ];
-              Inner[ Power, vars, #, Times ]& /@ CSpace
-            ];
+              If[
+                CSpace === {{}},
+                (* THEN *)
+                ConstantArray[ 1, Length[zVec] ],
+                (* ELSE *)
+                vars =
+                z /@ Range[ Dimensions[ CSpace ][[2]] ];
+                Inner[ Power, vars, #, Times ]& /@ CSpace
+              ];
             
             binomialSolution =
-            If[
-              numericQ,
-              Thread[ newVars -> InfN[ constVec * zVec, 2 * acc ]* monomials ],
-              Thread[ newVars -> constVec * zVec * monomials ]
-            ];
+              If[
+                numericQ,
+                Thread[ newVars -> InfN[ constVec * zVec, 2 * acc ]* monomials ],
+                Thread[ newVars -> constVec * zVec * monomials ]
+              ];
             
             reducedSumConstraints =
-            DeleteCases[True] @
-            DeleteDuplicates @
-            If[
-              numericQ,
-              Rationalize[ #, 10^(-2*acc) ]&,
-              simplify
-            ][
-              newSumConstraints/.binomialSolution
-            ];
+              DeleteCases[True] @
+              DeleteDuplicates @
+              If[
+                numericQ,
+                Rationalize[ #, 10^(-2*acc) ]&,
+                simplify
+              ][
+                newSumConstraints/.binomialSolution
+              ];
             
             printlog[ "TUG:parametrization", {procID,binomialSolution,reducedSumConstraints}];
             
@@ -347,37 +347,37 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
               vars === {},
               (* THEN: CHECK VALIDITY SOLUTION *)
               realQ =
-              If[
-                numericQ,
-                And @@ Thread[ Im[ InfN[ binomialSolution[[;;,2]], acc ] ] == 0 ],
-                And @@ Thread[ Im[ binomialSolution[[;;,2]] ] == 0 ]
-              ];
+                If[
+                  numericQ,
+                  And @@ Thread[ Im[ InfN[ binomialSolution[[;;,2]], acc ] ] == 0 ],
+                  And @@ Thread[ Im[ binomialSolution[[;;,2]] ] == 0 ]
+                ];
               
               positiveQ = (* Need to use Re because even when the complex part is smaller than 10^-acc, its still complex *)
-              And @@ Thread[ Re[ binomialSolution[[;;,2]] ] > 0 ];
+                And @@ Thread[ Re[ binomialSolution[[;;,2]] ] > 0 ];
               
               gauge =
-              If[ (* Solution is both real, positive, and satisfies the sum eqns *)
-                TrueQ[ realQ && positiveQ ],
-                (* THEN *)
-                Dispatch[binomialSolution/.revertVars],
-                (* ELSE *)
-                {}
-              ];
+                If[ (* Solution is both real, positive, and satisfies the sum eqns *)
+                  TrueQ[ realQ && positiveQ ],
+                  (* THEN *)
+                  Dispatch[binomialSolution/.revertVars],
+                  (* ELSE *)
+                  {}
+                ];
               
               printlog[ "TUG:no_vars_conclusion", {procID,binomialSolution,realQ,positiveQ}];
               ,
               (* ELSE FIND SOLUTION REMAINING EQUATIONS*)
               
               instance = (* Have to use Rationalize since FindInstance is bugged for non-exact numbers  *)
-              FindInstance[
-                And @@
-                Join[
-                  Rationalize[ reducedSumConstraints,  10^(-2*acc) ],
-                  Thread[ vars > 0 ]
-                ],
-                vars
-              ];
+                FindInstance[
+                  And @@
+                  Join[
+                    Rationalize[ reducedSumConstraints,  10^(-2*acc) ],
+                    Thread[ binomialSolution[[;;,2]] > 0 ]
+                  ],
+                  vars
+                ];
               
               If[
                 instance =!= {},
