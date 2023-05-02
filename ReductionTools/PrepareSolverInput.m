@@ -134,7 +134,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
 
     printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
     
-    printlog[ "PSI:zero_Fs", { procID } ];
+    printlog[ "PPSI:zero_Fs", { procID } ];
     
     (* Find Configurations of non-trivial 0-values *)
     zeros =
@@ -173,7 +173,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ]
       ];
     
-    printlog["PSI:zero_Fs_results", { procID, Normal @ zeros } ];
+    printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 
     If[
       Length @ Normal @ zeros === 0
@@ -181,7 +181,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       Return[{}]
     ];
     
-    printlog["PSI:fixing_gauge", {procID } ];
+    printlog["PPSI:fixing_gauge", {procID } ];
     (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
        that do not appear in any of the "zeros" from previous step *)
 
@@ -221,18 +221,18 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       DeleteCases[True] //
       DeleteDuplicates;
 
-    printlog[ "PSI:fixed_fs", { procID, extraFixedFs } ];
+    printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
 
     (* Try to fix extra gauges, if possible, for each of the 0-configurations.
       Also substitute 0 values, and update equations, variables, and matrices *)
     
-    printlog[ "PSI:fixing_extra_gauges", { procID } ];
+    printlog[ "PPSI:fixing_extra_gauges", { procID } ];
     
     If[ (* All gauges are fixed *)
       remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]]
       ,
       (* THEN *)
-      printlog[ "PSI:no_gauge_freedom_left", { procID } ];
+      printlog[ "PPSI:no_gauge_freedom_left", { procID } ];
       
       Reap[
         Do[
@@ -256,7 +256,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       ][[2,1]]
       ,
       (* ELSE *)
-      printlog[ "PSI:gauge_freedom_left", { procID } ];
+      printlog[ "PPSI:gauge_freedom_left", { procID } ];
       
       Reap[
         Do[

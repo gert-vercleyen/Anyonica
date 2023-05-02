@@ -1379,7 +1379,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:init", { id_, ring_, optionList_
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:orginal_system", { id_, pentEqns_, vars_, ___ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:original_system", { id_, pentEqns_, vars_, ___ } ] :=
   Module[{fn1,fn2},
     fn1 = dataFileName[ id, dir, "PentagonEquations" ];
     safeExport[ fn1, pentEqns ];
@@ -1461,6 +1461,71 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:init", { id_, ring_, optionList_
       ]
     ];
   ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:fixed_fs", { id_, fixedFs_, ___ } ] :=
+  Module[{fn},
+    fn = dataFileName[ id, dir, "FixedFs" ];
+    safeExport[ fn, fixedFs ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ "The " ],
+          hyperlinkBox[ "value(s)", fn ],
+          inputStyle[ "of " <> ToString[Length[fixedFs]]<> " F-symbols have been fixed." ]
+        }],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]
+    ];
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:fixing_extra_gauges", { id_, ___ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "Fixing remaining gauges per configuration of 0 F's",
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:no_gauge_freedom_left", { id_, ___ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "No gauge freedom left. Substituting zeros, and updating system.",
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:gauge_freedom_left", { id_, ___ } ] :=
+AddCell[
+  fileName,
+  nbo,
+  Cell[
+    "Extra symbols can be fixed.",
+    "Text",
+    CellTags -> { id, "Info" }
+  ]
+];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:restricting_gauges", { id_ } ] :=
+AddCell[
+  fileName,
+  nbo,
+  Cell[
+    "Restricting gauge symmetries to to take account of trivial F-symbols.",
+    "Text",
+    CellTags -> { id, "info" }
+  ]
+];
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:knowns", { id_, knowns_, ___ } ] :=
   Module[{fn},
@@ -1682,59 +1747,6 @@ MyNotebookPrint[ dir_, fileName_, nbo_][ "RBL:reduction", { id_, denom_, s_ } ] 
   ];
 
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PSI:fixed_fs", { id_, fixedFs_, ___ } ] :=
-  Module[{fn},
-    fn = dataFileName[ id, dir, "FixedFs" ];
-    safeExport[ fn, fixedFs ];
-    
-    AddCell[
-      fileName,
-      nbo,
-      Cell[
-        TextData[{
-          inputStyle[ "The " ],
-          hyperlinkBox[ "value(s)", fn ],
-          inputStyle[ "of " <> ToString[Length[fixedFs]]<> " F-symbols have been fixed." ]
-        }],
-        "Text",
-        CellTags -> { id, "Info" }
-      ]
-    ];
-  ];
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PSI:fixing_extra_gauges", { id_, ___ } ] :=
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      "Fixing remaining gauges per configuration of 0 F's",
-      "Text",
-      CellTags -> { id, "Info" }
-    ]
-  ];
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PSI:no_gauge_freedom_left", { id_, ___ } ] :=
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      "No gauge freedom left. Substituting zeros, and updating system.",
-      "Text",
-      CellTags -> { id, "Info" }
-    ]
-  ];
-
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PSI:gauge_freedom_left", { id_, ___ } ] :=
-AddCell[
-  fileName,
-  nbo,
-  Cell[
-    "Extra symbols can be fixed.",
-    "Text",
-    CellTags -> { id, "Info" }
-  ]
-];
 
 (*MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:systems", { id_, solverInput_, ___ } ] :=*)
 (*  Module[{fn},*)
@@ -1771,17 +1783,6 @@ AddCell[
 (*    ];*)
 (*  ];*)
 
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PSI:restricting_gauges", { id_ } ] :=
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      "Restricting gauge symmetries to to take account of trivial F-symbols.",
-      "Text",
-      CellTags -> { id, "info" }
-    ]
-  ];
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFHE:init", { id_, ring_, optionList___ } ] :=
   Module[{fn},
