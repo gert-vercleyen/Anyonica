@@ -475,7 +475,7 @@ IncrementalGroebnerBasis[ pols_, vars_ , opts : OptionsPattern[] ] :=
     cutoff  =
       OptionValue["Cutoff"];
     weight =
-      OptionValue["WeightFunction"];
+      OptionValue["GroebnerWeightFunction"];
     parallelQ =
       OptionValue["Parallel"];
 
