@@ -176,6 +176,7 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
         Table[
           <|
             "GroebnerBasis" ->
+            simplify @
             AddOptions[opts][IncrementalGroebnerBasis][
               sys["Polynomials"],
               GetVariables[ sys["Polynomials"], var ]
@@ -342,6 +343,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
       Table[
         <|
           "GroebnerBasis" ->
+            simplify @
             AddOptions[opts][IncrementalGroebnerBasis][
               sys["Polynomials"],
               GetVariables[ sys["Polynomials"], var ]
@@ -401,7 +403,7 @@ QuickSolve[ system_, var_ ] :=
       ,
       system
     ]
-  ]
+  ];
 
 
 PackageExport["ParallelGroebnerBasis"]
@@ -462,7 +464,7 @@ Options[IncrementalGroebnerBasis] :=
       "ReducePowerSums" -> False,
       "Cutoff" -> .2,
       "Parallel" -> False,
-      "WeightFunction" -> PolynomialDegree
+      "GroebnerWeightFunction" -> PolynomialDegree
     },
     Options[GroebnerBasis]
   ];
