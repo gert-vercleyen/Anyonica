@@ -25,7 +25,7 @@ SolveNonSingularBinomialSystem::wrongsymmetriesformat =
   "i.e. `1` should be `2`";
 
 SolveNonSingularBinomialSystem::novars =
-  "Nonempty set of equations, `1`, with empty set of variables. Assuming no solutions to system."<>
+  "Nonempty set of equations, `1`, with empty set of variables. Aborting calculations."<>
   " If equalities are unresolved but True, then adding the option " <>
   "\"PreEqualCheck\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
 

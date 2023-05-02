@@ -174,6 +174,12 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       ];
     
     printlog["PSI:zero_Fs_results", { procID, Normal @ zeros } ];
+
+    If[
+      Length @ Normal @ zeros === 0
+      ,
+      Return[{}]
+    ];
     
     printlog["PSI:fixing_gauge", {procID } ];
     (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
