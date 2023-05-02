@@ -1191,7 +1191,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TSG:sol_not_symmetric", { id_, ___ } 
     nbo,
     warningCell[
       id,
-      "After performing the gauge transform, SymmetricGaugeQ still returns False. Best to double check the result manually. If the symbols are indeed not in a unitary gauge, try adjusting the options for ToUnitaryGauge."
+      "After performing the gauge transform, SymmetricGaugeQ still returns False. Best to double check the result manually. If the symbols are indeed not in a symmetric gauge, try adjusting the options for ToUnitaryGauge."
     ]
   ];
 

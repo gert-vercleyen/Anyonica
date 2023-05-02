@@ -203,7 +203,7 @@ HexagonGroebnerSystems::usage =
 
 Options[HexagonGroebnerSystems] :=
   Join[
-    { "ReducePowerSums" -> False },
+    { "ReducePowerSums" -> True },
     { "ReduceRoots" -> True },
     Options[PrepareHexagonSolverInput],
     Options[ReduceByBinomials],
