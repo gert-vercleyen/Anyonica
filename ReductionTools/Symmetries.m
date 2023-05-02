@@ -54,7 +54,7 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
         Join @@
         BinSplit[
           transforms //
-          DeleteCases[ ( v_ -> _ /; MemberQ[v] @ excludedVars ) | ( x_ -> x_ ) ],
+          DeleteCases[ ( (v_ -> _) /; MemberQ[v] @ excludedVars ) | ( x_ -> x_ ) ],
           MemberQ[First[#]] @ demands[[;;,1]] &
         ];
 

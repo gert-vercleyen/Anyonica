@@ -187,8 +187,10 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
 
     (* Get all F-symbols that could be 0 for some configuration in zeros *)
     unionZeros =
+      EchoLabel["UnionZeros"][
       Union @@
-      Normal[zeros][[;;,;;,1]];
+      Normal[zeros][[;;,;;,1]]
+      ];
 
     (* Get all F-symbols that can never be 0 *)
     sharedVars =
