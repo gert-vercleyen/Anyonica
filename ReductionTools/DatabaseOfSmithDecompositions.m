@@ -13,6 +13,13 @@ PackageScope["$ReductionToolsInstallDirectory"]
 $ReductionToolsInstallDirectory =
   DirectoryName[$InputFileName];
 
+
+PackageScope["$DevelopDirectory"]
+
+$DevelopDirectory =
+  "~/Projects/AnyonTools/";
+
+
 $OptimizedSmithDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.mx" } ];
 
@@ -23,26 +30,34 @@ LoadData["SmithDecompositions"] :=
   Module[ {files },
     files =
       FileNames[ All, $ReductionToolsInstallDirectory ];
-    If[
-      !$SmithDecompositionsLoaded,
-      If[ (* Optimized version of database exists *)
-        MemberQ[ $OptimizedSmithDataFileName ] @ files,
-        (* THEN *)
-        $SmithDecompositions =
-          Import[ $OptimizedSmithDataFileName, "MX" ];
-        $SmithDecompositionsLoaded =
-          True,
-        (* ELSE *)
-        If[
-          (* Non-optimized version of database exists *)
-          MemberQ[ $SmithDataFileName ] @ files,
-          (* THEN *)
-          Export[ $OptimizedSmithDataFileName, $SmithDecompositions = Import[ $SmithDataFileName , "WDX"], "MX" ];
-          $SmithDecompositionsLoaded = True,
-          (* ELSE *)
-          Print["Neither "<> $OptimizedSmithDataFileName <> ", nor "<> $SmithDataFileName <> " found."]
-        ]
-      ]
+
+    If[ $SmithDecompositionsLoaded, Return[] ];
+
+    If[ (* Optimized version of database exists *)
+      MemberQ[ $OptimizedSmithDataFileName ] @ files
+      ,
+      $SmithDecompositions =
+        Import[ $OptimizedSmithDataFileName, "MX" ];
+
+      $SmithDecompositionsLoaded =
+        True;
+
+      Return[]
+    ];
+
+    If[ (* Non-optimized version of database exists *)
+      MemberQ[ $SmithDataFileName ] @ files
+      ,
+      Export[ $OptimizedSmithDataFileName, $SmithDecompositions = Import[ $SmithDataFileName , "WDX"], "MX" ];
+
+      If[ (* Developer has same project structure as me *)
+        MemberQ[ $DevelopDirectory ] @ files
+        ,
+        Export[ $OptimizedSmithDataFileName, $SmithDecompositions ]
+      ];
+
+      $SmithDecompositionsLoaded =
+        True
     ]
   ];
 

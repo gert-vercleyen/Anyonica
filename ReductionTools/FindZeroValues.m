@@ -85,8 +85,8 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         ReduceTrivialities[ simpleEqns, simpleVars ];
 
       (* TODO: if the equations are too trivial then the system hangs.
+
        Example: FindZeroValues[{x[1] == x[2], x[3] == x[4]}, Array[x, 4] ] *)
-      
       binomialLists =
         DeleteDuplicates[
           Sort /@

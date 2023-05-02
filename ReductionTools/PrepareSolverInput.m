@@ -21,9 +21,9 @@ Options[PreparePentagonSolverInput] =
     "NonSingular" -> False,
     "PreEqualCheck" -> Identity,
     "UseDatabaseOfSmithDecompositions" -> True,
+    "UseDatabaseOfZeroValues" -> True,
     "StoreDecompositions" -> True,
-    "InjectSolution" -> {},
-    "MemoizedZeroValues" -> True
+    "InjectSolution" -> {}
   };
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
@@ -152,7 +152,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ,
         {{}}
         ,
-        OptionValue["MemoizedZeroValues"]
+        OptionValue["UseDatabaseOfZeroValues"]
         ,
         MemoizedZeroValues[
           MT[ring],
@@ -192,7 +192,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     { remainingSym, extraFixedFs } =
       BreakMultiplicativeSymmetry[
         gaugeSymmetries,
-        "GaugeDemands" -> OptionValue["GaugeDemands"],
+        "GaugeDemands" -> gaugeDemands,
         "ExcludedVariables" -> unionZeros
       ];
 

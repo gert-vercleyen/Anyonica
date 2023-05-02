@@ -15,17 +15,12 @@ PentagonGroebnerSystems::usage =
 Options[PentagonGroebnerSystems] :=
   Join[
     {
-      "GaugeDemands" -> None,
-      "ZeroValues" -> None,
-      "NonSingular" -> False,
-      "PreEqualCheck" -> Identity,
-      "UseDatabaseOfSmithDecompositions" -> True,
-      "StoreDecompositions" -> True,
       "InjectSolution" -> {},
       "ReduceRoots" -> True,
-      "ReducePowerSums" -> False,
+      "ReducePowerSums" -> True,
       "SimplifyIntermediateResultsBy" -> Identity
     },
+    Options[PreparePentagonSolverInput],
     Options[ReduceByLinearity],
     Options[IncrementalGroebnerBasis]
   ];
@@ -39,9 +34,12 @@ PentagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[
     Abort[]
     ,
     (* CHECK multiplicity *)
-    Mult[ring] == 1,
-    MultiplicityFreePentagonGroebnerSystems[ ring, var, opts ],
-    True,
+    Mult[ring] == 1
+    ,
+    MultiplicityFreePentagonGroebnerSystems[ ring, var, opts ]
+    ,
+    True
+    ,
     Print["Not implemented yet"];
     Abort[]
   ];

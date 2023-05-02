@@ -38,10 +38,14 @@ LoadData["ZeroValues"] :=
       ,
       Export[ $OptimizedFileName, $ZeroValues = Import[ $ZeroDataFileName , "WDX"], "MX" ];
 
+      If[ (* Developer has same project structure as me *)
+        MemberQ[ $DevelopDirectory ] @ files
+        ,
+        Export[ $OptimizedFileName, $ZeroValues ]
+      ];
+
       $ZeroValuesLoaded =
         True
-      ,
-      Print["Neither "<> $OptimizedFileName <> ", nor "<> $ZeroDataFileName <> " found."]
     ]
   ];
 
@@ -66,46 +70,51 @@ Options[MemoizedZeroValues] :=
   ];
 
 MemoizedZeroValues[ multTab_, { binEqns_, sumEqns_ }, fSymbols_, opts:OptionsPattern[] ] :=
-(
-  If[
-    !$ZeroValuesLoaded,
-    LoadData["ZeroValues"]
-  ];
-  If[
-    (* Want to store decomposition*)
-    OptionValue["StoreDecompositions"]
-    ,
-    Module[ { zeroValues },
-      If[ (* multTab is not known *)
+  Module[{procID = ToString @ Unique[]},
+
+    printlog["MZV:using_database", {procID} ];
+
+    If[
+      !$ZeroValuesLoaded,
+      LoadData["ZeroValues"]
+    ];
+
+    If[
+      (* Want to store decomposition*)
+      OptionValue["StoreDecompositions"]
+      ,
+      Module[ { zeroValues },
+        If[ (* multTab is not known *)
+          KeyFreeQ[multTab] @ $ZeroValues
+          ,
+          printlog["MZV:entry_not_found", { procID } ];
+          StoreZeroValues[
+            multTab,
+            zeroValues =
+              Select[ ValidZerosQ[sumEqns] ] @
+              AddOptions[opts][FindZeroValues][
+                binEqns,
+                fSymbols
+              ]
+          ];
+          zeroValues
+          ,
+          (* ELSE: use entry from database *)
+          $ZeroValues[multTab]
+        ]
+      ]
+      ,
+      (* ELSE *)
+      If[
         KeyFreeQ[multTab] @ $ZeroValues
         ,
-        StoreZeroValues[
-          multTab,
-          zeroValues =
-            Select[ ValidZerosQ[sumEqns] ] @
-            AddOptions[opts][FindZeroValues][
-              binEqns,
-              fSymbols
-            ]
-        ];
-        zeroValues
+        Select[ ValidZerosQ[sumEqns] ] @
+        AddOptions[opts][FindZeroValues][
+          binEqns,
+          fSymbols
+        ]
         ,
-        (* ELSE: load SmithDecomposition *)
         $ZeroValues[multTab]
       ]
     ]
-    ,
-    (* ELSE *)
-    If[
-      KeyFreeQ[multTab] @ $ZeroValues
-      ,
-      Select[ ValidZerosQ[sumEqns] ] @
-      AddOptions[opts][FindZeroValues][
-        binEqns,
-        fSymbols
-      ]
-      ,
-      $ZeroValues[multTab]
-    ]
-  ]
-);
+  ];

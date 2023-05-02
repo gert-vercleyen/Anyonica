@@ -272,25 +272,6 @@ NotFusionRingQ[ r_ ] :=
 
 (* Constructors for some common fusion rings *)
 
-(* Z_n *)
-PackageExport["FusionRingZn"]
-
-FusionRingZn::usage =
-"FusionRingZn[n] returns the group fusion ring \!\(\*SubscriptBox[\(\[DoubleStruckCapitalZ]\), \(n\)]\)";
-
-FusionRingZn[ n_Integer ] :=
-  FusionRing @ Sequence[
-    Rule[ "MultiplicationTable",
-      Table[
-        If[ Mod[c-1,n] == Mod[a+b-2,n],
-          1,
-          0
-        ],
-        { a, n }, { b, n }, { c, n }
-      ]
-    ],
-    Rule[ "Names", {"\!\(\*SubscriptBox[\(\[DoubleStruckCapitalZ]\), \("<>ToString[n]<>"\)]\)"} ]
-  ];
 
 
 (* PSU(2)_k *)
@@ -446,6 +427,15 @@ GroupTableQ[ tab_?MatrixQ ] :=
       True
     ]
   ];
+
+(* Z_n *)
+PackageExport["FusionRingZn"]
+
+FusionRingZn::usage =
+  "FusionRingZn[n] returns the group fusion ring \!\(\*SubscriptBox[\(\[DoubleStruckCapitalZ]\), \(n\)]\)";
+
+FusionRingZn[ n_Integer ] :=
+  FusionRingFromGroup[CyclicGroup[n]];
 
 (* Haagerup-Izumi *)
 PackageExport["FusionRingHI"]

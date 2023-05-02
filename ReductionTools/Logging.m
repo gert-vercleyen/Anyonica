@@ -1925,3 +1925,24 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:unitary_different_abs", { id_ } 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:nonone_coeff", data_ ] :=
   MyNotebookPrint[ dir, fileName, nbo ][ "SSES:nonone_coeff", data ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MZV:using_database", { procID_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "Using database of zero values",
+      "Text",
+      CellTags -> { procID, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MZV:entry_not_found", { procID_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "Entry not found in database. Calculating zero values and adding result.",
+      "Text",
+      CellTags -> { procID, "Info" }
+    ]
+  ];
