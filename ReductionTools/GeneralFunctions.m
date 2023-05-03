@@ -866,3 +866,18 @@ InfN[ expr_, acc_ ] :=
   N[ expr, { Infinity, acc } ];
 InfN[ acc_ ] :=
   InfN[ #, acc ]&;
+
+PackageExport["PMap"]
+
+PMap::usage =
+  "PMap[ f, list ] maps f to list and displays a progress bar while doing so.";
+
+SetAttributes[PMap, HoldAllComplete];
+PMap[ f_, set_ ] :=
+  Monitor[
+    Table[
+      f[set[[i]]],
+      { i, Length[set] }
+    ],
+    ProgressIndicator[ i/Length[set] ]
+  ]
