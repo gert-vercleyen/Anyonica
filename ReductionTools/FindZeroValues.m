@@ -233,7 +233,7 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
 (* Assumes single indexed vars x[i] *)
 ReduceViaLogic[ proposition_, x_ ] :=
-  Module[{ UpdateKnowns, UpdateEquivalences, SimplifySystem },
+  Module[{ UpdateKnowns, UpdateEquivalences, SimplifySystem, sys, knowns, equivs },
 
     UpdateKnowns[ { sys_, knowns_, equivs_ } ] :=
       With[{ newKnowns = Cases[ sys, x[i_] :> ( x[i] -> True ) ] },
@@ -281,10 +281,17 @@ ReduceViaLogic[ proposition_, x_ ] :=
         equivs
       };
 
+    { sys, knowns, equivs } =
       FixedPoint[
         SimplifySystem @* UpdateEquivalences @* UpdateKnowns,
         { proposition, { }, { } }
-      ]
+      ];
+
+    {
+      sys,
+      knowns ~ Join ~ Select[ equivs, TrueQ @* Extract[2] ],
+      Select[ equivs, Not @* TrueQ @* Extract[2] ]
+    }
 
   ];
 
