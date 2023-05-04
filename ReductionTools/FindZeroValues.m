@@ -21,10 +21,13 @@ FindZeroValues::wrongequationsformat =
 FindZeroValues::wrongvariablesformat =
   "`1` must be a list of variables of the form _Symbol[i__Integer].";
 
-Options[ FindZeroValues ] =
-  {
-    "InvertibleMatrices" -> {}
-  };
+Options[ FindZeroValues ] :=
+  Join[
+    {
+      "Method" -> "CCode"
+    },
+    Options[BooleanZeroValues]
+  ];
 
 CheckArgs[ eqns_, vars_ ][ code_ ] :=
   Which[
@@ -45,124 +48,292 @@ CheckArgs[ eqns_, vars_ ][ code_ ] :=
 
 FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   CheckArgs[eqns,vars] @
-  Module[ {
-    regMats,binomialLists, nonZeroVars, extraKnowns, extraReps, simpleEqns,
-    newBinomialLists, permCond, unknowns, simpleNonZeroVars,
-    simpleVars, revertVars, simpleMats, zeroCond, s, procID,
-    trivialKnowns, trivialReps, reducedEqns, simplifyBinomialLists, result, absTime
-    },
-    
-    procID =
-      ToString[Unique[]];
+  If[
+    OptionValue["Method"] === "Code"
+    ,
+    Module[
+      {
+      regMats,binomialLists, nonZeroVars, extraKnowns, extraReps, simpleEqns,
+      newBinomialLists, permCond, unknowns, simpleNonZeroVars,
+      simpleVars, revertVars, simpleMats, zeroCond, s, procID,
+      trivialKnowns, trivialReps, reducedEqns, simplifyBinomialLists, result, absTime
+      },
 
-    printlog["FZV:init", {procID,eqns,vars,{opts}}];
-    
-    { absTime, result } =
-    AbsoluteTiming[
-      regMats =
-        Normal @
-        OptionValue["InvertibleMatrices"];
+      procID =
+        ToString[Unique[]];
 
-      If[
-        MemberQ[ PermanentConditions @ regMats, False ] || vars === {},
-        Return[ {} ]
-      ];
+      printlog["FZV:init", {procID,eqns,vars,{opts}}];
 
-      nonZeroVars =
-        Cases[ regMats, {{a_}} /; a =!= 0 :> (a -> 1) ];
+      { absTime, result } =
+      AbsoluteTiming[
+        regMats =
+          Normal @
+          OptionValue["InvertibleMatrices"];
 
-      If[
-        Length[nonZeroVars] == Length[vars],
-        Return[ {{}} ]
-      ];
-      
-      (* TODO: we don't use the non-zero vars efficiently I think *)
-      
-      { { simpleEqns, simpleNonZeroVars, simpleMats }, simpleVars, revertVars } =
-        SimplifyVariables[ { eqns, nonZeroVars, regMats }, vars, s ];
-      
-      { trivialKnowns, trivialReps, reducedEqns } =
-        ReduceTrivialities[ simpleEqns, simpleVars ];
-
-      (* TODO: if the equations are too trivial then the system hangs.
-
-       Example: FindZeroValues[{x[1] == x[2], x[3] == x[4]}, Array[x, 4] ] *)
-      binomialLists =
-        DeleteDuplicates[
-          Sort /@
-          Select[
-            Join @@@
-            MonomialList[ List @@@ DeleteCases[True] @ ReduceMonomials[ reducedEqns ] ],
-            Not @* TrivialMonListQ
-          ]
+        If[
+          MemberQ[ PermanentConditions @ regMats, False ] || vars === {},
+          Return[ {} ]
         ];
 
-      If[
-        MemberQ[ _?InconsistentMonListQ ] @ binomialLists,
-        printlog["FZV:inconsistent_system", {procID,eqns}];
-        Return[ {} ];
-      ];
-      
-      { extraKnowns, extraReps, newBinomialLists } =
-        UpdateSystem[s][ {}, {}, binomialLists ];
-      
-      If[ (* If after updating system all variables turn out to be non-zero, system is trivial *)
-        Length[ extraKnowns ] === Length[ vars ],
-        Return[ { Thread[ vars -> vars ] } ]
-      ];
-      
-      zeroCond = (* We delete duplicates to get rid of sums between same monomials *)
-        ( Total[ DeleteDuplicates[#] ] != 1 )& /@
-        newBinomialLists;
+        nonZeroVars =
+          Cases[ regMats, {{a_}} /; a =!= 0 :> (a -> 1) ];
 
-      permCond =
-        DeleteDuplicates[
-          PermanentConditions[ simpleMats ~ WithMinimumDimension ~ 2 ]/.
-          trivialReps/.
-          trivialKnowns/.
-          extraReps/.
-          extraKnowns
+        If[
+          Length[nonZeroVars] == Length[vars],
+          Return[ {{}} ]
         ];
 
-      unknowns =
-        Complement[
-          simpleVars/.trivialReps/.extraReps,
-          Join[
-            trivialKnowns,
+        (* TODO: we don't use the non-zero vars efficiently I think *)
+
+        { { simpleEqns, simpleNonZeroVars, simpleMats }, simpleVars, revertVars } =
+          SimplifyVariables[ { eqns, nonZeroVars, regMats }, vars, s ];
+
+        { trivialKnowns, trivialReps, reducedEqns } =
+          ReduceTrivialities[ simpleEqns, simpleVars ];
+
+        (* TODO: if the equations are too trivial then the system hangs.
+
+         Example: FindZeroValues[{x[1] == x[2], x[3] == x[4]}, Array[x, 4] ] *)
+        binomialLists =
+          DeleteDuplicates[
+            Sort /@
+            Select[
+              Join @@@
+              MonomialList[ List @@@ DeleteCases[True] @ ReduceMonomials[ reducedEqns ] ],
+              Not @* TrivialMonListQ
+            ]
+          ];
+
+        If[
+          MemberQ[ _?InconsistentMonListQ ] @ binomialLists,
+          printlog["FZV:inconsistent_system", {procID,eqns}];
+          Return[ {} ];
+        ];
+
+        { extraKnowns, extraReps, newBinomialLists } =
+          UpdateSystem[s][ {}, {}, binomialLists ];
+
+        If[ (* If after updating system all variables turn out to be non-zero, system is trivial *)
+          Length[ extraKnowns ] === Length[ vars ],
+          Return[ { Thread[ vars -> vars ] } ]
+        ];
+
+        zeroCond = (* We delete duplicates to get rid of sums between same monomials *)
+          ( Total[ DeleteDuplicates[#] ] != 1 )& /@
+          newBinomialLists;
+
+        permCond =
+          DeleteDuplicates[
+            PermanentConditions[ simpleMats ~ WithMinimumDimension ~ 2 ]/.
+            trivialReps/.
+            trivialKnowns/.
+            extraReps/.
             extraKnowns
-          ][[;;,1]]
-        ];
+          ];
 
-      ReplaceAll[
-        SortBy[First] @* Cases[ HoldPattern[ x_ -> 0 ] ] @* Flatten /@
-        Map[
-          Orbit[ Normal @ trivialReps ] @* Orbit[ Normal @ extraReps ]
-          ,
-          Sort[ Join[ trivialKnowns, extraKnowns, # ] ]& /@
-          SolveDiophantineSystem[
-            ReduceMonomials @ Join[ zeroCond, permCond ],
-            unknowns,
-            { 0, 1 }
-          ]
-          ,
-          {2}
-        ],
-        revertVars
-      ]
-    ];
-    printlog["FZV:solutions", {procID,result}];
-    printlog["Gen:results", {procID,result,absTime}];
+        unknowns =
+          Complement[
+            simpleVars/.trivialReps/.extraReps,
+            Join[
+              trivialKnowns,
+              extraKnowns
+            ][[;;,1]]
+          ];
 
-    Remove[s];
+        ReplaceAll[
+          SortBy[First] @* Cases[ HoldPattern[ x_ -> 0 ] ] @* Flatten /@
+          Map[
+            Orbit[ Normal @ trivialReps ] @* Orbit[ Normal @ extraReps ]
+            ,
+            Sort[ Join[ trivialKnowns, extraKnowns, # ] ]& /@ (*TODO: Not necessary since filter these out later on ... *)
+            SolveDiophantineSystem[
+              ReduceMonomials @ Join[ zeroCond, permCond ],
+              unknowns,
+              { 0, 1 }
+            ]
+            ,
+            {2}
+          ],
+          revertVars
+        ]
+      ];
+      printlog["FZV:solutions", {procID,result}];
+      printlog["Gen:results", {procID,result,absTime}];
 
-    result
+      Remove[s];
+
+      result
+    ]
+    ,
+    BooleanZeroValues[ eqns, vars, opts ]
   ];
 
+PackageExport["BooleanZeroValues"]
+
+BooleanZeroValues::usage =
+  "BooleanZeroValues[binEqns,vars] tries to find admissible sets of 0 values for the variables vars using logic.";
+
+BooleanZeroValues::mallocfailure =
+  "From SatfisfiabilityInstances: Not enough free memory to perform computation.";
+
+Options[BooleanZeroValues] :=
+  Join[
+    {
+      "InvertibleMatrices" -> { }
+    },
+    Options[SatisfiabilityInstances]
+  ];
+
+
+BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
+  Module[
+    { regMats, trueVars, newEqns, newRegMats, newVars, revertVars, x, knowns, equivs, sys, eqnsProp, remainingVars,
+      AddEquivalences, proposition, instances
+    },
+
+    regMats =
+      Normal @ OptionValue["InvertibleMatrices"];
+
+    If[
+      MemberQ[ PermanentConditions @ regMats, False ] || vars === {},
+      Return[ {} ]
+    ];
+
+    trueVars =
+      Cases[ regMats, {{a_}} /; a =!= 0 :> a ];
+
+    If[
+      Length[trueVars] == Length[vars],
+      Return[ { ConstantArray[ True, Length[vars] ] } ]
+    ];
+
+    { { newEqns, newRegMats }, newVars, revertVars } =
+      SimplifyVariables[
+        {
+          eqns/.Dispatch[ Thread[ trueVars -> 1 ] ],
+          regMats ~ WithMinimumDimension ~ 2
+        },
+        vars,
+        x
+      ];
+
+    { eqnsProp, knowns, equivs } =
+      ReduceViaLogic[ BinEqnsToProposition[newEqns], x ];
+
+    proposition =
+      And[
+        eqnsProp,
+        MatsToProposition[newRegMats]/.knowns
+      ];
+
+    remainingVars =
+      GetVariables[ proposition, x ];
+
+    instances =
+      Thread[ remainingVars -> # ]& /@
+      Catch[
+        AddOptions[opts][SatisfiabilityInstances][ proposition, remainingVars, All ],
+        Message[BooleanZeroValues::mallocfailure];
+        Abort[]
+      ];
+
+    (* Add the variables from the equivalences that are False *)
+    AddEquivalences[ sol_ ] :=
+      SortBy[First] @
+      Join[
+        sol,
+        Select[ equivs/.Dispatch[sol], Not @* Extract[2] ]
+      ];
+
+    Map[ AddEquivalences, instances ]/. revertVars /. False -> 0
+  ];
+
+(* Assumes single indexed vars x[i] *)
+ReduceViaLogic[ proposition_, x_ ] :=
+  Module[{ UpdateKnowns, UpdateEquivalences, SimplifySystem },
+
+    UpdateKnowns[ { sys_, knowns_, equivs_ } ] :=
+      With[{ newKnowns = Cases[ sys, x[i_] :> ( x[i] -> True ) ] },
+        {
+          sys/.Dispatch[newKnowns],
+          Join[ knowns, newKnowns ],
+          equivs/.Dispatch[newKnowns]
+        }
+      ];
+
+    UpdateEquivalences[ { system_, knowns_, equivs_ } ] :=
+      Module[ { findEquiv, newEquivs, newSystem, eq },
+        findEquiv =
+          FirstCase[
+            #,
+            ( Equivalent[ x[i_], y__ ] | Equivalent[ y__, x[i_] ] ) /; FreeQ[ y, x[i] ] :> ( x[i] -> y )
+          ]&;
+
+        newSystem =
+          system;
+
+        newEquivs =
+          equivs/.Dispatch[knowns];
+
+        While[
+          !MissingQ[ eq = findEquiv @ newSystem ]
+          ,
+          newEquivs =
+            Join[ newEquivs/.eq, {eq} ];
+
+          newSystem =
+            newSystem/.eq
+        ];
+
+        { newSystem, knowns, newEquivs }
+      ];
+
+    SimplifySystem[ { system_, knowns_, equivs_ } ] :=
+      {
+        DeleteDuplicatesBy[
+          system /. Equivalent[ a_, b_ ] :> Equivalent[ Union[a], Union[b] ],
+          Sort
+        ],
+        knowns,
+        equivs
+      };
+
+      FixedPoint[
+        SimplifySystem @* UpdateEquivalences @* UpdateKnowns,
+        { proposition, { }, { } }
+      ]
+
+  ];
+
+BinEqnsToProposition[ eqns_ ] :=
+  And @@ (
+    Equivalent @@@
+    Map[
+      IntToBool,
+      Join @@@ MonomialList[ List @@@ ReduceMonomials[eqns] ] /.
+      Times -> And,
+      {2}
+    ]
+  );
+
+IntToBool[1] :=
+  True;
+
+IntToBool[0] :=
+  False;
+
+IntToBool[x_] :=
+  x;
 
 ReduceMonomials[ expr_ ] :=
   expr //
   ReplaceAll[ Power[ a_, b_Integer ] :> a ] //
   ReplaceAll[ Times[ a_Integer, b__ ] :> Times[b] ];
+
+MatsToProposition[ matList_ ] :=
+  With[{ perms = ReduceMonomials @* Permanent /@ matList },
+    perms/.Times -> And, Plus -> Or
+  ];
 
 
 TrivialMonListQ[ list_ ] :=

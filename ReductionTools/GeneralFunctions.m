@@ -872,7 +872,6 @@ PackageExport["PMap"]
 PMap::usage =
   "PMap[ f, list ] maps f to list and displays a progress bar while doing so.";
 
-SetAttributes[PMap, HoldAllComplete];
 PMap[ f_, set_ ] :=
   Monitor[
     Table[
