@@ -49,7 +49,7 @@ CheckArgs[ eqns_, vars_ ][ code_ ] :=
 FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   CheckArgs[eqns,vars] @
   If[
-    OptionValue["Method"] === "Code"
+    OptionValue["Method"] === "CCode"
     ,
     Module[
       {
@@ -202,9 +202,12 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
     trueVars =
       Cases[ regMats, {{a_}} /; a =!= 0 :> a ];
 
+    regMats =
+      regMats ~ WithMinimumDimension ~ 2;
+
     If[
       Length[trueVars] == Length[vars],
-      Return[ { ConstantArray[ True, Length[vars] ] } ]
+      Return[ { { } } ]
     ];
 
     { { newEqns, newRegMats }, newVars, revertVars } =
@@ -310,7 +313,7 @@ BinEqnsToProposition[ eqns_ ] :=
     Equivalent @@@
     Map[
       IntToBool,
-      Join @@@ MonomialList[ List @@@ ReduceMonomials[eqns] ] /.
+      Join @@@ MonomialList[ List @@@ DeleteCases[True] @ ReduceMonomials @ eqns ] /.
       Times -> And,
       {2}
     ]
@@ -332,7 +335,7 @@ ReduceMonomials[ expr_ ] :=
 
 MatsToProposition[ matList_ ] :=
   With[{ perms = ReduceMonomials @* Permanent /@ matList },
-    perms/.Times -> And, Plus -> Or
+    And @@ ReplaceAll[ perms, { Times -> And, Plus -> Or } ]
   ];
 
 
