@@ -297,7 +297,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
 PackageScope["ValidZerosQ"]
 
 ValidZerosQ[ eqns_ ][ zeros_ ] :=
-  FreeQ[ eqns/.zeros, False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
+  FreeQ[ eqns/.Dispatch[zeros], False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
 
 
 PackageScope["PrepareHexagonSolverInput"]

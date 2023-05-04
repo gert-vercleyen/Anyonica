@@ -147,7 +147,6 @@ FixInvertibilityCondition[ x_Equal ] :=
 FixInvertibilityCondition[ x_ ] :=
   x != 0;
 
-
 BinEqnsToProposition[ eqns_ ] :=
   And @@ (
     Equivalent @@@
@@ -160,13 +159,13 @@ BinEqnsToProposition[ eqns_ ] :=
   );
 
 IntToBool[1] :=
-True;
+  True;
 
 IntToBool[0] :=
-False;
+  False;
 
 IntToBool[x_] :=
-x;
+  x;
 
 BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   Module[
@@ -179,7 +178,7 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
     If[
       MemberQ[ PermanentConditions @ regMats, False ] || vars === {},
-      Return[ {} ]
+      Return[ { } ]
     ];
 
     trueVars =
@@ -233,7 +232,7 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
 (* Assumes single indexed vars x[i] *)
 ReduceViaLogic[ proposition_, x_ ] :=
-  Module[{ UpdateKnowns, UpdateEquivalences, SimplifySystem, sys, knowns, equivs },
+  Module[{ UpdateKnowns, UpdateEquivalences, SimplifySystem, s, k, e },
 
     UpdateKnowns[ { sys_, knowns_, equivs_ } ] :=
       With[{ newKnowns = Cases[ sys, x[i_] :> ( x[i] -> True ) ] },
@@ -281,16 +280,16 @@ ReduceViaLogic[ proposition_, x_ ] :=
         equivs
       };
 
-    { sys, knowns, equivs } =
+    { s, k, e } =
       FixedPoint[
         SimplifySystem @* UpdateEquivalences @* UpdateKnowns,
         { proposition, { }, { } }
       ];
 
     {
-      sys,
-      knowns ~ Join ~ Select[ equivs, TrueQ @* Extract[2] ],
-      Select[ equivs, Not @* TrueQ @* Extract[2] ]
+      s,
+      k ~ Join ~ Select[ e, TrueQ @* Extract[2] ],
+      Select[ e, Not @* TrueQ @* Extract[2] ]
     }
 
   ];
