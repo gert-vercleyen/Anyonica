@@ -170,7 +170,7 @@ x;
 
 BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   Module[
-    { regMats, trueVars, newEqns, newRegMats, newVars, revertVars, x, knowns, equivs, sys, eqnsProp, remainingVars,
+    { regMats, trueVars, newEqns, newRegMats, newVars, revertVars, x, knowns, equivs, remainingVars,
       AddEquivalences, proposition, instances
     },
 
@@ -203,13 +203,10 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         x
       ];
 
-    { eqnsProp, knowns, equivs } =
-      ReduceViaLogic[ BinEqnsToProposition[newEqns], x ];
-
-    proposition =
-      And[
-        eqnsProp,
-        MatsToProposition[newRegMats]/.knowns
+    { proposition, knowns, equivs } =
+      ReduceViaLogic[
+        BinEqnsToProposition[newEqns] && MatsToProposition[newRegMats],
+        x
       ];
 
     remainingVars =
@@ -277,7 +274,7 @@ ReduceViaLogic[ proposition_, x_ ] :=
     SimplifySystem[ { system_, knowns_, equivs_ } ] :=
       {
         DeleteDuplicatesBy[
-          system /. Equivalent[ a_, b_ ] :> Equivalent[ Union[a], Union[b] ],
+          system /. { And -> Union @* And, Or -> Union @* Or },
           Sort
         ],
         knowns,
