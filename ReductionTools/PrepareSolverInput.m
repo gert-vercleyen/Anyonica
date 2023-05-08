@@ -14,17 +14,20 @@ PreparePentagonSolverInput::usage =
 PreparePentagonSolverInput::notsubring =
   "`1` is not isomorphic to any subring of `2`.";
 
-Options[PreparePentagonSolverInput] =
-  {
-    "GaugeDemands" -> {},
-    "ZeroValues" -> None,
-    "NonSingular" -> False,
-    "PreEqualCheck" -> Identity,
-    "UseDatabaseOfSmithDecompositions" -> True,
-    "UseDatabaseOfZeroValues" -> True,
-    "StoreDecompositions" -> True,
-    "InjectSolution" -> {}
-  };
+Options[PreparePentagonSolverInput] :=
+  Union[
+    {
+      "GaugeDemands" -> {},
+      "ZeroValues" -> None,
+      "NonSingular" -> False,
+      "PreEqualCheck" -> Identity,
+      "UseDatabaseOfSmithDecompositions" -> True,
+      "UseDatabaseOfZeroValues" -> True,
+      "StoreDecompositions" -> True,
+      "InjectSolution" -> {}
+    },
+    Options[FindZeroValues]
+  ];
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   Module[ {
@@ -154,7 +157,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ,
         OptionValue["UseDatabaseOfZeroValues"]
         ,
-        MemoizedZeroValues[
+        AddOptions[opts][MemoizedZeroValues][
           MT[ring],
           { binEqns, sumEqns },
           fSymbols,
@@ -163,13 +166,11 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ,
         True
         ,
-        Select[
-          FindZeroValues[
+        Select[ ValidZerosQ[pentEqns] ] @
+        AddOptions[opts][FindZeroValues][
             binEqns,
             fSymbols,
             "InvertibleMatrices" -> invMats
-          ],
-          ValidZerosQ[pentEqns]
         ]
       ];
     

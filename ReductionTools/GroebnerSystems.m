@@ -13,9 +13,8 @@ PentagonGroebnerSystems::usage =
 (*Options include all options for solving the pentagon equations and all options for finding groebner bases.";*)
 
 Options[PentagonGroebnerSystems] :=
-  Join[
+  Union[
     {
-      "InjectSolution" -> {},
       "ReduceRoots" -> True,
       "ReducePowerSums" -> True,
       "SimplifyIntermediateResultsBy" -> Identity

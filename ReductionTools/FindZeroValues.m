@@ -24,7 +24,7 @@ FindZeroValues::wrongvariablesformat =
 Options[ FindZeroValues ] :=
   Join[
     {
-      "Method" -> "CCode"
+      "FindZerosBy" -> "CCode"
     },
     Options[BooleanZeroValues]
   ];
@@ -49,12 +49,12 @@ CheckArgs[ eqns_, vars_ ][ code_ ] :=
 FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   CheckArgs[eqns,vars] @
   If[
-    OptionValue["Method"] === "CCode"
+    OptionValue["FindZerosBy"] === "CCode"
     ,
     Module[
       {
       regMats, simpleEqns, simpleVars, revertVars, simpleMats, s, procID,
-      reducedEqns, result, absTime, proposition, knowns, equivs, reducedVars,AddEquivalences
+      reducedEqns, result, absTime, proposition, equivs, reducedVars,AddEquivalences
       },
 
       procID =
@@ -71,14 +71,15 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           SimplifyVariables[ { eqns, regMats }, vars, s ];
 
         (* Convert and reduce the equations using logic *)
-        { proposition, knowns, equivs } =
+        { proposition, equivs } =
+          BooleanConvert[#,"CNF"]& @
           ReduceViaLogic[
             BinEqnsToProposition[ simpleEqns ] && MatsToProposition[simpleMats],
             s
           ];
 
         reducedEqns =
-          PropositionToEqns @ proposition;
+          PropToEqns @ proposition;
 
         reducedVars =
           GetVariables[ reducedEqns, s ];
@@ -110,42 +111,23 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       result
     ]
     ,
-    BooleanZeroValues[ eqns, vars, opts ]
+    AddOptions[opts][BooleanZeroValues][ eqns, vars ]
   ];
 
-PackageExport["BooleanZeroValues"]
 
-BooleanZeroValues::usage =
-  "BooleanZeroValues[binEqns,vars] tries to find admissible sets of 0 values for the variables vars using logic.";
-
-BooleanZeroValues::mallocfailure =
-  "From SatfisfiabilityInstances: Not enough free memory to perform computation.";
-
-Options[BooleanZeroValues] :=
-  Join[
-    {
-      "InvertibleMatrices" -> { }
-    },
-    Options[SatisfiabilityInstances]
+PropToEqns[ prop_And ] :=
+  Map[
+    Simplify,
+    ( List @@ prop ) /. HoldPattern[Or[x__]] :> ( Plus[x] >= 1 ) /. Not[a_] :> (1 - a)/.Equivalent->Equal
   ];
 
-PropositionToEqns[ prop_ ] :=
-  FixInvertibilityCondition /@
-  ReplaceAll[
-    List @@ prop,
-    {
-      And -> Times,
-      Or -> Plus,
-      Equivalent -> Equal
-    }
+PropToEqns[ prop_Or ] :=
+  Map[
+    Simplify,
+    { prop } /. HoldPattern[Or[x__]] :> ( Plus[x] >= 1 ) /. Not[a_] :> (1 - a)/.Equivalent->Equal
   ];
 
-(* The invertibility of a matrix has a different form than a binomial constraint *)
-FixInvertibilityCondition[ x_Equal ] :=
-  x;
-
-FixInvertibilityCondition[ x_ ] :=
-  x != 0;
+PackageExport["BinEqnsToProposition"]
 
 BinEqnsToProposition[ eqns_ ] :=
   And @@ (
@@ -167,11 +149,30 @@ IntToBool[0] :=
 IntToBool[x_] :=
   x;
 
+PackageExport["BooleanZeroValues"]
+
+BooleanZeroValues::usage =
+  "BooleanZeroValues[binEqns,vars] tries to find admissible sets of 0 values for the variables vars using logic.";
+
+BooleanZeroValues::mallocfailure =
+  "From SatfisfiabilityInstances: Not enough free memory to perform computation.";
+
+Options[BooleanZeroValues] :=
+  Join[
+    {
+      "InvertibleMatrices" -> { }
+    },
+    Options[SatisfiabilityInstances]
+  ];
+
 BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   Module[
-    { regMats, trueVars, newEqns, newRegMats, newVars, revertVars, x, knowns, equivs, remainingVars,
-      AddEquivalences, proposition, instances
+    { regMats, trueVars, newEqns, newRegMats, newVars, revertVars, x, equivs, remainingVars,
+      AddEquivalences, proposition, instances, booleanQ
     },
+
+    booleanQ[x_] :=
+      MatchQ[x, _ -> (True|False)];
 
     regMats =
       Normal @ OptionValue["InvertibleMatrices"];
@@ -202,7 +203,7 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         x
       ];
 
-    { proposition, knowns, equivs } =
+    { proposition, equivs } =
       ReduceViaLogic[
         BinEqnsToProposition[newEqns] && MatsToProposition[newRegMats],
         x
@@ -212,86 +213,128 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       GetVariables[ proposition, x ];
 
     instances =
-      Thread[ remainingVars -> # ]& /@
       Catch[
-        AddOptions[opts][SatisfiabilityInstances][ proposition, remainingVars, All ],
-        Message[BooleanZeroValues::mallocfailure];
-        Abort[]
+        Thread[ remainingVars -> # ]& /@
+        AddOptions[opts][SatisfiabilityInstances][
+          BooleanMinimize @ proposition,
+          remainingVars,
+          All
+        ]
       ];
+
+    If[
+      !MatchQ[ instances, { { __?booleanQ }.. } ]
+      ,
+      Message[BooleanZeroValues::mallocfailure]; Abort[]
+    ];
 
     (* Add the variables from the equivalences that are False *)
     AddEquivalences[ sol_ ] :=
       SortBy[First] @
-      Join[
-        sol,
-        Select[ equivs/.Dispatch[sol], Not @* Extract[2] ]
-      ];
+      Select[ Not @* Extract[2] ] @
+      Join[ sol, equivs/.Dispatch[sol] ];
 
     Map[ AddEquivalences, instances ]/. revertVars /. False -> 0
   ];
 
 (* Assumes single indexed vars x[i] *)
-ReduceViaLogic[ proposition_, x_ ] :=
-  Module[{ UpdateKnowns, UpdateEquivalences, SimplifySystem, s, k, e },
+PackageExport["ReduceViaLogic"]
 
-    UpdateKnowns[ { sys_, knowns_, equivs_ } ] :=
-      With[{ newKnowns = Cases[ sys, x[i_] :> ( x[i] -> True ) ] },
+ReduceViaLogic[ proposition_, x_ ] :=
+  Module[
+    { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv },
+
+    UpdateKnowns[ { prop_And, equivs_ } ] :=
+      With[{ newKnowns = Cases[ prop, x[i_] :> ( x[i] -> True ) ] },
         {
-          sys/.Dispatch[newKnowns],
-          Join[ knowns, newKnowns ],
+          prop/.Dispatch[newKnowns],
           equivs/.Dispatch[newKnowns]
         }
       ];
 
-    UpdateEquivalences[ { system_, knowns_, equivs_ } ] :=
-      Module[ { findEquiv, newEquivs, newSystem, eq },
-        findEquiv =
-          FirstCase[
-            #,
-            ( Equivalent[ x[i_], y__ ] | Equivalent[ y__, x[i_] ] ) /; FreeQ[ y, x[i] ] :> ( x[i] -> y )
-          ]&;
+    UpdateKnowns[ { prop_Or, equivs_ } ] :=
+      { prop, equivs };
 
-        newSystem =
-          system;
+    findEquiv[ prop_ ] :=
+      FirstCase[
+        prop,
+        ( Equivalent[ x[i_], y__ ] | Equivalent[ y__, x[i_] ] ) /; FreeQ[ y, x[i] ] :> ( x[i] -> y )
+      ];
 
+    UpdateEquivalences[ { prop_, equivs_ } ] :=
+      Module[ { newEquivs, newProp, eq },
+        newProp =
+          prop;
         newEquivs =
-          equivs/.Dispatch[knowns];
+          equivs;
 
         While[
-          !MissingQ[ eq = findEquiv @ newSystem ]
+          !MissingQ[ eq = findEquiv @ newProp ]
           ,
           newEquivs =
             Join[ newEquivs/.eq, {eq} ];
 
-          newSystem =
-            newSystem/.eq
+          newProp =
+            newProp/.eq
         ];
 
-        { newSystem, knowns, newEquivs }
+        { newProp, newEquivs }
       ];
 
-    SimplifySystem[ { system_, knowns_, equivs_ } ] :=
+
+    SimplifySystem[ { prop_, equivs_ } ] :=
       {
         DeleteDuplicatesBy[
-          system /. { And -> Union @* And, Or -> Union @* Or },
+          prop /. { And -> Union @* And, Or -> Union @* Or },
           Sort
         ],
-        knowns,
+        Select[ Not @* TrueQ @* Extract[2] ] @
         equivs
       };
 
-    { s, k, e } =
-      FixedPoint[
-        SimplifySystem @* UpdateEquivalences @* UpdateKnowns,
-        { proposition, { }, { } }
-      ];
+    simplify1 =
+      FixedPoint[ SimplifySystem @* UpdateEquivalences @* UpdateKnowns, # ]&;
 
-    {
-      s,
-      k ~ Join ~ Select[ e, TrueQ @* Extract[2] ],
-      Select[ e, Not @* TrueQ @* Extract[2] ]
-    }
+    simplify2 = (* Converting to CNF often gives extra info about variables *)
+      FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]] } ]&;
 
+    simplify3 = (* Converting back to "DNF" can reduce the number of variables as well *)
+      With[
+        { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
+        { redundantVars = List @@ Intersection @@ dnfForm },
+        {
+          dnfForm /. Dispatch[ Thread[ redundantVars -> True ] ],
+          #[[2]]
+        }
+      ]&;
+
+    simplify4 = (* Often some equivalences remain but UpdateEquivalences doesn't work on "DNF"/"CNF" forms so we revert *)
+      simplify1 @
+      {
+        ReplaceRepeated[
+          BooleanConvert[#[[1]],"CNF"],
+          And[p1___, (! a_ || b_), (a_ || ! b_), p2___] :> And[ p1, Equivalent[ a, b ], p2 ]
+        ],
+        #[[2]]
+      }&;
+
+
+    MapAt[
+      Select[ Not @* TrueQ @* Extract[2] ],
+      { proposition, { } } //
+      simplify1 //
+      simplify2 //
+      simplify3 //
+      simplify4,
+      { 2 }
+    ]
+  ];
+
+PackageExport["MatsToProposition"]
+
+MatsToProposition[ matList_ ] :=
+  With[{ perms = ReduceMonomials @* Permanent /@ matList },
+    And @@ ReplaceAll[ perms, { Times -> And, Plus -> Or } ]
   ];
 
 
@@ -300,13 +343,33 @@ ReduceMonomials[ expr_ ] :=
   ReplaceAll[ Power[ a_, b_Integer ] :> a ] //
   ReplaceAll[ Times[ a_Integer, b__ ] :> Times[b] ];
 
-MatsToProposition[ matList_ ] :=
-  With[{ perms = ReduceMonomials @* Permanent /@ matList },
-    And @@ ReplaceAll[ perms, { Times -> And, Plus -> Or } ]
-  ];
 
 PermanentConditions[ mats_List ] :=
   Map[
     ( Expand[Permanent[#]] != 0 )&,
     mats
   ];
+
+
+PropositionToCNFFile[ prop_, x_ ] :=
+  With[{
+    orProps = List @@ BooleanConvert[ prop, "CNF" ],
+    nVars = CountVariables[ prop, x ]
+    },
+    StringJoin[
+      "p "<>ToString[nVars] <> " " <> ToString[ Length @ orProps ] <>"\n",
+      Sequence @@ Map[ OrToString[x], orProps ]
+    ]
+  ];
+
+
+OrToString[ x_][x[i_]] :=
+  ToString[i] <> " 0";
+
+OrToString[ x_][Not[x[i_]]] :=
+  ToString[-i] <> " 0";
+
+OrToString[ x_ ][ prop_ ] :=
+  StringJoin[ #, " 0\n" ]& @
+  StringRiffle @
+  ReplaceAll[ prop, { Or -> List, x[i_] :> ToString[i], Not[x[i_]] :> ToString[-i] } ];

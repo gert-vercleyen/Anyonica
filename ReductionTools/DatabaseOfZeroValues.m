@@ -14,7 +14,7 @@ $ZeroDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfZeroValues.wdx" } ];
 
 LoadData["ZeroValues"] :=
-  Module[ {files},
+  Module[ { files },
     files =
       FileNames[ All, $ReductionToolsInstallDirectory ];
 

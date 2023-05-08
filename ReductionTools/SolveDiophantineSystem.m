@@ -32,7 +32,7 @@ SolveDiophantineSystem::executionerror =
 SolveDiophantineSystem::wrongfilenameformat =
   "`1` must be a triple of strings.";
 
-CheckArgs[ eqnList_, vars_, ranges_ ][ code_ ] :=
+CheckArgs[ eqnList_, vars_, ranges_ ]:=
   Which[
     !ListQ[eqnList]
     ,
@@ -48,10 +48,6 @@ CheckArgs[ eqnList_, vars_, ranges_ ][ code_ ] :=
     ,
     Message[SolveDiophantineSystem::nonproperranges, ranges ];
     Abort[]
-    ,
-    True
-    ,
-      code
   ];
 
 Options[SolveDiophantineSystem] =
@@ -62,16 +58,17 @@ Options[SolveDiophantineSystem] =
   };
 
 SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
-  CheckArgs[ eqnsList, vars, ranges ] @
+(
+  CheckArgs[ eqnsList, vars, ranges ];
   Module[{
     fileNames = OptionValue["FileNames"],
     w = OptionValue["WeighedBy"],
-    eqns, newEqns, newVars, revertVars, CString,tower,sortedVars, freeVariables, freeSolutions,
+    eqns, newEqns, newVars, revertVars, CString, tower, sortedVars, freeVariables, freeSolutions,
     newRanges, absTime, result, x, procID = ToString[Unique[]]
-    },
+  },
 
-    printlog["SDE:init", {procID,eqnsList,vars,ranges,{opts}}];
-    
+    printlog["SDE:init", {procID, eqnsList, vars, ranges, {opts}}];
+
     { absTime, result } =
     AbsoluteTiming[
       If[
@@ -80,46 +77,46 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
         printlog["Gen:end"];
         Return[{}]
       ];
-  
+
       eqns =
-        DeleteCases[True] @
-        eqnsList;
-  
+      DeleteCases[True] @
+      eqnsList;
+
       If[
         MemberQ[False] @ eqns,
         printlog["Gen:has_False", { procID, eqns }];
         printlog["Gen:end"];
         Return[{}]
       ];
-  
+
       { { newEqns, newRanges }, newVars, revertVars } =
-        SimplifyVariables[ { eqns, ranges } , vars, x  ];
-  
+      SimplifyVariables[ { eqns, ranges } , vars, x  ];
+
       freeVariables =
-        Complement[ newVars, GetVariables[ newEqns, x ] ];
-  
+      Complement[ newVars, GetVariables[ newEqns, x ] ];
+
       freeSolutions =
-        Thread[ freeVariables -> #  ]& /@
-        Tuples[ freeVariables/.newRanges ];
-  
+      Thread[ freeVariables -> #  ]& /@
+      Tuples[ freeVariables /. newRanges ];
+
       If[
         newEqns === {},
         printlog["Gen:trivialSystem", {procID}];
         printlog["Gen:end"];
-        Return[ freeSolutions/.revertVars ]
+        Return[ freeSolutions /. revertVars ]
       ];
-  
+
       tower =
-        If[
-          w =!= Null,
-          (* THEN *)
-          TowerOfExpressions[ newEqns, x, "WeighedBy" -> w ],
-          (* ELSE *)
-          TowerOfExpressions[ newEqns, x, "WeighedBy" -> SearchSpaceSize[newRanges] ]
-        ];
-  
+      If[
+        w =!= Null,
+        (* THEN *)
+        TowerOfExpressions[ newEqns, x, "WeighedBy" -> w ],
+        (* ELSE *)
+        TowerOfExpressions[ newEqns, x, "WeighedBy" -> SearchSpaceSize[newRanges] ]
+      ];
+
       CString =
-        BacktrackCCode[ tower, x, newRanges ];
+      BacktrackCCode[ tower, x, newRanges ];
 
       If[
         fileNames === {},
@@ -130,11 +127,11 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
           Abort[]
         ]
       ];
-  
+
       sortedVars =
-        Flatten @
-        tower[[;;,1]];
-  
+      Flatten @
+      tower[[;;, 1]];
+
       If[
         OptionValue["OnlyCCode"],
         (* THEN *)
@@ -145,20 +142,21 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
         |>,
         (* ELSE *)
         With[ { Csolutions = EvaluateExternally[ CString, sortedVars, fileNames ] },
-          Flatten[#,1]& @
+          Flatten[#, 1]& @
           Table[ Join[ sol, freeSol ], { sol, Csolutions }, { freeSol, freeSolutions } ]
-        ]/.revertVars
+        ] /. revertVars
       ]
     ];
-    
-    printlog["Gen:solutions", {procID,result}];
-    
-    printlog["Gen:results", {procID,result,absTime}];
+
+    printlog["Gen:solutions", {procID, result}];
+
+    printlog["Gen:results", {procID, result, absTime}];
 
     result
-  ];
+  ]
+);
 
-SolveDiophantineSystem[ eqnsList_List, vars_List, { rMin_, rMax_ }, opts:OptionsPattern[] ] :=
+SolveDiophantineSystem[ eqnsList_, vars_, { rMin_Integer, rMax_Integer }, opts:OptionsPattern[] ] :=
   SolveDiophantineSystem[ eqnsList, vars, (# -> { rMin, rMax } )& /@ vars, opts ];
 
 
