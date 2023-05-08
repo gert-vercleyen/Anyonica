@@ -19,7 +19,6 @@ PackageScope["$DevelopDirectory"]
 $DevelopDirectory =
   "~/Projects/AnyonTools/";
 
-
 $OptimizedSmithDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.mx" } ];
 

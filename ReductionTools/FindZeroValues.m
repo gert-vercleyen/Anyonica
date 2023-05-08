@@ -29,7 +29,7 @@ Options[ FindZeroValues ] :=
     Options[BooleanZeroValues]
   ];
 
-CheckArgs[ eqns_, vars_ ][ code_ ] :=
+CheckArgs[ eqns_, vars_ ] :=
   Which[
     !ListQ[eqns]
     ,
@@ -40,27 +40,24 @@ CheckArgs[ eqns_, vars_ ][ code_ ] :=
     ,
     Message[ FindZeroValues::wrongvariablesformat, vars ];
     Abort[]
-    ,
-    True
-    ,
-    code
   ];
 
 FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
-  CheckArgs[eqns,vars] @
+(
+  CheckArgs[eqns, vars];
   If[
     OptionValue["FindZerosBy"] === "CCode"
     ,
     Module[
       {
-      regMats, simpleEqns, simpleVars, revertVars, simpleMats, s, procID,
-      reducedEqns, result, absTime, proposition, equivs, reducedVars,AddEquivalences
+        regMats, simpleEqns, simpleVars, revertVars, simpleMats, s, procID,
+        reducedEqns, result, absTime, proposition, knowns, equivs, reducedVars, AddEquivalences
       },
 
       procID =
-        ToString[Unique[]];
+      ToString[Unique[]];
 
-      printlog["FZV:init", {procID,eqns,vars,{opts}}];
+      printlog["FZV:init", {procID, eqns, vars, {opts}}];
 
       { absTime, result } =
       AbsoluteTiming[
@@ -71,23 +68,26 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           SimplifyVariables[ { eqns, regMats }, vars, s ];
 
         (* Convert and reduce the equations using logic *)
-        { proposition, equivs } =
-          BooleanConvert[#,"CNF"]& @
-          ReduceViaLogic[
-            BinEqnsToProposition[ simpleEqns ] && MatsToProposition[simpleMats],
-            s
+        { proposition, knowns, equivs } =
+          MapAt[
+            BooleanConvert[#, "CNF"]&,
+            ReduceViaLogic[
+              BinEqnsToProposition[simpleEqns] && MatsToProposition[simpleMats],
+              s
+            ],
+            {1}
           ];
 
         reducedEqns =
           PropToEqns @ proposition;
 
         reducedVars =
-          GetVariables[ reducedEqns, s ];
+          Complement[ simpleVars, knowns[[;;,1]], equivs[[;;,1]] ];
 
         If[ (* If all variables are known *)
           Length[ reducedVars ] === 0
           , (* THEN: select all vars that point to False, replace False by 0 and return solution *)
-          Return[ { Select[ equivs, Not @* Extract[2] ]/.False -> 0 } ]
+          Return[ { Select[ equivs, Not @* Extract[2] ] /. False -> 0 } ]
         ];
 
         AddEquivalences[ sol_ ] :=
@@ -95,24 +95,25 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           Select[ #[[2]] === 0& ] @
           Join[
             sol,
-            equivs/.Dispatch[sol]/.False -> 0
+            equivs /. Dispatch[sol] /. False -> 0
           ];
 
         Map[
           AddEquivalences,
           SolveDiophantineSystem[ reducedEqns, reducedVars, { 0, 1 } ]
-        ]/.revertVars
+        ] /. revertVars
       ];
 
-(*      printlog["FZV:solutions", {procID,result}];*)
+      (*      printlog["FZV:solutions", {procID,result}];*)
 
-      printlog["Gen:results", {procID,result,absTime}];
+      printlog["Gen:results", {procID, result, absTime}];
 
       result
     ]
     ,
     AddOptions[opts][BooleanZeroValues][ eqns, vars ]
-  ];
+  ]
+);
 
 
 PropToEqns[ prop_And ] :=
@@ -126,6 +127,12 @@ PropToEqns[ prop_Or ] :=
     Simplify,
     { prop } /. HoldPattern[Or[x__]] :> ( Plus[x] >= 1 ) /. Not[a_] :> (1 - a)/.Equivalent->Equal
   ];
+
+PropToEqns[ True ] :=
+  { True };
+
+PropToEqns[ False ] :=
+  { False };
 
 PackageExport["BinEqnsToProposition"]
 
@@ -168,7 +175,7 @@ Options[BooleanZeroValues] :=
 BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   Module[
     { regMats, trueVars, newEqns, newRegMats, newVars, revertVars, x, equivs, remainingVars,
-      AddEquivalences, proposition, instances, booleanQ
+      AddEquivalences, proposition, instances, booleanQ, knowns
     },
 
     booleanQ[x_] :=
@@ -199,18 +206,18 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           eqns/.Dispatch[ Thread[ trueVars -> 1 ] ],
           regMats ~ WithMinimumDimension ~ 2
         },
-        vars,
+        Complement[ vars, trueVars ],
         x
       ];
 
-    { proposition, equivs } =
+    { proposition, knowns, equivs } =
       ReduceViaLogic[
         BinEqnsToProposition[newEqns] && MatsToProposition[newRegMats],
         x
       ];
 
     remainingVars =
-      GetVariables[ proposition, x ];
+      Complement[ newVars, knowns[[;;,1]], equivs[[;;,1]] ];
 
     instances =
       Catch[
@@ -237,6 +244,7 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
     Map[ AddEquivalences, instances ]/. revertVars /. False -> 0
   ];
 
+
 (* Assumes single indexed vars x[i] *)
 PackageExport["ReduceViaLogic"]
 
@@ -244,16 +252,14 @@ ReduceViaLogic[ proposition_, x_ ] :=
   Module[
     { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv },
 
-    UpdateKnowns[ { prop_And, equivs_ } ] :=
+    UpdateKnowns[ { prop_, knowns_, equivs_ } ] :=
       With[{ newKnowns = Cases[ prop, x[i_] :> ( x[i] -> True ) ] },
         {
           prop/.Dispatch[newKnowns],
+          Join[ knowns, newKnowns ],
           equivs/.Dispatch[newKnowns]
         }
       ];
-
-    UpdateKnowns[ { prop_Or, equivs_ } ] :=
-      { prop, equivs };
 
     findEquiv[ prop_ ] :=
       FirstCase[
@@ -261,7 +267,7 @@ ReduceViaLogic[ proposition_, x_ ] :=
         ( Equivalent[ x[i_], y__ ] | Equivalent[ y__, x[i_] ] ) /; FreeQ[ y, x[i] ] :> ( x[i] -> y )
       ];
 
-    UpdateEquivalences[ { prop_, equivs_ } ] :=
+    UpdateEquivalences[ { prop_, knowns_, equivs_ } ] :=
       Module[ { newEquivs, newProp, eq },
         newProp =
           prop;
@@ -278,33 +284,40 @@ ReduceViaLogic[ proposition_, x_ ] :=
             newProp/.eq
         ];
 
-        { newProp, newEquivs }
+        { newProp, knowns, newEquivs }
       ];
 
 
-    SimplifySystem[ { prop_, equivs_ } ] :=
-      {
-        DeleteDuplicatesBy[
-          prop /. { And -> Union @* And, Or -> Union @* Or },
-          Sort
-        ],
-        Select[ Not @* TrueQ @* Extract[2] ] @
-        equivs
-      };
+    SimplifySystem[ { prop_, knowns_, equivs_ } ] :=
+      If[
+        TrueQ @ prop
+        ,
+        { prop, knowns, equivs }
+        ,
+        {
+          DeleteDuplicatesBy[
+            prop /. { And -> Union @* And, Or -> Union @* Or },
+            Sort
+          ],
+          Join[ knowns, Select[TrueQ @* Extract[2] ] @ equivs ],
+          Select[ Not @* TrueQ @* Extract[2] ] @ equivs
+        }
+      ];
 
     simplify1 =
       FixedPoint[ SimplifySystem @* UpdateEquivalences @* UpdateKnowns, # ]&;
 
     simplify2 = (* Converting to CNF often gives extra info about variables *)
-      FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]] } ]&;
+      FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
 
     simplify3 = (* Converting back to "DNF" can reduce the number of variables as well *)
       With[
         { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
-        { redundantVars = List @@ Intersection @@ dnfForm },
+        { removeRedundantVars = Dispatch[ Thread[ (List @@ Intersection @@ dnfForm) -> True ] ] },
         {
-          dnfForm /. Dispatch[ Thread[ redundantVars -> True ] ],
-          #[[2]]
+          dnfForm /. removeRedundantVars,
+          #[[2]],
+          #[[3]] /. removeRedundantVars
         }
       ]&;
 
@@ -315,19 +328,15 @@ ReduceViaLogic[ proposition_, x_ ] :=
           BooleanConvert[#[[1]],"CNF"],
           And[p1___, (! a_ || b_), (a_ || ! b_), p2___] :> And[ p1, Equivalent[ a, b ], p2 ]
         ],
-        #[[2]]
+        #[[2]],
+        #[[3]]
       }&;
 
-
-    MapAt[
-      Select[ Not @* TrueQ @* Extract[2] ],
-      { proposition, { } } //
+      { proposition, { }, { } } //
       simplify1 //
       simplify2 //
       simplify3 //
-      simplify4,
-      { 2 }
-    ]
+      simplify4
   ];
 
 PackageExport["MatsToProposition"]

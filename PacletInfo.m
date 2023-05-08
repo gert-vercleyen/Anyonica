@@ -1,20 +1,18 @@
 PacletObject[<|
   "Name" -> "Anyonica"
   ,
-  "Version" -> "0.9.1.18"
+  "Version" -> "0.9.1.19"
   ,
   "Extensions" ->
     {
-
-      { 
+      {
         "Kernel"
         , 
         "Root" -> "."
         , 
-        "Context" -> { "Anyonica`", "Anyonica`FusionRings`" }
+        "Context" -> { "Anyonica`" }
       }
       ,
       { "Documentation" }
-
     }
 |>]
