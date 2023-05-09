@@ -103,11 +103,17 @@ ToProperBinomialEquation[ True ] :=
   True;
 
 ToProperBinomialEquation[ eqn_ ] :=
-  If[
+  Which[
     !BinomialEquationQ[ eqn ]
     ,
     Message[ ToProperBinomialEquation::notbineqn, eqn ];
     Abort[]
+    ,
+    Not[ MemberQ[HoldPattern[Plus[__]]]  @ eqn ]
+    ,
+    eqn
+    ,
+    True
     ,
     With[{
       noFracEqn = RemoveFractions @ eqn

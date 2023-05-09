@@ -138,8 +138,10 @@ safeExport[ name_, data_ ] :=
     ,
     Export[ name, data ]
     ,
-    Module[ { cd = Compress[data] },
-      Export[ name, Hold[Uncompress][cd] ]
+    Block[{ Internal`$ContextMarks = False },
+      Module[ { cd = Compress[data] },
+        Export[ name, Hold[Uncompress][cd] ]
+      ]
     ]
   ];
 
@@ -469,7 +471,134 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:solutions", { id_, soln_, ___ } ]
     ];
   ];
 
-(*BreakMultiplicativeSymmetry*)
+(* BooleanZeroValues *)
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:init", { id_, constraints_, variables_, optionList_ } ] :=
+  Module[{ fn1, fn2 },
+    fn1 = dataFileName[ id, dir, "Constraints" ];
+    fn2 = dataFileName[ id, dir, "Variables" ];
+    safeExport[ fn1, constraints ];
+    safeExport[ fn2, variables ];
+
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "BooleanZeroValues",
+        {
+          { "Constraints", fn1 },
+          { "Variables",   fn2 }
+        },
+        optionList
+      ]
+    ]
+  ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:non_invertible_matrix", { id_, mats_ } ] :=
+  Module[{ fn },
+    fn = dataFileName[ id, dir, "InvertibleMatrices"];
+    safeExport[ fn, mats ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ "The list of " ],
+          hyperlinkBox[ "Invertible Matrices", fn ],
+          inputStyle[" contains a non-invertible matrix. Assuming no solutions."]
+        }],
+        "Text",
+        CellTags -> {"Info"}
+      ]
+    ]
+  ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:all_vars_trivial", { id_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "From the invertible matrices it is found that all variables are non-zero.",
+      "Text",
+      CellTags -> {"Info"}
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:preProp", { id_, prop_ } ] :=
+  Module[{ fn },
+    fn = dataFileName[ id, dir, "NonReducedProposition"];
+    safeExport[ fn, prop ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ "Constructed the " ],
+          hyperlinkBox[ "Proposition", fn ],
+          inputStyle[" to be satisfied."]
+        }],
+        "Text",
+        CellTags -> {"Info"}
+      ]
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:reduced_system", { id_, prop_, knowns_, equivs_, remainingVars_ } ] :=
+  Module[{ fn1, fn2 },
+    fn1 = dataFileName[ id, dir, "ReducedSystem"];
+    safeExport[ fn1, { prop, knowns, equivs} ];
+    fn2 = dataFileName[ id, dir, "RemainingVariables"];
+    safeExport[ fn2, remainingVars ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ "A reduced " ],
+          hyperlinkBox[ "System", fn1 ],
+          inputStyle[" will be solved for the following "],
+          hyperlinkBox[ "Variables", fn2 ],
+          inputStyle["."]
+        }],
+        "Text",
+        CellTags -> {"Info"}
+      ]
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:out_of_memory", { id_ } ] :=
+(
+  AddCell[
+    fileName,
+    nbo,
+    warningCell[ id , "Not enough memory available to perform computation. Aborting." ]
+  ];
+
+  AddCell[
+    fileName,
+    nbo,
+    failedCell[ id ]
+  ];
+);
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:adding_equivalences", { id_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "Adding equivalences to solutions of the reduced system.",
+      "Text",
+      CellTags -> {id, "Info"}
+    ]
+  ];
+
+(* BreakMultiplicativeSymmetry *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BMS:init", { id_, symmetries_, optionList_ } ] :=
   Module[{ fn },
     fn = dataFileName[ id, dir, "Symmetries"];
@@ -536,6 +665,10 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BMS:unfixed_demanded_vars", { id_, va
       ]
     ];
   ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:solutions", { id_, soln_ } ] :=
+  MyNotebookPrint[ dir, fileName, nbo ][ "FZV:solutions", { id, soln } ];
+
 
 (*SolveBinomialSystem*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMS:init", { id_, eqns_ ,vars_ ,param_, optionList_} ] :=
@@ -1879,9 +2012,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:groups", { id_, groups_ } ] :=
       nbo,
       Cell[
         TextData[{
-          inputForm[ "The solutions are divided in " <> ToString @ Length[groups] <> " " ],
+          inputStyle[ "The solutions are divided in " <> ToString @ Length[groups] <> " " ],
           hyperlinkBox[ "group(s)", fn ],
-          inputForm[ " based on the zero values of the F-symbols." ]
+          inputStyle[ " based on the zero values of the F-symbols." ]
         }],
         "Text",
         CellTags -> { id, "Info" }

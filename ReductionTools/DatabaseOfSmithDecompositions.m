@@ -14,10 +14,10 @@ $ReductionToolsInstallDirectory =
   DirectoryName[$InputFileName];
 
 
-PackageScope["$DevelopDirectory"]
+PackageScope["$ReductionToolsDevelopDirectory"]
 
-$DevelopDirectory =
-  "~/Projects/AnyonTools/";
+$ReductionToolsDevelopDirectory =
+  "~/Projects/AnyonTools/ReductionTools/";
 
 $OptimizedSmithDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.mx" } ];
@@ -25,12 +25,15 @@ $OptimizedSmithDataFileName =
 $SmithDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfSmithDecompositions.wdx" } ];
 
+$DevelopSmithDataFileName =
+  FileNameJoin[ {$ReductionToolsDevelopDirectory,"DatabaseOfSmithdecompositions.mx"} ];
+
 LoadData["SmithDecompositions"] :=
-  Module[ {files },
+  Module[ {files},
+    If[ $SmithDecompositionsLoaded, Return[] ];
+
     files =
       FileNames[ All, $ReductionToolsInstallDirectory ];
-
-    If[ $SmithDecompositionsLoaded, Return[] ];
 
     If[ (* Optimized version of database exists *)
       MemberQ[ $OptimizedSmithDataFileName ] @ files
@@ -50,9 +53,9 @@ LoadData["SmithDecompositions"] :=
       Export[ $OptimizedSmithDataFileName, $SmithDecompositions = Import[ $SmithDataFileName , "WDX"], "MX" ];
 
       If[ (* Developer has same project structure as me *)
-        MemberQ[ $DevelopDirectory ] @ files
+        FileExistsQ[ $ReductionToolsDevelopDirectory ]
         ,
-        Export[ $OptimizedSmithDataFileName, $SmithDecompositions ]
+        Export[ $DevelopSmithDataFileName, $SmithDecompositions ]
       ];
 
       $SmithDecompositionsLoaded =

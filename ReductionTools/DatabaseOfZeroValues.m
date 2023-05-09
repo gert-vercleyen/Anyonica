@@ -13,6 +13,9 @@ $OptimizedFileName =
 $ZeroDataFileName =
   FileNameJoin[ { $ReductionToolsInstallDirectory, "DatabaseOfZeroValues.wdx" } ];
 
+$DevelopZeroDataFileName =
+  FileNameJoin[ { $ReductionToolsDevelopDirectory,"DatabaseOfZeroValues.mx"} ];
+
 LoadData["ZeroValues"] :=
   Module[ { files },
     files =
@@ -39,9 +42,9 @@ LoadData["ZeroValues"] :=
       Export[ $OptimizedFileName, $ZeroValues = Import[ $ZeroDataFileName , "WDX"], "MX" ];
 
       If[ (* Developer has same project structure as me *)
-        MemberQ[ $DevelopDirectory ] @ files
+        FileExistsQ[ $ReductionToolsDevelopDirectory ]
         ,
-        Export[ $OptimizedFileName, $ZeroValues ]
+        Export[ $DevelopZeroDataFileName, $ZeroValues ]
       ];
 
       $ZeroValuesLoaded =

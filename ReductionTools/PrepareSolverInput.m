@@ -30,11 +30,12 @@ Options[PreparePentagonSolverInput] :=
   ];
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  Module[ {
+  Module[
+    {
     binEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
     unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
     g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
-    subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols
+    subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ
     },
     gaugeDemands =
       OptionValue["GaugeDemands"];
@@ -42,6 +43,8 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       OptionValue["ZeroValues"];
     nonSingularQ =
       OptionValue["NonSingular"];
+    useSumsQ =
+      OptionValue["FindZerosUsingSums"];
     preEqCheck =
       OptionValue["PreEqualCheck"];
     useDBQ =
@@ -50,7 +53,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       OptionValue["StoreDecompositions"];
     subsSol =
       OptionValue["InjectSolution"];
-    
+
     procID =
       ToString[Unique[]];
     
@@ -166,11 +169,21 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ,
         True
         ,
-        Select[ ValidZerosQ[pentEqns] ] @
-        AddOptions[opts][FindZeroValues][
+        If[
+          useSumsQ
+          ,
+          AddOptions[opts][FindZeroValues][
+            pentEqns,
+            fSymbols,
+            "InvertibleMatrices" -> invMats
+          ]
+          ,
+          Select[ ValidZerosQ[pentEqns] ] @
+          AddOptions[opts][FindZeroValues][
             binEqns,
             fSymbols,
             "InvertibleMatrices" -> invMats
+          ]
         ]
       ];
     
