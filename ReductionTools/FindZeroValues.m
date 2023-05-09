@@ -210,13 +210,13 @@ BooleanZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         x
       ];
 
-    { proposition, knowns, equivs } =
+    { proposition, knowns, equivs } = Echo @
       ReduceViaLogic[
         BinEqnsToProposition[newEqns] && MatsToProposition[newRegMats],
         x
       ];
 
-    remainingVars =
+    remainingVars = Echo @
       Complement[ newVars, knowns[[;;,1]], equivs[[;;,1]] ];
 
     instances =
@@ -253,12 +253,23 @@ ReduceViaLogic[ proposition_, x_ ] :=
     { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv },
 
     UpdateKnowns[ { prop_, knowns_, equivs_ } ] :=
-      With[{ newKnowns = Cases[ prop, x[i_] :> ( x[i] -> True ) ] },
-        {
-          prop/.Dispatch[newKnowns],
-          Join[ knowns, newKnowns ],
-          equivs/.Dispatch[newKnowns]
-        }
+      Which[
+        Head[prop] === And
+        ,
+        With[{ newKnowns = Cases[ prop, x[i_] :> ( x[i] -> True ) ] },
+          {
+            prop/.Dispatch[newKnowns],
+            Join[ knowns, newKnowns ],
+            equivs/.Dispatch[newKnowns]
+          }
+        ]
+        ,
+        Head[prop] === Or
+        ,
+        { prop, knowns, equivs }
+        ,
+        TrueQ[prop],
+        { prop, knowns, equivs }
       ];
 
     findEquiv[ prop_ ] :=
@@ -310,10 +321,10 @@ ReduceViaLogic[ proposition_, x_ ] :=
     simplify2 = (* Converting to CNF often gives extra info about variables *)
       FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
 
-    simplify3 = (* Converting back to "DNF" can reduce the number of variables as well *)
+    simplify3 = EchoLabel["3"]@ (* Converting back to "DNF" can reduce the number of variables as well *)
       With[
         { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
-        { removeRedundantVars = Dispatch[ Thread[ (List @@ Intersection @@ dnfForm) -> True ] ] },
+        { removeRedundantVars = Dispatch[ Thread[ (Intersection @@ (dnfForm/.{ And|Or->List })) -> True ] ] },
         {
           dnfForm /. removeRedundantVars,
           #[[2]],
