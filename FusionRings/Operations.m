@@ -17,39 +17,56 @@ PermutedRing::invalidpermutation =
   "Permutation vector `1` should either be of length `2` and contain all entries  in the range 1...`2` exactly once " <>
   "with a 1 on the first position or should contain all entries in the range 2...`2` exactly once";
 
-PermutedRing[ r_FusionRing?FusionRingQ, \[Sigma]_List ] :=
-  Module[{
-    multTab = MultiplicationTable[r],
-    m = Rank[r],
-    hasUnit = MemberQ[ \[Sigma], 1 ],
-    newMultTab
-    },
-    If[
-      Not[ (hasUnit && Sort[\[Sigma]] == Range[m]) || Sort[\[Sigma]] == Range[m-1] + 1 ],
-      Message[ PermutedRing::invalidpermutation, \[Sigma], m ],
-      newMultTab =
+PermutedRing[ r_FusionRing?FusionRingQ, perm_List ] :=
+  Module[{ properPerm, newMultTab, PermuteModularData },
+
+    properPerm =
       If[
-        hasUnit,
-        PermuteMultTab[ multTab, \[Sigma] ],
-        PermuteMultTab[ multTab, Prepend[ \[Sigma], 1 ] ]
+        MemberQ[ perm, 1 ]
+        ,
+        perm
+        ,
+        Prepend[1] @ perm
       ];
 
-      FusionRing @ Sequence[
-        "MultiplicationTable"         -> newMultTab,
-        "Names"                       -> Names[r],
-        "ElementNames"                -> ElementNames[r],
-        "Barcode"                     -> Barcode @ r,
-        "FormalParameters"            -> FC @ r,
-        "DirectProductDecompositions" -> WhichDecompositions @ r,
-        "SubFusionRings"              -> PermuteSubRingParticles[r["SubFusionRings"],\[Sigma]]
-      ]
+    If[
+      Sort[properPerm] =!= Range[ Rank[r] ]
+      ,
+      Message[ PermutedRing::invalidpermutation, properPerm, Rank[r] ];
+      Abort[]
+    ];
+
+    newMultTab =
+      PermuteMultTab[ MT[r], properPerm ];
+
+    PermuteModularData[ <|"SMatrix" -> mat_, "TwistFactors" -> twists_|> ] :=
+      <|
+         "SMatrix" -> mat[[properPerm, properPerm]],
+         "TwistFactors" -> twists[[;; , properPerm]]
+      |>;
+
+    FusionRing @
+    Sequence[
+      "MultiplicationTable"         -> newMultTab,
+      "Names"                       -> Names[r],
+      "ElementsName"                -> ElementsName[r],
+      "ElementNames"                -> ElementNames[r],
+      "Barcode"                     -> Barcode @ r,
+      "FormalParameters"            -> FC @ r,
+      "DirectProductDecompositions" -> r["DirectProductDecompositions"],
+      "SubFusionRings"              -> PermuteSubRingParticles[ r["SubFusionRings"], properPerm ],
+      "QuantumDimensions"           -> QuantumDimensions[r][[ properPerm ]],
+      "SMatrices"                   -> SMatrices[r][[ ;;, properPerm, properPerm ]],
+      "TwistFactors"                -> TwistFactors[r][[ ;;, properPerm ]],
+      "ModularData"                 -> PermuteModularData /@ ModularData[r],
+      "Characters"                  -> FusionRingCharacters[r][[;;,properPerm]]
     ]
   ];
 
 PackageScope["PermutedRing"]
 
-PermutedRing[ r_FusionRing?FusionRingQ, \[Sigma]_Cycles ] :=
-  PermutedRing[ r, PermutationList[ \[Sigma], Rank[r] ] ];
+PermutedRing[ r_FusionRing?FusionRingQ, perm_Cycles ] :=
+  PermutedRing[ r, PermutationList[ perm, Rank[r] ] ];
 
 
 PackageScope["PermuteMultTab"]
@@ -59,21 +76,24 @@ PermuteMultTab[ table_, perm_ ] :=
 
 permuteMultTab =
   Compile[
-    {{m,_Integer,3},{\[Sigma],_Integer,1}},
+    {{m,_Integer,3},{perm,_Integer,1}},
     Table[
-      m[[ \[Sigma][[a]], \[Sigma][[b]], \[Sigma][[c]] ]],
+      m[[ perm[[a]], perm[[b]], perm[[c]] ]],
       {a,Length[m]}, {b,Length[m]}, {c,Length[m]} ],
     {{permTab,_Integer,3}},
     CompilationOptions -> {"ExpressionOptimization"->True},
     "RuntimeOptions" -> "Speed"
   ];
 
-PermuteSubRingParticles[ subRings_, \[Sigma]_List ] :=
-  With[{ permutationMap = Reverse /@ Thread[ Range[ Length[ \[Sigma] ] ] -> \[Sigma] ] },
+PermuteSubRingParticles[ subRings_, perm_List ] :=
+  Module[{ permutationMap = Reverse /@ Thread[ Range[ Length[ perm ] ] -> perm ], code },
     ReplaceAll[
-      subRings,
-      {n__Integer} :> Sort[ ({n}/.permutationMap) ]
-    ]
+      ReleaseHold @ subRings,
+      {
+        { n__Integer } :> Sort[ ({n} /. permutationMap) ],
+        { {n__Integer}, r_FusionRing } :> { { n }, code @ FC @ r }
+      }
+    ]/.code -> Hold @ FRBC
   ];
 
 PackageExport["WhichPermutation"]
