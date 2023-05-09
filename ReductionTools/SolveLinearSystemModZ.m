@@ -339,7 +339,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
 SolveSemiLinModZ[ { mat_?MatrixQ, vec_List }, param_, opts:OptionsPattern[] ] :=
   SolveSemiLinModZ[ mat, vec, param, opts ];
 
-PackageScope["BinToSemiLin"]
+PackageExport["BinToSemiLin"]
 
 BinToSemiLin::usage =
   "BinToSemiLin[eqnList,nVars,s] converts the binomial system eqnList in nVars variables labeled by s to " <>
@@ -348,11 +348,8 @@ BinToSemiLin::usage =
 BinToSemiLin::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
-Options[ BinToSemiLin ] :=
-  Join[
-    Options[ BinEqnToFactorList ],
-    { "Numeric" -> False }
-  ];
+Options[ BinToSemiLin ] =
+  { "Numeric" -> False };
 
 BinToSemiLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
   Which[
@@ -363,7 +360,7 @@ BinToSemiLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
     ,
     nVars == 0
     ,
-      { {{}}, {} }
+    { {{}}, {} }
     ,
     True
     ,
@@ -372,7 +369,7 @@ BinToSemiLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
           Sort @
           DeleteDuplicates @
           DeleteCases[{{{0, 1}}, {{0, 1}}}] @ (* These correspond to trivial equations 0 == 0 *)
-          ( AddOptions[opts][BinEqnToFactorList][ # ]& /@ eqnList )
+          ( BinEqnToFactorList /@ eqnList )
         },
         If[
           factorLists === {},
@@ -420,8 +417,6 @@ BinToLin::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
 (* ONLY TAKES SYSTEMS WITH SINGLE INDEXED VARIABLES! so no vars of the form x[ i, j, ... ], only x[i],... *)
-Options[ BinToLin ] :=
-  Options[ BinEqnToFactorList ];
 
 BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
   Which[
@@ -440,7 +435,7 @@ BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
         factorLists = (* EchoFunction["factorLists", Normal] @ *)
           DeleteDuplicates @
           DeleteCases[{{{0, 1}}, {{0, 1}}}] @ (* These correspond to trivial equations 0 == 0 *)
-          ( AddOptions[opts][BinEqnToFactorList][ # ]& /@ eqnList )
+          ( BinEqnToFactorList /@ eqnList )
         },
         If[
           factorLists === {},
@@ -476,33 +471,26 @@ BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
       ]
     ];
 
-
-Options[ BinEqnToFactorList ] =
-  { "NonSingular" -> False };
-
 BinEqnToFactorList[ eqn_, OptionsPattern[] ]  :=
   With[{
-    properMonEqn = ToProperBinomialEquation[eqn],
-    ns = OptionValue["NonSingular"],
-    getCoeffs =
-      GatherCoeffs @*
-      FactorList
+    properBinEqn = ToProperBinomialEquation[eqn],
+    getCoeffs = GatherCoeffs @* FactorList
     },
     Which[
       (* Equation is trivially satisfied *)
-      TrueQ[ properMonEqn ],
-        { { { 0, 1 } }, { { 0, 1 } } },
+      TrueQ[ properBinEqn ]
+      ,
+      { { { 0, 1 } }, { { 0, 1 } } }
+      ,
       (* RHS of proper mon equation is 0 (i.e. LHS or RHS of original eqn is 0 ) *)
-      properMonEqn[[2]] === 0 && ns,
-        If[
-          ComplexExpand[ properMonEqn[[2]] ] === 0,
-          { { { 0, 1 } }, { { 0, 1 } } },
-          Throw[ { {}, {} } , "ZeroVariableInNonSingularSystem"]
-        ],
+      properBinEqn[[2]] === 0
+      ,
+      Throw[ { {}, {} } , "ZeroVariableInNonSingularSystem"]
+      ,
       (* All other cases *)
       True,
-        getCoeffs /@
-        { Together[ properMonEqn[[1]] ], - Together[ properMonEqn[[2]] ] }
+      getCoeffs /@
+      { Together[ properBinEqn[[1]] ], - Together[ properBinEqn[[2]] ] }
     ]
   ];
 
@@ -529,10 +517,13 @@ BinPolsToMat[ polList_, nVars_Integer, s_ ] :=
 BinPolToFactorList[ pol_]:=
   GatherCoeffs @ FactorList[ pol ];
 
-GatherCoeffs[ l_List ] :=
-  l;
+GatherCoeffs[ { { a_NumericQ, b_?NumericQ }, monList_ } ] :=
+  { { a^b, 1 }, monList };
+
 GatherCoeffs[ { { a_?NumericQ, b_?NumericQ }, { c_?NumericQ, d_?NumericQ }, l2___List } ] :=
   GatherCoeffs[ { { a^b c^d, 1 }, l2 } ];
 
 FactorListToSparseInput[ list_, i_, s_ ] :=
   ReplaceAll[ list, { s[j_], c_ } :> Rule[ { i, j } , c ] ];
+
+

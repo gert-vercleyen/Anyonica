@@ -86,7 +86,7 @@ BinomialEquationQ[ eqn_ ] :=
   ];
 
 
-PackageScope["ToProperBinomialEquation"]
+PackageExport["ToProperBinomialEquation"]
 
 ToProperBinomialEquation::usage =
   "ToProperBinomialEquation[binEqn] returns an equivalent binomial "<>
@@ -108,10 +108,6 @@ ToProperBinomialEquation[ eqn_ ] :=
     ,
     Message[ ToProperBinomialEquation::notbineqn, eqn ];
     Abort[]
-    ,
-    Not[ MemberQ[HoldPattern[Plus[__]]]  @ eqn ]
-    ,
-    eqn
     ,
     True
     ,

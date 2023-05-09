@@ -193,13 +193,10 @@ EqnToProp[eqn_] :=
       ( List @@ eqn )/.Plus -> Sequence/.Times -> And
     ]
     ,
-    With[{ eq = ToProperBinomialEquation[eqn] },
-      Map[
-        IntToBool,
-        Equivalent[ First @ eq, Last @ eq ]/.Times -> And
-      ]
+    Map[
+      IntToBool,
+      Equivalent[ First @ eqn, Last @ eqn ]/.Times -> And
     ]
-
   ];
 
 (* Returns True if exactly one of the arguments is True *)

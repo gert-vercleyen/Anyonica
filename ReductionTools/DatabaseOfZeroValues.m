@@ -94,10 +94,19 @@ MemoizedZeroValues[ multTab_, { binEqns_, sumEqns_ }, fSymbols_, opts:OptionsPat
           StoreZeroValues[
             multTab,
             zeroValues =
-              Select[ ValidZerosQ[sumEqns] ] @
-              AddOptions[opts][FindZeroValues][
-                binEqns,
-                fSymbols
+              If[
+                OptionValue["FindZerosUsingSums"]
+                ,
+                AddOptions[opts][FindZeroValues][
+                  Join[binEqns,sumEqns],
+                  fSymbols
+                ]
+                ,
+                Select[ ValidZerosQ[sumEqns] ] @
+                AddOptions[opts][FindZeroValues][
+                  binEqns,
+                  fSymbols
+                ]
               ]
           ];
           zeroValues
