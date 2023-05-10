@@ -24,7 +24,8 @@ Options[PreparePentagonSolverInput] :=
       "UseDatabaseOfSmithDecompositions" -> True,
       "UseDatabaseOfZeroValues" -> True,
       "StoreDecompositions" -> True,
-      "InjectSolution" -> {}
+      "InjectSolution" -> {},
+      "FindZerosUsingSums" -> False
     },
     Options[FindZeroValues]
   ];
@@ -169,21 +170,11 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         ,
         True
         ,
-        If[
-          useSumsQ
-          ,
-          AddOptions[opts][FindZeroValues][
-            pentEqns,
-            fSymbols,
-            "InvertibleMatrices" -> invMats
-          ]
-          ,
-          Select[ ValidZerosQ[pentEqns] ] @
-          AddOptions[opts][FindZeroValues][
-            binEqns,
-            fSymbols,
-            "InvertibleMatrices" -> invMats
-          ]
+        Select[ ValidZerosQ[sumEqns] ] @
+        AddOptions[opts][FindZeroValues][
+          If[ useSumsQ, pentEqns, binEqns ],
+          fSymbols,
+          "InvertibleMatrices" -> invMats
         ]
       ];
     
@@ -192,7 +183,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     If[
       Length @ Normal @ zeros === 0
       ,
-      Return[{}]
+      Return[ { } ]
     ];
     
     printlog["PPSI:fixing_gauge", {procID } ];

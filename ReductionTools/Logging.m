@@ -436,25 +436,6 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:init", { id_, constraints_, varia
    ]
  ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:inconsistent_system", { id_, equations_, ___ } ] :=
-  Module[{fn},
-    fn = dataFileName[ id, dir, "Equations"];
-    safeExport[ fn, equations ];
-    AddCell[
-      fileName,
-      nbo,
-      Cell[
-        TextData[{
-          inputStyle[ "Inconsistency found after simplification of " ],
-          hyperlinkBox[ "Equations", fn ],
-          inputStyle[ "."]
-        }],
-        "Text",
-        CellTags -> {"Info"}
-      ]
-    ]
-  ];
-
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:solutions", { id_, soln_, ___ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "Solutions" ];
@@ -471,32 +452,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:solutions", { id_, soln_, ___ } ]
     ];
   ];
 
-(* BooleanZeroValues *)
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:init", { id_, constraints_, variables_, optionList_ } ] :=
-  Module[{ fn1, fn2 },
-    fn1 = dataFileName[ id, dir, "Constraints" ];
-    fn2 = dataFileName[ id, dir, "Variables" ];
-    safeExport[ fn1, constraints ];
-    safeExport[ fn2, variables ];
-
-    AddCell[
-      fileName,
-      nbo,
-      startCell[
-        id,
-        dir,
-        "BooleanZeroValues",
-        {
-          { "Constraints", fn1 },
-          { "Variables",   fn2 }
-        },
-        optionList
-      ]
-    ]
-  ];
-
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:non_invertible_matrix", { id_, mats_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:non_invertible_matrix", { id_, mats_ } ] :=
   Module[{ fn },
     fn = dataFileName[ id, dir, "InvertibleMatrices"];
     safeExport[ fn, mats ];
@@ -517,7 +473,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:non_invertible_matrix", { id_, ma
   ];
 
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:all_vars_trivial", { id_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:all_vars_trivial", { id_ } ] :=
   AddCell[
     fileName,
     nbo,
@@ -528,7 +484,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:all_vars_trivial", { id_ } ] :=
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:preProp", { id_, prop_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:preProp", { id_, prop_ } ] :=
   Module[{ fn },
     fn = dataFileName[ id, dir, "NonReducedProposition"];
     safeExport[ fn, prop ];
@@ -548,7 +504,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:preProp", { id_, prop_ } ] :=
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:reduced_system", { id_, prop_, knowns_, equivs_, remainingVars_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:reduced_system", { id_, prop_, knowns_, equivs_, remainingVars_ } ] :=
   Module[{ fn1, fn2 },
     fn1 = dataFileName[ id, dir, "ReducedSystem"];
     safeExport[ fn1, { prop, knowns, equivs} ];
@@ -569,32 +525,6 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:reduced_system", { id_, prop_, kn
         "Text",
         CellTags -> {"Info"}
       ]
-    ]
-  ];
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:out_of_memory", { id_ } ] :=
-(
-  AddCell[
-    fileName,
-    nbo,
-    warningCell[ id , "Not enough memory available to perform computation. Aborting." ]
-  ];
-
-  AddCell[
-    fileName,
-    nbo,
-    failedCell[ id ]
-  ];
-);
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:adding_equivalences", { id_ } ] :=
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      "Adding equivalences to solutions of the reduced system.",
-      "Text",
-      CellTags -> {id, "Info"}
     ]
   ];
 

@@ -881,4 +881,10 @@ PMap[ f_, set_ ] :=
       { i, Length[set] }
     ],
     ProgressIndicator[ i/Length[set] ]
-  ]
+  ];
+
+column[i_Integer] :=
+  #[[;;,i]]&;
+
+row[i_Integer] :=
+  #[[i]]&;
