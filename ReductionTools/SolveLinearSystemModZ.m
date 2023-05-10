@@ -472,7 +472,6 @@ BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
     ];
 
 BinEqnToFactorList[ eqn_, OptionsPattern[] ]  :=
-  EchoEvaluation @
   With[{
     properBinEqn = ToProperBinomialEquation[eqn],
     getCoeffs = GatherCoeffs @* FactorList
@@ -517,10 +516,7 @@ BinPolsToMat[ polList_, nVars_Integer, s_ ] :=
 BinPolToFactorList[ pol_]:=
   GatherCoeffs @ FactorList[ pol ];
 
-GatherCoeffs[ { { a_?NumericQ, b_?NumericQ } } ] :=
-  { { a^b, 1 } };
-
-GatherCoeffs[ { { a_?NumericQ, b_?NumericQ }, monList_ } ] :=
+GatherCoeffs[ { { a_?NumericQ, b_?NumericQ }, monList___ } ] :=
   { { a^b, 1 }, monList };
 
 GatherCoeffs[ { { a_?NumericQ, b_?NumericQ }, { c_?NumericQ, d_?NumericQ }, l2___List } ] :=
