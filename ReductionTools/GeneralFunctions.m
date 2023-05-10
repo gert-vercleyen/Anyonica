@@ -196,7 +196,7 @@ BinomialSystemQ[ eqns_ ] :=
   MatchQ[ eqns, { _?BinomialEquationQ .. } ];
 
 
-PackageScope["BinSplit"]
+PackageExport["BinSplit"]
 
 BinSplit::usage =
   "Split list l in two lists for which f is resp True and False.";
