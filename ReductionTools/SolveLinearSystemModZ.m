@@ -517,6 +517,9 @@ BinPolsToMat[ polList_, nVars_Integer, s_ ] :=
 BinPolToFactorList[ pol_]:=
   GatherCoeffs @ FactorList[ pol ];
 
+GatherCoeffs[ { { a_?NumericQ, b_?NumericQ } } ] :=
+  { { a^b, 1 } };
+
 GatherCoeffs[ { { a_?NumericQ, b_?NumericQ }, monList_ } ] :=
   { { a^b, 1 }, monList };
 
