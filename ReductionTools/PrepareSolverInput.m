@@ -278,10 +278,8 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
             Dispatch[z];
           
           { specificSym, specificFixedFs } =
-            QuietLog[
-              BreakMultiplicativeSymmetry[
-                AddZerosToSymmetries[ remainingSym, z ]
-              ]
+            BreakMultiplicativeSymmetry[
+              AddZerosToSymmetries[ remainingSym, z ]
             ];
 
           Sow[
