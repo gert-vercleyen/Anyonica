@@ -439,38 +439,47 @@ PackageExport["ReduceViaLogic"]
 
 ReduceViaLogic[ proposition_, x_ ] :=
   Module[
-    { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv },
+    { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv,
+      TransferKnowns
+    },
+
+    (* Transfer known values from equivs to knowns *)
+    TransferKnowns[ { prop_, knowns_, equivs_ } ] :=
+      Module[ { newKnowns, newEquivs },
+        { newKnowns, newEquivs } =
+          BinSplit[ equivs, BooleanQ @* Last ];
+
+        { prop, Join[ knowns, newKnowns ], newEquivs }
+      ];
 
     UpdateKnowns[ { prop_, knowns_, equivs_ } ] :=
+      TransferKnowns @
       Switch[ Head[prop],
         And
         ,
-        Module[{ newKnowns1, newKnowns2, newKnowns, newEquivs },
-          newKnowns1 =
+        With[{
+          newKnowns =
+            DeleteDuplicates @
             ReplaceAll[
               Cases[ prop, x[_] | Not[x[_]] ],
               { x[i_] :> ( x[i] -> True ), Not[ x[i_] ] :> ( x[i] -> False ) }
-            ];
-
-          { newKnowns2, newEquivs } =
-            BinSplit[ equivs/.Dispatch[newKnowns1], BooleanQ @* Extract[2] ];
-
-          newKnowns =
-            Join[ newKnowns1, newKnowns2 ];
+            ]
+          },
 
           {
-            prop/.Dispatch[ newKnowns ],
+            prop/.Dispatch[newKnowns],
             Join[ knowns, newKnowns ],
-            newEquivs
+            equivs/.Dispatch[newKnowns]
           }
         ]
         ,
-        Or | Symbol,
+        Or | Symbol
+        ,
         { prop, knowns, equivs }
         ,
         x
         ,
-        { True, Append[prop->True] @ knowns, equivs/.prop->True }
+        { True, knowns/.prop->True, equivs/.prop -> True }
       ];
 
     findEquiv[ prop_ ] :=
