@@ -73,7 +73,7 @@ Options[MemoizedZeroValues] :=
   ];
 
 MemoizedZeroValues[ multTab_, { binEqns_, sumEqns_ }, fSymbols_, opts:OptionsPattern[] ] :=
-  Module[{procID = ToString @ Unique[]},
+  Module[{ procID = ToString @ Unique[] },
 
     printlog["MZV:using_database", {procID} ];
 
@@ -94,19 +94,10 @@ MemoizedZeroValues[ multTab_, { binEqns_, sumEqns_ }, fSymbols_, opts:OptionsPat
           StoreZeroValues[
             multTab,
             zeroValues =
-              If[
-                OptionValue["FindZerosUsingSums"]
-                ,
-                AddOptions[opts][FindZeroValues][
-                  Join[binEqns,sumEqns],
-                  fSymbols
-                ]
-                ,
-                Select[ ValidZerosQ[sumEqns] ] @
-                AddOptions[opts][FindZeroValues][
-                  binEqns,
-                  fSymbols
-                ]
+              Select[ ValidZerosQ[sumEqns] ] @
+              AddOptions[opts][FindZeroValues][
+                binEqns,
+                fSymbols
               ]
           ];
           zeroValues

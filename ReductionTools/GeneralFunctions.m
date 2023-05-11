@@ -888,3 +888,60 @@ column[i_Integer] :=
 
 row[i_Integer] :=
   #[[i]]&;
+
+(* Returns a list of indices of arg subsets such that the subsets provide a cover
+ of set *)
+SubsetCover[ subsets_ ] :=
+  With[ { mMat = CompiledListsOfIndicesToSparseArray @ subsets },
+    Module[ { sol, decisions },
+     sol =
+      First @
+      LinearOptimization[
+        (Length /@ subsets) . decisions
+        ,
+        {
+          VectorGreaterEqual[ mMat . decisions, 1.],
+          VectorLessEqual[ 0., decisions ],
+          VectorLessEqual[decisions, 1. ]
+        }
+        ,
+        Element[ decisions, Vectors[ Length @ subsets, Integers ] ]
+      ];
+      Pick[ Range[Length[subsets]], Values @ sol, 1]
+    ]
+  ];
+
+CompiledListsOfIndicesToSparseArray[ indices_ ] :=
+  SparseArray @
+  With[ { sList = MembershipList[ PadRight[indices], Length /@ indices ] },
+    Thread[ Partition[ sList, 2 ] -> 1 ]
+  ];
+
+(* Create a vector of indices that who, taken two by two, represent
+   arrayrules for the membership matrix.
+   The output
+   { a, b, c, d, ... }
+   should be interpreted as
+   { { a, b } -> 1, { c, d } -> 1, ... }
+  *)
+
+MembershipList =
+  Compile[
+    {
+      { indices, _Integer, 2 }, (* matrix of elements per subset, padded with 0's *)
+      { nIndices, _Integer, 1 } (* number of elements per subset*)
+    },
+    Module[{ i, j, bg = Internal`Bag[Most[{0}]] }, (* We use Internal`Bag for compiled quick storage *)
+      For[ i = 1, i <= Length[indices], i++,
+        For[ j = 1, j <= nIndices[[i]], j++,
+          Internal`StuffBag[ bg, indices[[i, j]] ];
+          Internal`StuffBag[ bg, i ];
+        ]
+      ];
+      Internal`BagPart[ bg, All ]
+    ]
+    ,
+    { { output, _Integer, 1 } }, (* Hint to compiler about the output form *)
+    CompilationTarget -> "C",
+    RuntimeOptions -> "Speed" (* All elements are small integers so no chance of overflow *)
+  ];
