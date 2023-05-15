@@ -343,3 +343,41 @@ FTensors[ ring_FusionRing ] :=
       ]
     ][[2, 1]]
   ];
+
+PackageExport["TetrahedralEquivalences"]
+
+TetrahedralEquivalences::usage =
+  "TetrahedralEquivalences[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
+  "representative that is equivalent up to tetrahedral symmetry.\n"<>
+  "TetrahedralEquivalences[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
+  "representative that is equivalent up to tetrahedral symmetry.";
+
+TetrahedralEquivalences[ r_FusionRing, l_List ] :=
+  With[{ classes = Gather[ l , TEQ[ CC[r] ] ] },
+    Join @@
+    Table[
+      DeleteCases[ HoldPattern[ f_ -> f_ ] ] @
+      Thread[ c -> First @ c ] ,
+      { c, classes }
+    ]
+  ];
+
+TetrahedralEquivalences[r_FusionRing] :=
+  TetrahedralEquivalences[r, FSymbols[r]];
+
+TEQ[d_][ F[i1_, j1_, k1_, l1_, m1_, n1_], F[i2_, j2_, k2_, l2_, m2_, n2_] ] :=
+ Or[
+  	And[ i1 == l2, j1 == k2, k1 == j2, l1 == i2, m1 == d[m2], n1 == n2 ],
+  	And[ i1 == j2, j1 == i2, k1 == l2, l1 == k2, m1 == m2, n1 == d[n2] ],
+  	And[ i1 == i2, j1 == m2, k1 == d[k2], l1 == n2, m1 == j2, n1 == l2 ]
+ ];
+
+(*Create the orbit of a set of symmetry generators on the indices*)
+AllForms[transforms_List][arg_] :=
+  FixedPoint[ NextForms[transforms], Flatten @ { arg } ];
+
+NextForms[transforms_List][currforms_] :=
+  Union @@ Prepend[currforms] @ Table[ t /@ currforms, { t, transforms } ];
+
+NextForms[t_][currforms_] :=
+  NextForms[{t}][currforms];
