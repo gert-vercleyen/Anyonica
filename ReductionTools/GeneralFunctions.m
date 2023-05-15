@@ -806,10 +806,12 @@ PowerSumRoots[ f_, x_ ] :=
     ]
   ];
 
-PackageScope["QuietCheck"]
+PackageExport["QuietCheck"]
 
 QuietCheck::usage =
   "QuietCheck performs code and silently returns failexpr if messages from msgs are generated.";
+
+SetAttributes[ QuietCheck, HoldAll ];
 
 QuietCheck[ code_, failExpr_, msgs_List ] :=
   Quiet[
@@ -822,7 +824,7 @@ QuietCheck[ code_, failExpr_, msgs_List ] :=
   ];
 
 QuietCheck[ code_, failExpr_ ] :=
-  Quiet @ Check[ code, failExpr ];
+  Quiet[ Check[ code, failExpr ] ];
 
 
 PackageExport["ToNumericRootIsolation"]
