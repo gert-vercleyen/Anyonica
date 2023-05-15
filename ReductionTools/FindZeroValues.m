@@ -25,7 +25,8 @@ Options[ FindZeroValues ] :=
   Join[
     {
       "FindZerosBy" -> "Logic",
-      "InvertibleMatrices" -> {}
+      "InvertibleMatrices" -> {},
+      "Equivalences" -> {}
     },
     Options[SumEqnsToProp],
     Options[BooleanZeroValues]
@@ -56,10 +57,14 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
     {
       regMats, simpleEqns, simpleVars, revertVars, simpleMats, b, procID,
       result, absTime, proposition, knowns, equivs, reducedVars, AddExtraInfo,
-      preProp, binEqns, sumEqns, trivialVars
+      preProp, binEqns, sumEqns, trivialVars, eRules, reducedMats, reducedEqns,
+      simpleERules, remainingVars, FilterSolutions
     },
     regMats =
       OptionValue["InvertibleMatrices"];
+
+    eRules =
+      OptionValue["Equivalences"];
 
     procID =
       ToString[Unique[]];
@@ -67,82 +72,116 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
     printlog["FZV:init", {procID, eqns, vars, {opts}}];
 
     { absTime, result } =
-      Catch @
       AbsoluteTiming[
+      Catch[
+        { { simpleEqns, simpleMats, simpleERules }, simpleVars, revertVars } =
+          SimplifyVariables[
+            { eqns, regMats, eRules },
+            vars,
+            b
+          ];
+
+        (* We can use a reduced set of variables by using tetrahedral equivalences *)
+        reducedMats =
+          simpleMats/.Dispatch[simpleERules];
+
+        trivialVars =
+          Cases[ reducedMats, {{a_}} /; a =!= 0 :> a ];
+
+        reducedMats =
+          reducedMats ~ WithMinimumDimension ~ 2;
 
         If[
-          MemberQ[False] @ PermanentConditions @ regMats,
-          printlog["FZV:non_invertible_matrix", { procID, regMats }];
+          MemberQ[False] @ PermanentConditions @ reducedMats,
+          printlog["FZV:non_invertible_matrix", { procID, reducedMats }];
           Throw @ { }
         ];
 
-        trivialVars =
-          Cases[ regMats, {{a_}} /; a =!= 0 :> a ];
-
-        regMats =
-          regMats ~ WithMinimumDimension ~ 2;
+        reducedVars =
+          Union[ Complement[ simpleVars/.Dispatch[simpleERules], trivialVars ] ];
 
         If[
-          Length[trivialVars] == Length[vars]
+          Length[trivialVars] == Length[reducedVars]
           ,
           printlog["FZV:all_vars_trivial", { procID } ];
           Throw @ { { } }
         ];
 
-        { { simpleEqns, simpleMats }, simpleVars, revertVars } =
-          SimplifyVariables[
-            {
-              eqns/.Dispatch[ Thread[ trivialVars -> 1 ] ],
-              regMats
-            },
-            Complement[ vars, trivialVars ],
-            b
-          ];
+        reducedEqns =
+          DeleteDuplicates @*
+          DeleteCases[True] /@
+          ( simpleEqns/.Dispatch[simpleERules] );
 
         { binEqns, sumEqns } =
           BinomialSplit @
-          simpleEqns;
+          reducedEqns;
 
         (* Convert the equations to a proposition *)
         preProp =
           And[
             EqnsToProp[ binEqns ],
             AddOptions[opts][SumEqnsToProp][ sumEqns, b ],
-            MatsToProposition[ simpleMats ]
-          ];
+            MatsToProposition[ reducedMats ]
+          ]/.Thread[trivialVars->True]/.b[i_]:>i;
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
         (* Reduce the proposition using logic *)
         { proposition, knowns, equivs } =
-          ReduceViaLogic[ preProp, b ];
+          ReduceViaLogic[ preProp ]/.i_Integer :> b[i];
 
-        reducedVars =
-          Complement[ simpleVars, First /@ knowns, First /@ equivs ];
+        remainingVars =
+          Complement[ reducedVars, First /@ knowns, First /@ equivs ];
 
         printlog[ "FZV:reduced_system", { procID, proposition, knowns, equivs, reducedVars } ];
 
         If[ (* If all variables are known *)
-          Length[ reducedVars ] === 0
+          Length[ remainingVars ] === 0
           , (* THEN: select all vars that point to False, replace False by 0 and return solution *)
-          Return[ { Select[ knowns, Not @* Last ] /. revertVars /. False -> 0 } ]
+          Throw[
+            {
+              SortBy[First] @
+              ReplaceAll[
+                Select[ Join[ knowns, simpleERules/.knowns ], Not @* Last ],
+                revertVars
+              ]/.False -> 0
+            }
+          ]
         ];
 
+        FilterSolutions[ soln_ ] :=
+          Select[
+            soln,
+            FreeQ[ sumEqns/.Dispatch[#], False  | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ]&
+          ];
+
         AddExtraInfo[ sol_ ] :=
-          SortBy[First] @
-          Select[ !Last[#] || Last[#] == 0 & ] @
-          Join[ sol, knowns, equivs/.Dispatch[sol] ] /. revertVars /. False -> 0;
+          With[ { knownsFromEquivs = Select[ equivs/.Dispatch[sol], BooleanQ @* Last ] },
+            SortBy[First] @
+            Select[ Last[#] == 0 & ] @
+            ReplaceAll[
+              Join[
+                sol,
+                knowns,
+                simpleERules/.knowns/.Dispatch[sol]/.knownsFromEquivs,
+                equivs/.Dispatch[sol]
+              ]/.False -> 0,
+              revertVars
+            ]
+          ];
 
         Map[
           AddExtraInfo,
-          Switch[ OptionValue["FindZerosBy"],
-            "Logic",  AddOptions[opts][BooleanZeroValues],
-            "Reduce", ZeroValuesFromReduce,
-            "CCode",  CCodeZeroValues
-          ] @@
-          { proposition, reducedVars }
+          FilterSolutions[
+            Switch[ OptionValue["FindZerosBy"],
+              "Logic",  AddOptions[opts][BooleanZeroValues],
+              "Reduce", ZeroValuesFromReduce,
+              "CCode",  CCodeZeroValues
+            ] @@
+            { proposition, remainingVars }
+          ]
         ]
-
+      ]
       ];
 
       printlog["FZV:solutions", {procID,result}];
@@ -153,9 +192,10 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   ]
 );
 
+
 Options[SumEqnsToProp] =
   {
-    "SumSubsetFunction" -> "SolutionCount",
+    "SumSubsetFunction" -> "LeafCount",
     "SumSubsetParameter" -> "Default"
   };
 
@@ -171,12 +211,13 @@ SumEqnsToProp[ eqns_, x_, opts:OptionsPattern[] ] :=
     },
     EqnsToProp @
     Switch[ func,
+      "LeafCount"
+      ,
+      LeafCountEqns[ reducedEqns, par ]
+      ,
       "SolutionCount"
       ,
       SolutionCountEqns[ reducedEqns, x, par ]
-      (*,
-      "CoverAllVariables"
-      ,*)
       ,
       "TermCount"
       ,
@@ -184,8 +225,13 @@ SumEqnsToProp[ eqns_, x_, opts:OptionsPattern[] ] :=
     ]
   ];
 
+LeafCountEqns[ eqns_, par_ ] :=
+  With[ { p = If[ par === "Default", .3, par ] },
+    MinimalBy[ eqns, LeafCount, Ceiling[ Length[eqns] * p ] ]
+  ];
+
 SolutionCountEqns[ eqns_, x_, par_ ] :=
-  With[{ p = If[ par === "Default", .2, par ] },
+  With[{ p = If[ par === "Default", .3, par ] },
     MinimalBy[ eqns, CountSumSol[x], Ceiling[ Length[eqns] * p ] ]
   ];
 
@@ -215,89 +261,6 @@ TermCountEqns[ eqns_, par_ ] :=
 
 nTerms[ sumEqn_ ] :=
   Length[ Flatten[( List @@ sumEqn )/.Plus -> List ] ];
-
-(*
-FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
-(
-  CheckArgs[eqns, vars];
-  If[
-    OptionValue["FindZerosBy"] =!= "Logic"
-    ,
-    Module[
-      {
-        regMats, simpleEqns, simpleVars, revertVars, simpleMats, s, procID,
-        reducedEqns, result, absTime, proposition, knowns, equivs, reducedVars,
-        AddExtraInfo, solutions
-      },
-      regMats =
-        OptionValue["InvertibleMatrices"];
-
-      procID =
-        ToString[Unique[]];
-
-      printlog["FZV:init", {procID, eqns, vars, {opts}}];
-
-      { absTime, result } =
-      AbsoluteTiming[
-
-        { { simpleEqns, simpleMats }, simpleVars, revertVars } =
-          SimplifyVariables[ { eqns, regMats }, vars, s ];
-
-        (* Convert and reduce the equations using logic *)
-        { proposition, knowns, equivs } =
-          MapAt[
-            BooleanConvert[ #, "CNF" ]&,
-            ReduceViaLogic[
-              EqnsToProp[simpleEqns] && MatsToProposition[simpleMats],
-              s
-            ],
-            {1}
-          ];
-
-        reducedEqns =
-          PropToEqns @ proposition;
-
-        reducedVars =
-          Complement[ simpleVars, knowns[[;;,1]], equivs[[;;,1]] ];
-
-        If[ (* If all variables are known *)
-          Length[ reducedVars ] === 0
-          , (* THEN: select all vars that point to False, replace False by 0 and return solution *)
-          Return[ { Select[ equivs, Not @* Extract[2] ] /. False -> 0 } ]
-        ];
-
-        AddExtraInfo[ sol_ ] :=
-          SortBy[First] @
-          Select[ #[[2]] === 0& ] @
-          Join[
-            sol,
-            knowns,
-            equivs /. Dispatch[sol] /. False -> 0
-          ];
-
-        solutions =
-          If[
-            OptionValue["FindZerosBy"] === "CCode"
-            ,
-            SolveDiophantineSystem[ reducedEqns, reducedVars, { 0, 1 } ]
-            ,
-            SolveUsingReduce[ Join[ reducedEqns, Thread[ 1 >= reducedVars >= 0 ] ], reducedVars, Integers ]
-          ];
-
-        Map[ AddExtraInfo, solutions ] /. revertVars
-      ];
-
-      printlog["FZV:solutions", {procID,result}];
-
-      printlog["Gen:results", {procID, result, absTime}];
-
-      result
-    ]
-    ,
-    AddOptions[opts][BooleanZeroValues][ eqns, vars ]
-  ]
-);
-*)
 
 PropToEqns[ prop_And ] :=
   Map[
@@ -330,13 +293,6 @@ BinEqnsToProposition[ eqns_ ] :=
     ]
   );
 *)
-
-(*PackageExport["SumEqnsToProposition"] *)
-
-(*SumEqnsToProposition[ eqns_ ] :=*)
-(*  And @@ *)(* Eqns with powers or 1 don't provide info but sumEqnToProps does provide a proposition which it shouldn't do *)
-(*  DeleteCases[ 1 == _ | _ == 1 | (eq_/;MemberQ[ eq, HoldPattern[Power[__] ] ] ) ] @*)
-(*  sumEqnToProp[eqns];*)
 
 PackageExport["EqnsToProp"]
 
@@ -434,13 +390,14 @@ ZeroValuesFromReduce[ prop_, reducedVars_ ] :=
 CCodeZeroValues[ prop_, reducedVars_ ] :=
   SolveDiophantineSystem[ PropToEqns @ prop, reducedVars, { 0, 1 } ];
 
+
 (* Assumes single indexed vars x[i] *)
 PackageExport["ReduceViaLogic"]
 
-ReduceViaLogic[ proposition_, x_ ] :=
+ReduceViaLogic[ proposition_ ] :=
   Module[
     { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv,
-      TransferKnowns
+      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences
     },
 
     (* Transfer known values from equivs to knowns *)
@@ -461,8 +418,8 @@ ReduceViaLogic[ proposition_, x_ ] :=
           newKnowns =
             DeleteDuplicates @
             ReplaceAll[
-              Cases[ prop, x[_] | Not[x[_]] ],
-              { x[i_] :> ( x[i] -> True ), Not[ x[i_] ] :> ( x[i] -> False ) }
+              Cases[ prop, _Integer | Not[_Integer] ],
+              { i_Integer :> ( i -> True ), Not[ i_Integer ] :> ( i -> False ) }
             ]
           },
 
@@ -477,37 +434,28 @@ ReduceViaLogic[ proposition_, x_ ] :=
         ,
         { prop, knowns, equivs }
         ,
-        x
+        Integer
         ,
-        { True, knowns/.prop->True, equivs/.prop -> True }
+        { True, Append[ prop -> True ] @ knowns, equivs/.prop -> True }
       ];
 
-    findEquiv[ prop_ ] :=
-      FirstCase[
-        prop,
-        ( Equivalent[ x[i_], y__ ] | Equivalent[ y__, x[i_] ] ) /; FreeQ[ y, x[i] ] :> ( x[i] -> y )
+    (* Find disjunct equivalences *)
+    FindEquivs[prop_] :=
+      DeleteDuplicates[
+        Cases[
+          prop,
+          (Equivalent[i_Integer, y_] | Equivalent[y_, i_Integer]) /; FreeQ[y, i] :> i -> y
+        ],
+        IntersectingQ[ Cases[ #1, _Integer, Infinity ], Cases[ #2, _Integer, Infinity ] ] &
       ];
 
     UpdateEquivalences[ { prop_, knowns_, equivs_ } ] :=
-      Module[ { newEquivs, newProp, eq },
-        newProp =
-          prop;
-        newEquivs =
-          equivs;
-
-        While[
-          !MissingQ[ eq = findEquiv @ newProp ]
-          ,
-          newEquivs =
-            Join[ newEquivs/.eq, {eq} ];
-
-          newProp =
-            newProp/.eq
-        ];
-
-        { newProp, knowns, newEquivs }
+      With[ { newEquivs = FindEquivs @  prop },
+        { prop/.Dispatch[newEquivs], knowns, Join[ equivs/.Dispatch[newEquivs], newEquivs ] }
       ];
 
+    RepeatedUpdateEquivalences =
+      FixedPoint[ UpdateEquivalences, # ]&;
 
     SimplifySystem[ { prop_, knowns_, equivs_ } ] :=
       If[
@@ -518,9 +466,12 @@ ReduceViaLogic[ proposition_, x_ ] :=
         With[ { newProp = prop/.{ And -> Union @* And, Or -> Union @* Or } },
           {
             If[
-              Length[newProp] === 1,
+              Length[newProp] <= 1,
               newProp,
-              DeleteDuplicatesBy[Sort] @ newProp
+              Quiet[
+                DeleteDuplicatesBy[Sort] @ newProp,
+                Sort::normal
+              ]
             ],
             knowns,
             equivs
@@ -553,8 +504,8 @@ ReduceViaLogic[ proposition_, x_ ] :=
         simplify1 @
         {
           ReplaceRepeated[
-            BooleanConvert[#[[1]],"CNF"],
-            And[p1___, (! a_ || b_), (a_ || ! b_), p2___] :> And[ p1, Equivalent[ a, b ], p2 ]
+            BooleanConvert[ #[[1]],"CNF"],
+            And[ p1___, (! a_ || b_), (a_ || ! b_), p2___ ] :> And[ p1, Equivalent[ a, b ], p2 ]
           ],
           #[[2]],
           #[[3]]
