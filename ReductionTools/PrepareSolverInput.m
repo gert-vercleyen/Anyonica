@@ -62,24 +62,24 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     
     { time, solutions } =
     AbsoluteTiming[
-    
+
     If[ (* Want to substitute solution *)
       subsSol =!= {},
-      
+
       (* THEN *)
       { sRing, sSol } =
         subsSol;
-     
+
       (* Function that maps labels in sRing to corresponding labels in ring *)
       inject =
         InjectionForm[ ring, sRing ];
-      
+
       If[
         inject === None,
         Message[PreparePentagonSolverInput::notsubring, sRing, ring ];
         Abort[]
       ];
-      
+
       (* Rename all labels of sSol so they correspond to the labels of the sub-fusion-ring of ring *)
       compatibleSol =
         MapAt[
@@ -87,12 +87,12 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
           sSol,
           { All, 1 }
         ],
-      
+
       (* ELSE *)
       compatibleSol =
         {}
     ];
-    
+
     allFSymbols =
       FSymbols[ring];
 
@@ -136,7 +136,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
     invMats =
       With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
         invMats //
-        DeleteCases[ {{ x_?NumericQ }} | trivialMatrixPattern  ]
+        DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern  ]
       ];
 
     printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];

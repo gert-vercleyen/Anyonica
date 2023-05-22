@@ -45,6 +45,13 @@ MonomialQ[ pol_ ] :=
     Length[ MonomialList[ newPol ] ] === 1
   ];
 
+PackageExport["BEQ"]
+
+BEQ::usage =
+  "Shorthand for BinomialEquationQ";
+
+BEQ =
+  BinomialEquationQ;
 
 PackageExport["BinomialEquationQ"]
 
@@ -240,6 +247,14 @@ of the variables s[__] in expr, excluding those given by the list of \
 excludedVars. Options include \"LevelSpec\" -> n to search only for \
 variables up to level n.";*)
 
+PackageExport["GV"]
+
+GV::usage =
+  "Shorthand for GetVariables.";
+
+GV =
+  GetVariables;
+
 PackageExport["GetVariables"]
 
 GetVariables::usage =
@@ -297,6 +312,13 @@ Options[CountVariables] :=
 CountVariables[ data__ ] :=
   Length @ GetVariables[ data ];
 
+PackageExport["SV"]
+
+SV::usage =
+  "Shorthand for SimplifyVariables.";
+
+SV =
+  SimplifyVariables;
 
 PackageExport["SimplifyVariables"]
 

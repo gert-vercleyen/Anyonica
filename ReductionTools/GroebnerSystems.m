@@ -79,7 +79,8 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
 
     { time, result } =
       AbsoluteTiming[
-        If[
+
+        If[ (* Ring is trivial *)
           Rank[ring] == 1,
           Return[ { { { }, { F[1,1,1,1,1,1] -> 1 } } } ]
         ];

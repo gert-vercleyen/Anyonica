@@ -6,6 +6,15 @@
 
 Package["Anyonica`"]
 
+PackageExport["PE"]
+
+PE::usage =
+  "Shorthand for PentagonEquations.";
+
+PE =
+  PentagonEquations;
+
+
 PackageExport["PentagonEquations"]
 
 PentagonEquations::usage =

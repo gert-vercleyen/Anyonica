@@ -406,7 +406,7 @@ BinToSemiLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
   ];
   
 
-PackageScope["BinToLin"]
+PackageExport["BinToLin"]
 
 BinToLin::usage =
   "BinToLin[binEqns,nVars,s] returns a couple of " <>
