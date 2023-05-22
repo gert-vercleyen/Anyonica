@@ -238,6 +238,14 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
 
   ];
 
+PackageExport["RBL"]
+
+RBL::usage = 
+  "Shorthand for ReduceByLinearity.";
+
+RBL = 
+  ReduceByLinearity;
+
 
 FindLinearRule[ pol_, s_ ] :=
   Module[{ nonLinVars, linVars, var },

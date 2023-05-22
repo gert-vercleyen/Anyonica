@@ -45,7 +45,8 @@ UnitaryGaugeQ[ ring_, fSymbols_, OptionsPattern[] ] :=
     ,
     True
     ,
-      With[{
+      With[
+        {
         simplify  = OptionValue["SimplifyBy"],
         tolerance = OptionValue["Tolerance"],
         numQ      = OptionValue["Numeric"],
@@ -74,6 +75,14 @@ UnitaryGaugeQ[ ring_, fSymbols_, OptionsPattern[] ] :=
         ]
       ]
   ];
+
+PackageExport["UGQ"]
+
+UGQ::usage = 
+  "Shorthand for UnitaryGaugeQ.";
+
+UGQ = 
+  UnitaryGaugeQ;
 
 
 PackageExport["ToUnitaryGauge"]
@@ -111,7 +120,8 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
     Message[ ToUnitaryGauge::wrongsolformat, FSymb ];
     Abort[]
     ,
-    Module[{
+    Module[
+      {
       z, g, g2, vars, gaugeSymmetries, use2DQ, useDataBaseQ, preEqCheck,
       transforms, unitaryQ, newFs, constraints2D, binomialConstraints, sumConstraints,
       newBinomialConstraints, newSumConstraints, newVars, revertVars, numericQ, simplify, acc, binomialMat,
@@ -458,6 +468,15 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
     ]
   ];
 
+PackageExport["TUG"]
+
+TUG::usage =
+  "Shorthand for ToUnitaryGauge.";
+
+TUG =
+  ToUnitaryGauge;
+
+
 (* FUNCTIONS USED IN ToUnitaryGauge *)
 
 (* Useful matrices for gauge transforms *)
@@ -647,6 +666,15 @@ SymmetricGaugeQ[ ring_, symb_, OptionsPattern[] ] :=
       ]
   ];
 
+PackageExport["SGQ"]
+
+SGQ::usage =
+  "Shorthand for SymmetricGaugeQ.";
+
+SGQ =
+  SymmetricGaugeQ;
+
+
 PackageExport["ToSymmetricGauge"]
 
 ToSymmetricGauge::usage =
@@ -686,7 +714,8 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
     ,
     True
     ,
-      Module[{ gaugeSymmetries, transforms, g, u, newFs, constraints, newVars, newConstraints, revertVars,
+      Module[
+        { gaugeSymmetries, transforms, g, u, newFs, constraints, newVars, newConstraints, revertVars,
         unitaryGTQ, acc, numericQ, simplify, symGaugeQ, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS,
         NonOneCoeff,noc, diagonalElements,ZSpace,constVec, useDataBaseQ, preEqCheck, CheckSolution,newFSolution,
         time, result, procID, returnTransformQ, gaugeDemands, gauge, vacuumConstraints
@@ -877,10 +906,21 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
       ]
   ];
 
+
+PackageExport["TSG"]
+
+TSG::usage =
+  "Shorthand for ToSymmetricGauge.";
+
+TSG =
+  ToSymmetricGauge;
+
+
 (* Try to find a gauge where the F symbols are symmetric matrices *)
 (* Putting solutions into a symmetric gauge *)
 SymmetricGaugeConstraints[g_][ ring_FusionRing ] :=
-  With[{
+  With[
+    {
     transformedFMats =
     ( mL[g][#].#.mR[g][#]& ) /@
     ( FMatrices[ring] ~ WithMinimumDimension ~ 2 )
@@ -935,7 +975,8 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
     ,
     True
     ,
-      Module[{ gaugeSymmetries, transforms, u, constraints, newVars, newConstraints, revertVars,
+      Module[
+        { gaugeSymmetries, transforms, u, constraints, newVars, newConstraints, revertVars,
         acc, numericQ, simplify, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS, listOfOnesQ, newSol1, newSol2,
         diagonalElements, ZSpace, constVec, useDataBaseQ, preEqCheck, nGaugeVars, nonZeroFs,  trivialSpace, CSpace,
         monomials, time, result, procID, onlyAbsQ, values1, values2, vars, t, z, normSquaredExtraVars, absSol, a, b
@@ -1171,6 +1212,15 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
         result
       ]
   ];
+
+PackageExport["WGT"]
+
+WGT::usage = 
+  "Shorthand for WhichGaugeTransform.";
+
+WGT = 
+  WhichGaugeTransform;
+
 
 (*
 +---------------------------------------------------------------------------+

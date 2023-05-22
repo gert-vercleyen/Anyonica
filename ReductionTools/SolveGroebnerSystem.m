@@ -67,6 +67,15 @@ SolvePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     Abort[]
   ];
 
+PackageExport["SPE"]
+
+SPE::usage =
+  "Shorthand for SolvePentagonEquations.";
+
+SPE =
+  SolvePentagonEquations;
+
+
 Options[SolveMultiplicityFreePentagonEquations] :=
   Options[SolvePentagonEquations];
 
@@ -135,6 +144,14 @@ SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     True,
       Print["Can't solve cases with multiplicity yet"]
   ];
+
+PackageExport["SHE"]
+
+SHE::usage =
+  "Shorthand for SolveHexagonEquations.";
+
+SHE =
+  SolveHexagonEquations;
 
 
 Options[SolveMultiplicityFreeHexagonEquations] :=

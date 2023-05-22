@@ -266,4 +266,12 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     result
   ];
 
+PackageExport["SBS"]
+
+SBS::usage =
+  "Shorthand for SolveBinomialSystem.";
+
+SBS =
+  SolveBinomialSystem;
+
 

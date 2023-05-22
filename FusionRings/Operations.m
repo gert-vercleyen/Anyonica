@@ -3,7 +3,6 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-04-24 *)
 
-(* TODO: make sure that permutations permute all data *)
 
 Package["Anyonica`"]
 
@@ -63,10 +62,17 @@ PermutedRing[ r_FusionRing?FusionRingQ, perm_List ] :=
     ]
   ];
 
-PackageScope["PermutedRing"]
 
 PermutedRing[ r_FusionRing?FusionRingQ, perm_Cycles ] :=
   PermutedRing[ r, PermutationList[ perm, Rank[r] ] ];
+
+PackageExport["PR"]
+
+PR::usage =
+  "Shorthand for PermutedRing.";
+
+PR =
+  PermutedRing;
 
 
 PackageScope["PermuteMultTab"]
@@ -118,6 +124,13 @@ WhichPermutation[ ring1_FusionRing?FusionRingQ, ring2_FusionRing?FusionRingQ ] :
     ]
   ];
 
+PackageExport["WP"]
+
+WP::usage =
+  "Shorthand for WhichPermutation";
+
+WP =
+  WhichPermutation;
 
 (* SORTING ELEMENTS OF RINGS *)
 PackageExport["SortedRing"]
@@ -144,6 +157,14 @@ SortedRing[ r_FusionRing?FusionRingQ, OptionsPattern[] ] :=
     },
     PermutedRing[ r, permVec ]
   ];
+
+PackageExport["SR"]
+
+SR::usage =
+  "Shorthand for SortedRing.";
+  
+SR =
+  SortedRing;
 
 
 PackageScope["PermVecQD"]
@@ -311,7 +332,7 @@ PackageExport["ReplaceByKnownRing"]
 ReplaceByKnownRing::usage =
 "Replace ring by the first known equivalent ring in FusionRingList.";
 
-SetAttributes[ ReplaceByKnown, Listable ];
+SetAttributes[ ReplaceByKnownRing, Listable ];
 
 ReplaceByKnownRing[ ring_ ] :=
 Module[{equivRing},
@@ -326,6 +347,15 @@ Module[{equivRing},
     ]
   ]
 ];
+
+PackageExport["RPKR"]
+
+RP::usage =
+  "Shorthand for ReplaceByKnownRing.";
+
+RP =
+  ReplaceByKnownRing;
+
 
 
 RingsFromParams[ nsdnsd_List, mult_Integer, nnzsc_Integer ] :=

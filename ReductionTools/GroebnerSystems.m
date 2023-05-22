@@ -361,6 +361,15 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
 
   ];
 
+PackageExport["HGS"]
+
+HGS::usage = 
+  "Shorthand for HexagonGroebnerSystems.";
+
+HGS = 
+  HexagonGroebnerSystems;
+
+
 QuickSolve[ system_, var_ ] :=
   With[{pols = system["Polynomials"] },
     If[
@@ -449,6 +458,14 @@ ParallelGroebnerBasis[ pols_, vars_, opts:OptionsPattern[] ] :=
     basis
   ];
 
+PackageExport["PGB"]
+
+PGB::usage =
+  "Shorthand for ParallelGroebnerBasis.";
+
+PGB =
+  ParallelGroebnerBasis;
+
 
 PackageExport["IncrementalGroebnerBasis"]
 
@@ -527,3 +544,11 @@ IncrementalGroebnerBasis[ pols_, vars_ , opts : OptionsPattern[] ] :=
 
     RecursiveGroebner[ simplify @ pols, { } ]
   ];
+
+PackageExport["IGB"]
+
+IGB::usage =
+  "Shorthand for IncrementalGroebnerBasis.";
+
+IGB =
+  IncrementalGroebnerBasis;
