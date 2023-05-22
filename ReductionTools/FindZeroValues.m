@@ -192,6 +192,13 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   ]
 );
 
+PackageExport["FZV"]
+
+FZV::usage =
+  "Shorthand for FindZeroValues.";
+
+FZV =
+  FindZeroValues;
 
 Options[SumEqnsToProp] =
   {

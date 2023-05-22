@@ -139,6 +139,15 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
     ]
   ];
 
+PackageExport["BMS"]
+
+BMS::usage =
+  "Shorthand for BreakMultiplicativeSymmetry.";
+
+BMS =
+  BreakMultiplicativeSymmetry;
+
+
 PackageExport["RestrictMultiplicativeSymmetries"]
 
 RestrictMultiplicativeSymmetries::usage =
@@ -534,6 +543,14 @@ PermutedFSymbols[ FSymb_, perm_List ] :=
     ]
   ];
 
+PackageExport["SEQ"]
+
+SEQ::usage = 
+  "Shorthand for SymmetryEquivalentQ.";
+
+SEQ = 
+  SymmetryEquivalentQ;
+
 
 PackageExport["DeleteEquivalentSolutions"]
 
@@ -588,6 +605,14 @@ DeleteEquivalentSolutions[ soln_, ring_, symmetries_, opts:OptionsPattern[] ] :=
     printlog["Gen:results", { procID, result, time } ];
     result
   ];
+
+PackageExport["DES"]
+
+DES::usage = 
+  "Shorthand for DeleteEquivalentSolutions.";
+
+DES = 
+  DeleteEquivalentSolutions;
 
 
 PackageScope["MultiplicativeGaugeMatrix"]
@@ -654,6 +679,15 @@ GaugeTransform[ g_Symbol ][ l_List ] :=
 GaugeTransform[ { g_Symbol, t_Symbol } ][ l_List ] :=
   GaugeTransform[ { g, t } ] /@ l;
 
+PackageExport["GT"]
+
+GT::usage =
+  "Shorthand for GaugeTransform.";
+
+GT =
+  GaugeTransform;
+
+
 PackageExport["ApplyGaugeTransform"]
 
 ApplyGaugeTransform::usage =
@@ -672,6 +706,15 @@ ApplyGaugeTransform[ solution_, gaugeValues_, s_ ] :=
   ApplyGaugeTransform[ solution, s ] /. gaugeValues;
 
 
+PackageExport["AGT"]
+
+AGT::usage =
+  "Shorthand for ApplyGaugeTransform.";
+
+AGT =
+  ApplyGaugeTransform;
+
+
 PackageExport["GaugeSymmetries"]
 
 GaugeSymmetries::usage =
@@ -682,6 +725,16 @@ GaugeSymmetries[ symbols_, g_ ] :=
     "Transforms" -> Table[ s -> GaugeTransform[g][s], { s, symbols } ],
     "Symbols" -> { g }
   |>;
+
+
+PackageExport["GS"]
+
+GaugeSymmetries::usage =
+  "Shorthand for GaugeSymmetries.";
+
+GS =
+  GaugeSymmetries;
+
 
 PackageScope["TrivialGaugeMatrix"]
 

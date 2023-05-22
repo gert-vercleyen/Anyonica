@@ -148,6 +148,15 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
     result
   ];
 
+PackageExport["RBB"]
+
+RBB::usage =
+  "Shorthand for ReduceByBinomials.";
+
+RBB =
+  ReduceByBinomials;
+
+
 Options[SolveAndCheck] :=
   Join[ 
     Options[ReduceByBinomials], 
