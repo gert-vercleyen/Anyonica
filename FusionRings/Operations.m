@@ -335,18 +335,18 @@ ReplaceByKnownRing::usage =
 SetAttributes[ ReplaceByKnownRing, Listable ];
 
 ReplaceByKnownRing[ ring_ ] :=
-Module[{equivRing},
-  With[{
-    knownRings =
-    RingsFromParams[ NSDNSD[ring], Mult[ring], NNZSC[ring] ]},
-    equivRing =
-    FirstCase[ knownRings, r_/;EquivalentFusionRingQ[ r, ring ] ];
-    If[ Head[equivRing] =!= Missing,
-      equivRing,
-      ring
+  Module[{equivRing},
+    With[{
+      knownRings =
+        RingsFromParams[ NSDNSD[ring], Mult[ring], NNZSC[ring] ]},
+      equivRing =
+        FirstCase[ knownRings, r_/;EquivalentFusionRingsQ[ r, ring ] ];
+      If[ Head[equivRing] =!= Missing,
+        equivRing,
+        ring
+      ]
     ]
-  ]
-];
+  ];
 
 PackageExport["RPKR"]
 

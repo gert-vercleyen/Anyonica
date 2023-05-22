@@ -557,7 +557,7 @@ SubFusionRingQ[ ring_FusionRing?FusionRingQ, subring_List ] :=
   With[ { subrings = SubFusionRings[ring][;;,2] },
     Do[
       If[
-        EquivalentFusionRingQ[ subring, r ],
+        EquivalentFusionRingsQ[ subring, r ],
         Return[True]
       ],
       { r, subrings }
@@ -567,8 +567,8 @@ SubFusionRingQ[ ring_FusionRing?FusionRingQ, subring_List ] :=
 
 PackageExport["EquivalentFusionRingsQ"]
 
-EquivalentFusionRingQ::usage =
-  "EquivalentFusionRingQ[ring1,ring2] returns True if the elements of ring1 are a relabeling of the elements of ring2"<>
+EquivalentFusionRingsQ::usage =
+  "EquivalentFusionRingQs[ring1,ring2] returns True if the elements of ring1 are a relabeling of the elements of ring2"<>
   " and False otherwise.";
 
 EquivalentFusionRingsQ[ r1_FusionRing?FusionRingQ, r2_FusionRing?FusionRingQ ] :=
@@ -634,7 +634,7 @@ AllPermutations[ l1_List, l2_List ] :=
 PackageExport["EFQ"]
 
 EFQ::usage =
-  "Shorthand for EquivalentFusionRingQ.";
+  "Shorthand for EquivalentFusionRingsQ.";
 
 EFQ[ ring1_, ring2_ ] :=
   EquivalentFusionRingsQ[ ring1, ring2 ];
@@ -681,7 +681,7 @@ If[
   With[{
     candidates = CandidatesByTQDS[ r, list ] },
     DeleteDuplicates[
-      Sort /@ Cases[ candidates, rings_/; EquivalentFusionRingQ[ r, DirectProduct @@ rings ] ]
+      Sort /@ Cases[ candidates, rings_/; EquivalentFusionRingsQ[ r, DirectProduct @@ rings ] ]
     ]
   ]
 ];
@@ -801,7 +801,6 @@ InternalMultiplicationQ[ multTab_, particles_ ] :=
   ];
 
 
-
 PackageExport["AdjointFusionRing"]
 
 AdjointFusionRing::usage =
@@ -824,15 +823,15 @@ AdjointFusionRing[ ring_FusionRing?FusionRingQ ] :=
       ring;
     {
       el,
-      ReplaceByKnown @
+      ReplaceByKnownRing @
       FusionRing[
         "MultiplicationTable" -> mt[[el,el,el]]
       ]
     }
   ];
 
-PackageExport["UpperCentralSeries"]
 
+PackageExport["UpperCentralSeries"]
 
 UpperCentralSeries::usage =
   "UpperCentralSeries[ fusionRing ] returns a list of couples { c[1], ..., c[n] } where c[i] = { el[i], adj[i] } and subring [i] corresponds to the adjoint subring of adj[i-1] and el[i] to the elements of adj[i-1] that form this subring.";
@@ -952,7 +951,7 @@ UniversalGrading[ ring_ ] :=
 
     {
       grading,
-      ReplaceByKnown @
+      ReplaceByKnownRing @
       FusionRing[
         "MultiplicationTable" -> mt
       ]
@@ -989,7 +988,7 @@ FusionRingCommutator[ ring_FusionRing, subRing_FusionRing ] :=
       ];
       {
         el,
-        ReplaceByKnown @
+        ReplaceByKnownRing @
         FusionRing[
           "MultiplicationTable" -> ring[[el,el,el]]
         ]

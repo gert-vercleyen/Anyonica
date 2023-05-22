@@ -969,3 +969,20 @@ MembershipList =
     CompilationTarget -> "C",
     RuntimeOptions -> "Speed" (* All elements are small integers so no chance of overflow *)
   ];
+
+PackageExport["TrimEquationList"]
+
+TrimEquationList::usage =
+  "Same as DeleteDuplicates @* DeleteCases[True].";
+
+TrimEquationList =
+  DeleteDuplicates @*
+  DeleteCases[True];
+
+PackageExport["TEL"]
+
+TEL::usage =
+  "Shorthand for TrimEquationList";
+
+TEL =
+  TrimEquationList;
