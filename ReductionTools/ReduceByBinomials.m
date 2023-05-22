@@ -5,8 +5,8 @@ Package["Anyonica`"]
 PackageExport["ReduceByBinomials"]
 
 ReduceByBinomials::usage =
-  "Recursively reduces sumEqns using solutions to binomialEqns and expresses vars in terms of new variables, "<>
-  "labeled by s, that appear in the reduced sumEqns.";
+  "ReduceByBinomials[sumEqns,binomialEqns,vars,s] recursively reduces sumEqns using solutions to binomialEqns"<>
+  " and expresses vars in terms of new variables, labeled by s, that appear in the reduced sumEqns.";
 
 ReduceByBinomials::notlistofequations =
   "`1` is not a list of equations.";
@@ -20,7 +20,7 @@ ReduceByBinomials::notlistofvars =
 Options[ ReduceByBinomials ] :=
   Options[ SolvePolynomialSystem ];
 
-CheckArgs[ sumEqns_, binomialEqns_, vars_ ][ code_ ] :=
+CheckArgs[ sumEqns_, binomialEqns_, vars_ ] :=
   Which[
     !ListOfEquationsQ[sumEqns]
     ,
@@ -36,42 +36,39 @@ CheckArgs[ sumEqns_, binomialEqns_, vars_ ][ code_ ] :=
     ,
     Message[ ReduceByBinomials::notlistofvars, vars ];
     Abort[]
-    ,
-    True
-    ,
-      code
   ];
 
 ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :=
-  CheckArgs[ sumEqns, binomialEqns, vars ] @
+(
+  CheckArgs[ sumEqns, binomialEqns, vars ];
   Module[{
     SolveRepeatedly, firstSoln, constraints, invertibleMatrices, polynomialConstraints, simplify,
     preEqCheck, procID, absTime, result
-    },
+  },
     invertibleMatrices =
-      OptionValue["InvertibleMatrices"];
+    OptionValue["InvertibleMatrices"];
     polynomialConstraints =
-      OptionValue["PolynomialConstraints"];
+    OptionValue["PolynomialConstraints"];
     simplify =
-      OptionValue["SimplifyIntermediateResultsBy"];
+    OptionValue["SimplifyIntermediateResultsBy"];
     preEqCheck =
-      OptionValue["PreEqualCheck"];
+    OptionValue["PreEqualCheck"];
     procID =
-      ToString[Unique[]];
-    
-    printlog["RBM:init", {procID,sumEqns,binomialEqns,vars,s,{opts}}];
+    ToString[Unique[]];
+
+    printlog["RBM:init", {procID, sumEqns, binomialEqns, vars, s, {opts}}];
 
     { absTime, result } =
     AbsoluteTiming[
       constraints =
-        Join[
-          polynomialConstraints,
-          DeterminantConditions @ invertibleMatrices
-        ];
+      Join[
+        polynomialConstraints,
+        DeterminantConditions @ invertibleMatrices
+      ];
 
       SolveRepeatedly[ { {}, nonBinEqns_ }, _, _, prevSols_, _  ] :=
-        Sow[ { nonBinEqns, prevSols } ];
-      
+      Sow[ { nonBinEqns, prevSols } ];
+
       SolveRepeatedly[
         { binEqns_, nonBinEqns_ },
         variables_,
@@ -79,47 +76,47 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
         prevSols_,
         { pConstraints_, invertibleMatrices_ }
       ] :=
-        If[
-          Not[ pConstraints === { False } || invertibleMatrices === { False } ]
-          ,
-          With[{ 
-            validSoln =
-              SolveAndCheck[
-                binEqns,
-                variables,
-                s[i],
-                "PolynomialConstraints" -> pConstraints,
-                "InvertibleMatrices" -> invertibleMatrices,
-                "NonSingular" -> True,
-                "SumEquations" -> nonBinEqns,
-                "PreEqualCheck" -> preEqCheck
-              ]
-            },
-            
-            If[
-              validSoln =!= {},
-              
-              MapThread[
-                SolveRepeatedly[
-                  UpdateSystem[ nonBinEqns, #1, simplify, preEqCheck ],
-                  GetVariables[ Normal[#1], s[i] ] ,
-                  s[i+1],
-                  Normal[prevSols]/.#1,
-                  #2
-                ]&,
-                {
-                  Dispatch /@ validSoln,
-                  UpdateConstraints[ { pConstraints, invertibleMatrices }, #, simplify, preEqCheck ]& /@
-                  validSoln
-                }
-              ]
+      If[
+        Not[ pConstraints === { False } || invertibleMatrices === { False } ]
+        ,
+        With[{
+          validSoln =
+          SolveAndCheck[
+            binEqns,
+            variables,
+            s[i],
+            "PolynomialConstraints" -> pConstraints,
+            "InvertibleMatrices" -> invertibleMatrices,
+            "NonSingular" -> True,
+            "SumEquations" -> nonBinEqns,
+            "PreEqualCheck" -> preEqCheck
+          ]
+        },
+
+          If[
+            validSoln =!= {},
+
+            MapThread[
+              SolveRepeatedly[
+                UpdateSystem[ nonBinEqns, #1, simplify, preEqCheck ],
+                GetVariables[ Normal[#1], s[i] ] ,
+                s[i + 1],
+                Normal[prevSols] /. #1,
+                #2
+              ]&,
+              {
+                Dispatch /@ validSoln,
+                UpdateConstraints[ { pConstraints, invertibleMatrices }, #, simplify, preEqCheck ]& /@
+                validSoln
+              }
             ]
           ]
-        ];
+        ]
+      ];
 
       firstSoln =
-        AddOptions[opts][SolveAndCheck][ binomialEqns, vars, s[1] ];
-      
+      AddOptions[opts][SolveAndCheck][ binomialEqns, vars, s[1] ];
+
       If[
         firstSoln === {},
         {},
@@ -138,7 +135,7 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
               firstSoln
             }
           ]
-        ][[2]]/.( s[_][i_] :> s[i] )/.( {x_List} :> x )
+        ][[2]] /. ( s[_][i_] :> s[i] ) /. ( {x_List} :> x )
       ]
     ];
 
@@ -146,7 +143,8 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
     printlog["Gen:results", {procID, result, absTime}];
 
     result
-  ];
+  ]
+);
 
 PackageExport["RBB"]
 
