@@ -54,6 +54,7 @@ Options[ReduceByLinearity] :=
   Join[
     {
       "SimplifyIntermediateResultsBy" -> Identity,
+      "ReduceByLinearityMaxMemoryFactor" -> .9,
       "Parallel" -> False
     },
     Options[SimplestLinearRule]
@@ -63,8 +64,10 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
   Module[
     {
       ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
-      ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, parallelQ, map
+      ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, parallelQ, map, maxMemFactor
     },
+    maxMemFactor =
+      OptionValue["MaxReduceByLinearityMemory"];
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
     parallelQ =
@@ -144,18 +147,32 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
       ];
 
     UpdateSystem[ pols_, nonZeroPols_, knownRules_, rule_ ] :=
-      {
-        DeleteDuplicates @ DeleteCases[0] @ map[ ToPol, pols /. rule ],
-        nonZeroPols /. rule,
-        Append[rule] @ Expand[ knownRules/.rule ]
-      };
+      MemoryConstrained[
+        {
+          DeleteDuplicates @ DeleteCases[0] @ map[ ToPol, pols /. rule ],
+          nonZeroPols /. rule,
+          Append[rule] @ Expand[ knownRules/.rule ]
+        }
+        ,
+        MemoryAvailable[] * maxMemFactor
+        ,
+        Sow[ { pols, nonZeroPols, knownRules } ];
+        $Aborted
+      ];
 
     ReduceSystem[ pols_, nonZeroPols_, rules_, pol_ ] :=
-      {
-        map[ RCF[PolRest[ #, pol ]]&, pols ],
-        nonZeroPols,
-        rules
-      };
+      MemoryConstrained[
+        {
+          map[ RCF[PolRest[ #, pol ]]&, pols ],
+          nonZeroPols,
+          rules
+        }
+        ,
+        MemoryAvailable[] * maxMemFactor
+        ,
+        Sow[ { pols, nonZeroPols, rules } ];
+        $Aborted
+      ];
 
     (* Add denominators appearing in the rules to the set of nonzero pols *)
     AddNonZeroPols[ pols_, nonZeroPols_, rules_ ] :=
@@ -173,16 +190,18 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
         |>
       ];
 
+    RecursiveReduce[$Aborted] =
+      $Aborted;
+
     RecursiveReduce[
       ps_,    (* Polynomials:                        *)
       nzps_,  (* Non-zero polynomials: initially { } *)
       rs_     (* Substitution rules:   initially { } *)
     ] :=
-      If[
-        InvalidPolSystem[ ps, nzps, rs ]
-        ,
-        Return @ Null
-        ,
+      Catch[
+
+        If[ InvalidPolSystem[ ps, nzps, rs ], Throw @ Null ];
+
         With[
           { lRule = AddOptions[opts][SimplestLinearRule][ ps, s ] },
           { denom = If[ MissingQ @ lRule, Missing[], RCF @ lRule[[2]]["Denominator"] ] },
