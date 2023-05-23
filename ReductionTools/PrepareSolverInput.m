@@ -172,6 +172,8 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
             ,
             { pentEqns, sumEqns }
             ,
+            True
+            ,
             { binEqns, sumEqns  }
           ],
           fSymbols,
