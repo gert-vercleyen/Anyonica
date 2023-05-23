@@ -1651,10 +1651,13 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:init", { id_, pols_, var_, option
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:pol_problem", { id_, pols_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:pol_problem", { id_, pol_, pols_ } ] :=
   Module[{fn1},
     fn1 = dataFileName[ id, dir, "Polynomials" ];
     safeExport[ fn1, pols ];
+
+    fn2 = dataFileName[ id, dir, "PolProblem" ];
+    safeExport[ fn2, pol ];
 
     AddCell[
       fileName,
@@ -1663,7 +1666,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:pol_problem", { id_, pols_ } ] :=
         TextData[{
           inputStyle[ "The " ],
           hyperlinkBox[ "polynomial system", fn1 ],
-          inputStyle[ " contains a non-zero polynomial and therefore it has no roots." ]
+          inputStyle[ " contains a non-zero "],
+          hyperlinkBox["polynomial", fn2 ],
+          inputStyle[ " and therefore it has no roots." ]
         }],
         "Text",
         CellTags -> { id, "Info" }

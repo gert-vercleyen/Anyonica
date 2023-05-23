@@ -124,25 +124,32 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
       With[
         {
           polProblem =
-            MemberQ[ pols, p_ /; MonQ[p] || MemberQ[p] @ nonZeroPols ],
+            FirstCase[ pols, p_ /; MonQ[p] || MemberQ[p] @ nonZeroPols ],
           nonZeroPolProblem =
             MemberQ[0] @ nonZeroPols,
           ruleProblem =
             MemberQ[0] @ rules[[;;, 2]]
         },
         Which[
-          polProblem,
-            printlog["RBL:pol_problem", { id , pols } ];
-            True,
-          nonZeroPolProblem,
-            printlog["RBL:non_zero_pol_problem"];
-            True,
-          ruleProblem,
-            printlog["RBL:rule_problem", { id, rules } ];
-            True,
+          !MissingQ[ polProblem ]
+          ,
+          printlog["RBL:pol_problem", { id , polProblem, pols } ];
+          True
+          ,
+          nonZeroPolProblem
+          ,
+          printlog["RBL:non_zero_pol_problem"];
+          True
+          ,
+          ruleProblem
+          ,
+          printlog["RBL:rule_problem", { id, rules } ];
+          True
+          ,
           (* ELSE: no problem *)
-          True,
-            False
+          True
+          ,
+          False
         ]
       ];
 
