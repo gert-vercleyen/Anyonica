@@ -67,7 +67,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
       ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, parallelQ, map, maxMemFactor
     },
     maxMemFactor =
-      OptionValue["MaxReduceByLinearityMemory"];
+      OptionValue["ReduceByLinearityMaxMemoryFactor"];
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
     parallelQ =
@@ -154,7 +154,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
           Append[rule] @ Expand[ knownRules/.rule ]
         }
         ,
-        MemoryAvailable[] * maxMemFactor
+        Floor[ MemoryAvailable[] * maxMemFactor ]
         ,
         Sow[ { pols, nonZeroPols, knownRules } ];
         $Aborted
@@ -168,7 +168,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
           rules
         }
         ,
-        MemoryAvailable[] * maxMemFactor
+        Floor[ MemoryAvailable[] * maxMemFactor ]
         ,
         Sow[ { pols, nonZeroPols, rules } ];
         $Aborted
