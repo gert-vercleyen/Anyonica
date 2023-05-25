@@ -132,7 +132,8 @@ InitializeFusionRing[ ops:OptionsPattern[] ] :=
       ,
       elNames =!= None && Length[ elNames ] != Length[ multTab ]
       ,
-      Message[ FusionRing::elnameslength, Length[ elNames ], Length[ multTab ] ],
+      Message[ FusionRing::elnameslength, Length[ elNames ], Length[ multTab ] ]
+      ,
       !( Equal @@ Head /@ elNames)
       ,
       Message[ FusionRing::elnamesdifferentheads, elNames ]

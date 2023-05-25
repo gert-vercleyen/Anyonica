@@ -223,16 +223,28 @@ RenameElements::usage =
   "RenameElements[ring,elementnames] returns a ring with with elements named after elementnames.";
 (*Here elementnames is only allowed to be a list of either String's, Integer's or Symbol's and must have a length equal to the rank of the ring.";*)
 
-RenameElements[ r_FusionRing?FusionRingQ, list_ ] :=
-  FusionRing @ Sequence[
-    "MultiplicationTable" -> MultiplicationTable @ r,
-    "ElementsName" -> ElementsName @ r,
-    "ElementNames" -> list,
-    "Names" -> Names @ r,
-    "Barcode" -> Barcode @ r,
-    "FormalParameters"  -> FC @ r,
-    "DirectProductDecompositions" -> WhichDecompositions @ r,
-    "SubFusionRings"  -> SubFusionRings @ r
+RenameElements[ r_FusionRing?FusionRingQ, elNames_ ] :=
+  Module[ { r2 = r, multTab = MT[r] },
+    Which[
+      elNames =!= None && Length[ elNames ] != Length[ multTab ]
+      ,
+      Message[ FusionRing::elnameslength, Length[ elNames ], Length[ multTab ] ];
+      Abort[]
+      ,
+      !( Equal @@ Head /@ elNames)
+      ,
+      Message[ FusionRing::elnamesdifferentheads, elNames ];
+      Abort[]
+      ,
+      !(MemberQ[{String,Integer,Symbol}, Head @* First @ elNames])
+      ,
+      Message[ FusionRing::elnameswrongheads, elNames];
+      Abort[]
+    ];
+
+    r2["ElementNames"] =
+      elNames;
+    r2
   ];
 
 
@@ -242,27 +254,16 @@ AddName::usage =
   "AddName[ring,string] returns a ring where the name string is added to the list of possible names of ring.";
 
 AddName[ r_FusionRing?FusionRingQ, s_String ] :=
-  FusionRing @ Sequence[
-    "MultiplicationTable" -> MultiplicationTable @ r,
-    "ElementsName" -> ElementsName @ r,
-    "ElementNames" -> ElementNames @ r,
-    "Names" -> Append[ Names[r], s ],
-    "Barcode"             -> Barcode @ r,
-    "FormalParameters"    -> FC @ r,
-    "DirectProductDecompositions" -> WhichDecompositions @ r,
-    "SubFusionRings"      -> SubFusionRings @ r
+  Module[{ r2 = r },
+    AppendTo[ r2["Names"], s ];
+    r2
   ];
 
 AddName[ r_FusionRing?FusionRingQ, names_List ] :=
-  FusionRing @ Sequence[
-    "MultiplicationTable" -> MultiplicationTable @ r,
-    "ElementsName" -> ElementsName @ r,
-    "ElementNames" -> ElementNames @ r,
-    "Names" -> Join[ Names[r], names ],
-    "Barcode"             -> Barcode @ r,
-    "FormalParameters"    -> FC @ r,
-    "DirectProductDecompositions" -> WhichDecompositions @ r,
-    "SubFusionRings"      -> SubFusionRings @ r
+  Module[{ r2 = r },
+    r2["Names"] =
+      Join[ r2["Names"], names ];
+    r2
   ];
 
 PackageExport["SetNames"]
@@ -271,17 +272,12 @@ SetNames::usage =
   "SetNames[ring,stringlist] returns a ring for which the names are now stringlist.";
 
 SetNames[ r_FusionRing?FusionRingQ, names_List ] :=
-  FusionRing @ Sequence[
-    "MultiplicationTable" -> MultiplicationTable @ r,
-    "ElementsName" -> ElementsName @ r,
-    "ElementNames" -> ElementNames @ r,
-    "Names" -> names,
-    "Barcode"             -> Barcode @ r,
-    "FormalParameters"    -> FC @ r,
-    "DirectProductDecompositions" -> WhichDecompositions @ r,
-    "SubFusionRings"      -> SubFusionRings @ r
+  Module[
+    { r2 = r },
+    r2["Names"] =
+      names;
+    r2
   ];
-
 
 (*Combining, decomposing and comparing fusion rings*)
 
@@ -304,20 +300,21 @@ DirectProduct::usage =
   "DirectProduct[ring1,ring2] returns the direct ring product of ring1 and ring2.";
 
 DirectProduct[ ring1_FusionRing?FusionRingQ, ring2_FusionRing?FusionRingQ ] :=
-With[{
-  k1 = Rank @ ring1,
-  k2 = Rank @ ring2,
-  tab1 = MultiplicationTable[ring1],
-  tab2 = MultiplicationTable[ring2]
-  },
-  FusionRing @ Rule[ "MultiplicationTable",
-    Flatten[ #, {{1,2},{3,4}} ]& @
-    Table[
-      Flatten @ Outer[ Times, tab1[[m1,n1]], tab2[[m2,n2]] ],
-      {m1,k1},{m2,k2},{n1,k1},{n2,k2}
+  With[
+    {
+      k1 = Rank @ ring1,
+      k2 = Rank @ ring2,
+      tab1 = MultiplicationTable[ring1],
+      tab2 = MultiplicationTable[ring2]
+    },
+    FusionRing @ Rule[ "MultiplicationTable",
+      Flatten[ #, {{1,2},{3,4}} ]& @
+      Table[
+        Flatten @ Outer[ Times, tab1[[m1,n1]], tab2[[m2,n2]] ],
+        {m1,k1},{m2,k2},{n1,k1},{n2,k2}
+      ]
     ]
-  ]
-];
+  ];
 
 DirectProduct[ ring1_FusionRing?FusionRingQ, ring2_FusionRing?FusionRingQ, rings__ ] :=
   DirectProduct[ DirectProduct[ ring1, ring2 ] , rings ];
@@ -344,12 +341,12 @@ ReplaceByKnownRing[ ring_ ] :=
     ]
   ];
 
-PackageExport["RPKR"]
+PackageExport["RBKR"]
 
-RP::usage =
+RBKR::usage =
   "Shorthand for ReplaceByKnownRing.";
 
-RP =
+RBKR =
   ReplaceByKnownRing;
 
 RingsFromParams[ nsdnsd_List, mult_Integer, nnzsc_Integer ] :=
