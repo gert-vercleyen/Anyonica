@@ -352,8 +352,6 @@ RP::usage =
 RP =
   ReplaceByKnownRing;
 
-
-
 RingsFromParams[ nsdnsd_List, mult_Integer, nnzsc_Integer ] :=
 Cases[
   FRL,
