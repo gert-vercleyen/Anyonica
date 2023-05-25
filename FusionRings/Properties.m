@@ -46,7 +46,6 @@ FusionRing /: SMT[ r_FusionRing?FusionRingQ ] :=
   SymbolicMultiplicationTable[ r ];
 
 
-
 PackageExport["Names"]
 
 Names::usage =
