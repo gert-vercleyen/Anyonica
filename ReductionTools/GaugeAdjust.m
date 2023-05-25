@@ -941,7 +941,7 @@ SymmetricGaugeConstraints[g_][ ring_FusionRing ] :=
 PackageExport["WhichGaugeTransform"]
 
 WhichGaugeTransform::usage =
-  "WhichGaugeTransform[ ring, sol1, sol2, s ] returns a gauge transform, in the variable g, that transforms "<>
+  "WhichGaugeTransform[ ring, sol1, sol2, s ] returns a gauge transform, in the variable s, that transforms "<>
   "sol1 into sol2";
 (*  , where sol1 and sol2 are solutions to the pentagon and/or hexagon equations for the Fusion Ring ring. Here g is the variable that will be used as a gauge variable."*)
 
