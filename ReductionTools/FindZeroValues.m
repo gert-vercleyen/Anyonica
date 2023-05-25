@@ -133,7 +133,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         remainingVars =
           Complement[ reducedVars, First /@ knowns, First /@ equivs ];
 
-        printlog[ "FZV:reduced_system", { procID, proposition, knowns, equivs, reducedVars } ];
+        printlog[ "FZV:reduced_system", { procID, proposition, knowns, equivs, remainingVars } ];
 
         If[ (* If all variables are known *)
           Length[ remainingVars ] === 0
@@ -170,11 +170,11 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
             ]
           ];
 
-        Map[
-          AddExtraInfo,
-          FilterSolutions[
+        FilterSolutions[
+          Map[
+            AddExtraInfo,
             Switch[ OptionValue["FindZerosBy"],
-              "Logic",  AddOptions[opts][BooleanZeroValues],
+              "Logic", AddOptions[opts][BooleanZeroValues],
               "Reduce", ZeroValuesFromReduce,
               "CCode",  CCodeZeroValues
             ] @@

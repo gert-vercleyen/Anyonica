@@ -177,8 +177,8 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
             { binEqns, sumEqns  }
           ],
           fSymbols,
-          "InvertibleMatrices" -> invMats,
-          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]
+          "InvertibleMatrices" -> invMats(*,
+          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
         ]
         ,
         True
@@ -186,8 +186,8 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
         AddOptions[opts][FindZeroValues][
           If[ useSumsQ, pentEqns, binEqns ],
           fSymbols,
-          "InvertibleMatrices" -> invMats,
-          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]
+          "InvertibleMatrices" -> invMats(*
+          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
         ]
       ];
     

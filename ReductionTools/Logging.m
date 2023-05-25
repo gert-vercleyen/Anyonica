@@ -520,7 +520,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:reduced_system", { id_, prop_, kn
           hyperlinkBox[ "System", fn1 ],
           inputStyle[" will be solved for the following "],
           hyperlinkBox[ "Variables", fn2 ],
-          inputStyle["."]
+          inputStyle[".\n(note that the variables from 1D matrices have already been filtered out)"]
         }],
         "Text",
         CellTags -> {"Info"}
