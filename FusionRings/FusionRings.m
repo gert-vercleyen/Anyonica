@@ -72,7 +72,7 @@ SetDirectory @
 PackageExport["AllFusionRingsQ"]
 
 AllFusionRingsQ::usage =
-	"AllFusionRingsAvailableQ[ r, m ] returns True if FusionRingList contains all fusion rings of rank r and multiplicity m, and False otherwise.";
+	"AllFusionRingsQ[ r, m ] returns True if FusionRingList contains all fusion rings of rank r and multiplicity m, and False otherwise.";
 
 AllFusionRingsQ[ r_Integer, m_Integer ] :=
 	Or[
@@ -89,7 +89,7 @@ AllFusionRingsQ[ r_Integer, m_Integer ] :=
 PackageExport["AFRQ"]
 
 AFRQ::usage =
-"Shorthand for AllFusionRingsAvailableQ.";
+"Shorthand for AllFusionRingsQ.";
 
 AFRQ[ r_, m_ ] :=
 	AllFusionRingsQ[ r, m ];
