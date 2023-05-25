@@ -109,18 +109,14 @@ WhichPermutation::usage =
   "of ring2.";
 
 WhichPermutation[ ring1_FusionRing?FusionRingQ, ring2_FusionRing?FusionRingQ ] :=
-  Module[
-    { perms, mt1, mt2 },
-    perms =
-      FusionRingAutomorphisms[ ring1 ];
-    mt1 =
-      MT[ ring1 ];
-    mt2 =
-      MT[ ring2 ];
-    FirstCase[
-      perms,
-      s_/;
-      PermuteMultTab[ mt1, s ] == mt2
+  Module[{ vec },
+    vec =
+      PermutationVector[ MT[ring1], MT[ring2] ];
+
+    If[
+      vec === None,
+      None,
+      vec
     ]
   ];
 

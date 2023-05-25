@@ -591,37 +591,48 @@ EquivalentFusionRingsQ[ r1_FusionRing?FusionRingQ, r2_FusionRing?FusionRingQ ] :
     ]
   ];
 
-EquivalentMultiplicationTableQ[ tab1_, tab2_ ] :=
-  With[{
-    d1 = Rest[ Count[ #, x_/; x > 0 ]& /@ Diagonal[ tab1 ] ],
-    d2 = Rest[ Count[ #, x_/; x > 0 ]& /@ Diagonal[ tab2 ] ],
-    n = Length[ tab1 ]},
-    If[
-      Sort[d1] =!= Sort[d2],
-      False,
-      With[{
-        prePerm1 = Prepend[#,1]& @ (PermutationList[ FindPermutation[ Sort[d1], d1 ], n - 1 ] + 1),
-        prePerm2 = Prepend[#,1]& @ (PermutationList[ FindPermutation[ Sort[d1], d2 ], n - 1 ] + 1)},
-        With[{
-          newTab1 = PermuteMultTab[ tab1, prePerm1 ],
-          newTab2 = PermuteMultTab[ tab2, prePerm2 ],
-          possiblePerms = PossiblePermutationVectors[ Sort[ d1 ] ] },
-          Module[{ \[Sigma], equiv },
-            equiv = False;
-            Do[
-              \[Sigma] = Prepend[ possiblePerms[[i]] + 1, 1 ];
-              If[
-                PermuteMultTab[ newTab1, \[Sigma] ] === newTab2,
-                equiv = True;
-                Break[]
-              ]
-              ,{ i, Length[ possiblePerms ] } ];
-            Return[equiv]
-          ]
-        ]
-      ]
+PackageScope["PermutationVector"]
+
+PermutationVector[ tab1_, tab2_ ] :=
+  Module[ { d1, d2, n, prePerm1, prePerm2, newTab1, newTab2, possiblePerms, p },
+    d1 =
+      Rest[ Count[ #, x_/; x > 0 ]& /@ Diagonal[ tab1 ] ];
+    d2 =
+      Rest[ Count[ #, x_/; x > 0 ]& /@ Diagonal[ tab2 ] ];
+    n =
+      Length[ tab1 ];
+
+    Catch[
+      If[ Sort[d1] =!= Sort[d2], Throw @ None ];
+
+      prePerm1 =
+        Prepend[#,1]& @
+        (PermutationList[ FindPermutation[ Sort[d1], d1 ], n - 1 ] + 1);
+      prePerm2 =
+        Prepend[#,1]& @
+        (PermutationList[ FindPermutation[ Sort[d1], d2 ], n - 1 ] + 1);
+
+      newTab1 =
+        PermuteMultTab[ tab1, prePerm1 ];
+      newTab2 =
+        PermuteMultTab[ tab2, prePerm2 ];
+      possiblePerms =
+        PossiblePermutationVectors[ Sort[ d1 ] ];
+
+      Do[
+        p =
+          Prepend[ possiblePerms[[i]] + 1, 1 ];
+
+        If[ PermuteMultTab[ newTab1, p ] === newTab2, Throw @ p ],
+        { i, Length[ possiblePerms ] }
+      ];
+
+      None
     ]
   ];
+
+EquivalentMultiplicationTableQ[ tab1_, tab2_ ] :=
+  PermutationVector[ tab1, tab2 ] =!= None;
 
 
 PossiblePermutationVectors[ l_List ] :=
@@ -629,6 +640,8 @@ PossiblePermutationVectors[ l_List ] :=
 
 AllPermutations[ l1_List, l2_List ] :=
   Select[ Tuples[ PositionIndex[l1] /@ l2 ], Apply[Unequal] ];
+
+
 
 PackageExport["EFQ"]
 
