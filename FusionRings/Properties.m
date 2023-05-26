@@ -878,7 +878,7 @@ FusionOutcomes[ ring_ ][ i_, j_ ] :=
 PackageExport["AdjointIrreps"]
 
 AdjointIrreps::usage =
-  "AdjointIrreps[ fusionRing ] returns a partition of the elements of fusionRing, where each set is invariant "
+  "AdjointIrreps[ fusionRing ] returns a partition of the elements of fusionRing, where each set is invariant " <>
   "under left-and right action of the adjoint subring. ";
 (*  "The first element always corresponds to the adjoint subring itself.";*)
 

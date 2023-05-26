@@ -8,7 +8,7 @@ Package["Anyonica`"]
 PackageExport["ReduceTrivialities"]
 
 ReduceTrivialities::usage =
-  "Reduces eqnsList recursively by using trivial equalities in eqnList.";
+  "ReduceTrivialities[eqnList,vars] reduces eqnList recursively by using trivial equalities in eqnList.";
 
 Options[ReduceTrivialities] =
   {

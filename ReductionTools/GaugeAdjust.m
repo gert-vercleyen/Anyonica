@@ -678,7 +678,7 @@ SGQ =
 PackageExport["ToSymmetricGauge"]
 
 ToSymmetricGauge::usage =
-  "Tries to find a gauge for which the F-matrices are symmetric.";
+  "ToSymmetricGauge[ring,FSymb] tries to find a gauge for which the F-matrices are symmetric.";
 
 ToSymmetricGauge::notmultfree =
   "Function does not yet support rings with multiplicity.";
@@ -1272,18 +1272,21 @@ FixVacuumFSymbols::usage =
   "Returns a list of rules that send vacuum F-symbols to identity operators";
 
 FixVacuumFSymbols[ ring_ ] :=
-  If[
-    Mult[ring] === 1,
-    Thread[
-      {
-        F[ 1, __ ],
-        F[ _, 1, __ ],
-        F[ _, _, 1, __ ]
-      } -> 1
-    ],
-      {
-        F[ 1, __, { _, i_, j_ }, { _, k_, l_ } ]        :> KroneckerDelta[ j, l ],
-        F[ _, 1, __, { _, i_, j_ }, { _, k_, l_ } ]     :> KroneckerDelta[ j, k ],
-        F[ _, _, 1, __, { _, i_, j_ }, { _, k_, l_ } ]  :> KroneckerDelta[ i, k ]
-      }
+  With[ { fs = FSymbols @ ring },
+    If[
+      Mult[ring] === 1
+      ,
+      Thread[
+        Cases[
+          fs,
+          F[ 1, __ ] | F[ _, 1, __ ] | F[ _, _, 1, __ ]
+        ] -> 1
+      ]
+      ,
+      Join[
+        Cases[ fs, x:F[ 1, __, { _, i_, j_ }, { _, k_, l_ } ]        :> ( x -> KroneckerDelta[ j, l ] ) ],
+        Cases[ fs, x:F[ _, 1, __, { _, i_, j_ }, { _, k_, l_ } ]     :> ( x -> KroneckerDelta[ j, k ] ) ],
+        Cases[ fs, x:F[ _, _, 1, __, { _, i_, j_ }, { _, k_, l_ } ]  :> ( x -> KroneckerDelta[ i, k ] ) ]
+      ]
+    ]
   ];

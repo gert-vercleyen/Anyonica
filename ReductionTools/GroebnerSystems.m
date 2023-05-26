@@ -8,8 +8,8 @@ Package["Anyonica`"]
 PackageExport["PentagonGroebnerSystems"]
 
 PentagonGroebnerSystems::usage =
-  "PentagonGroebnerSystems[r,z] calculates a Groebner basis for the pentagon equations of the "<>
-  "fusion ring r in variables labeled by z.";
+  "PentagonGroebnerSystems[r,z] calculates Groebner bases for the pentagon equations of the "<>
+  "fusion ring r, with remaining variables labeled by z.";
 (*Options include all options for solving the pentagon equations and all options for finding groebner bases.";*)
 
 Options[PentagonGroebnerSystems] :=
@@ -199,7 +199,8 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
 PackageExport["HexagonGroebnerSystems"]
 
 HexagonGroebnerSystems::usage =
-  "HexagonGroebnerSystems[r,z] calculates a Groebner basis for the hexagon equations of the fusion ring r variable z.";
+  "HexagonGroebnerSystems[r,z] calculates Groebner bases for the hexagon equations of the fusion ring r, " <>
+  "in remaining variable z.";
 (*Options include all options for solving the hexagon equations and all options for finding groebner bases.";*)
 
 Options[HexagonGroebnerSystems] :=
@@ -418,7 +419,7 @@ QuickSolve[ system_, var_ ] :=
 PackageExport["ParallelGroebnerBasis"]
 
 ParallelGroebnerBasis::usage =
-  "Calculates Groebner bases with different permutations of the variables on different kernels and returns the "<>
+  "ParallelGroebnerBasis[pols,vars] calculates Groebner bases with different permutations of the variables on different kernels and returns the "<>
   "first result found.";
 
 Options[ ParallelGroebnerBasis ] :=
@@ -471,7 +472,7 @@ PGB =
 PackageExport["IncrementalGroebnerBasis"]
 
 IncrementalGroebnerBasis::usage =
-  "Calculates Groebner basis by incrementally taking subsets of pols.";
+  "IncrementalGroebnerBasis[pols,vars] calculates Groebner basis by incrementally taking subsets of pols.";
 
 Options[IncrementalGroebnerBasis] :=
   Join[

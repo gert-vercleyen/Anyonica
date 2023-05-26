@@ -206,7 +206,7 @@ BinomialSystemQ[ eqns_ ] :=
 PackageExport["BinSplit"]
 
 BinSplit::usage =
-  "Split list l in two lists for which f is resp True and False.";
+  "BinSplit[l,f] splits list l in two lists for which f is resp True and False.";
   
 BinSplit[ l_List, f_ ] :=
   ReplaceAll[
@@ -221,7 +221,7 @@ BinSplit[ l_List, f_ ] :=
 PackageExport["BinomialSplit"]
 
 BinomialSplit::usage =
-  "Splits list eqnList into a list of binomial equations and a list non-binomial " <>
+  "BinomialSplit[eqnList] splits eqnList into a list of binomial equations and a list non-binomial " <>
   "equations.";
 
 Options[ BinomialSplit ] =
@@ -713,45 +713,7 @@ SolveUsingReduce::usage =
   "SolveUsingReduce[ eqns, vars ] solves the system of equations eqns in variables vars using Reduce.";
 
 SolveUsingReduce[ eqns_, vars_, rest___ ] :=
-  With[{
-    logicalExpression =
-      LogicalExpand @
-      EqualitiesToRules[
-        Reduce[ eqns, vars, rest, Backsubstitution -> True ],
-        vars
-      ]
-    },
-    If[
-      logicalExpression === False,
-      Return @ { }
-    ];
-
-    Which[
-      Head[ logicalExpression ] === Or, (* Multiple solutions, each with a single or multiple variables *)
-        Map[
-          If[ Head[#] === And, List @@ #, { # } ]& ,
-          List @@ logicalExpression
-        ],
-      Head[ logicalExpression ] === And, (* Single solution in multiple variables *)
-        { List @@ logicalExpression },
-      True, (* Single solution in 1 variable *)
-        logicalExpression
-    ]
-  ];
-
-EqualitiesToRules[ expr_, vars_ ] :=
-  ReplaceAll[
-    expr,
-    a_ == b_ :>
-    Which[
-      MemberQ[a] @ vars,
-        a -> b,
-      MemberQ[b] @ vars,
-        b -> a,
-      True,
-        SortBy[ a -> b, ByteCount ]
-    ]
-  ];
+  { ToRules @ Reduce[ eqns, vars, rest ] };
 
 
 PackageExport["PowerSumReduce"]
@@ -831,7 +793,8 @@ PowerSumRoots[ f_, x_ ] :=
 PackageExport["QuietCheck"]
 
 QuietCheck::usage =
-  "QuietCheck performs code and silently returns failexpr if messages from msgs are generated.";
+  "QuietCheck[code,failExpr,msgs] performs code and silently returns failexpr if messages from msgs are generated.\n"<>
+  "QuietCheck[code,failExpr] performs code and silently returns failexpr if any messages are generated.";
 
 SetAttributes[ QuietCheck, HoldAll ];
 
@@ -849,7 +812,7 @@ QuietCheck[ code_, failExpr_ ] :=
   Quiet[ Check[ code, failExpr ] ];
 
 
-PackageExport["ToNumericRootIsolation"]
+PackageScope["ToNumericRootIsolation"]
 
 ToNumericRootIsolation::usage =
   "Converts Root expressions with symbolic root isolation to those with numeric root isolation.";

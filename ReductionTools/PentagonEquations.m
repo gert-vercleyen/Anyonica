@@ -37,7 +37,7 @@ PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 PackageExport["PentagonTower"]
 
 PentagonTower::usage=
-  "Calculates a tower of pentagon equations based on the dimensions of the F-matrices.";
+  "PentagonTower[ring] calculates a tower of pentagon equations based on the dimensions of the F-matrices.";
 
 Options[ PentagonTower ] :=
   {
@@ -144,7 +144,7 @@ BinSumEquationsFromTower[ tower_Association ] :=
   ];
 
 
-PackageExport["PentagonEquationsFromTower"]
+PackageScope["PentagonEquationsFromTower"]
 
 PentagonEquationsFromTower::usage =
   "Flattens tower to a set of pentagon equations.";

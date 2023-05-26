@@ -13,7 +13,8 @@ Package["Anyonica`"]
 PackageExport["BreakMultiplicativeSymmetry"]
 
 BreakMultiplicativeSymmetry::usage =
-  "Returns a couple of restricted symmetries and a list of values that have been fixed.";
+  "BreakMultiplicativeSymmetry[symmetries] returns a couple of restricted symmetries and a list " <>
+  "of values that have been fixed.";
 
 BreakMultiplicativeSymmetry::clashingdemands =
   "Option \"Demands\" `1` is not allowed to assign values to variables given in Option \"ExcludedVariables\" `2`.";
@@ -318,7 +319,7 @@ GaugeFreedomQ[ sym_Association ] :=
 PackageExport["GaugeSymmetryEquivalentQ"]
 
 GaugeSymmetryEquivalentQ::usage =
-  "Returns True if sol1 and sol2 are gauge equivalent";
+  "GaugeSymmetryEquivalentQ[sym][sol1,sol2] returns True if sol1 and sol2 are related via gauge symmetries sym.";
 
 GaugeSymmetryEquivalentQ::symnotmultiplicative =
   "The symmetries `1` are not multiplicative";
@@ -502,7 +503,7 @@ TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
 PackageExport["SymmetryEquivalentQ"]
 
 SymmetryEquivalentQ::usage =
-  "SymmetryEquivalentQ returns True if there exists a combination of a gauge transform and a fusion ring " <>
+  "SymmetryEquivalentQ[ring,symmetries][sol1,sol2] returns True if there exists a combination of a gauge transform and a fusion ring " <>
   "automorphism of ring that transforms sol1 into sol2";
 
 Options[SymmetryEquivalentQ] :=
@@ -691,9 +692,9 @@ GT =
 PackageExport["ApplyGaugeTransform"]
 
 ApplyGaugeTransform::usage =
-  "ApplyGaugeTransform[ solution, symbol ] applies a formal gauge transformation, with gauge variables labeled by"<>
+  "ApplyGaugeTransform[ solution, s ] applies a formal gauge transformation, with gauge variables labeled by"<>
   " s, to all values of solution.\n" <>
-  "ApplyGaugeTransform[ solution, gaugeVals, symbol ] applies the gauge transformation with values determined by" <>
+  "ApplyGaugeTransform[ solution, gaugeVals, s ] applies the gauge transformation with values determined by" <>
   " gaugeVals to solution.";
 
 ApplyGaugeTransform[ solution_, s_ ] :=
@@ -729,7 +730,7 @@ GaugeSymmetries[ symbols_, g_ ] :=
 
 PackageExport["GS"]
 
-GaugeSymmetries::usage =
+GS::usage =
   "Shorthand for GaugeSymmetries.";
 
 GS =

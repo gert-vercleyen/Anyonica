@@ -48,7 +48,8 @@ RationalWeight[ num_, denom_ ] :=
 PackageExport["ReduceByLinearity"]
 
 ReduceByLinearity::usage =
-  "Reduces polList by using polynomials in polList that are linear in one of the variables labeled by s.";
+  "ReduceByLinearity[polList,s] reduces polList by using polynomials in polList that are linear in one of the "<>
+  "variables labeled by s.";
 
 Options[ReduceByLinearity] :=
   Join[
@@ -316,7 +317,7 @@ RemoveCommonFactors[ poly_, s_ ] :=
 
 *)
 
-PackageExport["ReduceByLinearity2"]
+PackageScope["ReduceByLinearity2"]
 
 ReduceByLinearity2::usage =
   "For testing.";

@@ -168,7 +168,7 @@ SparseFTensor[ ring_FusionRing?FusionRingQ ] :=
 PackageExport["FMatrices"]
 
 FMatrices::usage =
-  "Returns a list of symbolic F-matrices.";
+  "FMatrices[ring] returns a list of symbolic F-matrices.";
 
 FMatrices::notmultfree =
   "`1` should have multiplicity 1. Use FTensors for higher multiplicities.";

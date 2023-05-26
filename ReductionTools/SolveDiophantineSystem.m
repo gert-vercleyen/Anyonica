@@ -173,7 +173,7 @@ SearchSpaceSize[ ranges_ ] :=
   ];
 
 
-PackageExport["BacktrackCCode"]
+PackageScope["BacktrackCCode"]
 
 BacktrackCCode::usage =
 "BacktrackCCode[ tower, s, r ] takes a tower t of couples of vars labeled by s and equations" <>

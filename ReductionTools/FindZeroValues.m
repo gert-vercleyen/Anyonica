@@ -13,7 +13,8 @@ Package["Anyonica`"]
 PackageExport["FindZeroValues"]
 
 FindZeroValues::usage =
-  "Returns a list of all possible configurations of zero values of vars, consistent with the rational equations eqns";
+  "FindZeroValues[eqns,vars] returns a list of all possible configurations of zero values of vars, consistent with " <>
+  "polynomial equations eqns";
 
 FindZeroValues::wrongequationsformat =
   "`1` must be a list of equations/inequalities.";
@@ -301,7 +302,7 @@ BinEqnsToProposition[ eqns_ ] :=
   );
 *)
 
-PackageExport["EqnsToProp"]
+PackageScope["EqnsToProp"]
 
 EqnsToProp[ eqns_ ] :=
   And @@
@@ -348,7 +349,7 @@ IntToBool[0] :=
 IntToBool[x_] :=
   x;
 
-PackageExport["BooleanZeroValues"]
+PackageScope["BooleanZeroValues"]
 
 Options[BooleanZeroValues] :=
   Options[SatisfiabilityInstances];
@@ -397,9 +398,6 @@ ZeroValuesFromReduce[ prop_, reducedVars_ ] :=
 CCodeZeroValues[ prop_, reducedVars_ ] :=
   SolveDiophantineSystem[ PropToEqns @ prop, reducedVars, { 0, 1 } ];
 
-
-(* Assumes single indexed vars x[i] *)
-PackageExport["ReduceViaLogic"]
 
 ReduceViaLogic[ proposition_ ] :=
   Module[
@@ -534,7 +532,6 @@ ReduceViaLogic[ proposition_ ] :=
       ]
   ];
 
-PackageExport["MatsToProposition"]
 
 MatsToProposition[ matList_ ] :=
   With[{ perms = ReduceMonomials @* Permanent /@ matList },

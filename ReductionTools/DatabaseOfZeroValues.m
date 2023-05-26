@@ -62,9 +62,9 @@ StoreZeroValues[ multTab_, values_ ] :=
 PackageExport["MemoizedZeroValues"]
 
 MemoizedZeroValues::usage =
-  "MemoizedZeroValues[ multTab, values ] checks whether the configurations of F-symbols that are zero of the ring" <>
-  " with multiplication table multTab are stored in a database and if so," <>
-  " loads it. If they are not, it calculates it.";
+  "MemoizedZeroValues[multTab,{binEqns,sumEqns}] checks whether the configurations of F-symbols that are zero of "<>
+  "the ring with multiplication table multTab are stored in a database and if so," <>
+  " returns them. If they are not, it calculates them.";
 
 Options[MemoizedZeroValues] :=
   Join[
