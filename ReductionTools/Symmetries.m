@@ -197,12 +197,16 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
 
       { time, result } =
       AbsoluteTiming[
-      (* If all gauges are trivial, remove the variables from the system *)
+      (* If all gauge transforms of the knowns are trivial, remove the variables from the system *)
       If[
-        !GaugeFreedomQ[sym],
+        !GaugeFreedomQ[ sym, vars ],
         Return[
           <|
-          "Transforms" -> Cases[ transforms, HoldPattern[ f_ -> f_ ] /; FreeQ[f] @ vars ],
+          "Transforms" -> SimplifyVariables[
+              DeleteCases[ transforms, HoldPattern[ f_ -> f_ ] /; MemberQ[f] @ vars ],
+              symbols,
+              symbol
+            ][[1]],
           "Symbols" -> {symbol}
           |>
         ]
@@ -248,6 +252,14 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
     ]
   ];
 
+PackageExport["RMS"]
+
+RMS::usage =
+  "Shorthand for RestrictMultiplicativeSymmetries";
+
+RMS =
+  RestrictMultiplicativeSymmetries;
+
 
 PackageScope["AddZerosToSymmetries"]
 
@@ -271,6 +283,11 @@ GaugeFreedomQ[ sym_Association ] :=
     transforms = sym["Transforms"]
     },
     transforms[[;;,1]] =!= transforms[[;;,2]]
+  ];
+
+GaugeFreedomQ[ sym_Association, symbols_List ] :=
+  With[ { rules = FilterRules[ sym["Transforms"], symbols ] },
+    rules[[;;,1]] =!= rules[[;;,2]]
   ];
 
 (*

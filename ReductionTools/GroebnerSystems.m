@@ -259,7 +259,8 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
       ];
 
       SumBinEqns =
-        Reverse @* BinomialSplit;
+        Reverse @* BinomialSplit
+        ;
 
       { equations, variables, symmetries, knowns } =
         AddOptions[opts][PrepareHexagonSolverInput][ring] /@

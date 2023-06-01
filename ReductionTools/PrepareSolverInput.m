@@ -372,6 +372,7 @@ PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
       equations =
         AddOptions[opts][HexagonEquations] @ ring;
 
+EchoLabel["system"] @
       <|
         "Equations" ->  equations,
         "Variables" ->  GetVariables[ equations, { R, F } ],

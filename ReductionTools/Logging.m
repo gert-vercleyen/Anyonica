@@ -1871,7 +1871,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFHE:init", { id_, ring_, optionList
   ];
 
 (* RestrictMultiplicativeSymmetries *)
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:init", { id_, sym_, vars_, symbol_, optionList_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:init", { id_, sym_, vars_, symbol_, optsList_ } ] :=
   Module[{fn1, fn2, fn3 },
     fn1 = dataFileName[ id, dir, "Symmetries" ];
     safeExport[ fn1, sym ];
@@ -1888,7 +1888,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:init", { id_, sym_, vars_, symbol
         dir,
         "RestrictMultiplicativeSymmetries",
         { { "Symmetries", fn1 }, { "Vars", fn2 }, { "Symbol", fn3 } },
-        optionList
+        optsList
       ]
     ];
   ];
