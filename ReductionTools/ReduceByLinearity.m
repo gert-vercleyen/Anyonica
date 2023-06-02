@@ -124,8 +124,8 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
     InvalidPolSystem[ pols_, nonZeroPols_, rules_  ] :=
       With[
         {
-          polProblem =
-            FirstCase[ pols, p_ /; MonQ[p] || MemberQ[p] @ nonZeroPols ],
+          polProblem = (* note that all zeros are assumed to be removed from pols *)
+            FirstCase[ pols, p_ /;  MonQ[p] || MemberQ[p] @ nonZeroPols ],
           nonZeroPolProblem =
             MemberQ[0] @ nonZeroPols,
           ruleProblem =
@@ -157,7 +157,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
     UpdateSystem[ pols_, nonZeroPols_, knownRules_, rule_ ] :=
       MemoryConstrained[
         {
-          DeleteDuplicates @ DeleteCases[0] @ map[ ToPol, pols /. rule ],
+          TrimPolynomialList @ map[ ToPol, pols /. rule ],
           nonZeroPols /. rule,
           Append[rule] @ Expand[ knownRules/.rule ]
         }
@@ -171,7 +171,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
     ReduceSystem[ pols_, nonZeroPols_, rules_, pol_ ] :=
       MemoryConstrained[
         {
-          map[ RCF[PolRest[ #, pol ]]&, pols ],
+          TrimPolynomialList @ map[ RCF[PolRest[ #, pol ]]&, pols ],
           nonZeroPols,
           rules
         }
@@ -192,8 +192,14 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
         },
         <|
           "Polynomials" ->  DeleteDuplicates @ Expand @ pols,
-          "Assumptions"-> LogicalExpand @
-            Reduce[ Thread[ Join[ nonZeroPols, denominators ] != 0 ], Backsubstitution -> True ],
+          "Assumptions"->
+            LogicalExpand @
+            Reduce[
+              Thread[
+                Map[ RCF, Join[ nonZeroPols, denominators ] ] != 0
+              ],
+              Backsubstitution -> True
+            ],
           "Rules" -> SortBy[First] @ rules
         |>
       ];
