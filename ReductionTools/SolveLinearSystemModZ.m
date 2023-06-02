@@ -432,7 +432,7 @@ BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
     True
     ,
       With[{
-        factorLists = (* EchoFunction["factorLists", Normal] @ *)
+        factorLists =
           DeleteDuplicates @
           DeleteCases[{{{0, 1}}, {{0, 1}}}] @ (* These correspond to trivial equations 0 == 0 *)
           ( BinEqnToFactorList /@ eqnList )
@@ -469,7 +469,7 @@ BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
           ]
         ]
       ]
-    ];
+  ];
 
 BinEqnToFactorList[ eqn_, OptionsPattern[] ]  :=
   With[{
