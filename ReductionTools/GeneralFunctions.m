@@ -200,7 +200,7 @@ BinomialSystemQ::usage =
 
 BinomialSystemQ[ eqns_ ] :=
   TrueQ @
-  MatchQ[ eqns, { _?BinomialEquationQ .. } ];
+  MatchQ[ eqns, { _?BinomialEquationQ ... } ];
 
 
 PackageExport["BinSplit"]
@@ -949,3 +949,41 @@ TEL::usage =
 
 TEL =
   TrimEquationList;
+
+PackageExport["TrimPolynomialList"]
+
+TrimEquationList::usage =
+  "Same as DeleteDuplicates @* DeleteCases[0].";
+
+TrimPolynomialList =
+  DeleteDuplicates @*
+  DeleteCases[0];
+
+PackageExport["TPL"]
+
+TPL::usage =
+  "Shorthand for TrimPolynomialList";
+
+TPL =
+  TrimPolynomialList;
+
+(* SEcho: Echos results but replaces context of variables by
+something short *)
+
+PackageScope["SEcho"]
+
+SEcho[] :=
+  SEcho[Identity];
+
+SEcho[s_String] :=
+  SEcho[ Identity, s ];
+
+SEcho[ f_ ] :=
+  EchoFunction[ f[#]/._[i__Integer] :> P`x[i]& ];
+
+SEcho[ f_, s_Symbol ] :=
+  EchoFunction[ f[#]/.s[i__Integer] :> P`x[i]& ];
+
+SEcho[ f_, s_String ] := EchoFunction[ s, f[#]/._[i__Integer] :> P`x[i]& ];
+
+SEcho[ f_, s_String, ss_Symbol ] := EchoFunction[ s, f[#]/.ss[i__Integer] :> P`x[i]& ];
