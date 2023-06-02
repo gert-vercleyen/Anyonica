@@ -171,7 +171,7 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
           ]
         ];
 
-      sharedSolutions = Echo @
+      sharedSolutions =
         SolveNonSingularBinomialSystem[
           sharedBinomialSystem,
           sharedVars,

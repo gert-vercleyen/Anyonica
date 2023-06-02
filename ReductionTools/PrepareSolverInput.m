@@ -190,7 +190,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
           "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
         ]
       ];
-    
+
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 
     If[
@@ -372,7 +372,6 @@ PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
       equations =
         AddOptions[opts][HexagonEquations] @ ring;
 
-EchoLabel["system"] @
       <|
         "Equations" ->  equations,
         "Variables" ->  GetVariables[ equations, { R, F } ],
