@@ -91,7 +91,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       If[
         Length[ DeleteCases[True] @ eqnList ] === 0,
         printlog["Gen:trivial_system", {procID}];
-        Return[ { MapIndexed[ #1 -> param @@ #2 &, vars] } ]
+        Return[ { MapIndexed[ #1 -> param @@ #2 &, vars ] } ] (* TODO: use thread *)
       ];
 
       If[
@@ -105,7 +105,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       If[
         MemberQ[ False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ]  ] @ Expand[eqnList],
         printlog["SNSMS:has_false_or_zero", {procID, Expand[eqnList]}];
-        Return[{}]
+        Return @ {}
       ];
 
       (* Check whether symmetries are multiplicative *)
@@ -117,7 +117,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
 
       (* Rewrite system in terms of single-indexed variables *)
       { { newEqns, newInvertibleMats, newPolConstraints }, newVars, revertVars } =
-      SimplifyVariables[ { eqnList, invertibleMats, polConstraints }, vars, symbol ];
+        SimplifyVariables[ { eqnList, invertibleMats, polConstraints }, vars, symbol ];
 
       (* Solve the logarithm of the binomial equations *)
       If[
@@ -127,8 +127,8 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       ];
 
       preSolutions =
-        Thread[ newVars -> # ]& /@
         Catch[
+          Thread[ newVars -> # ]& /@
           SolveSemiLinModZ[
             BinToSemiLin[
               newEqns,
@@ -146,9 +146,9 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
 
       (* Check for empty solution set *)
       If[
-        preSolutions === {},
+        preSolutions === {} || preSolutions === { {}, {} },
         printlog["SNSMS:no_solutions_log_mon", {procID}];
-        Return[{}]
+        Return @ {}
       ];
 
       constraints =
