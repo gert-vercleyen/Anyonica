@@ -79,6 +79,7 @@ SPE =
 Options[SolveMultiplicityFreePentagonEquations] :=
   Options[SolvePentagonEquations];
 
+
 SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   Module[ { procID, time, result, bases, z, simplify },
     procID =
@@ -137,10 +138,10 @@ Options[SolveHexagonEquations] :=
     Options[HexagonGroebnerSystems]
   ];
 
-SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
+SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_, opts:OptionsPattern[] ] :=
   Which[
     Mult[ring] == 1,
-      SolveMultiplicityFreeHexagonEquations[ ring, opts ],
+      SolveMultiplicityFreeHexagonEquations[ ring, z, opts ],
     True,
       Print["Can't solve cases with multiplicity yet"]
   ];
@@ -157,7 +158,7 @@ SHE =
 Options[SolveMultiplicityFreeHexagonEquations] :=
   Options[SolveHexagonEquations];
 
-SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, opts:OptionsPattern[] ]:=
+SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, z_ , opts:OptionsPattern[] ]:=
   Module[{ procID, time, result, bases },
     procID =
       ToString @ Unique[];
