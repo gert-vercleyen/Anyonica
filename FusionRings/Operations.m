@@ -329,8 +329,8 @@ SetAttributes[ ReplaceByKnownRing, Listable ];
 
 ReplaceByKnownRing[ ring_ ] :=
   Module[{knownRings, equivRing },
-    knownRings =
-      RingsFromParams[ NSDNSD[ring], Mult[ring], NNZSC[ring] ];
+     knownRings = FRBC /@
+      Cases[ Keys @ FRBC, { Rank[ring], Mult[ring], NNSD[ring], _ } ];
 
     equivRing =
       FirstCase[ knownRings, r_/; EquivalentFusionRingsQ[ r, ring ] ];
@@ -348,12 +348,3 @@ RBKR::usage =
 
 RBKR =
   ReplaceByKnownRing;
-
-RingsFromParams[ nsdnsd_List, mult_Integer, nnzsc_Integer ] :=
-Cases[
-  FRL,
-  ring_/;
-  NNZSC[ring] == nnzsc &&
-  NSDNSD[ring] == nsdnsd &&
-  Mult[ring] == mult
-];
