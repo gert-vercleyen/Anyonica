@@ -863,14 +863,30 @@ UpperCentralSeries[ ring_FusionRing?FusionRingQ ] :=
     { Range @ Rank @ ring, ring }
   ];
 
+PackageExport["UCS"]
+
+UCS::usage =
+  "Shorthand for UpperCentralSeries.";
+
+UCS =
+  UpperCentralSeries;
+
 
 PackageExport["NilpotentFusionRingQ"]
+
+NilpotentFusionRingQ::usage =
+  "NilpotentFusionRingQ[ fusionRing ] returns True if the fusion ring fusionRing is nilpotent and False otherwise.";
 
 NilpotentFusionRingQ[ring_] :=
   TrueQ[ ( First @ Last @ UpperCentralSeries[ring] ) == {1} ];
 
-NilpotentFusionRingQ::usage =
-  "NilpotentFusionRingQ[ fusionRing ] returns True if the fusion ring fusionRing is nilpotent and False otherwise.";
+PackageExport["NPFRQ"]
+
+NPFRQ::usage =
+  "Shorthand for NilpotentFusionRingQ.";
+
+NPFRQ =
+  NilpotentFusionRingQ;
 
 
 PackageScope["FusionOutcomes"]
