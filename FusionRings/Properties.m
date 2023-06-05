@@ -842,6 +842,13 @@ AdjointFusionRing[ ring_FusionRing?FusionRingQ ] :=
     }
   ];
 
+PackageExport["AFR"]
+
+AFR::usage =
+ "Shorthand for AdjointFusionRing";
+
+AFR =
+  AdjointFusionRing;
 
 PackageExport["UpperCentralSeries"]
 
