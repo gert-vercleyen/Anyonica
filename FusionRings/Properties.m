@@ -476,7 +476,7 @@ SubFusionRings[ ring_FusionRing?FusionRingQ] :=
         multTabs = SubRingTables[m];
         {
           #["Subset"],
-          ReplaceByKnown[ ToRing[ #["MultTab"] ] ]
+          ReplaceByKnownRing[ ToRing[ #["MultTab"] ] ]
         }& /@ multTabs
       ]
     ]
