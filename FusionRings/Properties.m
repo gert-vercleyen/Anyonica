@@ -821,7 +821,7 @@ AdjointFusionRing::usage =
   "of el corresponds to the first element of fr, and so on).";
 
 AdjointFusionRing[ ring_FusionRing?FusionRingQ ] :=
-  Module[ { d, mt, el },
+  Module[ { d, mt, el, generatedEl },
     d =
       CC[ring];
     mt =
@@ -833,13 +833,30 @@ AdjointFusionRing[ ring_FusionRing?FusionRingQ ] :=
       Select[ #[[1]] == d[ #[[2]] ] & ] @
       NZSC @
       ring;
-    {
-      el,
-      ReplaceByKnownRing @
-      FusionRing[
-        "MultiplicationTable" -> mt[[el,el,el]]
-      ]
-    }
+
+    generatedEl =
+      FixedPoint[
+        Function[
+          l,
+          Union[ l, Flatten @ Table[FusionOutcomes[ring][i,j], {i,l}, {j,l} ] ]
+        ],
+        el
+      ];
+
+    If[
+      Length[ generatedEl] === Rank[ring]
+      ,
+      { generatedEl, ring }
+      ,
+      {
+        generatedEl,
+        ReplaceByKnownRing @
+        FusionRing[
+          "MultiplicationTable" -> mt[[generatedEl,generatedEl,generatedEl]]
+        ]
+      }
+    ]
+
   ];
 
 PackageExport["AFR"]
