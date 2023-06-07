@@ -146,6 +146,9 @@ SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_, opts:OptionsPattern[] ] 
       Print["Can't solve cases with multiplicity yet"]
   ];
 
+SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
+  solveHexagonEquations[ ring, z, opts ];
+
 PackageExport["SHE"]
 
 SHE::usage =
