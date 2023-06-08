@@ -254,7 +254,8 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
                 Rationalize[ newBinomialConstraints, 10^(-2*acc) ],
                 NNZSC[ring],
                 u
-              ]
+              ],
+              "ZeroVariableInNonSingularSystem"
             ];
 
           If[
