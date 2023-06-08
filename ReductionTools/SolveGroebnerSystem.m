@@ -138,7 +138,7 @@ Options[SolveHexagonEquations] :=
     Options[HexagonGroebnerSystems]
   ];
 
-SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_, opts:OptionsPattern[] ] :=
+SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_Symbol, opts:OptionsPattern[] ] :=
   Which[
     Mult[ring] == 1,
       SolveMultiplicityFreeHexagonEquations[ ring, z, opts ],
@@ -147,7 +147,7 @@ SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_, opts:OptionsPattern[] ] 
   ];
 
 SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  solveHexagonEquations[ ring, z, opts ];
+  SolveHexagonEquations[ ring, z, opts ];
 
 PackageExport["SHE"]
 

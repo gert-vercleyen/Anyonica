@@ -234,8 +234,10 @@ PackageExport["FusionRingQ"]
 FusionRingQ::usage =
   "FusionRingQ[ring] returns True if ring is a FusionRing and False otherwise.";
 
-SetAttributes[ FusionRingQ, HoldFirst ];
+FusionRingQ[ ring_ ] :=
+  Head[ring] === FusionRing;
 
+(*
 FusionRingQ[ r_FusionRing ] :=
   System`Private`HoldValidQ[ r ];
 
@@ -248,7 +250,7 @@ FusionRingQ[ s_Symbol ] :=
     FusionRingQ @ Evaluate @ s
   ];
 
-validateFusionRing[ r_Association ] :=
+ValidateFusionRing[ r_Association ] :=
   With[{ mtab = r["MultiplicationTable"] },
     TrueQ[
       And[
@@ -269,7 +271,7 @@ SetAttributes[ NotFusionRingQ, HoldFirst ];
 
 NotFusionRingQ[ r_ ] :=
   Not @ FusionRingQ[r];
-
+*)
 
 (* Constructors for some common fusion rings *)
 

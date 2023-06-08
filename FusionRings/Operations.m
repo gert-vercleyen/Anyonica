@@ -91,15 +91,12 @@ permuteMultTab =
     "RuntimeOptions" -> "Speed"
   ];
 
-PermuteSubRingParticles[ subRings_, perm_List ] :=
-  Module[{ permutationMap = Reverse /@ Thread[ Range[ Length[ perm ] ] -> perm ], code },
-    ReplaceAll[
-      ReleaseHold @ subRings,
-      {
-        { n__Integer } :> Sort[ ({n} /. permutationMap) ],
-        { {n__Integer}, r_FusionRing } :> { { n }, code @ FC @ r }
-      }
-    ]/.code -> Hold @ FRBC
+PermuteSubRingParticles[subRings_, perm_List] :=
+  Module[{permutationMap, code},
+    permutationMap[l_] :=
+      Sort[l /. (Reverse /@ Thread[Range[Length[perm]] -> perm])];
+
+    { permutationMap[#1], code[ FormalCode[#2] ] } & @@@ ReleaseHold[subRings] /. code -> Hold[FRBC]
   ];
 
 PackageExport["WhichPermutation"]
