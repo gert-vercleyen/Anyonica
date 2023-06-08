@@ -1106,6 +1106,26 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:parametrization", { id_, parametr
     ];
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:zero_variable", { id_, binEqns_ } ] :=
+  Module[{fn1},
+    fn1 = dataFileName[ id, dir, "inconsistent_system" ];
+    safeExport[ fn1, binEqns ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ "The "],
+          hyperlinkBox[ "system of binomial equations", fn1 ],
+          inputStyle[" requires a gauge variable to be zero. Assuming no solutions."]
+        }],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]
+    ];
+  ];
+
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:no_vars_conclusion", { id_, sol_, sumQ_, realQ_, posQ_ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "Parametrization" ];

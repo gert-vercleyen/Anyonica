@@ -1,7 +1,7 @@
 PacletObject[<|
   "Name" -> "Anyonica"
   ,
-  "Version" -> "0.9.2.15"
+  "Version" -> "0.9.2.16"
   ,
   "Extensions" ->
     {

@@ -187,11 +187,11 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
         ];
         
         newFs =
-        MapAt[
-          If[ numericQ, InfN[ 2 * acc ], simplify ], (* 2 * acc since will lose some acc during calculations *)
-          FSymb,
-          { All, 2 }
-        ];
+          MapAt[
+            If[ numericQ, InfN[ 2 * acc ], simplify ], (* 2 * acc since will lose some acc during calculations *)
+            FSymb,
+            { All, 2 }
+          ];
         
         Catch[
           (* Could replace this with properGaugeQ *)
@@ -249,10 +249,25 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
           *)
           
           { binomialMat, rhsVec } =
-          AddOptions[opts][BinToSemiLin][
-            Rationalize[ newBinomialConstraints, 10^(-2*acc) ],
-            NNZSC[ring],
-            u
+            Catch[
+              AddOptions[opts][BinToSemiLin][
+                Rationalize[ newBinomialConstraints, 10^(-2*acc) ],
+                NNZSC[ring],
+                u
+              ]
+            ];
+
+          If[
+            { binomialMat, rhsVec } === { {}, {} }
+            ,
+            printlog[ "TUG:zero_variable", {procID,newBinomialConstraints} ];
+            printlog[ "Gen:failed" {procID } ];
+            Throw @
+            If[
+              returnTransformQ,
+              { $Failed, {} },
+              $Failed
+            ]
           ];
           
           trivialGaugeSpace =
