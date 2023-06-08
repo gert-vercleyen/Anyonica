@@ -167,24 +167,24 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
       AbsoluteTiming[
         
         gaugeSymmetries =
-        GaugeSymmetries[ fSymbols, g ];
-        
+          GaugeSymmetries[ fSymbols, g ];
+
         transforms =
-        gaugeSymmetries["Transforms"];
+          gaugeSymmetries["Transforms"];
         
         vacuumConstraints =
-        If[
-          OptionValue["PreserveTrivialValues"],
-          (* THEN *)
-          Thread[
-            ReplaceAll[
-              Cases[ fSymbols, $VacuumFPattern ]/.transforms,
-              F[__] -> 1
-            ] == 1
-          ],
-          (* ELSE *)
-          {}
-        ];
+          If[
+            OptionValue["PreserveTrivialValues"],
+            (* THEN *)
+            Thread[
+              ReplaceAll[
+                Cases[ fSymbols, $VacuumFPattern ]/.transforms,
+                F[__] -> 1
+              ] == 1
+            ],
+            (* ELSE *)
+            {}
+          ];
         
         newFs =
           MapAt[
@@ -196,7 +196,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
         Catch[
           (* Could replace this with properGaugeQ *)
           unitaryQ[ symb_ ] :=
-          AddOptions[opts][UnitaryGaugeQ][ ring, symb ];
+            AddOptions[opts][UnitaryGaugeQ][ ring, symb ];
           
           If[ (* Already have unitary gauge *)
             unitaryQ @ newFs
@@ -216,33 +216,33 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
           
           (* Construct the 2D gauge constraints *)
           constraints2D =
-          If[
-            use2DQ,
-            Constraints2D[ ring, FMatrices[ring], newFs, g ],
-            {}
-          ];
+            If[
+              use2DQ,
+              Constraints2D[ ring, FMatrices[ring], newFs, g ],
+              {}
+            ];
           
           (* Get the binomial equations from the set of gauge constraints *)
           { binomialConstraints, sumConstraints } =
-          BinomialSplit[
-            Join[
-              vacuumConstraints,
-              UnitaryGaugeConstraints[ ring, g, newFs ],
-              constraints2D,
-              gaugeDemands
-            ],
-            "PreEqualCheck" -> preEqCheck
-          ];
+            BinomialSplit[
+              Join[
+                vacuumConstraints,
+                UnitaryGaugeConstraints[ ring, g, newFs ],
+                constraints2D,
+                gaugeDemands
+              ],
+              "PreEqualCheck" -> preEqCheck
+            ];
           
           printlog[ "TUG:constraints", {procID,binomialConstraints,sumConstraints}];
           
           (* Relabel the variables to single indexed variables *)
           { { newBinomialConstraints, newSumConstraints }, newVars, revertVars } =
-          SimplifyVariables[
-            {  binomialConstraints, sumConstraints },
-            g @@@ NZSC[ring],
-            u
-          ];
+            SimplifyVariables[
+              {  binomialConstraints, sumConstraints },
+              g @@@ NZSC[ring],
+              u
+            ];
           
           (*
             Create the space of solutions to the binomial equations
@@ -262,7 +262,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             { binomialMat, rhsVec } === { {}, {} }
             ,
             printlog[ "TUG:zero_variable", {procID,newBinomialConstraints} ];
-            printlog[ "Gen:failed" {procID } ];
+            printlog[ "Gen:failed", {procID } ];
             Throw @
             If[
               returnTransformQ,
@@ -272,7 +272,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
           ];
           
           trivialGaugeSpace =
-          TrivialGaugeMatrix[fSymbols];
+            TrivialGaugeMatrix[fSymbols];
           
           { mU, mD, mV } =
           If[
@@ -331,10 +331,10 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
           *)
           
           While[
-            currentTuple =!= Missing["ReachedEnd"],
-            
+            currentTuple =!= Missing["ReachedEnd"]
+            ,
             zVec =
-            Exp[ 2 Pi I ( ZSpace . currentTuple ) ];
+              Exp[ 2 Pi I ( ZSpace . currentTuple ) ];
             
             monomials =
               If[
@@ -938,7 +938,7 @@ SymmetricGaugeConstraints[g_][ ring_FusionRing ] :=
   With[
     {
     transformedFMats =
-    ( mL[g][#].#.mR[g][#]& ) /@
+    ( mL[g][#].#.Inverse[mR[g][#]]& ) /@
     ( FMatrices[ring] ~ WithMinimumDimension ~ 2 )
     },
     DeleteCases[True] @

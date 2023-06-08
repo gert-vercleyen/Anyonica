@@ -1118,7 +1118,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:zero_variable", { id_, binEqns_ }
         TextData[{
           inputStyle[ "The "],
           hyperlinkBox[ "system of binomial equations", fn1 ],
-          inputStyle[" requires a gauge variable to be zero. Assuming no solutions."]
+          inputStyle[" implies that a gauge variable is zero. Assuming no solutions."]
         }],
         "Text",
         CellTags -> { id, "Info" }
