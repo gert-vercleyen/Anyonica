@@ -322,10 +322,16 @@ PrepareHexagonSolverInput::usage =
   "Constructs the hexagon equations and symmetries.";
 
 Options[ PrepareHexagonSolverInput ] :=
-  Options[ HexagonEquations ];
+  Join[
+    Options[ HexagonEquations ],
+    { "TwistFactors" -> {} }
+  ];
 
 PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations },
+  Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations, tf },
+    tf =
+      OptionValue["TwistFactors"];
+
     rSymbols =
       R @@@ NZSC[ ring ];
     fSymbols =
@@ -370,7 +376,10 @@ PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
       printlog["PHSI:symmetries", { procID, gaugeSym } ];
 
       equations =
-        AddOptions[opts][HexagonEquations] @ ring;
+        Join[
+          If[ tf =!= None, TwistFactorEquations[ ring, tf ], {} ],
+          AddOptions[opts][HexagonEquations] @ ring
+        ];
 
       <|
         "Equations" ->  equations,
