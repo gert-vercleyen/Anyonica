@@ -338,7 +338,10 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
 
       (* If only 1 variable remains it is often faster to solve the system directly *)
       reducedSystems[2] =
-        Flatten[ QuickSolve[ #, var ]& /@ reducedSystems[1] ];
+        Flatten[
+          QuickSolve[ #, var, "SimplifyBy" -> simplify ]& /@
+          reducedSystems[1]
+        ];
 
       printlog["MFHGS:quicksolve", { procID, reducedSystems[2] } ];
 
@@ -372,48 +375,47 @@ HGS::usage =
 HGS = 
   HexagonGroebnerSystems;
 
+Options[QuickSolve] = { "SimplifyBy" -> Identity };
 
-QuickSolve[ system_, var_ ] :=
+QuickSolve[ system_, var_, opts:OptionsPattern[] ] :=
   With[{pols = system["Polynomials"] },
-    If[
-      CountVariables[ pols, var ] === 1
-      ,
-      With[
-        {
-          simplestPol =
-            First @
-            Flatten @
-            MinimalBy[ pols, Exponent[ #, var ]&, 1 ],
-          assumptions =
-            system["Assumptions"]
-        },
-        {
-          soln =
-            Cases[
-              ToNumericRootIsolation @
-              SolveUsingReduce[
-                simplestPol == 0,
-                { var }
-              ],
-              sol_ /;
-              And[
-                TrueQ[ assumptions /. sol ],
-                MatchQ[ SafeRootReduce[ pols/.sol ], {0...} ]
-              ]
+    If[ CountVariables[ pols, var ] =!= 1, Return[system] ];
+
+    With[
+      {
+        simplestPol =
+          First @
+          Flatten @
+          MinimalBy[ pols, Exponent[ #, First @ GetVariables[ pols, var ] ]&, 1 ],
+        assumptions =
+          system["Assumptions"]
+      },
+      {
+        soln =
+          Cases[
+            OptionValue["SimplifyBy"]@
+            ToNumericRootIsolation @
+            SolveUsingReduce[
+              simplestPol == 0,
+              { var }
+            ],
+            sol_ /;
+            And[
+              TrueQ[ assumptions /. sol ],
+              MatchQ[ SafeRootReduce[ pols/.sol ], {0...} ]
             ]
+          ]
+      },
+      Table[
+        Association @ {
+          "Polynomials" -> {},
+          "Assumptions" -> True,
+          "Rules" -> system["Rules"] /. s
         },
-        Table[
-          Association @ {
-            "Polynomials" -> {},
-            "Assumptions" -> True,
-            "Rules" -> system["Rules"] /. s
-          },
-          { s, soln }
-        ]
+        { s, soln }
       ]
-      ,
-      system
     ]
+
   ];
 
 
