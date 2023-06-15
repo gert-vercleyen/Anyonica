@@ -586,3 +586,485 @@ FusionRingTY[ group_, OptionsPattern[] ] :=
     ]
   ];
 
+(* Fusion Rules come directly from "On Metaplectic Modular Categories and Their Applications, Communications
+    in Math Phys, M B Hastings, C Nayak, Zhenghan Wang", and from notes from Eddy Ardonne from 2010 *)
+
+
+(* TODO: implement modular data for metaplectic categories *)
+FusionRingSON2[ m_ ] :=
+  FusionRing[
+    "MultiplicationTable" -> Which[ Mod[ m, 4 ] == 0, rulesdiv4[m], Mod[ m, 2 ] == 0, rulesdiv2[m], rulesodd[m] ],
+    "Names" -> {"SO(" <> ToString[m] <> "\!\(\*SubscriptBox[\()\), \(2\)]\)", "Metaplectic(" <> ToString[m] <> ")"}
+  ];
+
+rulesodd[m_] :=
+  Module[ { r, rank, ar, mat1, matZ, matXe1, matXe2, matY },
+    r =
+      (m - 1) / 2;
+
+    rank =
+      (m + 7) / 2;
+
+    ar[i_] := (* representation of elements via E_i arrays *)
+      Normal @ SparseArray[ i -> 1, {rank}];
+    mat1 =
+      IdentityMatrix[rank];
+
+    matZ =
+      Table[
+        Which[
+          i == 1, ar[2],
+          i == 2, ar[1],
+          3 <= i <= 4, ar[ 3 + Mod[i, 2]],
+          5 <= i, ar[i]
+        ]
+        , {i, rank}
+      ];
+
+    matXe1 =
+      Table[
+        Which[
+          i == 1, ar[3],
+          i == 2, ar[4],
+          i == 3, ar[1] + Sum[ar[j], {j, 5, rank}],
+          i == 4, ar[2] + Sum[ar[j], {j, 5, rank}],
+          i >= 5, ar[3] + ar[4]
+        ]
+        , {i, rank}
+      ];
+
+    matXe2 =
+      Table[
+        Which[
+          i == 1, ar[4],
+          i == 2, ar[3],
+          i == 3, ar[2] + Sum[ar[j], {j, 5, rank}],
+          i == 4, ar[1] + Sum[ar[j], {j, 5, rank}],
+          i >= 5, ar[3] + ar[4]
+        ]
+        , {i, rank}
+      ];
+
+    matY[j_] :=
+      Table[
+        Which[
+          i == 1, ar[j + 4],
+          i == 2, ar[j + 4],
+          i == 3, ar[3] + ar[4],
+          i == 4, ar[3] + ar[4],
+          i >= 5 && i - 4 == j, ar[1] + ar[2] + ar[ Min[ 2 * j, m - 2 * j ] + 4 ],
+          i >= 5 && i - 4 != j, ar[ Abs[i - 4 - j] + 4 ] + ar[ Min[ i - 4 + j, m - i - j + 4 ] + 4 ]
+        ]
+        , {i, rank}
+      ];
+
+    Join[
+      { mat1, matXe1, matXe2, matZ },
+      matY /@ Range[r]
+    ]
+  ];
+
+rulesdiv2[ p_ ] :=
+  Module[
+    {
+      matId, mat\[CapitalTheta], mat\[CapitalPhi]1, mat\[CapitalPhi]2, mat\[Sigma]1, mat\[Sigma]2, mat\[Tau]1,
+      mat\[Tau]2, mat\[Phi], rank, Id, \[CapitalTheta], \[CapitalPhi]1, \[CapitalPhi]2, \[Sigma]1, \[Sigma]2, \[Tau]1,
+      \[Tau]2, \[Phi], sumEven\[Lambda]s, sumOdd\[Lambda]s
+    },
+    rank =
+        p + 7;
+
+    Evaluate[
+      Join[
+        { Id, \[CapitalTheta], \[CapitalPhi]1, \[CapitalPhi]2, \[Sigma]1, \[Sigma]2, \[Tau]1, \[Tau]2 },
+        \[Phi] /@ Range[ rank - 8 ]
+      ]
+    ] = IdentityMatrix[ rank ];
+
+    sumEven\[Lambda]s =
+      Sum[ \[Phi][i], { i, 2, p - 1, 2 } ];
+
+    sumOdd\[Lambda]s =
+      Sum[ \[Phi][i], { i, 1, p - 1, 2 } ];
+
+    matId =
+      IdentityMatrix[ rank ];
+
+    mat\[CapitalTheta] =
+      Table[
+        Which[
+            i == 1, \[CapitalTheta], (* 1 *)
+            i == 2, Id, (* \[CapitalTheta] *)
+            i == 3, \[CapitalPhi]2, (* \[CapitalPhi]1 *)
+            i == 4, \[CapitalPhi]1, (* \[CapitalPhi]2 *)
+            i == 5, \[Tau]1, (* \[Sigma]1 *)
+            i == 6, \[Tau]2, (* \[Sigma]2 *)
+            i == 7, \[Sigma]1, (* \[Tau]1 *)
+            i == 8, \[Sigma]2, (* \[Tau]2 *)
+            i >= 9, \[Phi][i - 8]	 (* \[Phi]_\[Lambda]'s *)
+          ],
+        {i, rank}
+      ];
+
+    mat\[CapitalPhi]1 =
+      Table[
+        Which[
+            i == 1, \[CapitalPhi]1, (* 1 *)
+            i == 2, \[CapitalPhi]2, (* \[CapitalTheta] *)
+            i == 3, \[CapitalTheta], (* \[CapitalPhi]1 *)
+            i == 4, Id, (* \[CapitalPhi]2 *)
+            i == 5, \[Sigma]2, (* \[Sigma]1 *)
+            i == 6, \[Tau]1, (* \[Sigma]2 *)
+            i == 7, \[Tau]2, (* \[Tau]1 *)
+            i == 8, \[Sigma]1, (* \[Tau]2 *)
+            i >= 9, \[Phi][p - (i - 8) ]	 (* \[Phi]_\[Lambda]'s *)
+          ],
+        {i, rank}
+      ];
+
+    mat\[CapitalPhi]2 =
+      Table[
+        Which[
+            i == 1, \[CapitalPhi]2, (* 1 *)
+            i == 2, \[CapitalPhi]1, (* \[CapitalTheta] *)
+            i == 3, Id, (* \[CapitalPhi]1 *)
+            i == 4, \[CapitalTheta], (* \[CapitalPhi]2 *)
+            i == 5, \[Tau]2, (* \[Sigma]1 *)
+            i == 6, \[Sigma]1, (* \[Sigma]2 *)
+            i == 7, \[Sigma]2, (* \[Tau]1 *)
+            i == 8, \[Tau]1, (* \[Tau]2 *)
+            i >= 9, \[Phi][p - (i - 8)]	 (* \[Phi]_\[Lambda]'s *)
+          ],
+        {i, rank}
+      ];
+
+    mat\[Sigma]1 =
+      Table[
+        Which[
+            i == 1, \[Sigma]1, (* 1 *)
+            i == 2, \[Tau]1, (* \[CapitalTheta] *)
+            i == 3, \[Sigma]2, (* \[CapitalPhi]1 *)
+            i == 4, \[Tau]2, (* \[CapitalPhi]2 *)
+            i == 5, \[CapitalPhi]2 + sumOdd\[Lambda]s, (* \[Sigma]1 *)
+            i == 6, Id + sumEven\[Lambda]s, (* \[Sigma]2 *)
+            i == 7, \[CapitalPhi]1 + sumOdd\[Lambda]s, (* \[Tau]1 *)
+            i == 8, \[CapitalTheta]  + sumEven\[Lambda]s, (* \[Tau]2 *)
+            i >= 9,
+              If[ OddQ[i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Sigma]2 =
+        Table[
+          Which[
+              i == 1, \[Sigma]2, (* 1 *)
+              i == 2, \[Tau]2, (* \[CapitalTheta] *)
+              i == 3, \[Tau]1, (* \[CapitalPhi]1 *)
+              i == 4, \[Sigma]1, (* \[CapitalPhi]2 *)
+              i == 5, Id + sumEven\[Lambda]s, (* \[Sigma]1 *)
+              i == 6, \[CapitalPhi]1 + sumOdd\[Lambda]s, (* \[Sigma]2 *)
+              i == 7, \[CapitalTheta]  + sumEven\[Lambda]s, (* \[Tau]1 *)
+              i == 8, \[CapitalPhi]2 + sumOdd\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+                If[ EvenQ[i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\ \[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Tau]1 =
+        Table[
+          Which[
+              i == 1, \[Tau]1, (* 1 *)
+              i == 2, \[Sigma]1, (* \[CapitalTheta] *)
+              i == 3, \[Tau]2, (* \[CapitalPhi]1 *)
+              i == 4, \[Sigma]2, (* \[CapitalPhi]2 *)
+              i == 5, \[CapitalPhi]1 + sumOdd\[Lambda]s, (* \[Sigma]1 *)
+              i == 6, \[CapitalTheta] + sumEven\[Lambda]s, (* \[Sigma]2 *)
+              i == 7, \[CapitalPhi]2 + sumOdd\[Lambda]s, (* \[Tau]1 *)
+              i == 8, Id  + sumEven\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+                If[ OddQ[i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Tau]2 =
+        Table[
+          Which[
+              i == 1, \[Tau]2, (* 1 *)
+              i == 2, \[Sigma]2, (* \[CapitalTheta] *)
+              i == 3, \[Sigma]1, (* \[CapitalPhi]1 *)
+              i == 4, \[Tau]1, (* \[CapitalPhi]2 *)
+              i == 5, \[CapitalTheta] + sumEven\[Lambda]s, (* \[Sigma]1 *)
+              i == 6, \[CapitalPhi]2 + sumOdd\[Lambda]s, (* \[Sigma]2 *)
+              i == 7, Id  + sumEven\[Lambda]s, (* \[Tau]1 *)
+              i == 8, \[CapitalPhi]1 + sumOdd\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+                If[ EvenQ[i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Phi][j_] :=
+        Table[
+          Which[
+              i == 1, \[Phi][j], (* 1 *)
+              i == 2, \[Phi][j], (* \[CapitalTheta] *)
+              i == 3, \[Phi][p - j], (* \[CapitalPhi]1 *)
+              i == 4, \[Phi][p - j], (* \[CapitalPhi]2 *)
+              i == 5,
+    If[ OddQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]1 *)
+              i == 6,
+    If[ EvenQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]2 *)
+              i == 7,
+    If[ OddQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]1 *)
+              i == 8,
+    If[ EvenQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]2 *)
+              i >= 9,
+                With[{ii = i - 8 },
+                Which[
+                    ii == j && (2 j < p),
+                      Id + \[CapitalTheta] + \[Phi][ 2 j ],
+                    ii == j && (2*j > p),
+                      Id + \[CapitalTheta] + \[Phi][ 2 (p - j) ],
+                    ii + j  < p,
+                      \[Phi][ Abs[ ii - j ] ] + \[Phi][ ii + j  ],
+                    ii + j > p,
+                      \[Phi][ Abs[ ii - j ] ] + \[Phi][ 2 * p - ii - j ],
+                    ii == p - j ,
+                      \[CapitalPhi]1 + \[CapitalPhi]2 + \[Phi][
+        Abs[ p - 2 ii ] ]
+                  ]	 (* \[Phi]_\[Lambda]'s *)
+                ]
+            ],
+          {i, rank}
+        ];
+
+    Join[
+      {  matId, mat\[CapitalTheta], mat\[CapitalPhi]1, mat\[CapitalPhi]2, mat\[Sigma]1, mat\[Sigma]2, mat\[Tau]1, mat\[Tau]2 },
+       mat\[Phi] /@ Range[rank - 8]
+    ]
+  ];
+
+rulesdiv4[ p_ ] :=
+  Module[
+    {
+      matId, mat\[CapitalTheta], mat\[CapitalPhi]1, mat\[CapitalPhi]2, mat\[Sigma]1, mat\[Sigma]2, mat\[Tau]1,
+      mat\[Tau]2, mat\[Phi], rank, Id, \[CapitalTheta], \[CapitalPhi]1, \[CapitalPhi]2, \[Sigma]1, \[Sigma]2, \[Tau]1,
+      \[Tau]2, \[Phi], sumEven\[Lambda]s, sumOdd\[Lambda]s
+    },
+    rank =
+        p + 7;
+
+    Evaluate[
+      Join[
+        { Id, \[CapitalTheta], \[CapitalPhi]1, \[CapitalPhi]2, \[Sigma]1, \[Sigma]2, \[Tau]1, \[Tau]2 },
+        \[Phi] /@ Range[ rank - 8 ]
+      ]
+    ] = IdentityMatrix[ rank ];
+
+    sumEven\[Lambda]s =
+        Sum[ \[Phi][i], { i, 2, p - 1, 2 } ];
+
+    sumOdd\[Lambda]s =
+        Sum[ \[Phi][i], { i, 1, p - 1, 2 } ];
+
+    matId =
+        IdentityMatrix[ rank ];
+
+    mat\[CapitalTheta] =
+        Table[
+          Which[
+              i == 1, \[CapitalTheta], (* 1 *)
+              i == 2, Id, (* \[CapitalTheta] *)
+              i == 3, \[CapitalPhi]2, (* \[CapitalPhi]1 *)
+              i == 4, \[CapitalPhi]1, (* \[CapitalPhi]2 *)
+              i == 5, \[Tau]1, (* \[Sigma]1 *)
+              i == 6, \[Tau]2, (* \[Sigma]2 *)
+              i == 7, \[Sigma]1, (* \[Tau]1 *)
+              i == 8, \[Sigma]2, (* \[Tau]2 *)
+              i >= 9, \[Phi][i - 8]	 (* \[Phi]_\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[CapitalPhi]1 =
+        Table[
+          Which[
+              i == 1, \[CapitalPhi]1, (* 1 *)
+              i == 2, \[CapitalPhi]2, (* \[CapitalTheta] *)
+              i == 3, Id, (* \[CapitalPhi]1 *)
+              i == 4, \[CapitalTheta], (* \[CapitalPhi]2 *)
+              i == 5, \[Tau]1, (* \[Sigma]1 *)
+              i == 6, \[Sigma]2, (* \[Sigma]2 *)
+              i == 7, \[Sigma]1, (* \[Tau]1 *)
+              i == 8, \[Tau]2, (* \[Tau]2 *)
+              i >= 9, \[Phi][p - (i - 8) ]	 (* \[Phi]_\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[CapitalPhi]2 =
+        Table[
+          Which[
+              i == 1, \[CapitalPhi]2, (* 1 *)
+              i == 2, \[CapitalPhi]1, (* \[CapitalTheta] *)
+              i == 3, \[CapitalTheta], (* \[CapitalPhi]1 *)
+              i == 4, Id, (* \[CapitalPhi]2 *)
+              i == 5, \[Sigma]1, (* \[Sigma]1 *)
+              i == 6, \[Tau]2, (* \[Sigma]2 *)
+              i == 7, \[Tau]1, (* \[Tau]1 *)
+              i == 8, \[Sigma]2, (* \[Tau]2 *)
+              i >= 9, \[Phi][p - (i - 8)]	 (* \[Phi]_\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Sigma]1 =
+        Table[
+          Which[
+              i == 1, \[Sigma]1, (* 1 *)
+              i == 2, \[Tau]1, (* \[CapitalTheta] *)
+              i == 3, \[Tau]1, (* \[CapitalPhi]1 *)
+              i == 4, \[Sigma]1, (* \[CapitalPhi]2 *)
+              i == 5,
+    Id + \[CapitalPhi]2 + sumEven\[Lambda]s, (* \[Sigma]1 *)
+              i == 6, sumOdd\[Lambda]s, (* \[Sigma]2 *)
+
+    i == 7, \[CapitalTheta] + \[CapitalPhi]1 +
+     sumEven\[Lambda]s, (* \[Tau]1 *)
+              i == 8, sumOdd\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+    If[ OddQ[
+      i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Sigma]2 =
+        Table[
+          Which[
+              i == 1, \[Sigma]2, (* 1 *)
+              i == 2, \[Tau]2, (* \[CapitalTheta] *)
+              i == 3, \[Sigma]2, (* \[CapitalPhi]1 *)
+              i == 4, \[Tau]2, (* \[CapitalPhi]2 *)
+              i == 5, sumOdd\[Lambda]s, (* \[Sigma]1 *)
+              i == 6,
+    Id + \[CapitalPhi]1 + sumEven\[Lambda]s, (* \[Sigma]2 *)
+              i == 7, sumOdd\[Lambda]s, (* \[Tau]1 *)
+
+    i == 8, \[CapitalTheta] + \[CapitalPhi]2 +
+     sumEven\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+    If[ EvenQ[
+      i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\
+\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Tau]1 =
+        Table[
+          Which[
+              i == 1, \[Tau]1, (* 1 *)
+              i == 2, \[Sigma]1, (* \[CapitalTheta] *)
+              i == 3, \[Sigma]1, (* \[CapitalPhi]1 *)
+              i == 4, \[Tau]1, (* \[CapitalPhi]2 *)
+
+    i == 5, \[CapitalTheta] + \[CapitalPhi]1 +
+     sumEven\[Lambda]s, (* \[Sigma]1 *)
+              i == 6, sumOdd\[Lambda]s, (* \[Sigma]2 *)
+              i == 7,
+    Id + \[CapitalPhi]2 + sumEven\[Lambda]s, (* \[Tau]1 *)
+              i == 8, sumOdd\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+    If[ OddQ[
+      i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\
+\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Tau]2 =
+        Table[
+          Which[
+              i == 1, \[Tau]2, (* 1 *)
+              i == 2, \[Sigma]2, (* \[CapitalTheta] *)
+              i == 3, \[Tau]2, (* \[CapitalPhi]1 *)
+              i == 4, \[Sigma]2, (* \[CapitalPhi]2 *)
+              i == 5, sumOdd\[Lambda]s, (* \[Sigma]1 *)
+
+    i == 6, \[CapitalTheta] + \[CapitalPhi]2 +
+     sumEven\[Lambda]s, (* \[Sigma]2 *)
+              i == 7, sumOdd\[Lambda]s, (* \[Tau]1 *)
+              i == 8,
+    Id + \[CapitalPhi]1 + sumEven\[Lambda]s, (* \[Tau]2 *)
+              i >= 9,
+    If[ EvenQ[
+      i], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ]	 (* \[Phi]_\
+\[Lambda]'s *)
+            ],
+          {i, rank}
+        ];
+
+    mat\[Phi][j_] :=
+        Table[
+          Which[
+              i == 1, \[Phi][j], (* 1 *)
+              i == 2, \[Phi][j], (* \[CapitalTheta] *)
+              i == 3, \[Phi][p - j], (* \[CapitalPhi]1 *)
+              i == 4, \[Phi][p - j], (* \[CapitalPhi]2 *)
+              i == 5,
+    If[ OddQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]1 *)
+              i == 6,
+    If[ EvenQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]2 *)
+              i == 7,
+    If[ OddQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]1 *)
+              i == 8,
+    If[ EvenQ[
+      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]2 *)
+              i >= 9,
+                With[{ii = i - 8 },
+                Which[
+                    ii == j && (2 j < p),
+                      Id + \[CapitalTheta] + \[Phi][ 2 j ],
+                    ii == j && 2 j == p,
+                      Id + \[CapitalTheta] + \[CapitalPhi]1 + \[CapitalPhi]2,
+                    ii == j && (2*j > p),
+                      Id + \[CapitalTheta] + \[Phi][ 2 (p - j) ],
+                    ii + j  < p,
+                      \[Phi][ Abs[ ii - j ] ] + \[Phi][ ii + j  ],
+                    ii + j > p,
+                      \[Phi][ Abs[ ii - j ] ] + \[Phi][ 2 * p - ii - j ],
+                    ii == p - j ,
+                      \[CapitalPhi]1 + \[CapitalPhi]2 + \[Phi][
+        Abs[ p - 2 ii ] ]
+                  ]	 (* \[Phi]_\[Lambda]'s *)
+                ]
+            ],
+          {i, rank}
+        ];
+
+    Join[
+      {  matId, mat\[CapitalTheta], mat\[CapitalPhi]1, mat\[CapitalPhi]2, mat\[Sigma]1, mat\[Sigma]2, mat\[Tau]1, mat\[Tau]2 },
+       mat\[Phi] /@ Range[rank - 8]
+    ]
+  ];
+
+
+
+PackageExport["FusionRingMetaplectic"]
+
+FusionRingMetaplectic::usage =
+  "FusionRingMetaplectic[m] returns the metaplectic fusion ring with dimension 4m, where m is odd.";
+
+FusionRingMetaplectic =
+  FusionRingSON2;
