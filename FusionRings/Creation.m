@@ -589,12 +589,27 @@ FusionRingTY[ group_, OptionsPattern[] ] :=
 (* Fusion Rules come directly from "On Metaplectic Modular Categories and Their Applications, Communications
     in Math Phys, M B Hastings, C Nayak, Zhenghan Wang", and from notes from Eddy Ardonne from 2010 *)
 
+PackageExport["FusionRingSON2"]
+
+FusionRingSON2::usage =
+  "FusionRingSON2[m] returns the the fusion ring \!\(\*
+  StyleBox[\"SO\",\nFontWeight->\"Bold\"]\)\!\(\*
+  StyleBox[\"(\",\nFontWeight->\"Bold\"]\)\!\(\*
+  StyleBox[\"N\",\nFontWeight->\"Bold\"]\)\!\(\*
+  StyleBox[SubscriptBox[\")\", \"2\"],\nFontWeight->\"Bold\"]\), for m >= 4.";
+
+FusionRingSON2::notimplemented =
+  "This ring is only implemented for integer parameter > 3.";
 
 (* TODO: implement modular data for metaplectic categories *)
 FusionRingSON2[ m_ ] :=
-  FusionRing[
-    "MultiplicationTable" -> Which[ Mod[ m, 4 ] == 0, rulesdiv4[m], Mod[ m, 2 ] == 0, rulesdiv2[m], rulesodd[m] ],
-    "Names" -> {"SO(" <> ToString[m] <> "\!\(\*SubscriptBox[\()\), \(2\)]\)", "Metaplectic(" <> ToString[m] <> ")"}
+(*If[
+    m < 4,
+    Message[ FusionRingSON2::notimplemented ],*)
+    FusionRing[
+      "MultiplicationTable" -> Which[ Mod[ m, 4 ] == 0, rulesdiv4[m/2], Mod[ m, 2 ] == 0, rulesdiv2[m/2], True, rulesodd[m] ],
+      "Names" -> {"SO(" <> ToString[m] <> "\!\(\*SubscriptBox[\()\), \(2\)]\)", "Metaplectic(" <> ToString[m] <> ")"}
+      (*]*)
   ];
 
 rulesodd[m_] :=
@@ -607,6 +622,7 @@ rulesodd[m_] :=
 
     ar[i_] := (* representation of elements via E_i arrays *)
       Normal @ SparseArray[ i -> 1, {rank}];
+
     mat1 =
       IdentityMatrix[rank];
 
@@ -658,8 +674,9 @@ rulesodd[m_] :=
         , {i, rank}
       ];
 
+    Transpose /@
     Join[
-      { mat1, matXe1, matXe2, matZ },
+      { mat1, matZ, matXe1, matXe2 },
       matY /@ Range[r]
     ]
   ];
@@ -813,21 +830,13 @@ rulesdiv2[ p_ ] :=
               i == 2, \[Phi][j], (* \[CapitalTheta] *)
               i == 3, \[Phi][p - j], (* \[CapitalPhi]1 *)
               i == 4, \[Phi][p - j], (* \[CapitalPhi]2 *)
-              i == 5,
-    If[ OddQ[
-      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]1 *)
-              i == 6,
-    If[ EvenQ[
-      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]2 *)
-              i == 7,
-    If[ OddQ[
-      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]1 *)
-              i == 8,
-    If[ EvenQ[
-      j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]2 *)
+              i == 5, If[ OddQ[j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]1 *)
+              i == 6, If[ EvenQ[j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Sigma]2 *)
+              i == 7, If[ OddQ[j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]1 *)
+              i == 8, If[ EvenQ[j], \[Sigma]2 + \[Tau]2, \[Sigma]1 + \[Tau]1 ], (* \[Tau]2 *)
               i >= 9,
                 With[{ii = i - 8 },
-                Which[
+                  Which[
                     ii == j && (2 j < p),
                       Id + \[CapitalTheta] + \[Phi][ 2 j ],
                     ii == j && (2*j > p),
@@ -837,8 +846,7 @@ rulesdiv2[ p_ ] :=
                     ii + j > p,
                       \[Phi][ Abs[ ii - j ] ] + \[Phi][ 2 * p - ii - j ],
                     ii == p - j ,
-                      \[CapitalPhi]1 + \[CapitalPhi]2 + \[Phi][
-        Abs[ p - 2 ii ] ]
+                      \[CapitalPhi]1 + \[CapitalPhi]2 + \[Phi][ Abs[ p - 2 ii ] ]
                   ]	 (* \[Phi]_\[Lambda]'s *)
                 ]
             ],
