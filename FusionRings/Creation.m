@@ -77,7 +77,7 @@ FusionRing[ ops:OptionsPattern[] ] :=
   FusionRing[ InitializeFusionRing[ ops ] ];
 
 (* Access elements of the fusion ring as if it were an association. *)
-( FusionRing[ r_ ]?FusionRingQ )[ k_ ] :=
+FusionRing[ r_ ][ k_ ] :=
   Lookup[ r, k ];
 
 Options[ InitializeFusionRing ] =
@@ -458,7 +458,8 @@ Options[FusionRingHI] =
   {"Names" -> {} };
 
 FusionRingHI[ tab_?MatrixQ, OptionsPattern[] ] :=
-  With[{
+  With[
+    {
     n = tab // Length,
     inv = tab // Position[ #, 1 ]& // Transpose // Last
     },
@@ -536,8 +537,8 @@ FusionRingTY::notgrouptable =
 Options[FusionRingTY] = {"Names" -> {} };
 
 FusionRingTY[ tab_?MatrixQ, OptionsPattern[] ] :=
-  With[{
-    n = tab // Length },
+  With[
+    {n = tab // Length },
     If[
       !GroupTableQ[ tab ], Message[ FusionRingTY::notgrouptable, tab ]; Return[],
       If[

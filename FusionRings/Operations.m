@@ -251,16 +251,13 @@ AddName::usage =
   "AddName[ring,string] returns a ring where the name string is added to the list of possible names of ring.";
 
 AddName[ r_FusionRing?FusionRingQ, s_String ] :=
-  Module[{ r2 = r },
-    AppendTo[ r2["Names"], s ];
-    r2
-  ];
+  AddName[ r, { s } ];
 
 AddName[ r_FusionRing?FusionRingQ, names_List ] :=
-  Module[{ r2 = r },
-    r2["Names"] =
-      Join[ r2["Names"], names ];
-    r2
+  FusionRing @@
+  FilterRules[
+    Normal[First @ r] /. ("Names" -> l_List) :> "Names" -> Join[ l, names ],
+    Options[FusionRing]
   ];
 
 PackageExport["SetNames"]
@@ -269,14 +266,13 @@ SetNames::usage =
   "SetNames[ring,stringlist] returns a ring for which the names are now stringlist.";
 
 SetNames[ r_FusionRing?FusionRingQ, names_List ] :=
-  Module[
-    { r2 = r },
-    r2["Names"] =
-      names;
-    r2
+  FusionRing @@
+  FilterRules[
+    Normal[First @ r] /. ("Names" -> l_List) :> "Names" -> names,
+    Options[FusionRing]
   ];
 
-(*Combining, decomposing and comparing fusion rings*)
+(* Combining, decomposing and comparing fusion rings *)
 
 PackageExport["EquivalentFusionRings"]
 
