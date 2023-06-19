@@ -284,9 +284,9 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
 
       (* TODO: can be shorter by using AddOptions *)
       sumSystems =
-        ReduceByBinomials[
+        AddOptions[opts][ReduceByBinomials][
           Sequence @@ SumBinEqns[ equations ],
-          variables,
+          Sort @ variables,
           var,
           opt,
           "Symmetries" ->                       symmetries,
