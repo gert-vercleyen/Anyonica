@@ -324,7 +324,7 @@ PrepareHexagonSolverInput::usage =
 Options[ PrepareHexagonSolverInput ] :=
   Join[
     Options[ HexagonEquations ],
-    { "TwistFactors" -> {} }
+    { "TwistFactors" -> None }
   ];
 
 PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
