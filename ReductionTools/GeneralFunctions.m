@@ -119,14 +119,14 @@ ToProperBinomialEquation[ eqn_ ] :=
     True
     ,
     With[{
-      noFracEqn = RemoveFractions @ eqn
+      pol = ToPolynomial @ eqn
       },
       If[
-        TrueQ @ noFracEqn
+        pol === 0
         ,
         Return @ True
         ,
-        With[{ mList = MonomialList[ First @ noFracEqn ] },
+        With[{ mList = MonomialList[ pol ] },
           If[
             Length[mList] === 1,
             mList[[1]] == 0,
@@ -170,7 +170,6 @@ ToPolynomial[ eqn_ ] :=
     RemoveFractions @
     ( Subtract @@ eqn )
   ];
-
 
 PackageExport["PolynomialDegree"]
 
