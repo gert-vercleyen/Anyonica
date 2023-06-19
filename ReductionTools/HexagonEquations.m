@@ -101,8 +101,8 @@ HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
               Sum[
                 sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
                 { f, matchingLabels[ { a, c, b, d, e } ] }
-              ],
-              
+              ]
+              ,
               sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1)
               ==
               Sum[
