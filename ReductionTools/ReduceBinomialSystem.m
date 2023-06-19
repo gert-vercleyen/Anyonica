@@ -16,41 +16,71 @@ ReduceBinomialSystem::usage =
   "ReduceBinomialSystem[binEqns,vars] returns a tuple of reduced equations, and "<>
   "assignments of variables in terms of those that appear in the reduced equations.";
 
-(*  *)
+ReduceBinomialSystem::wrongvarsformat =
+  "`1` should be a list of variables";
+
+ReduceBinomialSystem::wrongeqnsformat =
+"`1` should be a list of binomial equations";
+
+argCheck[ binEqns_, vars_ ] :=
+  Which[
+    !BinomialSystemQ[binEqns]
+    ,
+    Message[ ReduceBinomialSystem::wrongeqnsformat, binEqns ]; Abort[]
+    ,
+    Head[vars] =!= List
+    ,
+    Message[ ReduceBinomialSystem::wrongvarsformat, vars ]; Abort[]
+  ];
+
 ReduceBinomialSystem[ binomialEqns_, variables_ ] :=
+(
+  argCheck[ binomialEqns, variables ];
   Module[
-    { eqns, vars, revertVars, x },
+    { eqns, vars, revertVars, canEqns, x },
     { eqns, vars, revertVars } =
       SimplifyVariables[ binomialEqns, variables, x ];
 
-    FixedPoint[ UpdateEquivalences[x], { eqns, { } } ]/.revertVars
+    Catch @
+    FixedPoint[ UpdateEquivalences[x], { NormalForm @ ToProperBinomialEquation @ eqns, { } } ] /. revertVars
+  ]
+);
 
+FindEquivalences[ eqns_, x_ ] := EchoFunction["Equivalences",#/.x->P`z&] @
+  With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
+    DeleteDuplicates[
+      DeleteCases[ eqnVarPairs, { _, { }, _ } ],
+      IntersectingQ[  Last @ #1, Last @ #2 ]&
+    ]
   ];
 
-(* TODO: beware of 1 ==... and x[]^2 ==... *)
-
-FindEquivalences[ eqns_, x_ ] :=
-  With[{ eqnVarPairs = { #, GetVariables[#,x] }& /@ eqns },
-    DeleteDuplicates[
-      eqnVarPairs,
-      IntersectingQ[  Last @ #1, Last @ #2 ]&
-    ][[ ;;, 1 ]]
+LinearVars[ eqn_, x_ ] :=
+  With[{ powerVars = Cases[ eqn, Power[ a_, b_ ] /; Abs[b] > 1 :> a, Infinity ] },
+    GetVariables[ eqn, x, powerVars ]
   ];
 
 EquivalencesToRules[ equivs_, x_ ] :=
   EquivToRule[x] /@ equivs;
 
-EquivToRule[x_][ equiv_ ] :=
-  With[{ var = FirstCase[ x[_] ] @ First @ equiv },
-    var -> equiv[[2]]/(equiv[[1]]/.var->1)
+EquivToRule[x_][ { eqn_, linvars_, vars_ } ] :=
+  With[{ var = First @ linvars },
+    Solve[ eqn, var ][[1,1]]
   ];
 
-UpdateEquivalences[x_][ { eqns_, equivs_ }] :=
-  With[ { equivRules = EquivToRule[x] /@ FindEquivalences[ eqns, x ] },
+UpdateEquivalences[x_][ { eqns_, equivs_ }] := EchoFunction["updatedsys",#/.x->P`z&] @
+  With[ { equivRules = EchoFunction["rules",#/.x->P`z&][ EquivToRule[x] /@ FindEquivalences[ eqns, x ] ] },
+    If[ MemberQ[0] @ equivRules[[;;,2]], Throw[{{False},{}}] ];
     {
-      DeleteDuplicates @
-      DeleteCases[True] @
+      TEL @
+      NormalForm @
+      ToProperBinomialEquation @
       ReplaceAll[ eqns, Dispatch[equivRules] ],
       Join[ equivs/.Dispatch[equivRules], equivRules ]
     }
   ];
+
+SetAttributes[NormalForm,Listable];
+NormalForm[True] = True;
+NormalForm[False] = False;
+NormalForm[ eqn_ ] :=
+  eqn[[2]] / eqn[[1]] == 1;
