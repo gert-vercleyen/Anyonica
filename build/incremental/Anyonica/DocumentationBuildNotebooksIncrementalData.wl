@@ -1,7 +1,7 @@
 <|"English/Guides/Anyonica.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
-      "Time" -> Quantity[1.044661, "Seconds"]|>], 
-   "FileHash" -> "RzdRK//lRGREqMwdSpqUFEOeUISFVmXPLFeWdkwMz9Y="|>, 
+      "Time" -> Quantity[1.306497, "Seconds"]|>], 
+   "FileHash" -> "IEnW3Oge5bqYGbyJJhgV/AXnfgJDLLInM0V1WcCveDA="|>, 
  "English/Guides/FusionRings.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.360569, "Seconds"]|>], 
@@ -9,7 +9,7 @@
  "English/ReferencePages/Symbols/FusionRing_Documentation.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", 
      <|"Action" -> "Skip"["MissingEntityType"], 
-      "Time" -> Quantity[0.014554, "Seconds"]|>], 
+      "Time" -> Quantity[0.021237, "Seconds"]|>], 
    "FileHash" -> "+U3mwoZxkERNrZavLhy1pMXhm1HZnIzlHNx84dxkXEk="|>, 
  "English/ReferencePages/Symbols/FusionRingZn.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
@@ -30,4 +30,8 @@
  "English/ReferencePages/Symbols/SymbolicMultiplicationTable.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.591488, "Seconds"]|>], 
-   "FileHash" -> "RcNPNnvKNS+KddHqt14bcko6hzt8tRUYnHXeNoNQTaI="|>|>
+   "FileHash" -> "RcNPNnvKNS+KddHqt14bcko6hzt8tRUYnHXeNoNQTaI="|>, 
+ "English/ReferencePages/Symbols/FusionRing.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[1.710261, "Seconds"]|>], 
+   "FileHash" -> "uLBEa4QpwgS8GtNXkhYGeZalwp+XsqtXClRBBHAbR9M="|>|>
