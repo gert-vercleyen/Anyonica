@@ -29,14 +29,15 @@ SolveNonSingularBinomialSystem::novars =
   " If equalities are unresolved but True, then adding the option " <>
   "\"PreEqualCheck\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
 
-Options[SolveNonSingularBinomialSystem] =
+Options[SolveNonSingularBinomialSystem] :=
   {
     "Symmetries" -> None,
     "InvertibleMatrices" -> {},
     "PolynomialConstraints" -> {},
     "PreEqualCheck" -> Identity,
     "UseDatabaseOfSmithDecompositions" -> False,
-    "StoreDecompositions" -> False
+    "StoreDecompositions" -> False,
+    "SimplifyIntermediateResultsBy" -> Identity
   };
 
 CheckArgs[ eqns_, vars_ ] :=
@@ -133,7 +134,8 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
             BinToSemiLin[
               newEqns,
               Length[newVars],
-              symbol
+              symbol,
+              "SimplifyBy" -> OptionValue["SimplifyIntermediateResultsBy"]
             ],
             internalParam,
             "OrthogonalTo" -> If[ Flatten[gaugeMat] === {}, None, gaugeMat ],
@@ -173,6 +175,14 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
     result
   ]
 );
+
+
+PackageScope["SNSBS"]
+
+SNSBS =
+  SolveNonSingularBinomialSystem;
+
+
 
 PackageScope["DeterminantConditions"]
 
