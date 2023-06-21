@@ -46,7 +46,7 @@ ReduceBinomialSystem[ binomialEqns_, variables_ ] :=
   ]
 );
 
-FindEquivalences[ eqns_, x_ ] := EchoFunction["Equivalences",#/.x->P`z&] @
+FindEquivalences[ eqns_, x_ ] :=
   With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
     DeleteDuplicates[
       DeleteCases[ eqnVarPairs, { _, { }, _ } ],
