@@ -24,17 +24,14 @@ SolveBinomialSystem::notlistofvars =
   "`1` is not a list of variables.";
 
 (* Solve a set of Binomial equations with possible symmetry *)
-Options[SolveBinomialSystem] =
-  {
-    "Symmetries" -> None,
-    "NonSingular" -> False,
-    "InvertibleMatrices" -> {},
-    "PolynomialConstraints" -> {},
-    "ZeroValues" -> None,
-    "UseDatabaseOfSmithDecompositions" -> False,
-    "StoreDecompositions" -> False,
-    "PreEqualCheck" -> Identity
-  };
+Options[SolveBinomialSystem] :=
+  Join[
+    Options[SolveNonSingularBinomialSystem],
+    {
+      "NonSingular" -> False,
+      "ZeroValues" -> None
+    }
+  ];
 
 CheckArgs[ eqnList_, vars_ ][ code_ ] :=
   Which[
@@ -116,15 +113,15 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
       ];
 
       (* Find out which variables could be 0 *)
+
       If[ (* No vars are 0 by assumption *)
         nonSingularQ,
-        solutions =
-          AddOptions[opts][SolveNonSingularBinomialSystem][
-            eqnList,
-            vars,
-            param
-          ];
-        Return[solutions]
+        Return @
+        AddOptions[opts][SolveNonSingularBinomialSystem][
+          eqnList,
+          vars,
+          param
+        ]
       ];
 
       If[ (* Zeros are given as data *)
@@ -172,16 +169,11 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
         ];
 
       sharedSolutions =
-        SolveNonSingularBinomialSystem[
+        AddOptions[opts][SolveNonSingularBinomialSystem][
           sharedBinomialSystem,
           sharedVars,
           s1,
-          "Symmetries" -> sharedSymmetries,
-          "InvertibleMatrices" -> invertibleMats,
-          "PolynomialConstraints" -> polConstraints,
-          "UseDatabaseOfSmithDecompositions" -> useDataBase,
-          "StoreDecompositions" -> storeDecomps,
-          "PreEqualCheck" -> preEqCheck
+          "Symmetries" -> sharedSymmetries
         ];
 
       If[
