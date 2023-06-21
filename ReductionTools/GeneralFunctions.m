@@ -104,12 +104,15 @@ ToProperBinomialEquation::usage =
 ToProperBinomialEquation::notbineqn =
   "Equation `1` is not a binomial equation.";
 
+Options[ToProperBinomialEquation] =
+  { "SimplifyBy" -> Identity };
+
 SetAttributes[ ToProperBinomialEquation, Listable ];
 
-ToProperBinomialEquation[ True ] :=
+ToProperBinomialEquation[ True, ___ ] :=
   True;
 
-ToProperBinomialEquation[ eqn_ ] :=
+ToProperBinomialEquation[ eqn_, opts:OptionsPattern[] ] :=
   Which[
     !BinomialEquationQ[ eqn ]
     ,
@@ -118,20 +121,15 @@ ToProperBinomialEquation[ eqn_ ] :=
     ,
     True
     ,
-    With[{
-      pol = ToPolynomial @ eqn
-      },
-      If[
-        pol === 0
-        ,
-        Return @ True
-        ,
-        With[{ mList = MonomialList[ pol ] },
-          If[
-            Length[mList] === 1,
-            mList[[1]] == 0,
-            mList[[1]] == -mList[[2]]
-          ]
+    With[{ pol = OptionValue["SimplifyBy"] @ ToPolynomial @ eqn },
+
+      If[ pol === 0, Return @ True ] ;
+
+      With[{ mList = MonomialList[ pol ] },
+        If[
+          Length[mList] === 1,
+          mList[[1]] == 0,
+          mList[[1]] == -mList[[2]]
         ]
       ]
     ]
@@ -514,7 +512,6 @@ NotInvalidNonZeroSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
       filledInEqns =
         Expand[ Map[ preEqCheck, eqns/.Dispatch[soln], {2} ] ]
     },
-    (* TODO: If some equations are nested deeply might want to print a warning. *)
     FreeQ[
       filledInEqns,
       False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ]
@@ -986,3 +983,43 @@ SEcho[ f_, s_Symbol ] :=
 SEcho[ f_, s_String ] := EchoFunction[ s, f[#]/._[i__Integer] :> P`x[i]& ];
 
 SEcho[ f_, s_String, ss_Symbol ] := EchoFunction[ s, f[#]/.ss[i__Integer] :> P`x[i]& ];
+
+
+(* Update expressions one by one, throwing { False }, if any do not satisfy testf *)
+
+PackageScope["UpdateAndCheck"]
+
+Options[UpdateAndCheck] :=
+  {
+    "SimplifyIntermediateResultsBy" -> Identity,
+    "PreEqualCheck" -> Identity
+  };
+
+UpdateAndCheck[ {}, __ ] =
+  { };
+
+UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
+  Module[ { newExpr, preEqCheck, simplify },
+    If[ exprList === {}, Return @ {} ];
+    preEqCheck =
+      OptionValue["PreEqualCheck"];
+    simplify =
+      OptionValue["SimplifyIntermediateResultsBy"];
+
+    Catch[
+      Reap[
+        Do[
+          newExpr =
+            simplify @ ReplaceAll[ e, sol ];
+
+          If[
+            testf[ preEqCheck @ newExpr ] === False,
+            Throw[ { False } ],
+            Sow[ newExpr ]
+          ]
+          ,
+          { e, exprList }
+        ]
+      ][[2,1]]
+    ]
+  ];
