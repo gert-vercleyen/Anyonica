@@ -77,6 +77,21 @@
 		"BulkRetrievalOptimized" -> False
 	|>,
 	<|
+		"Name" -> "Keywords",
+		"Type" -> "Text",
+		"Stored" -> True,
+		"Tokenized" -> True,
+		"Weight" -> 1,
+		"Searchable" -> True,
+		"Language" -> "English",
+		"IgnoreCase" -> True,
+		"StemmingMethod" -> Automatic,
+		"CamelCaseMatching" -> True,
+		"DeleteStopWords" -> True,
+		"StoreTermVectors" -> False,
+		"BulkRetrievalOptimized" -> False
+	|>,
+	<|
 		"Name" -> "Description",
 		"Type" -> "Text",
 		"Stored" -> True,

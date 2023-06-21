@@ -15,6 +15,7 @@ OptimizedImport[ fileName_String, importDirectory_String ] :=
 			Import[ fullName, "MX" ],
 			(* ELSE: Create MX file from WDX file *)
 			PrintTemporary["Import not yet optimized for this machine. Optimizing for future use..."];
+			PrintTemporary[ ProgressIndicator[Appearance -> "Necklace"] ];
 			data = Uncompress @ Import[ FileNameJoin[{ importDirectory, fileName<>".wdx" }], "WDX" ];
 			Export[ fullName, data, "MX" ];
 			PrintTemporary["Import optimized for future use. Importing data..."];
