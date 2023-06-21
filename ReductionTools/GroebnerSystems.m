@@ -259,8 +259,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
       ];
 
       SumBinEqns =
-        Reverse @* BinomialSplit
-        ;
+        Reverse @* BinomialSplit;
 
       { equations, variables, symmetries, knowns } =
         AddOptions[opts][PrepareHexagonSolverInput][ring] /@
@@ -290,10 +289,7 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
           var,
           opt,
           "Symmetries" ->                       symmetries,
-          "SimplifyIntermediateResultsBy" ->    simplify,
-          "PreEqualCheck" ->                    OptionValue["PreEqualCheck"],
-          "UseDatabaseOfSmithDecompositions" -> OptionValue["UseDatabaseOfSmithDecompositions"],
-          "StoreDecompositions" ->              OptionValue["StoreDecompositions"]
+          "SimplifyIntermediateResultsBy" ->    simplify
         ];
 
       If[
