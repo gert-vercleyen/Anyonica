@@ -951,7 +951,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBM:solutions", { id_, solutions_, __
   ];
 
 (*SolveAndCheck*)
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAC:init", { id_, binomialEqns_,vars_,symbol_,optionList_, ___ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:init", { id_, binomialEqns_,vars_,symbol_,optionList_, ___ } ] :=
   Module[{fn1,fn2,fn3},
     fn1 = dataFileName[ id, dir, "Equations" ];
     safeExport[ fn1, binomialEqns ];
@@ -966,14 +966,59 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAC:init", { id_, binomialEqns_,vars_
       startCell[
         id,
         dir,
-        "SolveAndCheck",
+        "SolveAndUpdate",
         { { "Equations", fn1 }, { "Variables", fn2 }, { "Symbol", fn3 } },
         optionList
       ]
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAC:remainingsol", { id_, soln_, validSoln_,  ___ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:updated_sys", { id_, sumEqns_, constr_ } ] :=
+  Module[{fn1,fn2},
+    fn1 = dataFileName[ id, dir, "NewSumEqns" ];
+    safeExport[ fn1, sumEqns ];
+    fn2 = dataFileName[ id, dir, "NewConstraints" ];
+    safeExport[ fn2, constr ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ "Updated the "],
+          hyperlinkBox[ "non-binomial equations", fn1 ],
+          inputStyle[ " and the "],
+          hyperlinkBox[ "constraints", fn2 ]
+        }],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:invalid_positions", { id_, positions_,  ___ } ] :=
+Module[{},
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[
+          StringJoin[
+            "Solutions with positions ",
+            ToString[positions],
+            " are rejected because the updated equations contain either False, 0 == monomial, monomial == 0, ",
+            " or because some of the constraints are not satisfied."
+          ]
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ]
+];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:remainingsol", { id_, soln_, validSoln_,  ___ } ] :=
   Module[{fn1,fn2},
     fn1 = dataFileName[ id, dir, "Solutions" ];
     safeExport[ fn1, soln ];
