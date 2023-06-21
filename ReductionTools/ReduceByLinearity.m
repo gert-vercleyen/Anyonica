@@ -61,6 +61,10 @@ Options[ReduceByLinearity] :=
     Options[SimplestLinearRule]
   ];
 
+(*ReduceByLinearity[ { } , _, ___ ] :=
+  <| "Polynomials" -> {}, "Assumptions" -> True, "Rules" -> { } |>;*)
+
+
 ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
   Module[
     {
