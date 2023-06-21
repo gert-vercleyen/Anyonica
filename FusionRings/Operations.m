@@ -281,6 +281,7 @@ EquivalentFusionRings::usage =
   "with \[Sigma][[1]] == 1 and r equals PermutedRing[ring,\[Sigma]].";
 
 SetAttributes[ EquivalentFusionRings, Listable ];
+
 EquivalentFusionRings[ r_FusionRing?FusionRingQ ] :=
   With[{
     l =  Permutations[ Range[Rank[r] - 1 ] ] + 1 },
