@@ -8,17 +8,8 @@ SolvePolynomialSystem::usage =
   "SolvePolynomialSystem[ eqns, vars, s ] returns the solutions, parametrized by s, "<>
   "to the system of polynomial equations eqns in the variables vars.";
 
-Options[ SolvePolynomialSystem ] = {
-  "Symmetries" -> None,
-  "NonSingular" -> False,
-  "PolynomialConstraints" -> {},
-  "InvertibleMatrices" -> {},
-  "ZeroValues" -> None,
-  "SimplifyIntermediateResultsBy" -> Identity,
-  "PreEqualCheck" -> Identity,
-  "UseDatabaseOfSmithDecompositions" -> False,
-  "StoreDecompositions" -> False
-};
+Options[ SolvePolynomialSystem ] :=
+  Options[SolveBinomialSystem];
 
 SolvePolynomialSystem[ eqns_List, vars_List, symbol_, opts:OptionsPattern[] ] :=
   Module[{
