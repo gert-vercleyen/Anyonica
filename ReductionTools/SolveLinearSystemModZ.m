@@ -494,7 +494,7 @@ Options[BinEqnToFactorList] :=
 
 BinEqnToFactorList[ eqn_, opts:OptionsPattern[] ]  :=
   With[{
-    properBinEqn =  ToProperBinomialEquation[eqn,opts],
+    properBinEqn =  AddOptions[opts][ToProperBinomialEquation][eqn],
     getCoeffs = GatherCoeffs @* FactorList
     },
     Which[
