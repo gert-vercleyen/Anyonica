@@ -1333,6 +1333,15 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TSG:non_unitary_transform", { id_ } ]
     ]
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TSG:off_diagonal_zero", { id_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    warningCell[
+      id,
+      "There are F-matrices with off-diagonal zero elements that do not appear symmetrically. Impossible to fix symmetric gauge."
+    ]
+  ];
 (* SimplifyVariables *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SV:subs", { id_, subs_, ___ } ] :=
   Module[{fn},

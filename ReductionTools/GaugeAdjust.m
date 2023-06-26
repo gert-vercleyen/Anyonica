@@ -633,7 +633,7 @@ Options[SymmetricGaugeQ] =
     "Accuracy" -> 64
   };
 
-SymmetricGaugeQ[ ring_, symb_, OptionsPattern[] ] :=
+checkArgsSymmetricGaugeQ[ ring_, symb_ ] :=
   Which[
     Mult[ring] != 1
     ,
@@ -644,43 +644,45 @@ SymmetricGaugeQ[ ring_, symb_, OptionsPattern[] ] :=
     ,
     Message[ SymmetricGaugeQ::wrongsolformat, symb ];
     Abort[]
-    ,
-    True
-    ,
-      With[
-        {
-          fMats = (FMatrices[ring] ~ WithMinimumDimension ~ 2)/.symb,
-          simplify = OptionValue["SimplifyBy"],
-          numQ = OptionValue["Numeric"],
-          acc = OptionValue["Accuracy"]
-        },
-        With[
-          {
-          check =
-          Evaluate @
-          If[
-            numQ,
-            TrueQ[ N[ #, { Infinity, acc } ] == 0 ]&,
-            TrueQ[ simplify[ # ] == 0 ]&
-          ]
-        },
-          Catch[
-            Do[
-              Map[
-                If[
-                  Not[ check[ # ] ],
-                  Throw[ False ]
-                ]&,
-                mat - Transpose[mat],
-                { 2 }
-              ]
-              , { mat, fMats }
-            ];
-            True
-          ]
-        ]
-      ]
   ];
+
+SymmetricGaugeQ[ ring_, symb_, OptionsPattern[] ] :=
+(
+  checkArgsSymmetricGaugeQ[ring, symb];
+  With[
+    {
+      fMats = (FMatrices[ring] ~ WithMinimumDimension ~ 2) /. symb,
+      simplify = OptionValue["SimplifyBy"],
+      numQ = OptionValue["Numeric"],
+      acc = OptionValue["Accuracy"]
+    },
+    With[
+      {
+        check =
+        Evaluate @
+        If[
+          numQ,
+          TrueQ[ N[ #, { Infinity, acc } ] == 0 ]&,
+          TrueQ[ simplify[ # ] == 0 ]&
+        ]
+      },
+      Catch[
+        Do[
+          Map[
+            If[
+              Not[ check[ # ] ],
+              Throw[ False ]
+            ]&,
+            mat - Transpose[mat],
+            { 2 }
+          ]
+          , { mat, fMats }
+        ];
+        True
+      ]
+    ]
+  ]
+);
 
 PackageExport["SGQ"]
 
@@ -715,8 +717,7 @@ Options[ToSymmetricGauge] =
     "PreserveTrivialValues" -> True
   };
 
-
-ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
+CheckArgsToSymmetricGauge[ ring_, FSymb_ ] :=
   Which[
     Mult[ring] != 1
     ,
@@ -727,200 +728,216 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
     ,
     Message[ ToSymmetricGauge::wrongsolformat, FSymb ];
     Abort[]
-    ,
-    True
-    ,
-      Module[
-        { gaugeSymmetries, transforms, g, u, newFs, constraints, newVars, newConstraints, revertVars,
-        unitaryGTQ, acc, numericQ, simplify, symGaugeQ, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS,
-        NonOneCoeff,noc, diagonalElements,ZSpace,constVec, useDataBaseQ, preEqCheck, CheckSolution,newFSolution,
-        time, result, procID, returnTransformQ, gaugeDemands, gauge, vacuumConstraints
-        },
-        acc =
-          OptionValue["Accuracy"];
-        numericQ =
-          OptionValue["Numeric"];
-        simplify =
-          OptionValue["SimplifyBy"];
-        useDataBaseQ =
-          OptionValue["UseDatabaseOfSmithDecompositions"];
-        preEqCheck =
+  ];
+
+ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
+(
+  CheckArgsToSymmetricGauge[ ring, FSymb ];
+  Module[
+    { gaugeSymmetries, transforms, g, u, newFs, constraints, newVars, newConstraints, revertVars,
+    unitaryGTQ, acc, numericQ, simplify, symGaugeQ, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS,
+    NonOneCoeff,noc, diagonalElements,ZSpace,constVec, useDataBaseQ, preEqCheck, CheckSolution,newFSolution,
+    time, result, procID, returnTransformQ, gaugeDemands, gauge, vacuumConstraints
+    },
+    acc =
+      OptionValue["Accuracy"];
+    numericQ =
+      OptionValue["Numeric"];
+    simplify =
+      OptionValue["SimplifyBy"];
+    useDataBaseQ =
+      OptionValue["UseDatabaseOfSmithDecompositions"];
+    preEqCheck =
+      If[
+        numericQ,
+        InfN[acc],
+        OptionValue["PreEqualCheck"]
+      ];
+    unitaryGTQ =
+      OptionValue["UnitaryGaugeTransform"];
+    returnTransformQ =
+      OptionValue["ReturnGaugeTransform"];
+    gaugeDemands =
+      Equal @@@
+      OptionValue["GaugeDemands"];
+
+    procID =
+      ToString[Unique[]];
+
+    printlog["TSG:init", { procID, ring, FSymb, {opts} } ];
+
+    { time, result } = Normal @
+    AbsoluteTiming[
+
+      gaugeSymmetries =
+        GaugeSymmetries[ FSymbols[ring], g ];
+
+      transforms =
+        gaugeSymmetries["Transforms"];
+
+      vacuumConstraints =
+        If[
+          OptionValue["PreserveTrivialValues"],
+          (* THEN *)
+          Thread[
+            ReplaceAll[
+              Cases[ FSymbols[ring], $VacuumFPattern ]/.transforms,
+              F[__] -> 1
+            ] == 1
+          ],
+          (* ELSE *)
+          {}
+        ];
+
+      newFs =
+        MapAt[
+          If[ numericQ, InfN[2*acc], simplify ],
+          FSymb,
+          { All, 2 }
+        ];
+
+      Catch[
+        symGaugeQ[ symb_ ] :=
+          AddOptions[opts][SymmetricGaugeQ][ ring, symb ];
+
+        If[ (* Already in symmetric gauge *)
+          symGaugeQ @ newFs,
+          printlog["TSG:already_symmetric", {procID}];
+          Throw @
+          If[
+            returnTransformQ,
+            { FSymb, Thread[ GetVariables[ transforms, g ] -> 1 ] },
+            FSymb
+          ]
+        ];
+
+        (*
+          Set up the constraints
+        *)
+
+        constraints =
+          Join[
+            vacuumConstraints,
+            SymmetricGaugeConstraints[g][ring]/.Dispatch[newFs],
+            gaugeDemands
+          ];
+
+        printlog[ "TSG:constraints", { procID, constraints } ];
+
+        { newConstraints, newVars, revertVars } =
+          SimplifyVariables[
+            constraints,
+            g @@@ NZSC[ring],
+            u
+          ];
+
+        { binomialMat, rhsVec } =
+          Catch[
+            AddOptions[opts][BinToSemiLin][
+              Rationalize[ newConstraints, 10^(-2*acc) ],
+              NNZSC[ring],
+              u
+            ],
+            "ZeroVariableInNonSingularSystem"
+          ];
+
+        If[
+          binomialMat === {} && rhsVec === {},
+          printlog[ "TSG:off_diagonal_zero", {procID} ];
+          Throw @
+          If[
+            returnTransformQ,
+            { FSymb, $Failed },
+            FSymb
+          ]
+        ];
+
+        { mU, mD, mV } =
+          If[
+            useDataBaseQ,
+            AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
+            SmithDecomposition @ binomialMat
+          ];
+
+        printlog["TSG:decomposition",{procID,{mU,mD,mV}}];
+
+        rankBinomialMat =
+          Length[
+            diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
+          ];
+
+        expRHS =
+          Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+
+        NonOneCoeff[ l_ ] :=
+          FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
+
+        If[
+          (* RHS and LHS are incompatible *)
+          rankBinomialMat < Length[ expRHS ] &&
+          Head[ noc = NonOneCoeff  @ expRHS[[ rankBinomialMat + 1;; ]] ] =!= Missing,
+          (* THEN *)
+          printlog["TSG:nonone_coeff", { procID, expRHS, rankBinomialMat, preEqCheck @ noc } ];
+          Throw[$Failed],
+          (* ELSE *)
+          ZSpace =
+            mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
+          constVec =
+            Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+        ];
+
+        CheckSolution[ sol_ ] :=
+          If[
+            Not @ AddOptions[opts][SymmetricGaugeQ][ ring, sol ],
+            printlog["TSG:sol_not_symmetric", {procID} ];
+          ];
+
+        gauge =
           If[
             numericQ,
-            InfN[acc],
-            OptionValue["PreEqualCheck"]
+            Thread[ newVars -> InfN[ constVec, acc ] ],
+            Thread[ newVars -> constVec ]
+          ]/.revertVars;
+
+        newFSolution =
+          ApplyGaugeTransform[ FSymb, gauge, g ];
+
+        CheckSolution[ newFSolution ];
+
+        If[ (* Don't have further demands on gauges *)
+          !unitaryGTQ,
+
+          (* THEN *)
+          Throw @
+          If[
+            returnTransformQ,
+            { newFSolution, gauge },
+            newFSolution
+          ],
+
+          (* ELSE *)
+          If[ (* const vec is not vector of phases *)
+            Not[ And @@ Thread[ preEqCheck[ simplify[ Abs[expRHS] ] ] == 1 ] ],
+            printlog["TSG:non_unitary_transform", {procID} ]
           ];
-        unitaryGTQ =
-          OptionValue["UnitaryGaugeTransform"];
-        returnTransformQ =
-          OptionValue["ReturnGaugeTransform"];
-        gaugeDemands =
-          Equal @@@
-          OptionValue["GaugeDemands"];
-        
-        procID =
-          ToString[Unique[]];
-        
-        printlog["TSG:init", { procID, ring, FSymb, {opts} } ];
-        
-        { time, result } = Normal @
-        AbsoluteTiming[
-          
-          gaugeSymmetries =
-            GaugeSymmetries[ FSymbols[ring], g ];
 
-          transforms =
-            gaugeSymmetries["Transforms"];
-
-          vacuumConstraints =
-            If[
-              OptionValue["PreserveTrivialValues"],
-              (* THEN *)
-              Thread[
-                ReplaceAll[
-                  Cases[ FSymbols[ring], $VacuumFPattern ]/.transforms,
-                  F[__] -> 1
-                ] == 1
-              ],
-              (* ELSE *)
-              {}
-            ];
-          
-          newFs =
-            MapAt[
-              If[ numericQ, InfN[2*acc], simplify ],
-              FSymb,
-              { All, 2 }
-            ];
-          
-          Catch[
-            symGaugeQ[ symb_ ] :=
-              AddOptions[opts][SymmetricGaugeQ][ ring, symb ];
-            
-            If[ (* Already in symmetric gauge *)
-              symGaugeQ @ newFs,
-              printlog["TSG:already_symmetric", {procID}];
-              Throw @
-              If[
-                returnTransformQ,
-                { FSymb, Thread[ GetVariables[ transforms, g ] -> 1 ] },
-                FSymb
-              ];
-            ];
-            
-            (*
-              Set up the constraints
-            *)
-            
-            constraints =
-              Join[
-                vacuumConstraints,
-                SymmetricGaugeConstraints[g][ring]/.Dispatch[newFs],
-                gaugeDemands
-              ];
-            
-            printlog[ "TSG:constraints", { procID, constraints } ];
-            
-            { newConstraints, newVars, revertVars } =
-              SimplifyVariables[
-                constraints,
-                g @@@ NZSC[ring],
-                u
-              ];
-            
-            { binomialMat, rhsVec } =
-              AddOptions[opts][BinToSemiLin][
-                Rationalize[ newConstraints, 10^(-2*acc) ],
-                NNZSC[ring],
-                u
-              ];
-            
-            { mU, mD, mV } =
-              If[
-                useDataBaseQ,
-                AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
-                SmithDecomposition @ binomialMat
-              ];
-            
-            printlog["TSG:decomposition",{procID,{mU,mD,mV}}];
-            
-            rankBinomialMat =
-              Length[
-                diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
-              ];
-            
-            expRHS =
-              Inner[ Power, rhsVec, Transpose[ mU ], Times ];
-
-            NonOneCoeff[ l_ ] :=
-              FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
-
-            If[
-              (* RHS and LHS are incompatible *)
-              rankBinomialMat < Length[ expRHS ] &&
-              Head[ noc = NonOneCoeff  @ expRHS[[ rankBinomialMat + 1;; ]] ] =!= Missing,
-              (* THEN *)
-              printlog["TSG:nonone_coeff", { procID, expRHS, rankBinomialMat, preEqCheck @ noc } ];
-              Throw[$Failed],
-              (* ELSE *)
-              ZSpace =
-                mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
-              constVec =
-                Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
-            ];
-            
-            CheckSolution[ sol_ ] :=
-              If[
-                Not @ AddOptions[opts][SymmetricGaugeQ][ ring, sol ],
-                printlog["TSG:sol_not_symmetric", {procID} ];
-              ];
-            
-            gauge =
-              If[
-                numericQ,
-                Thread[ newVars -> InfN[ constVec, acc ] ],
-                Thread[ newVars -> constVec ]
-              ]/.revertVars;
-
-            newFSolution =
-              ApplyGaugeTransform[ FSymb, gauge, g ];
-            
-            CheckSolution[ newFSolution ];
-            
-            If[ (* Don't have further demands on gauges *)
-              !unitaryGTQ,
-              
-              (* THEN *)
-              Throw @
-              If[
-                returnTransformQ,
-                { newFSolution, gauge },
-                newFSolution
-              ],
-              
-              (* ELSE *)
-              If[ (* const vec is not vector of phases *)
-                Not[ And @@ Thread[ preEqCheck[ simplify[ Abs[expRHS] ] ] == 1 ] ],
-                printlog["TSG:non_unitary_transform", {procID} ]
-              ];
-             
-              Throw @
-              If[
-                returnTransformQ,
-                { newFSolution, gauge },
-                newFSolution
-              ];
-            ];
-          ] (* END CATCH *)
-        
+          Throw @
+          If[
+            returnTransformQ,
+            { newFSolution, gauge },
+            newFSolution
+          ];
         ];
-        
-        printlog[ "Gen:results", { procID, result, time }];
-        
-        result/.g -> List
+      ] (* END CATCH *)
 
-      ]
-  ];
+    ];
+
+    printlog[ "Gen:results", { procID, result, time }];
+
+    result/.g -> List
+
+  ]
+);
 
 
 PackageExport["TSG"]
