@@ -328,6 +328,7 @@ FusionRingSU2k[ k_Integer ] :=
 rangeSU2k[ i_Integer, j_Integer, k_Integer ] :=
   rangePSU2k[ i, j, k ];
 
+
 (* Fusion rings from groups *)
 
 
@@ -439,6 +440,44 @@ FusionRingZn::usage =
 
 FusionRingZn[ n_Integer ] :=
   FusionRingFromGroup[CyclicGroup[n]];
+
+(* Rep(G) *)
+PackageExport["FusionRingRepG"]
+
+FusionRingRepG::usage =
+  "FusionRingRep[G] returns the character ring of the finite group G.\n"<>
+  "FusionRingRep[{\"gname\",n}] returns the character ring of the finite group with name gname and parameter n.";
+
+FusionRingRepG[ g_ ] :=
+  Module[{ ct, rank, n },
+    ct =
+      CharacterTable[ g ];
+    
+    If[ MissingQ[ct], Return[ct]];
+    
+    rank =
+      Length @ ct;
+    
+    Table[
+      ToInteger@
+      Solve[
+        ct[[i]] ct[[j]] == Sum[ n[k] ct[[k]], { k, rank } ]
+      ][[ 1, ;; , 2 ]],
+      { i, rank },
+      { j, rank }
+    ]
+   
+  ];
+
+ToFGDName[g_[n_]] :=
+  { ToString @ g, n };
+
+CharacterTable[ g_ ] :=
+  FiniteGroupData[ ToFGDName[g], "CharacterTable" ];
+
+SetAttributes[ToInteger, Listable];
+ToInteger[ x_ ] :=
+  If[ IntegerQ[x], x, Floor[N[ x, { Infinity, 1 }]] ];
 
 (* Haagerup-Izumi *)
 PackageExport["FusionRingHI"]
