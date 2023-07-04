@@ -6,6 +6,25 @@ Package["Anyonica`"]
    we use TagSetDelayed ( /: lhs := rhs ) to pattern match FusionRing objects
    within expressions and replace them with our own definitions. *)
 
+PackageExport["ChangeProperty"]
+
+ChangeProperty::usage =
+  "ChangeProperty[ ring, opt -> val ] changes the property of type opt to val.\n"<>
+  "ChangeProperty[ ring, { opt1 -> val1, ..., optn -> valn } ] changes the properties of types opti to vali.";
+
+
+ChangeProperty[ ring_, list_ ] :=
+  Module[ {opts},
+    opts = (* All defining properties of previous fusion ring *)
+      Normal @ First[ List @@ ring ];
+    
+    AddOptions[opts][FusionRing][ Sequence @@ list ]
+
+  ];
+
+ChangeProperty[ ring_, a_ -> b_ ] :=
+  ChangeProperty[ ring, { a -> b } ];
+
 PackageExport["MultiplicationTable"]
 
 MultiplicationTable::usage =
