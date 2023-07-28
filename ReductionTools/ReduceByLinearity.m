@@ -195,8 +195,8 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
             rules[[;;,2]]
         },
         <|
-          "Polynomials" ->  DeleteDuplicates @ Expand @ pols,
-          "Assumptions"->
+          "Polynomials" ->  DeleteDuplicates @ map[ Expand, pols ],
+          "Assumptions" ->
             LogicalExpand @
             Reduce[
               Thread[
@@ -231,7 +231,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
             ,
             printlog["RBL:no_rules_left", { id } ];
             Sow[ { ps, nzps, rs } ];
-            Return @ Null
+            Throw @ Null
           ];
 
           If[ (* Denominator in rule isn't zero *)
@@ -240,7 +240,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
             printlog[ "RBL:nonzero_denominator", { id, lRule } ];
             RecursiveReduce @@
             UpdateSystem[ ps, nzps, rs, RatRule @ lRule ];
-            Return @ Null
+            Throw @ Null
           ];
 
           (* Denominator in rule contains sum. *)
@@ -302,24 +302,24 @@ FindLinearRule[ pol_, s_ ] :=
       Return @ Missing[],
       var =
         MinimalBy[ linVars, Last, 1 ][[1,1]];
-      Collect[ pol, var ] /. a_. * var + b_ : 0 :> var -> <|  "Denominator" -> a, "Numerator" -> -b |>
+      Collect[ pol, var ] /. a_. * var + b_ : 0 :> var -> <| "Denominator" -> a, "Numerator" -> -b |>
     ]
   ];
 
-RemoveCommonFactors[ poly_, s_ ] :=
-  Module[ { vars, ce, commonVarNum, minExponents, commonFactor },
-    vars =
-      GetVariables[ poly, s ];
-    ce =
-      CoefficientRules[ poly, vars ][[;; , 1]];
-    commonVarNum =
-      Flatten @ Position[ Times @@ ce, x_ /; x > 0 ];
-    minExponents =
-      Min /@ Transpose[ce][[commonVarNum]];
-    commonFactor =
-      Inner[ Power, vars[[commonVarNum]], minExponents, Times ];
-    Cancel[ poly / commonFactor ]
-  ];
+RemoveCommonFactors[poly_, s_] :=
+    Module[{vars, cr, ce, gcd, commonVarNum, minExponents, commonFactor},
+      vars = GetVariables[poly, s];
+      cr = CoefficientRules[poly, vars];
+      ce = cr[[;; , 1]];
+      gcd = GCD @@ cr[[;; , 2]];
+      commonVarNum = Flatten@Position[Times @@ ce, x_ /; x > 0];
+      minExponents = Min /@ Transpose[ce][[commonVarNum]];
+      commonFactor =
+          Inner[Power, vars[[commonVarNum]], minExponents, Times];
+      Cancel[poly/( gcd * commonFactor)]
+    ];
+
+
 
 (*
 
