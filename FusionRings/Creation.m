@@ -448,26 +448,29 @@ FusionRingRepG::usage =
   "FusionRingRep[G] returns the character ring of the finite group G.\n"<>
   "FusionRingRep[{\"gname\",n}] returns the character ring of the finite group with name gname and parameter n.";
 
-FusionRingRepG[ g_ ] :=
+FusionRingRepG[ g_List ] :=
   Module[{ ct, rank, n },
     ct =
-      CharacterTable[ g ];
+      FiniteGroupData[ g , "CharacterTable" ];
     
-    If[ MissingQ[ct], Return[ct]];
+    If[ MissingQ[ct], Return[ct] ];
     
     rank =
       Length @ ct;
     
     Table[
-      ToInteger@
+      ToInteger @
       Solve[
         ct[[i]] ct[[j]] == Sum[ n[k] ct[[k]], { k, rank } ]
       ][[ 1, ;; , 2 ]],
       { i, rank },
       { j, rank }
     ]
-   
+
   ];
+
+FusionRingRepG[ g_ ] :=
+  FusionRingRepG @ ToFGDName[ g ];
 
 ToFGDName[g_[n_]] :=
   { ToString @ g, n };
