@@ -488,10 +488,11 @@ ReduceViaLogic[ proposition_ ] :=
       FixedPoint[ SimplifySystem @* UpdateEquivalences @* UpdateKnowns, # ]&;
 
     simplify2 = (* Converting to CNF often gives extra info about variables *)
-      FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
+        FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
 
     simplify3 = (* Converting back to "DNF" can reduce the number of variables as well *)
-      QuietCheck[
+
+        QuietCheck[
         With[
           { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
           { removeRedundantVars = Dispatch[ Thread[ (Intersection @@ (dnfForm/.{ And|Or->List })) -> True ] ] },
@@ -523,10 +524,10 @@ ReduceViaLogic[ proposition_ ] :=
         BooleanMinimize
         ,
         { proposition, { }, { } } //
-        simplify1 //
-        simplify2 //
+        simplify1 (*//
+                    simplify2 //
         simplify3 //
-        simplify4
+        simplify4*)
         ,
         { 1 }
       ]
