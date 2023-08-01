@@ -1010,7 +1010,7 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
       Reap[
         Do[
           newExpr =
-            simplify @ ReplaceAll[ e, sol ];
+            simplify /@ ReplaceAll[ e, sol ];
 
           If[
             testf[ preEqCheck @ newExpr ] === False,

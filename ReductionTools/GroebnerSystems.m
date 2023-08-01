@@ -150,9 +150,9 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
             { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
             Table[
               <|
-                "Polynomials" -> simplify @ nSys["Polynomials"],
+                "Polynomials" -> simplify /@ nSys["Polynomials"],
                 "Assumptions" -> nSys["Assumptions"],
-                "Rules"       -> system["Rules"]/.nSys["Rules"]
+                "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
               |>,
               { nSys, newSystems }
             ]
@@ -176,7 +176,7 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
         Table[
           <|
             "GroebnerBasis" ->
-            simplify @
+            simplify /@
             AddOptions[opts][IncrementalGroebnerBasis][
               sys["Polynomials"],
               GetVariables[ sys["Polynomials"], var ]
@@ -319,16 +319,16 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
           { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
           Table[
             <|
-              "Polynomials" -> simplify @ nSys["Polynomials"],
+              "Polynomials" -> simplify /@ nSys["Polynomials"],
               "Assumptions" -> nSys["Assumptions"],
-              "Rules"       -> system["Rules"]/.nSys["Rules"]
+              "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
             |>,
             { nSys, newSystems }
           ]
         ];
 
       reducedSystems[1] =
-        Flatten[ simplify @* ReduceSystems /@ systems ];
+        Flatten[ ReduceSystems /@ systems ];
 
       printlog["MFHGS:systems", { procID, reducedSystems[1] } ];
 
@@ -344,13 +344,13 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
       Table[
         <|
           "GroebnerBasis" ->
-            simplify @
+            simplify /@
             AddOptions[opts][IncrementalGroebnerBasis][
               sys["Polynomials"],
               GetVariables[ sys["Polynomials"], var ]
             ],
           "Assumptions" -> sys["Assumptions"],
-          "Rules" -> sys["Rules"]
+          "Rules" -> MapAt[ simplify, sys["Rules"], { All, 2 } ]
         |>,
         { sys, reducedSystems[2] }
       ]
@@ -528,9 +528,8 @@ IncrementalGroebnerBasis[ pols_, vars_, opts : OptionsPattern[] ] :=
       SortBy[ #, Function[ pol, weight[ pol, vars ] ] ] & @
       DeleteDuplicates @
       DeleteCases[0] @
-      simplify @
       Map[
-        PolynomialReduce[ #, gb, vars ][[2]] &,
+        simplify[ PolynomialReduce[ #, gb, vars ][[2]] ]&,
         sys
       ];
 
@@ -538,12 +537,12 @@ IncrementalGroebnerBasis[ pols_, vars_, opts : OptionsPattern[] ] :=
       If[
         sys === {},
         gb,
-        With[{ newGB = simplify @ AddOptions[ opts ][ Groebner ][ Slice[ sys, gb ], vars ] },
+        With[{ newGB = simplify /@ AddOptions[ opts ][ Groebner ][ Slice[ sys, gb ], vars ] },
           RecursiveGroebner[ ReduceSystem[ sys, newGB ], newGB ]
         ]
       ];
 
-    RecursiveGroebner[ simplify @ pols, { } ]
+    RecursiveGroebner[ simplify /@ pols, { } ]
   ];
 
 PackageExport["IGB"]

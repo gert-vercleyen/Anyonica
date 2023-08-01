@@ -107,16 +107,19 @@ SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:Option
           Return[ { { F[1,1,1,1,1,1] -> 1 } } ]
         ];
 
-        bases = simplify @
+        bases = simplify /@
           AddOptions[opts][PentagonGroebnerSystems][ ring, z ];
 
         printlog["SMFPE:solving_systems", { procID } ];
 
-        simplify @
-        Flatten[
-          AddOptions[opts][SolveGroebnerSystem][#,z]& /@
-          bases,
-          1
+        MapAt[
+          simplify,
+          Flatten[
+            AddOptions[opts][SolveGroebnerSystem][#,z]& /@
+            bases,
+            1
+          ],
+          { All, All, 2 }
         ]
       ];
 
