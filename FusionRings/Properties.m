@@ -893,10 +893,12 @@ UpperCentralSeries::usage =
   "UpperCentralSeries[ fusionRing ] returns a list of couples { c[1], ..., c[n] } where c[i] = { el[i], adj[i] } and subring [i] corresponds to the adjoint subring of adj[i-1] and el[i] to the elements of adj[i-1] that form this subring.";
 
 UpperCentralSeries[ ring_FusionRing?FusionRingQ ] :=
-  Most @
-  FixedPointList[
-    AdjointFusionRing @* Last,
-    { Range @ Rank @ ring, ring }
+  DeleteDuplicatesBy[ (* Remove trivial inclusions *)
+    FixedPointList[
+      AdjointFusionRing @* Last,
+      { Range @ Rank @ ring, ring }
+    ],
+    Last
   ];
 
 PackageExport["UCS"]
