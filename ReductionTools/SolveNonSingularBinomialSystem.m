@@ -14,7 +14,7 @@ the variables are 0 *)
 
 PackageScope["SolveNonSingularBinomialSystem"]
 
-SolveNonSingularBinomialsystem::nonbineqns =
+SolveNonSingularBinomialSystem::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
 SolveNonSingularBinomialSystem::notimplementedyet =
@@ -25,9 +25,9 @@ SolveNonSingularBinomialSystem::wrongsymmetriesformat =
   "i.e. `1` should be `2`";
 
 SolveNonSingularBinomialSystem::novars =
-  "Nonempty set of equations, `1`, with empty set of variables. Aborting calculations."<>
+  "Set of equations, `1`, with empty set of variables. Aborting calculations."<>
   " If equalities are unresolved but True, then adding the option " <>
-  "\"PreEqualCheck\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
+  "\"SimplifyIntermediateResultsBy\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
 
 Options[SolveNonSingularBinomialSystem] :=
   {
@@ -44,12 +44,12 @@ CheckArgs[ eqns_, vars_ ] :=
   Which[
     !BinomialSystemQ[ eqns ]
     ,
-    Message[ SolveNonSingularBinomialsystem::nonbineqns, eqns ];
+    Message[ SolveNonSingularBinomialSystem::nonbineqns, eqns ];
     Abort[]
     ,
     Length[vars] === 0
     ,
-    Message[ SolveNonSingularBinomialsystem::novars, vars ];
+    Message[ SolveNonSingularBinomialSystem::novars, eqns ];
     Abort[]
   ];
 
@@ -60,7 +60,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
     {
       newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
       gaugeMat, polConstraints, symmetries, invertibleMats, memoize, store, preEqCheck, symbol, eqnList, procID,
-      internalParam, result, absTime
+      internalParam, result, absTime, invalidPos
     },
     polConstraints =
       OptionValue["PolynomialConstraints"];
@@ -84,7 +84,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
     procID =
       ToString[Unique[]];
 
-    printlog["SNSMS:init", {procID, eqnList, vars, param, {opts}}];
+    printlog["SNSBS:init", {procID, eqnList, vars, param, {opts}}];
 
     { absTime, result } =
     AbsoluteTiming[
@@ -102,12 +102,6 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         Abort[]
       ];
 
-      (* Check whether inconsistent system *)
-      If[
-        MemberQ[ False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ]  ] @ Expand[eqnList],
-        printlog["SNSMS:has_false_or_zero", {procID, Expand[eqnList]}];
-        Return @ {}
-      ];
 
       (* Check whether symmetries are multiplicative *)
       If[
@@ -119,7 +113,19 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       (* Rewrite system in terms of single-indexed variables *)
       { { newEqns, newInvertibleMats, newPolConstraints }, newVars, revertVars } =
         SimplifyVariables[ { eqnList, invertibleMats, polConstraints }, vars, symbol ];
-
+      
+      (* Check whether inconsistent system *)
+      If[
+        MemberQ[
+          Expand @ newEqns,
+          False | HoldPattern[ 0 == expr_ ] | HoldPattern[ expr_ == 0 ] /;
+          MatchQ[ expr, HoldPattern[Times[__]] | HoldPattern[Power[symbol[_],_]] | symbol[_] ]
+        ]
+        ,
+        printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
+        Return @ {}
+      ];
+      
       (* Solve the logarithm of the binomial equations *)
       If[
         symmetries === None,
@@ -131,11 +137,10 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         Catch[
           Thread[ newVars -> # ]& /@
           SolveSemiLinModZ[
-            BinToSemiLin[
+            AddOptions[opts][BinToSemiLin][
               newEqns,
-              Length[newVars],
-              symbol,
-              "SimplifyBy" -> OptionValue["SimplifyIntermediateResultsBy"]
+              newVars,
+              symbol
             ],
             internalParam,
             "OrthogonalTo" -> If[ Flatten[gaugeMat] === {}, None, gaugeMat ],
@@ -143,13 +148,22 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
             "StoreDecompositions" -> store,
             "PreEqualCheck" -> preEqCheck
           ],
-          "ZeroVariableInNonSingularSystem"
+          "Inconsistent"
         ];
 
+      
       (* Check for empty solution set *)
       If[
         preSolutions === {} || preSolutions === { {}, {} },
-        printlog["SNSMS:no_solutions_log_mon", {procID}];
+        printlog["SNSBS:no_solutions_log_mon", {procID}];
+        Return @ {}
+      ];
+      
+      (* Check for inconsistency solution set *)
+      If[
+        StringQ[ First @ preSolutions ],
+        printLog["SNSBS:has_false_or_zero_2", { procID, newEqns, preSolutions } ];
+        printlog["SNSBS:no_solutions_log_mon", { procID } ];
         Return @ {}
       ];
 
@@ -160,15 +174,21 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         ];
 
       (* Check solutions against set of constraints and revert the variables for the valid solutions *)
-      ReplaceAll[
-        Select[ NotInvalidNonZeroSolutionQ[ constraints, preEqCheck ] ] @
-        preSolutions,
-        revertVars
-      ] /. internalParam -> param
+      invalidPos =
+        Position[
+          preSolutions,
+          sol_/; Not[ NotInvalidNonZeroSolutionQ[ constraints, preEqCheck ] @ sol ],
+          {1},
+          Heads -> False
+        ];
+      
+      If[ invalidPos != 0, printlog[ "SNSBS:constraints_not_satisfied", { procID, preSolutions, constraints, invalidPos } ] ];
+      
+      Delete[ preSolutions, invalidPos ] /. revertVars /. internalParam -> param
     ];
 
-    printlog["SNSMS:solutions", {procID, result}];
-    printlog["Gen:results", {procID, result, absTime}];
+    printlog["SNSBS:solutions", {procID, result} ];
+    printlog["Gen:results", {procID, result, absTime} ];
 
     Remove[symbol, internalParam];
 
