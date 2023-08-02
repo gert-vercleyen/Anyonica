@@ -225,7 +225,7 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
 
       CSpace =
         Last @
-        SolveModZSpace[ BinToLin[ newEqns, Length[newVars], s ], opts ];
+        SolveModZSpace[ BinToLin[ newEqns, newVars, s ], opts ];
 
       params =
         symbol /@ Range[ Dimensions[CSpace][[2]] ];
@@ -636,17 +636,20 @@ DES =
 PackageScope["MultiplicativeGaugeMatrix"]
 
 MultiplicativeGaugeMatrix[ sym_Association ] :=
-  Module[{ transforms, vars, gaugeVars, newPols, g, mat },
+  Module[{ transforms, vars, gaugeVars, eqns, g },
     transforms =
       sym["Transforms"][[;;,2]];
     vars =
       sym["Transforms"][[;;,1]];
     gaugeVars =
       GetVariables[ transforms, sym["Symbols"] ];
-    newPols =
-      First @ SimplifyVariables[ (transforms/vars), gaugeVars, g ];
     
-    BinPolsToMat[ newPols, Length[gaugeVars], g ]
+    If[ gaugeVars == {}, Return[{{}}] ];
+    
+    eqns =
+      First @ SimplifyVariables[ Thread[ ( transforms/vars ) == 1], gaugeVars, g ];
+    
+    First @ BinToSemiLin[ eqns, gaugeVars, g ]
   ];
 
 MultiplicativeSymmetriesQ[ sym_Association ] :=
@@ -773,5 +776,5 @@ TrivialGaugeMatrix[ symbols_ ] :=
     
     Last @
     SolveModZSpace @
-    BinToLin[ newConstraints, Length[newGaugeVars], g2 ]
+    BinToLin[ newConstraints, newGaugeVars, g2 ]
   ];

@@ -252,7 +252,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             Catch[
               AddOptions[opts][BinToSemiLin][
                 Rationalize[ newBinomialConstraints, 10^(-2*acc) ],
-                NNZSC[ring],
+                newVars,
                 u
               ],
               "ZeroVariableInNonSingularSystem"
@@ -835,7 +835,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           Catch[
             AddOptions[opts][BinToSemiLin][
               Rationalize[ newConstraints, 10^(-2*acc) ],
-              NNZSC[ring],
+              newVars,
               u
             ],
             "ZeroVariableInNonSingularSystem"
@@ -1113,7 +1113,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
             { binomialMat, rhsVec } =
             AddOptions[opts][BinToSemiLin][
               newConstraints,
-              Length[vars],
+              newVars,
               u
             ];
             

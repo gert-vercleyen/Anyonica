@@ -228,115 +228,108 @@ Options[SolveSemiLinModZ] =
     "Hold" -> False
   };
 
-SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
-  If[
-    !IntegerMatrixQ[mat]
-    ,
-    Message[ SolveSemiLinModZ::nonintegermatrix, mat ];
-    Abort[]
-    ,
-    Module[{
-      ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
-      preEqCheck, procID, hold, result, absTime, noc
-      },
-      gaugeMat =
-        OptionValue["OrthogonalTo"];
-      preEqCheck =
-        OptionValue["PreEqualCheck"];
-      hold =
-        If[ OptionValue["Hold"], Hold, Identity ];
-      procID =
-        ToString[Unique[]];
+SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
+  Module[{
+    ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
+    preEqCheck, procID, hold, result, absTime, noc
+    },
+    gaugeMat =
+      OptionValue["OrthogonalTo"];
+    preEqCheck =
+      OptionValue["PreEqualCheck"];
+    hold =
+      If[ OptionValue["Hold"], Hold, Identity ];
+    procID =
+      ToString[Unique[]];
 
-      printlog["SSES:init", {procID,{mat,vec},{opts}}];
+    printlog["SSES:init", {procID,{mat,vec},{opts}}];
 
-      { absTime, result } =
-      AbsoluteTiming[
-        If[
-          mat === { {} } || vec === {},
-          printlog["Gen:trivial_system", {procID}];
-          Return[ {} ]
-        ];
-
-        { u, d, v } =
-          If[
-            OptionValue["UseDatabaseOfSmithDecompositions"],
-            LoadData["SmithDecompositions"];
-            AddOptions[opts][MemoizedSmithDecomposition][ mat ],
-            SmithDecomposition[ mat ]
-          ];
-
-        printlog["SSES:decomposition", {procID,{u,d,v}}];
-
-        r =
-          Length[
-            ld = DeleteCases[0] @ Diagonal @ Normal @ d
-          ];
-        
-        If[
-          r == 0,
-          Return[{}]
-        ];
-
-        expRHS =
-          Inner[ Power, vec, Transpose[ u ], Times ];
-
-        ZSpace =
-          v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
-
-        NonOneCoeff[ l_ ] :=
-          FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
-
-        If[
-          r < Length[ expRHS ] &&  !MissingQ[ noc =  NonOneCoeff[ expRHS[[r+1;;]] ] ],
-          printlog["SSES:nonone_coeff", {procID,expRHS,r, preEqCheck @ noc}];
-          Return[ {} ],
-          constVec =
-            Inner[ Power, vec, Transpose[ ZSpace.u[[;;r]] ], Times ]
-        ];
-
-        zVecs =
-          hold[Map][
-            Exp[ 2 Pi I # ]&,
-            hold[Map][
-              (ZSpace . #)&,
-              hold[Tuples][ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ]
-            ],
-            { 2 }
-          ];
-
-        CSpace =
-          If[
-            gaugeMat =!= None,
-            IntegerOrthogonalSpace[ v[[ ;;, r+1;; ]], gaugeMat ],
-            v[[ ;;, r+1;; ]]
-          ];
-
-        monomials =
-          If[
-            CSpace === {{}},
-            ConstantArray[ 1, Dimensions[zVecs][[2]] ],
-            With[ { parameters = param /@ Range[ Dimensions[CSpace][[2]] ] },
-              Inner[ Power, parameters, #, Times ]& /@ CSpace
-            ]
-          ];
-        
-        If[
-          OptionValue["Hold"],
-          { constVec, zVecs, monomials },
-          Table[
-            constVec * zVec * monomials,
-            { zVec, zVecs }
-          ]
-        ]
+    { absTime, result } =
+    AbsoluteTiming[
+      If[
+        mat === { {} } || vec === {},
+        printlog["Gen:trivial_system", {procID}];
+        Return[ {} ]
       ];
-      printlog["Gen:results", {procID, result, absTime}];
 
-      result
-    ]
+      { u, d, v } =
+        If[
+          OptionValue["UseDatabaseOfSmithDecompositions"],
+          LoadData["SmithDecompositions"];
+          AddOptions[opts][MemoizedSmithDecomposition][ mat ],
+          SmithDecomposition[ mat ]
+        ];
+
+      printlog["SSES:decomposition", {procID,{u,d,v}}];
+
+      r =
+        Length[
+          ld = DeleteCases[0] @ Diagonal @ Normal @ d
+        ];
+      
+      If[
+        r == 0,
+        Return[{}]
+      ];
+
+      expRHS =
+        Inner[ Power, vec, Transpose[ u ], Times ];
+
+      ZSpace =
+        v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
+
+      NonOneCoeff[ l_ ] :=
+        FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
+
+      If[
+        r < Length[ expRHS ] &&  !MissingQ[ noc =  NonOneCoeff[ expRHS[[r+1;;]] ] ],
+        printlog["SSES:nonone_coeff", {procID,expRHS,r, preEqCheck @ noc}];
+        Return[ {} ],
+        constVec =
+          Inner[ Power, vec, Transpose[ ZSpace.u[[;;r]] ], Times ]
+      ];
+
+      zVecs =
+        hold[Map][
+          Exp[ 2 Pi I # ]&,
+          hold[Map][
+            (ZSpace . #)&,
+            hold[Tuples][ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ]
+          ],
+          { 2 }
+        ];
+
+      CSpace =
+        If[
+          gaugeMat =!= None,
+          IntegerOrthogonalSpace[ v[[ ;;, r+1;; ]], gaugeMat ],
+          v[[ ;;, r+1;; ]]
+        ];
+
+      monomials =
+        If[
+          CSpace === {{}},
+          ConstantArray[ 1, Dimensions[zVecs][[2]] ],
+          With[ { parameters = param /@ Range[ Dimensions[CSpace][[2]] ] },
+            Inner[ Power, parameters, #, Times ]& /@ CSpace
+          ]
+        ];
+      
+      If[
+        OptionValue["Hold"],
+        { constVec, zVecs, monomials },
+        Table[
+          constVec * zVec * monomials,
+          { zVec, zVecs }
+        ]
+      ]
+    ];
+    printlog["Gen:results", {procID, result, absTime}];
+
+    result
   ];
 
-SolveSemiLinModZ[ { mat_?MatrixQ, vec_List }, param_, opts:OptionsPattern[] ] :=
+SolveSemiLinModZ[ { mat_, vec_List }, param_, opts:OptionsPattern[] ] :=
   SolveSemiLinModZ[ mat, vec, param, opts ];
 
 PackageExport["BinToSemiLin"]
@@ -351,11 +344,14 @@ BinToSemiLin::nonbineqns =
 BinToSemiLin::wrongnumberofvars =
   "The number of variables `1` should be a positive integer";
 
-Options[ BinToSemiLin ] :=
-  Join[
-    { "Numeric" -> False },
-    Options[BinEqnToFactorList]
-  ];
+Options[BinToSemiLin] :=
+  {
+    "SimplifyIntermediateResultsBy" -> Identity,
+    "PreEqualCheck" -> Identity,
+    "Parallel" -> False,
+    "Numeric" -> False,
+    "Accuracy" -> 64
+  };
 
 CheckBinToSemiLinArgs[ eqnList_, nVars_ ] :=
   Which[
@@ -369,6 +365,106 @@ CheckBinToSemiLinArgs[ eqnList_, nVars_ ] :=
   ];
 
 
+BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
+(
+  CheckBinToSemiLinArgs[ eqns, Length[vars] ];
+  Module[ { map, properEqns, sa, betr, tpbe, simplify, probPos, numeric, accuracy, preEqCheck },
+    
+    If[ OptionValue["Parallel"], Quiet[ LaunchKernels[] ]; map = ParallelMap, map = Map ];
+    
+    simplify =
+      OptionValue["SimplifyIntermediateResultsBy"];
+    numeric =
+      OptionValue["Numeric"];
+    accuracy =
+      OptionValue["Accuracy"];
+    preEqCheck =
+      OptionValue["PreEqualCheck"];
+    
+    If[
+      simplify =!= Identity
+      ,
+      betr = BinEqnToRow[ #, vars, x, simplify ] &;
+      tpbe = ToProperBinomialEquation[ #, "SimplifyBy" -> simplify] &;
+      ,
+      betr = BinEqnToRow[ #, vars, x ] &;
+      tpbe = ToProperBinomialEquation
+    ];
+    
+    (* Make sure the form of the equations is correct *)
+    properEqns =
+      map[
+        tpbe,
+        If[ numeric, Rationalize[ eqns, 10^-accuracy ], eqns ]
+      ];
+    
+    (* Check for zeros and False *)
+    probPos =
+      FirstPosition[ properEqns[[;; , 2]], n_/; preEqCheck[n] == 0, Missing[], 1 ];
+    
+    If[ ! MissingQ[probPos], Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
+    
+    probPos =
+      FirstPosition[ properEqns, False, Missing[], 1 ];
+    
+    If[ ! MissingQ[probPos], Throw[ { "False", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
+    
+    sa =
+      DeleteSparseDuplicates @ SparseArray @ map[ betr, DeleteCases[True] @  properEqns ] ;
+    
+    If[
+      numeric,
+      { sa[[;; , ;; -2]], N[ Normal @ sa[[;; , -1]], { Infinity, accuracy } ] },
+      { sa[[;; , ;; -2]], Normal @ sa[[;; , -1]] }
+    ]
+  ]
+);
+
+
+BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
+  With[ {
+    rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
+    rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
+    },
+    NormalizeAndCombine @
+    {
+      SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
+      SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
+      simplify[ rhsMons2[[1]]/rhsMons1[[1]] ]
+    }
+  ];
+
+  BinEqnToRow[ eqn_, vars_, x_ ] :=
+  With[ {
+    rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
+    rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
+    },
+    NormalizeAndCombine @
+    {
+      SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
+      SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
+      rhsMons2[[1]]/rhsMons1[[1]]
+    }
+  ];
+
+(* Splits a monomial in numerical factor and variables. Like FactorTermsList but this one works as well for expressions with roots *)
+SetAttributes[factorTermsList, Listable];
+
+ConstMonSplit[ x_NumericQ, _ ] :=
+  { x, 1 };
+
+ConstMonSplit[ mon_, x_ ] :=
+  With[ { const = mon /. x[_] -> 1 }, { const, mon/const } ];
+
+(* normalize gets rid of a possible overall minus sign, and combines the row with RHS so that deleting duplicates becomes much faster *)
+NormalizeAndCombine[ { row_, rhs_ } ] :=
+  If[
+    SelectFirst[ ArrayRules[ row ][[ ;; , 2 ]], # != 0 & ] > 0,
+    Append[ rhs ] @ row,
+    Append[ 1/rhs ] @ (-row)
+  ];
+
+(*
 BinToSemiLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
 (
   CheckBinToSemiLinArgs[ eqnList, nVars ];
@@ -415,16 +511,19 @@ TrimSemiLin[ { mat_, rhs_ } ] :=
       ];
     reduced =
       SparseArray @
-      DeleteDuplicates[ joined, #1 == #2 || (Most[#1] == -Most[#2] && Last[#1] == 1/Last[#2]) & ];
+      DeleteDuplicates[
+        DeleteDuplicates[ joined ],
+        (Most[#1] == -Most[#2] && Last[#1] == 1/Last[#2]) &
+      ];
 
     { reduced[[;; , ;; -2]], Normal @ reduced[[;; , -1]] }
   ];
-
+*)
 
 PackageExport["BinToLin"]
 
 BinToLin::usage =
-  "BinToLin[eqnList,nVars,s] converts the binomial system eqnList with nVars variables labeled by s to " <>
+  "BinToLin[eqnList,vars,s] converts the binomial system eqnList with variables vars labeled by s to " <>
   "a tuple {m,v} where m is the matrix and v the vector that describe the logarithm of the system.";
 (*  " equations eqns in nvars variables named s[1],...,s[nvars], modulo 2 \*)
 (*  Pi I.";*)
@@ -432,10 +531,21 @@ BinToLin::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
 Options[BinToLin] :=
-  Options[BinEqnToFactorList];
+  Options[BinToSemiLin];
+
+BinToLin[ eqns_, vars_, x_, opts:OptionsPattern[] ] :=
+  With[{ semiLin = BinToSemiLin[eqns,vars,x,opts] },
+    {
+      semiLin[[1]],
+      Map[
+        OptionValue["SimplifyIntermediateResultsBy"][ Log[#] / ( 2 Pi I ) ]&,
+        semiLin[[2]]
+      ]
+    }
+  ];
 
 (* ONLY TAKES SYSTEMS WITH SINGLE INDEXED VARIABLES! so no vars of the form x[ i, j, ... ], only x[i],... *)
-
+(*
 BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
   Which[
     !BinomialSystemQ[eqnList]
@@ -488,6 +598,26 @@ BinToLin[ eqnList_, nVars_Integer, s_, opts:OptionsPattern[] ] :=
         ]
       ]
   ];
+*)
+
+(*
+BinPolsToMat[ polList_, nVars_Integer, s_ ] :=
+  With[
+    { factorLists = BinPolToFactorList /@ polList,  nPol = Length[polList] },
+    { expLists1 = factorLists[[;;,2;;,;;]] },
+    SparseArray[
+      Join @@
+      MapIndexed[
+        FactorListToSparseInput[ #1, First @ #2, s ]&,
+        expLists1
+      ],
+      { nPol, nVars }
+    ]
+  ];
+*)
+
+
+(*
 
 Options[BinEqnToFactorList] :=
   Options[ToProperBinomialEquation];
@@ -506,32 +636,13 @@ BinEqnToFactorList[ eqn_, opts:OptionsPattern[] ]  :=
       (* RHS of proper bin equation is 0 (i.e. LHS or RHS of original eqn is 0 ) *)
       properBinEqn[[2]]  === 0 || properBinEqn[[1]] === 0
       ,
-      {eqn,properBinEqn};
-      Throw[ { {}, {} } , "ZeroVariableInNonSingularSystem"]
+      
+      Throw[ {eqn,properBinEqn}, "ZeroVariableInNonSingularSystem"]
       ,
       (* All other cases *)
       True,
       getCoeffs /@
       Sort @ { Together[ properBinEqn[[1]] ], - Together[ properBinEqn[[2]] ] }
-    ]
-  ];
-
-PackageScope["BinPolsToMat"]
-
-BinPolsToMat::usage =
-  "Converts polList to matrix of its logarithm.";
-  
-BinPolsToMat[ polList_, nVars_Integer, s_ ] :=
-  With[
-    { factorLists = BinPolToFactorList /@ polList,  nPol = Length[polList] },
-    { expLists1 = factorLists[[;;,2;;,;;]] },
-    SparseArray[
-      Join @@
-      MapIndexed[
-        FactorListToSparseInput[ #1, First @ #2, s ]&,
-        expLists1
-      ],
-      { nPol, nVars }
     ]
   ];
 
@@ -546,5 +657,7 @@ GatherCoeffs[ { { a_?NumericQ, b_?NumericQ }, { c_?NumericQ, d_?NumericQ }, l2__
 
 FactorListToSparseInput[ list_, i_, s_ ] :=
   ReplaceAll[ list, { s[j_], c_ } :> Rule[ { i, j } , c ] ];
+  
+ *)
 
 

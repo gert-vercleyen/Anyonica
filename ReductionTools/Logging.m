@@ -667,7 +667,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMS:solutions", {id_,solutions_} ] :=
   ];
 
 (*SolveNonSingularBinomialSystem*)
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:init", { id_, eqns_, vars_, param_, optionList_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:init", { id_, eqns_, vars_, param_, optionList_ } ] :=
   Module[{ fn1, fn2, fn3 },
     fn1 = dataFileName[ id, dir, "Equations" ];
     safeExport[ fn1, eqns ];
@@ -699,7 +699,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:init", { id_, eqns_, vars_, par
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:has_false_or_zero", {id_,eqns_,___} ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:has_false_or_zero", {id_,eqns_,___} ] :=
   AddCell[
     fileName,
     nbo,
@@ -710,7 +710,35 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:has_false_or_zero", {id_,eqns_,
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:no_solutions_log_mon", { id_, ___} ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:has_false_or_zero_2", { id_, eqns_, { message_String, pos_, preSimpl_, postSimpl_ }  } ] :=
+  Module[{ fn1 },
+    fn1 = dataFileName[ id, dir, "Eqns" ];
+    safeExport[ fn1, eqns ];
+    
+    warningCell[
+      TextData[
+        inputStyle["System of "],
+        hyperlinkBox["Equations", fn1 ],
+        inputStyle[" contains "],
+        If[
+          message == "Zero",
+          inputStyle["a nonzero variable that has to equal zero "],
+          inputStyle[" False "]
+        ],
+        inputStyle["at position "<> pos<>"."],
+        inputStyle[" Equation before simplification: "<> ToString[InputForm[preSimpl]] <> "\n" ],
+        inputStyle[" Equation after simplification: "<> ToString[InputForm[postSimpl]] <> "\n" ],
+        inputStyle["This could be caused by the fact that Mathematica doesn't always simplify "<>
+        "all expressions by default. If this is the case, using the options \"SimplifyIntermediateResultsBy\" and/or "<>
+        "\"PreEqualCheck\" can be of use."
+        ]
+      ]
+    
+    ]
+  ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:no_solutions_log_mon", { id_, ___} ] :=
   AddCell[
     fileName,
     nbo,
@@ -721,7 +749,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:no_solutions_log_mon", { id_, _
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:solutions", {id_,solutions_,___} ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:solutions", {id_,solutions_,___} ] :=
   AddCell[
     fileName,
     nbo,
@@ -730,6 +758,29 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSMS:solutions", {id_,solutions_,___
       "Text",
       CellTags -> { id, "Info" }
     ]
+  ];
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:constraints_not_satisfied", { id_, preSolutions_, constraints_, invalidPos_ } ] :=
+  Module[{ fn1, fn2, fn3 },
+    fn1 = dataFileName[ id, dir, "PreSolutions" ];
+    safeExport[ fn1, preSolutions ];
+    fn2 = dataFileName[ id, dir, "Constraints" ];
+    safeExport[ fn2, constraints ];
+    
+    
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          hyperlinkBox["Solutions",fn1],
+          inputStyle[" at positions "<>ToString[invalidPos]<>" do not satisfy the "],
+          hyperlinkBox["constraints", fn2 ]
+          }
+        ],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]
+    ];
   ];
 
 (*SolveModZSpace*)
