@@ -61,14 +61,8 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
       OptionValue["StoreDecompositions"];
     simplify =
       Composition[
-        If[
-          OptionValue["ReducePowerSums"], PowerSumReduce, Identity
-        ],
-        If[
-          OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
-          SafeRootReduce,
-          Identity
-        ],
+        If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
+        If[ OptionValue["ReduceRoots"], RootReduce, Identity ],
         OptionValue["SimplifyIntermediateResultsBy"]
       ];
 
@@ -111,7 +105,8 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
                 "NonSingular" -> True,
                 "PreEqualCheck" -> preEqCheck,
                 "UseDatabaseOfSmithDecompositions" -> useDBQ,
-                "StoreDecompositions" -> storeDecompQ
+                "StoreDecompositions" -> storeDecompQ,
+                "SimplifyIntermediateResultsBy" -> simplify
               ]
             },
             { input, solverInput }
