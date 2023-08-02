@@ -100,7 +100,6 @@ ToProperBinomialEquation::usage =
   "equation of the form LHS == RHS where both RHS and LHS are " <>
   " non-zero.";
 
-
 ToProperBinomialEquation::notbineqn =
   "Equation `1` is not a binomial equation.";
 
@@ -135,6 +134,26 @@ ToProperBinomialEquation[ eqn_, opts:OptionsPattern[] ] :=
     ]
   ];
 
+
+PackageExport["ToStandardPolynomial"]
+
+ToStandardPolynomial::usage =
+  "ToProperBinomialEquation[binEqn] returns an equivalent binomial "<>
+  "equation of the form LHS == RHS where both RHS and LHS are " <>
+  " non-zero.";
+
+Options[ToStandardPolynomial] =
+  { "SimplifyBy" -> Identity };
+
+ToStandardPolynomial[ pol_, opts:OptionsPattern[] ] :=
+  With[{ pol =  OptionValue["SimplifyBy"] @ RemoveFractions  @ pol },
+    If[
+      pol === 0,
+      0,
+      Cancel[ pol/CoefficientRules[ pol ][[-1,2]] ]
+    ]
+  ];
+
 RemoveFractions[ eqn_Equal ] :=
   Expand[ Numerator[ Together[ eqn[[1]] - eqn[[2]] ] ] ] == 0;
 
@@ -147,6 +166,30 @@ RemoveFractions[ False ] =
 RemoveFractions[ pol_ ] :=
   Expand @* Numerator @* Together @ pol;
 
+PackageScope["RemoveCommonFactors"]
+
+RemoveCommonFactors[ poly_?NumericQ, _ ] :=
+poly;
+
+RemoveCommonFactors[ poly_, s_ ] :=
+  Module[{vars, cr, ce, d, commonVarNum, minExponents, commonFactor},
+    vars =
+      GetVariables[poly, s];
+    cr =
+      CoefficientRules[poly, vars];
+    ce =
+      cr[[;; , 1]];
+    d =
+      cr[[ -1 , 2]];
+    commonVarNum =
+      Flatten@Position[Times @@ ce, x_ /; x > 0];
+    minExponents =
+      Min /@ Transpose[ce][[commonVarNum]];
+    commonFactor =
+      Inner[Power, vars[[commonVarNum]], minExponents, Times];
+    
+    Expand @ Cancel[poly/( d * commonFactor)]
+  ];
 
 PackageScope["ToPolynomial"]
 
@@ -239,10 +282,15 @@ SymbolQ[expr_] :=
   Head[expr] === Symbol;
 
 
-(*GetVariables[expr,s,excludedVars] returns a sorted list \
-of the variables s[__] in expr, excluding those given by the list of \
-excludedVars. Options include \"LevelSpec\" -> n to search only for \
-variables up to level n.";*)
+(* DeleteDuplicates destroys the sparsity of an array so an alternative is the following. It groups row numbers by
+  same values of their rows and deletes duplicates that way. *)
+PackageScope["DeleteSparseDuplicates"]
+
+DeleteSparseDuplicates[ sparseArray_ ] :=
+  With[ { positions = GatherBy[ Range @ Length @ sparseArray, sparseArray[[#]]& ][[ ;; , 1 ]] },
+    sparseArray[[positions]]
+  ];
+
 
 PackageExport["GV"]
 
