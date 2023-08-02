@@ -121,8 +121,8 @@ DNC[ ring_FusionRing?CommutativeQ ] :=
           MinimalPolynomial[x];
         monList =
           MonomialList[p];
-
-        Mod[ p[0]^i,  ]
+        
+        (*Mod[ p[0]^i,  ]*)
       ]
 
   ]
