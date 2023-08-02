@@ -306,23 +306,6 @@ FindLinearRule[ pol_, s_ ] :=
     ]
   ];
 
-RemoveCommonFactors[ 0, _ ] :=
-    0;
-
-RemoveCommonFactors[poly_, s_] := (* Can't divide numerical factors out because they might not be recognized as 0 *)
-    Module[{vars, cr, ce, d, commonVarNum, minExponents, commonFactor},
-      vars = GetVariables[poly, s];
-      cr = CoefficientRules[poly, vars];
-      ce = cr[[;; , 1]];
-      (* d = cr[[ -1 , 2]];*)
-      commonVarNum = Flatten@Position[Times @@ ce, x_ /; x > 0];
-      minExponents = Min /@ Transpose[ce][[commonVarNum]];
-      commonFactor =
-          Inner[Power, vars[[commonVarNum]], minExponents, Times];
-      Expand @ Cancel[poly/( (* d * *) commonFactor)]
-    ];
-
-
 
 (*
 
