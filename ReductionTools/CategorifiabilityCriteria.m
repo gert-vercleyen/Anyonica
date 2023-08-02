@@ -110,23 +110,43 @@ PUDCC[ ring_FusionRing?CommutativeQ ] :=
 *)
 
 DNC[ ring_FusionRing?CommutativeQ ] :=
-  Module[{ chars, c },
-    chars =
+  Module[{ chars, c, DNumberQ },
+    
+    chars = RootReduce @
       FusionRingCharacters[ ring ];
+    
     c =
       #.ConjugateTranspose[#]& /@ chars;
+    
     DNumberQ[ x_ ] :=
-      Module[{ p, monList },
-        p =
-          MinimalPolynomial[x];
-        monList =
-          MonomialList[p];
+      Module[{ p, a, y },
+        If[ !AlgebraicIntegerQ[x], Return[ True ] ];
         
-        (*Mod[ p[0]^i,  ]*)
-      ]
+        p =
+          MinimalPolynomial[x][y];
+        
+        a =
+          ( Rest @ MonomialList[p] /. y -> 1 );
+        
+        
+        And @@
+        Table[
+          Mod[ a[[-1]]^i, a[[i]]^n ] == 0,
+          { i, Length[a] }
+        ]
+      ];
+    
+    Not[ And @@ ( DNumberQ /@ c ) ]
 
-  ]
+  ];
 
+(*========================================================================
+    EXTENDED CYCLOTOMIC CRITERION
+  ========================================================================
+  The function returns true if the fusion ring cannot be categorified.
+  
+  I don't know how to check whether a number is a
+*)
 
 
 (*========================================================================
