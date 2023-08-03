@@ -224,18 +224,24 @@ Options[SolveSemiLinModZ] =
     "OrthogonalTo" -> None,
     "UseDatabaseOfSmithDecompositions" -> False,
     "StoreDecompositions" -> False,
-    "PreEqualCheck" -> Identity
+    "PreEqualCheck" -> Identity,
+    "SimplifyIntermediateResultsBy" -> Identity,
+    "Parallel" -> False
   };
 
 SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
   Module[{
     ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
-    preEqCheck, procID, hold, result, absTime, noc
+    preEqCheck, procID, simplify, result, absTime, noc, map
     },
     gaugeMat =
       OptionValue["OrthogonalTo"];
     preEqCheck =
       OptionValue["PreEqualCheck"];
+    simplify =
+      OptionValue["SimplifyIntermediateResultsBy"];
+    map =
+      If[ OptionValue["Parallel"], ParallelMap, Map ];
     procID =
       ToString[Unique[]];
 
@@ -270,7 +276,10 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       ];
 
       expRHS =
-        Inner[ Power, vec, Transpose[ u ], Times ];
+        map[
+          simplify,
+          Inner[ Power, vec, Transpose[ u ], Times ]
+        ];
 
       ZSpace =
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
@@ -283,18 +292,14 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
         printlog["SSES:nonone_coeff", {procID,expRHS,r, preEqCheck @ noc}];
         Return[ {} ],
         constVec =
-          Inner[ Power, vec, Transpose[ ZSpace.u[[;;r]] ], Times ]
+          map[
+            simplify,
+            Inner[ Power, expRHS[[;;r]], Transpose[ ZSpace ], Times ]
+          ]
       ];
 
       zVecs =
-        Map[
-          Exp[ 2 Pi I # ]&,
-          Map[
-            (ZSpace . #)&,
-            Tuples[ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ]
-          ],
-          { 2 }
-        ];
+        Exp[ 2 Pi I * Map[ (ZSpace . #)&, Tuples[ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ] ] ];
 
       CSpace =
         If[
@@ -312,10 +317,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
           ]
         ];
       
-      Table[
-        constVec * zVec * monomials,
-        { zVec, zVecs }
-      ]
+      map[ (constVec * monomials) * #&, zVecs ]
     ];
     printlog["Gen:results", {procID, result, absTime}];
 
