@@ -137,16 +137,12 @@ ToProperBinomialEquation[ eqn_, opts:OptionsPattern[] ] :=
 
 PackageExport["ToStandardPolynomial"]
 
-ToStandardPolynomial::usage =
-  "ToProperBinomialEquation[binEqn] returns an equivalent binomial "<>
-  "equation of the form LHS == RHS where both RHS and LHS are " <>
-  " non-zero.";
 
 Options[ToStandardPolynomial] =
   { "SimplifyBy" -> Identity };
 
 ToStandardPolynomial[ pol_, opts:OptionsPattern[] ] :=
-  With[{ pol =  OptionValue["SimplifyBy"] @ RemoveFractions  @ pol },
+  With[{ pol =  OptionValue["SimplifyBy"] @ RemoveFractions @ pol },
     If[
       pol === 0,
       0,
@@ -169,7 +165,7 @@ RemoveFractions[ pol_ ] :=
 PackageScope["RemoveCommonFactors"]
 
 RemoveCommonFactors[ poly_?NumericQ, _ ] :=
-poly;
+  poly;
 
 RemoveCommonFactors[ poly_, s_ ] :=
   Module[{vars, cr, ce, d, commonVarNum, minExponents, commonFactor},
@@ -191,7 +187,7 @@ RemoveCommonFactors[ poly_, s_ ] :=
     Expand @ Cancel[poly/( d * commonFactor)]
   ];
 
-PackageScope["ToPolynomial"]
+PackageExport["ToPolynomial"]
 
 ToPolynomial::usage =
   "ToPolynomial[ equation ] converts a polynomial equation to a polynomial.";
@@ -210,6 +206,21 @@ ToPolynomial[ eqn_ ] :=
     ,
     RemoveFractions @
     ( Subtract @@ eqn )
+  ];
+
+
+PackageScope["ToReducedPolynomial"]
+
+Options[ToReducedPolynomial] =
+  {
+    "SimplifyBy" -> Identity
+  };
+
+SetAttributes[ ToReducedPolynomial, Listable ]
+
+ToReducedPolynomial[ eqn_, x_, OptionsPattern[] ] :=
+  With[{ pol = OptionValue["SimplifyBy"] @ RemoveFractions @ (eqn[[1]]-eqn[[2]]) },
+    RemoveCommonFactors[ pol, x ]
   ];
 
 PackageExport["PolynomialDegree"]
