@@ -37,7 +37,8 @@ Options[SolveNonSingularBinomialSystem] :=
     "PreEqualCheck" -> Identity,
     "UseDatabaseOfSmithDecompositions" -> False,
     "StoreDecompositions" -> False,
-    "SimplifyIntermediateResultsBy" -> Identity
+    "SimplifyIntermediateResultsBy" -> Identity,
+    "Parallel" -> False
   };
 
 CheckArgs[ eqns_, vars_ ] :=
@@ -59,7 +60,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
   Module[
     {
       newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
-      gaugeMat, polConstraints, symmetries, invertibleMats, memoize, store, preEqCheck, symbol, eqnList, procID,
+      gaugeMat, polConstraints, symmetries, invertibleMats, preEqCheck, symbol, eqnList, procID,
       internalParam, result, absTime, invalidPos
     },
     polConstraints =
@@ -68,10 +69,6 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       OptionValue["Symmetries"];
     invertibleMats =
       OptionValue["InvertibleMatrices"];
-    memoize =
-      OptionValue["UseDatabaseOfSmithDecompositions"];
-    store =
-      OptionValue["StoreDecompositions"];
     preEqCheck =
       OptionValue["PreEqualCheck"];
 
@@ -94,15 +91,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         printlog["Gen:trivial_system", {procID}];
         Return[ { MapIndexed[ #1 -> param @@ #2 &, vars ] } ] (* TODO: use thread *)
       ];
-
-      If[
-        vars === {},
-        printlog["Gen:no_vars", {procID, eqnList}];
-        Message[SolveNonSingularBinomialSystem::novars, eqnList ];
-        Abort[]
-      ];
-
-
+      
       (* Check whether symmetries are multiplicative *)
       If[
         symmetries =!= None && symmetries["Transforms"][[;;, 1]] =!= vars && symmetries["Transforms"] =!= {},
@@ -136,17 +125,14 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       preSolutions =
         Catch[
           Thread[ newVars -> # ]& /@
-          SolveSemiLinModZ[
+          AddOptions[opts][SolveSemiLinModZ][
             AddOptions[opts][BinToSemiLin][
               newEqns,
               newVars,
               symbol
             ],
             internalParam,
-            "OrthogonalTo" -> If[ Flatten[gaugeMat] === {}, None, gaugeMat ],
-            "UseDatabaseOfSmithDecompositions" -> memoize,
-            "StoreDecompositions" -> store,
-            "PreEqualCheck" -> preEqCheck
+            "OrthogonalTo" -> If[ Flatten[gaugeMat] === {}, None, gaugeMat ]
           ],
           "Inconsistent"
         ];
@@ -174,7 +160,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         ];
 
       (* Check solutions against set of constraints and revert the variables for the valid solutions *)
-      invalidPos =
+      invalidPos = (* TODO: check whether parallelization is feasible and useful *)
         Position[
           preSolutions,
           sol_/; Not[ NotInvalidNonZeroSolutionQ[ constraints, preEqCheck ] @ sol ],
