@@ -127,7 +127,7 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
         AddValues[ { preKnowns_, systems_ } ] :=
           Table[
             <|
-              "Polynomials" -> ToPolynomial @ sys[[1]],
+              "Polynomials" -> TPL @ ToReducedPolynomial[ sys[[1]], var , "SimplifyBy" -> simplify ],
               "Assumptions" -> True,
               "Rules" -> Union[ preKnowns, sys[[2]] ]
             |>
