@@ -225,20 +225,23 @@ Options[SolveSemiLinModZ] =
     "UseDatabaseOfSmithDecompositions" -> False,
     "StoreDecompositions" -> False,
     "PreEqualCheck" -> Identity,
-    "Hold" -> False
+    "SimplifyIntermediateResultsBy" -> Identity,
+    "Parallel" -> False
   };
 
 SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
   Module[{
     ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
-    preEqCheck, procID, hold, result, absTime, noc
+    preEqCheck, procID, simplify, result, absTime, noc, map
     },
     gaugeMat =
       OptionValue["OrthogonalTo"];
     preEqCheck =
       OptionValue["PreEqualCheck"];
-    hold =
-      If[ OptionValue["Hold"], Hold, Identity ];
+    simplify =
+      OptionValue["SimplifyIntermediateResultsBy"];
+    map =
+      If[ OptionValue["Parallel"], ParallelMap, Map ];
     procID =
       ToString[Unique[]];
 
@@ -273,7 +276,10 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       ];
 
       expRHS =
-        Inner[ Power, vec, Transpose[ u ], Times ];
+        map[
+          simplify,
+          Inner[ Power, vec, Transpose[ u ], Times ]
+        ];
 
       ZSpace =
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
@@ -286,18 +292,14 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
         printlog["SSES:nonone_coeff", {procID,expRHS,r, preEqCheck @ noc}];
         Return[ {} ],
         constVec =
-          Inner[ Power, vec, Transpose[ ZSpace.u[[;;r]] ], Times ]
+          map[
+            simplify,
+            Inner[ Power, expRHS[[;;r]], Transpose[ ZSpace ], Times ]
+          ]
       ];
 
       zVecs =
-        hold[Map][
-          Exp[ 2 Pi I # ]&,
-          hold[Map][
-            (ZSpace . #)&,
-            hold[Tuples][ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ]
-          ],
-          { 2 }
-        ];
+        Exp[ 2 Pi I * Map[ (ZSpace . #)&, Tuples[ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ] ] ];
 
       CSpace =
         If[
@@ -315,14 +317,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
           ]
         ];
       
-      If[
-        OptionValue["Hold"],
-        { constVec, zVecs, monomials },
-        Table[
-          constVec * zVec * monomials,
-          { zVec, zVecs }
-        ]
-      ]
+      map[ (constVec * monomials) * #&, zVecs ]
     ];
     printlog["Gen:results", {procID, result, absTime}];
 
@@ -400,7 +395,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     (* Check for zeros and False *)
     probPos =
-      FirstPosition[ properEqns[[;; , 2]], n_/; preEqCheck[n] == 0, Missing[], 1 ];
+      FirstPosition[ properEqns, n_Equal /; preEqCheck[n] == 0, Missing[], 1 ];
     
     If[ ! MissingQ[probPos], Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
     

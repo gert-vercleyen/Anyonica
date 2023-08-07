@@ -72,6 +72,8 @@ CSPCValue[acc_][ring_FusionRing] :=
 
 (* Note: only works for rings of which we have the characters *)
 
+PackageExport["DCC"]
+
 DCC[ ring_FusionRing?CommutativeQ ] :=
   Module[{chars,c},
     chars =
@@ -97,6 +99,8 @@ DCC[ ring_FusionRing?CommutativeQ ] :=
   Returns True if ring has no complex pseudo-unitary categorification
 *)
 
+PackageExport["PUDCC"]
+
 PUDCC[ ring_FusionRing?CommutativeQ ] :=
   With[{ chars = FusionRingCharacters[ring] },
     And @@ Flatten @ AlgebraicIntegerQ[ chars[[1]].ConjugateTranspose[chars[[1]]] / chars ]
@@ -109,30 +113,128 @@ PUDCC[ ring_FusionRing?CommutativeQ ] :=
   The function returns true if the fusion ring cannot be categorified.
 *)
 
+PackageExport["DNC"]
+
 DNC[ ring_FusionRing?CommutativeQ ] :=
-  Module[{ chars, c },
-    chars =
+  Module[{ chars, c, DNumberQ },
+    
+    chars = RootReduce @
       FusionRingCharacters[ ring ];
+    
     c =
       #.ConjugateTranspose[#]& /@ chars;
+    
     DNumberQ[ x_ ] :=
-      Module[{ p, monList },
-        p =
-          MinimalPolynomial[x];
-        monList =
-          MonomialList[p];
+      Module[{ p, a, y },
+        If[ !AlgebraicIntegerQ[x], Return[ True ] ];
         
-        (*Mod[ p[0]^i,  ]*)
-      ]
+        p =
+          MinimalPolynomial[x][y];
+        
+        a =
+          ( Rest @ MonomialList[p] /. y -> 1 );
+        
+        
+        And @@
+        Table[
+          Mod[ a[[-1]]^i, a[[i]]^n ] == 0,
+          { i, Length[a] }
+        ]
+      ];
+    
+    Not[ And @@ ( DNumberQ /@ c ) ]
 
+  ];
+
+(*========================================================================
+    EXTENDED CYCLOTOMIC CRITERION
+  ========================================================================
+  The function returns True if the fusion ring cannot be categorified.
+  
+  I don't know how to check whether a number is a
+  
+  
+*)
+
+ECC[ ring_FusionRing ] :=
+  Module[{}
+    (* convert matrix to string *)
+    
+    (* append string to ECC_DCC_DNC.sage  *)
+  
+    (* Evaluate code externally in temporary directory *)
+  
+    (* import result *)
+  
+  (* interpret result*)
   ]
 
+
+EvaluateSAGECodeExternally[ sourceCode_String, { source_, exec_, data_ } ] :=
+  With[{ dir = CreateDirectory[] },
+    
+    ExportSAGECode[ sourceCode, dir, "FileName" -> source ];
+    
+    If[
+      RunSAGECode[ dir, exec, "FileName" -> data ] != 0,
+      Print["ExecutionError"]
+    ];
+    
+    ImportResultsSAGECode[ dir, data ]
+  ];
+
+Options[ExportSAGECode] = { "FileName" -> "source.sage" };
+ExportSAGECode[ str_String, dir_String, OptionsPattern[] ] :=
+  With[{
+    path = FileNameJoin[ { dir, OptionValue[ "FileName" ] } ] },
+    Export[ path, str, "Text" ]
+  ];
+
+
+Options[RunSAGECode] = {"FileName" -> "results.txt"};
+RunSAGECode[ dir_String, execName_String, OptionsPattern[] ] :=
+  With[{
+    pathOfExec = FileNameJoin[ { dir, execName } ],
+    pathOfOutput = FileNameJoin[ { dir, OptionValue["FileName"] } ]
+    },
+    Run @
+    StringJoin[
+      "sage", pathOfExec, " >> ", pathOfOutput
+    ]
+  ];
+
+ImportResultsSAGECode[ vars_, dir_String, file_String ] :=
+  Map[
+    Thread[ vars -> # ]&,
+    Import[ FileNameJoin[ { dir, file } ] ]
+  ];
+
+
+(*========================================================================
+    LAGRANGE CRITERION
+  ========================================================================
+  The function returns True if the fusion ring cannot be categorified.
+  
+*)
+
+PackageExport["LC"]
+
+LC[ ring_FusionRing ] :=
+  Module[{ subringDims },
+    subringDims =
+      TQDS /@
+      DeleteDuplicates @
+      SubFusionRings[ ring ][[;;,2]];
+    
+    And @@ Echo @ AlgebraicIntegerQ @ Echo @ RootReduce[ TQDS[ring]/subringDims ]
+    
+  ];
 
 
 (*========================================================================
     ZERO SPECTRUM CRITERION
   ========================================================================
-  The function returns true if the fusion ring cannot be categorified.
+  The function returns True if the fusion ring cannot be categorified.
 *)
 
 PackageExport["ZSCriterion"]
@@ -146,7 +248,7 @@ ZSCriterion::usage =
 SetAttributes[ ZSC, Listable ];
 
 ZSCriterion[ ring_FusionRing ] :=
-  Module[{ mt, non0Cons, ones, d, result, i1, i2, i3, i4, i5, i6, i7, i8, i9, matches1, matches2, matches3, matches4 },
+  Module[{ mt, non0Cons, ones, d, i1, i2, i3, i4, i5, i6, i7, i8, i9, matches1, matches2, matches3, matches4 },
     mt =
       MT[ring];
     non0Cons =
@@ -156,7 +258,6 @@ ZSCriterion[ ring_FusionRing ] :=
     d =
       CC[ring] /@ Range[Rank[ring]];
     
-    result =
     Catch[
       Do[
         { i2, i1, i3 } = ind;
@@ -188,8 +289,8 @@ ZSCriterion[ ring_FusionRing ] :=
           ,{ ind1, matches1 }]
         , { ind, ones } ];
       False
-    ];
-    result
+    ]
+    
   ];
 
 crit1 = Compile[ { { i, _Integer, 1 }, { d, _Integer, 1 }, { mt, _Integer, 3 } },
