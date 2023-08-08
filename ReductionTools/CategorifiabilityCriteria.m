@@ -213,7 +213,7 @@ ImportResultsSAGECode[ vars_, dir_String, file_String ] :=
 (*========================================================================
     LAGRANGE CRITERION
   ========================================================================
-  The function returns True if the fusion ring cannot be categorified.
+  The function returns False if the fusion ring cannot be categorified.
   
 *)
 
