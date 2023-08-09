@@ -162,7 +162,7 @@ RemoveFractions[ False ] =
 RemoveFractions[ pol_ ] :=
   Expand @* Numerator @* Together @ pol;
 
-PackageScope["RemoveCommonFactors"]
+PackageExport["RemoveCommonFactors"]
 
 RemoveCommonFactors[ poly_?NumericQ, _ ] :=
   poly;
