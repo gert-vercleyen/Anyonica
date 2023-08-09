@@ -22,6 +22,12 @@ ReduceBinomialSystem::wrongvarsformat =
 ReduceBinomialSystem::wrongeqnsformat =
 "`1` should be a list of binomial equations";
 
+Options[ReduceBinomialSystem] =
+  {
+    "SimplifyIntermediateResultsBy" -> Identity
+  };
+
+
 argCheck[ binEqns_, vars_ ] :=
   Which[
     !BinomialSystemQ[binEqns]
@@ -33,7 +39,7 @@ argCheck[ binEqns_, vars_ ] :=
     Message[ ReduceBinomialSystem::wrongvarsformat, vars ]; Abort[]
   ];
 
-ReduceBinomialSystem[ binomialEqns_, variables_ ] :=
+ReduceBinomialSystem[ binomialEqns_, variables_, OptionsPattern[] ] :=
 (
   argCheck[ binomialEqns, variables ];
   Module[
@@ -67,7 +73,7 @@ EquivToRule[x_][ { eqn_, linvars_, vars_ } ] :=
     Solve[ eqn, var ][[1,1]]
   ];
 
-UpdateEquivalences[x_][ { eqns_, equivs_ }] := EchoFunction["updatedsys",#/.x->P`z&] @
+UpdateEquivalences[x_][ { eqns_, equivs_ }] :=
   With[ { equivRules = EchoFunction["rules",#/.x->P`z&][ EquivToRule[x] /@ FindEquivalences[ eqns, x ] ] },
     If[ MemberQ[0] @ equivRules[[;;,2]], Throw[{{False},{}}] ];
     {
