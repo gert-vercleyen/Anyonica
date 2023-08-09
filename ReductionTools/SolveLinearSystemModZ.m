@@ -240,8 +240,8 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       OptionValue["PreEqualCheck"];
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
-    map =
-      If[ OptionValue["Parallel"], ParallelMap, Map ];
+    If[ OptionValue["Parallel"], LaunchKernels[]; map = ParallelMap, map =  Map ];
+    
     procID =
       ToString[Unique[]];
 
@@ -276,10 +276,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       ];
 
       expRHS =
-        map[
-          simplify,
-          Inner[ Power, vec, Transpose[ u ], Times ]
-        ];
+        Inner[ Power, vec, Transpose[ u ], Times ];
 
       ZSpace =
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
@@ -294,7 +291,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
         constVec =
           map[
             simplify,
-            Inner[ Power, expRHS[[;;r]], Transpose[ ZSpace ], Times ]
+            Inner[ Power, expRHS[[;;r]], Transpose[ZSpace], Times ]
           ]
       ];
 
@@ -316,9 +313,11 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
             Inner[ Power, parameters, #, Times ]& /@ CSpace
           ]
         ];
-      
       map[ (constVec * monomials) * #&, zVecs ]
     ];
+    
+    If[ OptionValue["Parallel"], CloseKernels[] ];
+    
     printlog["Gen:results", {procID, result, absTime}];
 
     result
@@ -407,6 +406,8 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     sa =
       DeleteSparseDuplicates @ SparseArray @ map[ betr, DeleteCases[True] @  properEqns ] ;
     
+    If[ OptionValue["Parallel"], CloseKernels[] ];
+    
     If[
       numeric,
       { sa[[;; , ;; -2]], N[ Normal @ sa[[;; , -1]], { Infinity, accuracy } ] },
@@ -415,18 +416,23 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
   ]
 );
 
+PackageScope["BinEqnToRow"]
 
 BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
   With[ {
     rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
     rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
     },
-    NormalizeAndCombine @
-    {
-      SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
-      SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
-      simplify[ rhsMons2[[1]]/rhsMons1[[1]] ]
-    }
+    MapAt[
+      simplify,
+      NormalizeAndCombine @
+      {
+        SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
+        SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
+        rhsMons2[[1]]/rhsMons1[[1]]
+      },
+      {-1}
+    ]
   ];
 
   BinEqnToRow[ eqn_, vars_, x_ ] :=
