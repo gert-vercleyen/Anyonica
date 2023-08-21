@@ -214,7 +214,7 @@ IntegerOrthogonalSpace[ mat_ ] :=
 PackageScope["SolveSemiLinModZ"]
 
 SolveSemiLinModZ::usage =
-  "Solves a binomial system whose logarithm is given by mat but whose vector of numeric factors is left as is.";
+  "SolveSemiLinModz[ mat, vec, param ] solves a binomial system whose logarithm is given by mat but whose vector of numeric factors is left as is.";
 
 SolveSemiLinModZ::nonintegermatrix =
   "`1` contains a non-integer element.";
@@ -226,10 +226,10 @@ Options[SolveSemiLinModZ] =
     "StoreDecompositions" -> False,
     "PreEqualCheck" -> Identity,
     "SimplifyIntermediateResultsBy" -> Identity,
-    "Parallel" -> False
+    "Parallel" -> False (* TODO: setting Parallel to true creates a wrong structure of solutions. I can't reproduce the bug, even by coppying the whole code. Echo also doesn't show any strange results.*)
   };
 
-SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
+SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
   Module[{
     ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
     preEqCheck, procID, simplify, result, absTime, noc, map
@@ -240,12 +240,12 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       OptionValue["PreEqualCheck"];
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
-    If[ OptionValue["Parallel"], LaunchKernels[]; map = ParallelMap, map =  Map ];
+    (*If[ OptionValue["Parallel"], LaunchKernels[]; map = ParallelMap, *)map =  Map (*];*);
     
     procID =
       ToString[Unique[]];
 
-    printlog["SSES:init", {procID,{mat,vec},{opts}}];
+    printlog["SSES:init", {procID,{mat,vec}, param,{opts}}];
 
     { absTime, result } =
     AbsoluteTiming[
@@ -313,6 +313,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
             Inner[ Power, parameters, #, Times ]& /@ CSpace
           ]
         ];
+      
       map[ (constVec * monomials) * #&, zVecs ]
     ];
     
@@ -323,7 +324,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
     result
   ];
 
-SolveSemiLinModZ[ { mat_, vec_List }, param_, opts:OptionsPattern[] ] :=
+SolveSemiLinModZ[ { mat_?MatrixQ, vec_List }, param_, opts:OptionsPattern[] ] :=
   SolveSemiLinModZ[ mat, vec, param, opts ];
 
 PackageExport["BinToSemiLin"]
