@@ -852,10 +852,13 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMZS:solutions", { id_, solutions_ } 
   ];
 
 (*SolveSemiLinModZ*)
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, optionList_, ___ } ] :=
-  Module[{fn},
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, param_, optionList_, ___ } ] :=
+  Module[{fn, fn2},
     fn = dataFileName[ id, dir, "System" ];
     safeExport[ fn, system ];
+    fn2 = dataFileName[ id, dir, "Param" ];
+    safeExport[ fn2, param ];
+    
      AddCell[
        fileName,
        nbo,
@@ -863,7 +866,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, optionLis
          id,
          dir,
          "SolveSemiLinModZ",
-         { { "System", fn } },
+         { { "System", fn }, { "Param", fn2 } },
          optionList
        ]
      ];
@@ -1002,14 +1005,16 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBM:solutions", { id_, solutions_, __
   ];
 
 (*SolveAndCheck*)
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:init", { id_, binomialEqns_,vars_,symbol_,optionList_, ___ } ] :=
-  Module[{fn1,fn2,fn3},
-    fn1 = dataFileName[ id, dir, "Equations" ];
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:init", { id_, binomialEqns_,sumEqns_,vars_,symbol_,optionList_, ___ } ] :=
+  Module[{fn1,fn2,fn3,fn4},
+    fn1 = dataFileName[ id, dir, "BinEqns" ];
     safeExport[ fn1, binomialEqns ];
     fn2 = dataFileName[ id, dir, "Variables" ]; 
     safeExport[ fn2, vars ];
     fn3 = dataFileName[ id, dir, "Symbol" ];
     safeExport[ fn3, symbol ];
+    fn4 = dataFileName[ id, dir, "NonBinEqns" ];
+    safeExport[ fn4, sumEqns ];
     
     AddCell[
       fileName,
@@ -1018,7 +1023,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:init", { id_, binomialEqns_,vars_
         id,
         dir,
         "SolveAndUpdate",
-        { { "Equations", fn1 }, { "Variables", fn2 }, { "Symbol", fn3 } },
+        { { "BinEqns", fn1 }, { "NonBinEqns", fn4 }, { "Variables", fn2 }, { "Symbol", fn3 } },
         optionList
       ]
     ];
