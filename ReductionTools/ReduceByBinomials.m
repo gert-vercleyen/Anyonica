@@ -162,7 +162,7 @@ SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern
     procID =
       ToString[ Unique[] ];
     
-    printlog[ "SAU:init", {procID, binEqns,vars,s,{opts}} ];
+    printlog[ "SAU:init", {procID, binEqns,sumEqns,vars,s,{opts}} ];
 
     { absTime, result } =
       AbsoluteTiming[
