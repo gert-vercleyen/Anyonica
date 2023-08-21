@@ -768,7 +768,7 @@ SolveUsingReduce::usage =
   "SolveUsingReduce[ eqns, vars ] solves the system of equations eqns in variables vars using Reduce.";
 
 SolveUsingReduce[ eqns_, vars_, rest___ ] :=
-  { ToRules @ Reduce[ eqns, vars, rest ] };
+  { ToRules @ Reduce[ eqns, vars, Backsubstitution-> True, rest ] };
 
 
 PackageExport["PowerSumReduce"]
