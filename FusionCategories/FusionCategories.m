@@ -3,10 +3,7 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2022-04-17 *)
 
-BeginPackage["FusionCategories`"];
-
-(* Messages *)
-Get[ FileNameJoin[{ DirectoryName[$InputFileName], "Messages.wl" }]  ];
+Package["Anyonica`"]
 
 (* Options *)
 Options[ FusionCategory ] =
@@ -20,7 +17,6 @@ Options[ FusionCategory ] =
 
 (* Begin private context *)
 
-Begin["`Private`"];
 
 (*
    All the core data will be stored in an Association for convenience of
@@ -28,6 +24,7 @@ Begin["`Private`"];
    we store the association inside the function FusionRing, which will
    only serve as a wrapper and never return a value
 *)
+PackageExport["FusionCategory"]
 
 FusionCategory[ ops:OptionsPattern[] ] :=
   FusionCategory[ InitializeFusionCategory[ ops ] ];
@@ -74,7 +71,7 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
         Message[ FusionCategory::nofusionring ]; False,
       MissingQ @ fsymbols,
         Message[ FusionCategory::nofsymbols ]; False,
-      !ProperFSymbolRulesQ[ fsymbols ] || !ProperLabelRulesQ[ fsymbols ],
+      !ProperFSymbolRulesQ[ fsymbols ],
         Message[ FusionCategory::wrongfsymbolsformat ]; False,
       !FusionRingQ[ ring ],
         Message[ FusionCategory::wrongringformat ]; False,
@@ -107,13 +104,13 @@ HexagonValidityConstraints[ ring_, rSymbols_, preEqualCheck_ ] :=
   Missing["NotImplementedYet"];
 
 ProperFSymbolRulesQ[ fSymbols_ ] :=
-  ProperListOfPentagonSolutionsQ[ fSymbols ];
+  PPSQ[ fSymbols ];
 
 ProperLabelRulesQ[ fSymbols_ ] :=
   MatchQ[ fSymbols, { Repeated[ { a__ } -> b_ ] } /; Length[{a}] == 6 ];
 
 ProperRSymbolRulesQ[ rSymbols_ ] :=
-  ProperListOfPentagonSolutionsQ[ rSymbols ];
+  PHSQ[ rSymbols ];
 
 (*
 +---------------------------------------------------------------------------+
@@ -166,12 +163,17 @@ FusionCategory /: f_[ FusionCategory[ data1_ ], FusionCategory[ data2_ ] ] :=
 FusionCategory /: FusionRing[ FusionCategory[data_] ] :=
   data["FusionRing"];
 
+PackageExport["FSymbols"]
+
 FusionCategory /: FSymbols[ FusionCategory[data_] ] :=
   data["FSymbols"];
+
+PackageExport["RSymbols"]
 
 FusionCategory /: RSymbols[ FusionCategory[data_] ] :=
   data["RSymbols"];
 
+PackageExport["DirectProduct"]
 
 FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ] ] :=
   Module[{ r1, r2, r, fs1, fs2, fs, rs1, rs2, rs, tupleToSingle, sTupleToSingle },
