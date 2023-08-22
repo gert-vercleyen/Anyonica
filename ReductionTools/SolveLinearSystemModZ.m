@@ -449,8 +449,7 @@ BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
     }
   ];
 
-(* Splits a monomial in numerical factor and variables. Like FactorTermsList but this one works as well for expressions with roots *)
-SetAttributes[factorTermsList, Listable];
+PackageScope["ConstMonSplit"]
 
 ConstMonSplit[ x_NumericQ, _ ] :=
   { x, 1 };
