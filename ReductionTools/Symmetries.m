@@ -636,7 +636,7 @@ DES =
 PackageScope["MultiplicativeGaugeMatrix"]
 
 MultiplicativeGaugeMatrix[ sym_Association ] :=
-  Module[{ t, var, factors, g, newVars, eqns },
+  Module[{ t, var, factors, g, newVars },
     t =
       sym["Transforms"];
     var =
@@ -645,10 +645,21 @@ MultiplicativeGaugeMatrix[ sym_Association ] :=
     { factors, newVars } =
       Most @ SimplifyVariables[ t[[;;,2]]/t[[;;,1]], GetVariables[ t, var ], g ];
     
-    eqns =
-      ToProperBinomialEquation /@ Thread[ factors == 1 ];
-    
-    eqns/.e_Equal:> Most @ Normal @ BinEqnToRow[ e, newVars, g ]/.True -> ConstantArray[0,Length[newVars]]
+    GaugeMatRow[ #, Length[newVars], g ]& /@ factors
+  ];
+
+
+GaugeMatRow[ 1, n_, x_ ] :=
+  ConstantArray[ 0, n ];
+
+GaugeMatRow[ factor_, n_, x_ ] :=
+  Normal @
+  SparseArray[
+    Cases[
+      factor,
+      Power[ x[i_], b_. ] :> ( { i } -> b  )
+    ],
+    { n }
   ];
 
 (*
@@ -795,4 +806,18 @@ TrivialGaugeMatrix[ symbols_ ] :=
     Last @
     SolveModZSpace @
     BinToLin[ newConstraints, newGaugeVars, g2 ]
+  ];
+
+PackageExport["GaugeInvariants"]
+
+GaugeInvariants[ ring_FusionRing ] :=
+  Module[{ symbols, g, sym, m, monomial, powers },
+    symbols =
+      Join[ FSymbols[ring], RSymbols[ring] ];
+    sym =
+      GaugeSymmetries[ ring, symbols, g ];
+    monomial =
+      Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ];
+    powers =
+      Cases[ monomial, Power[ g[__], p_. ] :> p ]
   ];
