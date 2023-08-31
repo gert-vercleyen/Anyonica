@@ -49,16 +49,11 @@ Options[MultiplicityFreePentagonGroebnerSystems] :=
 
 MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
   Module[{
-    preEqCheck, useDBQ, storeDecompQ, procID, result, time, solverInput,
+    procID, result, time, solverInput,
     sumSystems, SumBinEqns, systems, AddValues, ReduceSystems, reducedSystems1, reducedSystems2, simplify,
     invertibilityConstraints
     },
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
-    useDBQ =
-      OptionValue["UseDatabaseOfSmithDecompositions"];
-    storeDecompQ =
-      OptionValue["StoreDecompositions"];
+    
     simplify =
       Composition[
         If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
@@ -96,16 +91,13 @@ MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
                 input["SubSolution"],
                 Thread[ Cases[ FSymbols[ring], $VacuumFPattern ] -> 1 ]
               ],
-              ReduceByBinomials[
+              AddOptions[opts][ReduceByBinomials][
                 Sequence @@ SumBinEqns[ input["Equations"] ],
                 input["Variables"],
                 var,
                 "Symmetries" -> input["Symmetries"],
                 "InvertibleMatrices" -> input["InvertibleMatrices"],
                 "NonSingular" -> True,
-                "PreEqualCheck" -> preEqCheck,
-                "UseDatabaseOfSmithDecompositions" -> useDBQ,
-                "StoreDecompositions" -> storeDecompQ,
                 "SimplifyIntermediateResultsBy" -> simplify
               ]
             },
@@ -221,12 +213,9 @@ Options[MultiplicityFreeHexagonGroebnerSystems] :=
 
 MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPattern[] ] :=
   Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
-    opt, systems, AddKnowns, ReduceSystems,  procID, result, time, reducedSystems, reduceRoots,
-    parallelQ, Groebner, simplify },
+    opt, systems, AddKnowns, ReduceSystems,  procID, result, time, reducedSystems, simplify },
     procID =
       ToString @ Unique[];
-    parallelQ =
-      OptionValue["Parallel"];
 
     simplify =
       Composition[
@@ -276,7 +265,6 @@ MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPatte
             ]
         ];
 
-      (* TODO: can be shorter by using AddOptions *)
       sumSystems =
         AddOptions[opts][ReduceByBinomials][
           Sequence @@ SumBinEqns[ equations ],

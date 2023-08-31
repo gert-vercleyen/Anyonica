@@ -150,7 +150,7 @@ SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_Symbol, opts:OptionsPatter
   ];
 
 SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  SolveHexagonEquations[ ring, z, opts ];
+  Block[ {z}, SolveHexagonEquations[ ring, z, opts ] ];
 
 PackageExport["SHE"]
 

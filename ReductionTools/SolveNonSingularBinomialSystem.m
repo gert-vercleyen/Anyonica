@@ -171,6 +171,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       If[ invalidPos != 0, printlog[ "SNSBS:constraints_not_satisfied", { procID, preSolutions, constraints, invalidPos } ] ];
       
       Delete[ preSolutions, invalidPos ] /. revertVars /. internalParam -> param
+     
     ];
 
     printlog["SNSBS:solutions", {procID, result} ];

@@ -580,7 +580,7 @@ DeleteEquivalentSolutions::usage =
 Options[DeleteEquivalentSolutions] :=
   Options[SymmetryEquivalentQ];
 
-DeleteEquivalentSolutions[ soln_, ring_, symmetries_, opts:OptionsPattern[] ] :=
+DeleteEquivalentSolutions[ soln_, ring_FusionRing, symmetries_, opts:OptionsPattern[] ] :=
   Module[{ groupedSoln, gaugeMatrices, procID, result, time },
     procID =
       ToString @ Unique[];
@@ -612,10 +612,10 @@ DeleteEquivalentSolutions[ soln_, ring_, symmetries_, opts:OptionsPattern[] ] :=
             MultiplicativeGaugeMatrix[ MapAt[ Delete[ # , zeroPos ]&,  symmetries, {1} ] ],
             { zeroPos, Keys[groupedSoln] }
           ];
-
+        
         Join @@
         MapThread[
-          DeleteDuplicates[ #1 , SymmetryEquivalentQ[ ring, #2, opts ]  ]&,
+          DeleteDuplicates[ #1 , SymmetryEquivalentQ[ ring, #2, opts ] ]&,
           { Values[ groupedSoln ], gaugeMatrices }
         ]
       ];
@@ -636,7 +636,35 @@ DES =
 PackageScope["MultiplicativeGaugeMatrix"]
 
 MultiplicativeGaugeMatrix[ sym_Association ] :=
-  Module[{ transforms, vars, gaugeVars, eqns, g },
+  Module[{ t, var, factors, g, newVars },
+    t =
+      sym["Transforms"];
+    var =
+      sym["Symbols"];
+    
+    { factors, newVars } =
+      Most @ SimplifyVariables[ t[[;;,2]]/t[[;;,1]], GetVariables[ t, var ], g ];
+    
+    GaugeMatRow[ #, Length[newVars], g ]& /@ factors
+  ];
+
+
+GaugeMatRow[ 1, n_, x_ ] :=
+  ConstantArray[ 0, n ];
+
+GaugeMatRow[ factor_, n_, x_ ] :=
+  Normal @
+  SparseArray[
+    Cases[
+      factor,
+      Power[ x[i_], b_. ] :> ( { i } -> b  )
+    ],
+    { n }
+  ];
+
+(*
+MultiplicativeGaugeMatrix[ sym_Association ] :=
+  Module[{ transforms, vars, newVars, gaugeVars, eqns, g },
     transforms =
       sym["Transforms"][[;;,2]];
     vars =
@@ -646,11 +674,12 @@ MultiplicativeGaugeMatrix[ sym_Association ] :=
     
     If[ gaugeVars == {}, Return[{{}}] ];
     
-    eqns =
-      First @ SimplifyVariables[ Thread[ ( transforms/vars ) == 1], gaugeVars, g ];
+    { eqns, newVars } =
+      Most @ SimplifyVariables[ Thread[ ( transforms/vars ) == 1], gaugeVars, g ];
     
-    First @ BinToSemiLin[ eqns, gaugeVars, g ]
+    First @ BinToSemiLin[ eqns, newVars , g ]
   ];
+*)
 
 MultiplicativeSymmetriesQ[ sym_Association ] :=
   With[{
@@ -777,4 +806,18 @@ TrivialGaugeMatrix[ symbols_ ] :=
     Last @
     SolveModZSpace @
     BinToLin[ newConstraints, newGaugeVars, g2 ]
+  ];
+
+PackageExport["GaugeInvariants"]
+
+GaugeInvariants[ ring_FusionRing ] :=
+  Module[{ symbols, g, sym, m, monomial, powers },
+    symbols =
+      Join[ FSymbols[ring], RSymbols[ring] ];
+    sym =
+      GaugeSymmetries[ ring, symbols, g ];
+    monomial =
+      Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ];
+    powers =
+      Cases[ monomial, Power[ g[__], p_. ] :> p ]
   ];

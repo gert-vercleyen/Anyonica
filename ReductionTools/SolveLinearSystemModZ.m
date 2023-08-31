@@ -214,7 +214,7 @@ IntegerOrthogonalSpace[ mat_ ] :=
 PackageScope["SolveSemiLinModZ"]
 
 SolveSemiLinModZ::usage =
-  "Solves a binomial system whose logarithm is given by mat but whose vector of numeric factors is left as is.";
+  "SolveSemiLinModz[ mat, vec, param ] solves a binomial system whose logarithm is given by mat but whose vector of numeric factors is left as is.";
 
 SolveSemiLinModZ::nonintegermatrix =
   "`1` contains a non-integer element.";
@@ -226,10 +226,10 @@ Options[SolveSemiLinModZ] =
     "StoreDecompositions" -> False,
     "PreEqualCheck" -> Identity,
     "SimplifyIntermediateResultsBy" -> Identity,
-    "Parallel" -> False
+    "Parallel" -> False (* TODO: setting Parallel to true creates a wrong structure of solutions. I can't reproduce the bug, even by coppying the whole code. Echo also doesn't show any strange results.*)
   };
 
-SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
+SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
   Module[{
     ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
     preEqCheck, procID, simplify, result, absTime, noc, map
@@ -240,12 +240,12 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       OptionValue["PreEqualCheck"];
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
-    map =
-      If[ OptionValue["Parallel"], ParallelMap, Map ];
+    (*If[ OptionValue["Parallel"], LaunchKernels[]; map = ParallelMap, *)map =  Map (*];*);
+    
     procID =
       ToString[Unique[]];
 
-    printlog["SSES:init", {procID,{mat,vec},{opts}}];
+    printlog["SSES:init", {procID,{mat,vec}, param,{opts}}];
 
     { absTime, result } =
     AbsoluteTiming[
@@ -276,10 +276,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       ];
 
       expRHS =
-        map[
-          simplify,
-          Inner[ Power, vec, Transpose[ u ], Times ]
-        ];
+        Inner[ Power, vec, Transpose[ u ], Times ];
 
       ZSpace =
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
@@ -294,7 +291,7 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
         constVec =
           map[
             simplify,
-            Inner[ Power, expRHS[[;;r]], Transpose[ ZSpace ], Times ]
+            Inner[ Power, expRHS[[;;r]], Transpose[ZSpace], Times ]
           ]
       ];
 
@@ -319,12 +316,15 @@ SolveSemiLinModZ[ mat_, vec_List, param_, opts:OptionsPattern[] ] :=
       
       map[ (constVec * monomials) * #&, zVecs ]
     ];
+    
+    If[ OptionValue["Parallel"], CloseKernels[] ];
+    
     printlog["Gen:results", {procID, result, absTime}];
 
     result
   ];
 
-SolveSemiLinModZ[ { mat_, vec_List }, param_, opts:OptionsPattern[] ] :=
+SolveSemiLinModZ[ { mat_?MatrixQ, vec_List }, param_, opts:OptionsPattern[] ] :=
   SolveSemiLinModZ[ mat, vec, param, opts ];
 
 PackageExport["BinToSemiLin"]
@@ -407,6 +407,8 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     sa =
       DeleteSparseDuplicates @ SparseArray @ map[ betr, DeleteCases[True] @  properEqns ] ;
     
+    If[ OptionValue["Parallel"], CloseKernels[] ];
+    
     If[
       numeric,
       { sa[[;; , ;; -2]], N[ Normal @ sa[[;; , -1]], { Infinity, accuracy } ] },
@@ -415,18 +417,23 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
   ]
 );
 
+PackageScope["BinEqnToRow"]
 
 BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
   With[ {
     rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
     rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
     },
-    NormalizeAndCombine @
-    {
-      SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
-      SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
-      simplify[ rhsMons2[[1]]/rhsMons1[[1]] ]
-    }
+    MapAt[
+      simplify,
+      NormalizeAndCombine @
+      {
+        SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
+        SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
+        rhsMons2[[1]]/rhsMons1[[1]]
+      },
+      {-1}
+    ]
   ];
 
   BinEqnToRow[ eqn_, vars_, x_ ] :=
@@ -442,8 +449,7 @@ BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
     }
   ];
 
-(* Splits a monomial in numerical factor and variables. Like FactorTermsList but this one works as well for expressions with roots *)
-SetAttributes[factorTermsList, Listable];
+PackageScope["ConstMonSplit"]
 
 ConstMonSplit[ x_NumericQ, _ ] :=
   { x, 1 };
