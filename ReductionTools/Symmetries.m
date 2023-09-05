@@ -349,18 +349,23 @@ Options[GaugeSymmetryEquivalentQ] =
     "Numeric" -> False,
     "Accuracy" -> 64,
     "UnitaryEquivalence" -> False,
-    "PreEqualCheck" -> Identity
+    "PreEqualCheck" -> Identity,
+    "GaugeInvariants" -> {}
   };
 
 GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ];
+
+
+GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   Module[{
-      mU, mR, rank, vec, numericQ, sd, simplify, values1, values2, unitaryGaugeQ, differentAbsQ,
-      preEqCheck, expRHS, NonOneCoeff,noc, procID, time, result
+      rank, numericQ, sd, simplify, values1, values2, unitaryGaugeQ, differentAbsQ,
+      preEqCheck, expRHS, NonOneCoeff,noc, procID, time, result, invariants
     },
     procID =
       ToString @ Unique[];
 
-    printlog[ "GSEQ:init", { procID, gaugeMatrix, sol1, sol2, { opts } } ];
+    printlog[ "GSEQ:init", { procID, { r, h }, sol1, sol2, { opts } } ];
 
     { time, result } =
       AbsoluteTiming[
@@ -374,6 +379,9 @@ GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, 
           OptionValue["UnitaryEquivalence"];
         preEqCheck =
           OptionValue["PreEqualCheck"];
+        invariants =
+          OptionValue["GaugeInvariants"];
+        
         values1  =
           sol1[[;;,2]] //
           DeleteCases[0];
@@ -389,6 +397,12 @@ GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, 
           ];
 
         Catch[
+          If[
+            invariants =!= {} && N[ invariants/.sol1 , { Infinity, 16 } ] != N[ invariants/.sol2, { Infinity, 16 } ]
+            ,
+            Throw[ False ]
+          ];
+          
           If[(* test for Unitary equivalence *)
             unitaryGaugeQ,
             (* THEN *)
@@ -402,13 +416,10 @@ GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, 
             ]
           ];
 
-          { mU, mR } =
-            HermiteDecomposition[ gaugeMatrix ];
-
           rank =
-            Length[mR] -
+            Length[h] -
             Count[
-              mR,
+              h,
               row_ /;
               MatchQ[ row, { 0 .. } ]
             ];
@@ -423,16 +434,16 @@ GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, 
                 Identity
               ] @
               (values1/values2),
-              Transpose[ mU ],
+              Transpose[ r ],
               Times
             ];
 
           NonOneCoeff[ l_ ] :=
-            FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
+            FirstCase[ l, x_ /; !TrueQ[ preEqCheck[x] == 1 ] ];
 
           If[
             rank < Length[ expRHS ] &&
-            Head[ noc = NonOneCoeff @ expRHS[[rank+1;;]] ] =!= Missing,
+            Head[ noc =  NonOneCoeff @ expRHS[[rank+1;;]] ] =!= Missing,
             printlog["GSEQ:nonone_coeff", { procID, expRHS, rank, noc } ];
             False,
             True
@@ -485,7 +496,7 @@ GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_
       gaugeMatrix =
         MultiplicativeGaugeMatrix[
           MapAt[
-            Delete[ {#}& /@ zeroPos1 ],
+            Delete[ zeroPos1 ],
             symmetries,
             {1}
           ]
@@ -542,10 +553,13 @@ SymmetryEquivalentQ[ ring_FusionRing, symmetries_Association, opts:OptionsPatter
   ];
 
 SymmetryEquivalentQ[ ring_FusionRing, gaugeMat_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  SymmteryEquivalentQ[ ring, HermiteDecomposition @ gaugeMat, opts ][ sol1, sol2 ];
+
+SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   Catch[
     Do[
       If[
-        GaugeSymmetryEquivalentQ[ gaugeMat, opts ][ PermutedFSymbols[ sol1, auto ], sol2 ],
+        GaugeSymmetryEquivalentQ[ { r, h }, opts ][ PermutedFSymbols[ sol1, auto ], sol2 ],
         Throw[True]
       ],
       { auto, FusionRingAutomorphisms[ring] }
@@ -557,7 +571,7 @@ PermutedFSymbols[ FSymb_, perm_List ] :=
   Thread[
     Rule[
       FSymb[[;;,1]],
-      FSymb[[;;,1]] /. ( n_Integer :> perm[[n]] ) /. FSymb
+      FSymb[[;;,1]] /. ( n_Integer :> perm[[n]] ) /. Dispatch[FSymb]
     ]
   ];
 
@@ -581,7 +595,7 @@ Options[DeleteEquivalentSolutions] :=
   Options[SymmetryEquivalentQ];
 
 DeleteEquivalentSolutions[ soln_, ring_FusionRing, symmetries_, opts:OptionsPattern[] ] :=
-  Module[{ groupedSoln, gaugeMatrices, procID, result, time },
+  Module[{ groupedSoln, decomposedGaugeMatrices, procID, result, time, invariants },
     procID =
       ToString @ Unique[];
 
@@ -607,16 +621,20 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, symmetries_, opts:OptionsPatt
 
         printlog[ "DSES:groups", { procID, groupedSoln } ];
 
-        gaugeMatrices =
+        decomposedGaugeMatrices =
+          HermiteDecomposition /@
           Table[
-            MultiplicativeGaugeMatrix[ MapAt[ Delete[ # , zeroPos ]&,  symmetries, {1} ] ],
+            MultiplicativeGaugeMatrix[ MapAt[ Delete[ # , zeroPos ]&, symmetries, {1} ] ],
             { zeroPos, Keys[groupedSoln] }
           ];
         
+        invariants =
+          GaugeInvariants @ ring;
+        
         Join @@
         MapThread[
-          DeleteDuplicates[ #1 , SymmetryEquivalentQ[ ring, #2, opts ] ]&,
-          { Values[ groupedSoln ], gaugeMatrices }
+          DeleteDuplicates[ #1 , SymmetryEquivalentQ[ ring, #2, "GaugeInvariants" -> invariants, opts ] ]&,
+          { Values[ groupedSoln ], decomposedGaugeMatrices }
         ]
       ];
 
@@ -808,16 +826,150 @@ TrivialGaugeMatrix[ symbols_ ] :=
     BinToLin[ newConstraints, newGaugeVars, g2 ]
   ];
 
+
+PackageExport["GaugeSplitTransform"]
+
+GaugeSplitTransform::usage =
+  "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer for which " <> "
+  F'_1 = (F_1)^(V_1) * ... * (F_l)^(V_l) * (R_1)^(V_{l+1}) * ... * (R_k)^(V_{l+k}), ... } is a basis for all polynomials
+  in the F-and R-symbols where the first n elements provides a basis for the gauge independent polynomials in the "<>
+  "F-and R-symbols.";
+
+GaugeSplitTransform::invalidoptionincludeonly =
+  "The option for \"IncludeOnly\", `1`, must be either All, \"FSymbols\" or \"RSymbols\".";
+
+Options[GaugeSplitTransform] :=
+  {
+    "IncludeOnly" -> All
+  };
+
+GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
+  With[{ io = OptionValue["IncludeOnly"] },
+    
+    If[ Rank[ring] == 1, Return @ If[ io =!= All, IdentityMatrix[1], IdentityMatrix[2] ] ];
+    
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf },
+      
+      symbols =
+        Switch[ io,
+          All
+          ,
+          Join[ FSymbols[ring], RSymbols[ring] ]
+          ,
+          "FSymbols"
+          ,
+          FSymbols[ring]
+          ,
+          "RSymbols"
+          ,
+          RSymbols[ring]
+          ,
+          _
+          ,
+          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
+          Abort[]
+        ];
+      
+      sym =
+        GaugeSymmetries[ symbols, g ];
+      
+      monomial =
+        PowerExpand[
+          Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ] /. sym["Transforms"] /. Thread[symbols -> 1]
+        ];
+      
+      powers =
+        Expand @
+        Cases[ monomial, Power[ g[__], p_. ] :> p ];
+      
+      { d, v } =
+        Rest @
+        SmithDecomposition[
+          powerToRow[ m, Length @ symbols ] /@ powers
+        ];
+      
+      r =
+        Length[
+          DeleteCases[0] @ Diagonal[d]
+        ];
+      
+      (* First sort criterium: number of factors, where powers are counted as multiple factors.
+         Second criterium: canonical lexicographic order on the indices (we need Reverse because the greater the row,
+         the smaller the labels *)
+      
+      sortf =
+        Order[ Prepend[ Total @ Abs @ #1 ] @ Reverse[#1], Prepend[ Total @ Abs @ #2 ] @ Reverse[#2] ]&;
+      
+      {
+        Transpose @ Join[
+          Sort[ Transpose[v][[r+1;;]], sortf ],
+          Sort[ Transpose[v][[;;r]], sortf ]
+        ],
+        Length[v] - r
+      }
+    ]
+  ];
+
+
+powerToRow[ s_, n_ ][ pow_ ] :=
+  Normal @ SparseArray[ Cases[ pow, i_. * s[j_] :> { j } -> i ], {n} ];
+
+PackageExport["GaugeSplitBasis"]
+
+GaugeSplitBasis::usage =
+  "GaugeSplitBasis[ ring ] returns a tuple of lists of monomials { m1, m2 } in F-and R-symbols where m1 contains a "<>
+  "basis for all gauge invariant polynomials, and m2 contains the remaining monomials needed for m1 to be a basis"<>
+  " of all F-and R-symbols of the ring. Options are \"IncludeOnly\" which can be set to \"FSymbols\" or \"RSymbols\""<>
+  " if one only wants a split basis for the F-symbols or R-symbols respectively."
+
+Options[ GaugeSplitBasis ] :=
+  Options[GaugeSplitTransform];
+
+GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
+  Module[ { V, n, symbols, io },
+    io =
+      OptionValue["IncludeOnly"];
+    
+    { V, n } =
+      GaugeSplitTransform[ ring, opts ];
+    
+    symbols =
+      Switch[ io,
+        All
+        ,
+        Join[ FSymbols[ring], RSymbols[ring] ]
+        ,
+        "FSymbols"
+        ,
+        FSymbols[ring]
+        ,
+        "RSymbols"
+        ,
+        RSymbols[ring]
+      ];
+      
+    Map[
+      Inner[ Power, symbols, #, Times ]&,
+      {
+        Transpose @ V[[;;,;;n]],
+        Transpose @ V[[;;,n+1;;]]
+      },
+      {2}
+    ]
+  ];
+
 PackageExport["GaugeInvariants"]
 
-GaugeInvariants[ ring_FusionRing ] :=
-  Module[{ symbols, g, sym, m, monomial, powers },
-    symbols =
-      Join[ FSymbols[ring], RSymbols[ring] ];
-    sym =
-      GaugeSymmetries[ ring, symbols, g ];
-    monomial =
-      Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ];
-    powers =
-      Cases[ monomial, Power[ g[__], p_. ] :> p ]
-  ];
+GaugeInvariants::usage =
+  "GaugeInvariants[ ring ] returns a basis of the gauge invariant polynomials in the F-and R-symbols of the ring.";
+
+Options[GaugeInvariants] =
+  Options[GaugeSplitBasis];
+
+GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
+  First @ GaugeSplitBasis[ ring, opts ];
+
+
+(* Returns rows corresponding to the invariants  *)
+(*interestingInvariants[ ring_ ] :=*)
+
