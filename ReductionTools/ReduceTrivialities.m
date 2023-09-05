@@ -18,8 +18,6 @@ Options[ReduceTrivialities] =
 
 ReduceTrivialities[ eqnsList_?ListOfEquationsQ, vars_, OptionsPattern[] ] :=
   Module[ { newEqns, newVars, revertVars, s, newSystem, simplify },
-    s =
-      Unique["x"];
     simplify =
       OptionValue["SimplifyBy"];
     { newEqns, newVars, revertVars } =
@@ -27,8 +25,6 @@ ReduceTrivialities[ eqnsList_?ListOfEquationsQ, vars_, OptionsPattern[] ] :=
 
     newSystem =
       UpdateSystemViaTrivialities[ s, simplify ][ {}, {}, newEqns ];
-    
-    Remove[s];
     
     Normal[newSystem]/.revertVars
   ];
