@@ -25,6 +25,11 @@ PackageScope["F"]
 F =
   \[ScriptCapitalF];
 
+PackageExport["FilterFRules"]
+
+FilterFRules =
+  FilterRules[ #, F[__] ]&;
+
 
 PackageScope["ProperPentagonSolutionQ"]
 
@@ -53,7 +58,6 @@ ProperListOfPentagonSolutionsQ::usage =
 ProperListOfPentagonSolutionsQ[ soln_ ] :=
   TrueQ @
   MatchQ[ soln, { Repeated[ _?PPSQ ] } ];
-
 
 PackageScope["PLOPSQ"]
 
@@ -344,40 +348,111 @@ FTensors[ ring_FusionRing ] :=
     ][[2, 1]]
   ];
 
-PackageExport["TetrahedralEquivalences"]
+(* From: https://journals.aps.org/prb/pdf/10.1103/PhysRevB.102.115154 *)
 
-TetrahedralEquivalences::usage =
-  "TetrahedralEquivalences[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
-  "representative that is equivalent up to tetrahedral symmetry.\n"<>
-  "TetrahedralEquivalences[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
-  "representative that is equivalent up to tetrahedral symmetry.";
+PackageExport["TetrahedralSymmetries"]
 
-TetrahedralEquivalences[ r_FusionRing, l_List ] :=
-  With[{ classes = Gather[ l , TEQ[ CC[r] ] ] },
-    Join @@
-    Table[
-      DeleteCases[ HoldPattern[ f_ -> f_ ] ] @
-      Thread[ c -> First @ c ] ,
-      { c, classes }
+TetrahedralSymmetries::usage =
+  "TetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
+  "representative that is equal via a tetrahedral symmetry.\n"<>
+  "TetrahedralSymmetries[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
+  "representative that is equal via a tetrahedral symmetry.";
+
+Options[TetrahedralSymmetries] :=
+  {
+    "PreEqualCheck" -> RootReduce
+  };
+
+TetrahedralSymmetries[ r_FusionRing, opts:OptionsPattern[] ] :=
+  TetrahedralSymmetries[ r, FSymbols @ r, opts ];
+
+TetrahedralSymmetries[ r_FusionRing, l_List, opts:OptionsPattern[] ] :=
+  Cases[
+    Sort[
+      FixRule[ OptionValue["PreEqualCheck"] ] /@
+      DeleteCases[ a_ -> a_ ] @
+      BuildSymmetries[ Flatten[ TSOrbit[r] /@ l ], { }, OptionValue["PreEqualCheck"] ]
+    ],
+    ( a_ -> b_ ) /; NumericQ[b] || MemberQ[ l, b ] (* Want symmetry transforms to stay in our list *)
+  ];
+
+TSOrbit[ ring_FusionRing ][ symb:F[j_,k_,l_,i_,m_,n_] ] :=
+  With[ { d = CC[ring], qd = QD[ring][[#]]& },
+    DeleteDuplicates[
+      (
+      DeleteCases[
+        {
+          symb -> F[ k, j, d[i], d[l], m, d[n] ],
+          symb -> F[ d[i], l, k, d[j], d[m], n ],
+          symb -> F[ d[m], k, d[n], d[i], d[j], d[l] ] Sqrt[ qd[m] qd[n] / ( qd[j] qd[l] ) ]
+        }/.$VacuumFPattern -> 1,
+        1 -> 1
+      ]/.( 1 -> a_?NumericQ ) :> Throw[ 1 -> a ])/. ( 1 -> a_ ) :> FixLHS[ a -> 1 ]
     ]
   ];
 
-TetrahedralEquivalences[r_FusionRing] :=
-  TetrahedralEquivalences[r, FSymbols[r]];
+BuildSymmetries[ {}, sym_, check_  ] :=
+  sym;
 
-TEQ[d_][ F[i1_, j1_, k1_, l1_, m1_, n1_], F[i2_, j2_, k2_, l2_, m2_, n2_] ] :=
- Or[
-  	And[ i1 == l2, j1 == k2, k1 == j2, l1 == i2, m1 == d[m2], n1 == n2 ],
-  	And[ i1 == j2, j1 == i2, k1 == l2, l1 == k2, m1 == m2, n1 == d[n2] ],
-  	And[ i1 == i2, j1 == m2, k1 == d[k2], l1 == n2, m1 == j2, n1 == l2 ]
- ];
+BuildSymmetries[ rules_, sym_, check_ ] :=
+  With[{ firstRule = First @ rules, restRules = Rest @ rules },
+    BuildSymmetries[
+      DeleteDuplicates[
+        FixRule[check] /@ DeleteCases[ restRules /. firstRule, a_ -> a_ ]
+      ],
+      Append[firstRule] @ ( sym /. firstRule ),
+      check
+    ]
+  ];
 
-(*Create the orbit of a set of symmetry generators on the indices*)
-AllForms[transforms_List][arg_] :=
-  FixedPoint[ NextForms[transforms], Flatten @ { arg } ];
+FixLHS[ a_ -> b_ ] :=
+  With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
 
-NextForms[transforms_List][currforms_] :=
-  Union @@ Prepend[currforms] @ Table[ t /@ currforms, { t, transforms } ];
+FixRule[ check_ ][ a_ -> b_ ] :=
+  Switch[ NumericQ /@ { a, b },
+    { True, True }
+    ,
+    If[ check[ a - b ] != 0, Throw[ a -> b ], a -> b ]
+    ,
+    { True, False }
+    ,
+    FixLHS[ b -> a ]
+    ,
+    _
+    ,
+    FixLHS[ a -> b ]
+  ];
 
-NextForms[t_][currforms_] :=
-  NextForms[{t}][currforms];
+PackageExport["ProjectiveTetrahedralSymmetries"]
+
+ProjectiveTetrahedralSymmetries::usage =
+  "ProjectiveTetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
+  "representative that is equal via a projective tetrahedral symmetry.\n"<>
+  "ProjectiveTetrahedralSymmetries[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
+  "representative that is equal via a projective tetrahedral symmetry.";
+
+ProjectiveTetrahedralSymmetries :=
+  ProjectRHS @* TetrahedralSymmetries;
+
+SetAttributes[ ProjectRHS, Listable ];
+ProjectRHS[ a_ -> b_?NumericQ ] :=
+  a -> 1;
+ProjectRHS[ a_ -> b_ ] :=
+  With[ { f = First @ GetVariables[ b, F ] }, a -> f ];
+
+PackageExport["TransparentFSymbols"]
+
+TransparentFSymbols::usage =
+  "TransparentFSymbols[ ring ] returns a list of rules that maps F-symbols of ring, that have a group element as "<>
+  "an outer upper index, to 1.";
+
+TransparentFSymbols[ ring_FusionRing ] :=
+  Module[{ d, groupQ },
+    d =
+      CC[ring];
+    
+    groupQ[i_] :=
+      Total[ MT[ring][[ i, d[i] ]] ] == 1;
+    
+    Thread[ Cases[ FSymbols @ ring, F[ a_, _, c_, __ ] /; groupQ[a] || groupQ[c] ] -> 1 ]
+  ];
