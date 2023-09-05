@@ -2090,7 +2090,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:groups", { id_, groups_ } ] :=
 (* GaugeSymmetryEquivalentQ *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:init", { id_, mat_, sol1_, sol2_, optionList_ } ] :=
 Module[{fn1, fn2, fn3},
-  fn1 = dataFileName[ id, dir, "GaugeMatrix" ];
+  fn1 = dataFileName[ id, dir, "HermiteDecompOfGaugeMatrix" ];
   safeExport[ fn1, mat ];
   fn2 = dataFileName[ id, dir, "Solution1" ];
   safeExport[ fn2, sol1 ];
@@ -2104,7 +2104,7 @@ Module[{fn1, fn2, fn3},
       id,
       dir,
       "GaugeSymmetryEquivalentQ",
-      { { "GaugeMatrix", fn1 }, { "Solution1", fn2 }, { "Solution2", fn3 } },
+      { { "HermiteDecompOfGaugeMatrix", fn1 }, { "Solution1", fn2 }, { "Solution2", fn3 } },
       optionList
     ]
   ];
