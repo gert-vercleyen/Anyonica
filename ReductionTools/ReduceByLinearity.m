@@ -259,7 +259,8 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
     printlog["RBL:init", { procID, polList, s, { opts } } ];
 
     { time, result } =
-      AbsoluteTiming[
+      AbsoluteTiming @
+      Block[ { $RecursionLimit = Infinity },
         AddNonZeroPols @@@
         DeleteCases[
           Reap[ RecursiveReduce[ RCF /@ polList, { }, { } ] ][[2]] /. {{x__}} :> {x},
@@ -362,14 +363,8 @@ Module[
     GetVariables[ polList, s ];
   RCF =
     RemoveCommonFactors[ #, s ]&;
-  rootReduce =
-    If[
-      MemberQ[ polList, _Root, Infinity ],
-      SafeRootReduce,
-      Identity
-    ];
   MoldPol =
-    RCF @* rootReduce @* simplify @* Expand;
+    RCF @* RootReduce @* simplify @* Expand;
   MonQ[ pol_ ] :=
     Length[ MonomialList[ pol ] ] === 1;
   PolRest[ pol_, ps_ ] :=
