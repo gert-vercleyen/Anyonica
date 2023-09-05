@@ -26,11 +26,17 @@ Options[ PentagonEquations ] :=
   Options[ PentagonTower ];
 
 PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  With[{ tower = PentagonTower[ ring, opts ] },
-    Join[
-      tower["Bin"] // Values,
-      tower["Sum"] // Values
-    ] // Flatten
+  If[
+    Mult[ ring ] == 1
+    ,
+    With[{ tower = PentagonTower[ ring, opts ] },
+      Join[
+        tower["Bin"] // Values,
+        tower["Sum"] // Values
+      ] // Flatten
+    ]
+    ,
+    PentagonEquationsWithMultiplicity[ ring, opts ]
   ];
 
 
@@ -172,6 +178,17 @@ DimF[regMats_] :=
 +---------------------------------------------------------------------------+
 *)
 
+(* a     b     c                                a     b     c *)
+(*  \   /     /                                  \     \   /  *)
+(*   \ /     /                                    \     \ /   *)
+(*    α     /                                      \     δ    *)
+(*     \   /                                        \   /     *)
+(*    e \ /      = Σ F[a,b,c,d,{e,α,β},{f,ɣ,δ}]      \ / f    *)
+(*       β                                            ɣ       *)
+(*       │                                            │       *)
+(*       │                                            │       *)
+
+
 Options[PentagonEquationsWithMultiplicity] =
   { "Knowns" -> {} };
 
@@ -266,3 +283,19 @@ PentagonEquationsWithMultiplicity[ ring_FusionRing?FusionRingQ, OptionsPattern[]
       ]
     ][[2,1]]
   ];
+
+(* TRIVIAL FS:
+{
+ F[ 1, b_, c_,
+   d_, { e_, \[Alpha]_, \[Beta]_}, {f_ , \[Gamma]_, \[Delta]_}] :>
+  delta[{\[Beta], \[Delta]}, {b, e}, {f, d}],
+ F[ a_, 1 , c_,
+   d_, { e_, \[Alpha]_, \[Beta]_}, {f_ , \[Gamma]_, \[Delta]_}] :>
+  delta[{\[Beta], \[Gamma]}, {a, e}, {f, c}],
+ F[ a_, b_, 1,
+   d_, { e_, \[Alpha]_, \[Beta]_}, {f_ , \[Gamma]_, \[Delta]_}] :>
+  delta[{\[Alpha], \[Gamma]}, {d, e}, {f, b}]
+ }
+
+
+*)
