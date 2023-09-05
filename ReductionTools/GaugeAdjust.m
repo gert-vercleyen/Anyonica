@@ -289,7 +289,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             ];
           
           expRHS =
-            Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+            PowerDot[ rhsVec, mU ];
           
           ZSpace =
             mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
@@ -311,7 +311,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             ],
             (* ELSE *)
             constVec =
-            Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+              PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
           ];
           
           CSpace =
@@ -343,8 +343,8 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
                 ConstantArray[ 1, Length[zVec] ],
                 (* ELSE *)
                 vars =
-                z /@ Range[ Dimensions[ CSpace ][[2]] ];
-                Inner[ Power, vars, #, Times ]& /@ CSpace
+                  z /@ Range[ Dimensions[ CSpace ][[2]] ];
+                PowerDot[ vars, CSpace]
               ];
             
             binomialSolution =
@@ -867,7 +867,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ];
 
         expRHS =
-          Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+          PowerDot[ rhsVec, mU ];
 
         NonOneCoeff[ l_ ] :=
           FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
@@ -883,7 +883,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ZSpace =
             mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           constVec =
-            Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+            PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
 
         CheckSolution[ sol_ ] :=
@@ -1132,7 +1132,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
             ];
             
             expRHS =
-            Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+              PowerDot[ rhsVec, mU ];
             
             listOfOnesQ[ l_ ] :=
             And @@
@@ -1151,7 +1151,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
               ZSpace =
               mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
               constVec =
-              Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+                PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
             ];
             
             trivialSpace =
@@ -1178,7 +1178,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
               CSpace === {{}},
               ConstantArray[ 1, Length[constVec] ],
               With[ { parameters = z /@ Range[ Dimensions[CSpace][[2]] ] },
-                Inner[ Power, parameters, #, Times ]& /@ CSpace
+                PowerDot[ parameters, CSpace ]
               ]
             ];
             

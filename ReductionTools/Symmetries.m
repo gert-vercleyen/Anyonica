@@ -231,7 +231,7 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
         symbol /@ Range[ Dimensions[CSpace][[2]] ];
 
       reParametrization =
-        Thread[ newVars -> ( Inner[ Power, params, #, Times ]& /@ CSpace ) ]/.revertVars;
+        Thread[ newVars ->  PowerDot[ params, CSpace ]  ]/.revertVars;
 
       newTransforms =
         (
@@ -415,16 +415,14 @@ GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, 
 
           expRHS =
             simplify @
-            Inner[
-              Power,
+            PowerDot[
               If[
                 numericQ,
                 N[ #, { Infinity, sd } ]&,
                 Identity
               ] @
               (values1/values2),
-              Transpose[ mU ],
-              Times
+              mU
             ];
 
           NonOneCoeff[ l_ ] :=
@@ -817,7 +815,7 @@ GaugeInvariants[ ring_FusionRing ] :=
     sym =
       GaugeSymmetries[ ring, symbols, g ];
     monomial =
-      Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ];
+      PowerDot[ symbols, Array[ m, Length @ symbols ] ];
     powers =
       Cases[ monomial, Power[ g[__], p_. ] :> p ]
   ];
