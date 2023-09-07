@@ -838,34 +838,28 @@ GaugeSplitTransform::invalidoptionincludeonly =
 
 Options[GaugeSplitTransform] :=
   {
-    "IncludeOnly" -> All
+    "IncludeOnly" -> All,
+    "Zeros" -> {}
   };
 
 GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
   With[{ io = OptionValue["IncludeOnly"] },
 
-    If[ Rank[ring] == 1, Return @ If[ io =!= All, IdentityMatrix[1], IdentityMatrix[2] ] ];
+    If[ Rank[ring] == 1, Return @ If[ io =!= All, { IdentityMatrix[1], 1 }, { IdentityMatrix[2], 2 } ] ];
 
-    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf },
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros },
+      zeros =
+        OptionValue["Zeros"];
 
       symbols =
-        Switch[ io,
-          All
-          ,
-          Join[ FSymbols[ring], RSymbols[ring] ]
-          ,
-          "FSymbols"
-          ,
-          FSymbols[ring]
-          ,
-          "RSymbols"
-          ,
-          RSymbols[ring]
-          ,
-          _
-          ,
-          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
-          Abort[]
+        Complement[
+          Switch[ io,
+            All,        Join[ FSymbols @ ring, RSymbols @ ring ],
+            "FSymbols", FSymbols @ ring,
+            "RSymbols", RSymbols @ ring,
+            _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
+          ],
+          zeros
         ];
 
       sym =
@@ -873,7 +867,9 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
 
       monomial =
         PowerExpand[
-          Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ] /. sym["Transforms"] /. Thread[symbols -> 1]
+          PowerDot[ symbols, Array[ m, Length @ symbols ] ] //
+          ReplaceAll[ sym["Transforms"] ] //
+          ReplaceAll[ Thread[symbols -> 1] ]
         ];
 
       powers =
@@ -887,16 +883,17 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
         ];
 
       r =
-        Length[
-          DeleteCases[0] @ Diagonal[d]
-        ];
+        Length @ DeleteCases[0] @ Diagonal[d];
 
       (* First sort criterium: number of factors, where powers are counted as multiple factors.
          Second criterium: canonical lexicographic order on the indices (we need Reverse because the greater the row,
          the smaller the labels *)
 
       sortf =
-        Order[ Prepend[ Total @ Abs @ #1 ] @ Reverse[#1], Prepend[ Total @ Abs @ #2 ] @ Reverse[#2] ]&;
+        Order[
+          Prepend[ Total @ Abs @ #1 ] @ Reverse[#1],
+          Prepend[ Total @ Abs @ #2 ] @ Reverse[#2]
+        ]&;
 
       {
         Transpose @ Join[
@@ -924,36 +921,28 @@ Options[ GaugeSplitBasis ] :=
   Options[GaugeSplitTransform];
 
 GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[ { V, n, symbols, io },
+  Module[ { V, n, symbols, io, zeros },
     io =
       OptionValue["IncludeOnly"];
+    zeros =
+      OptionValue["Zeros"];
 
     { V, n } =
       GaugeSplitTransform[ ring, opts ];
 
     symbols =
-      Switch[ io,
-        All
-        ,
-        Join[ FSymbols[ring], RSymbols[ring] ]
-        ,
-        "FSymbols"
-        ,
-        FSymbols[ring]
-        ,
-        "RSymbols"
-        ,
-        RSymbols[ring]
+      Complement[
+        Switch[ io,
+          All,        Join[ FSymbols @ ring, RSymbols @ ring ],
+          "FSymbols", FSymbols @ ring,
+          "RSymbols", RSymbols @ ring,
+          _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
+        ],
+        zeros
       ];
-
-    Map[
-      Inner[ Power, symbols, #, Times ]&,
-      {
-        Transpose @ V[[;;,;;n]],
-        Transpose @ V[[;;,n+1;;]]
-      },
-      {2}
-    ]
+    
+    
+    TakeDrop[ PowerDot[ symbols, Transpose @ V ], n ]
   ];
 
 PackageExport["GaugeInvariants"]
@@ -965,7 +954,9 @@ Options[GaugeInvariants] =
   Options[GaugeSplitBasis];
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
-  First @ GaugeSplitBasis[ ring, opts ];
+  With[ { zeros = OptionValue["Zeros"] },
+    Join[ zeros, First @ GaugeSplitBasis[ ring, opts ] ]
+  ];
 
 
 (* Returns rows corresponding to the invariants  *)
