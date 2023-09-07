@@ -84,96 +84,79 @@ UGQ::usage =
 UGQ = 
   UnitaryGaugeQ;
 
-
 PackageExport["ToUnitaryGauge2"]
 
 Options[ToUnitaryGauge2] :=
-  Options[ToUnitaryGauge];
+	{
+		"SimplifyBy" -> Identity,
+		"PreEqualCheck" -> Identity
+	};
 
-ToUnitaryGauge2[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
+ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
+(
+  If[ !PPSQ[FSol], Message[ ToUnitaryGauge::wrongsolformat, FSol ]; Abort[] ];
   Module[ {
-      sym, g, mat, rhs, fInv, u, d, v, r, ld, consistent, returnGauge,
-      sol, simplify, fSymbols, ZSpace, CSpace, ZVars, CVars, cVec, phiSol },
-    returnGauge =
-      OptionValue["ReturnGaugeTransform"];
+    solInvSol, FInv, symmetries, transforms, g, SimplestVar,
+    UnitaryValue, FixValue, UpdateSystem, time, result, gaugeVals, simplify, check
+    },
     simplify =
-      OptionValue["SimplifyIntermediateResultsBy"];
-    fSymbols =
-      FSymbols @ ring;
+      OptionValue["SimplifyBy"];
+    check =
+      OptionValue["PreEqualCheck"];
     
-    sym =
-      MapAt[
-        DeleteCases[ (f_ -> _) /; (f/.FSymb) == 0 ],
-        GaugeSymmetries[ fSymbols, g ],
-        { 1 }
+    printlog[ "TUG:init", {procID,ring,FSymb, {opts} }];
+    
+    SimplestVar[ monomial_ ] :=
+      With[{ fList = Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], a } ] },
+        If[ fList === {}, Return[Missing[]] ];
+        MinimalBy[ fList, Abs @* Last, 1 ][[1, 1]]
       ];
     
-    (* TODO: the vacuum F symbols need to remain 1 *)
+    UnitaryValue[ F[ abcd__, e_, f_ ] ] :=
+      simplify @ ReplaceAll[ Sqrt[ F[ abcd, e, f ] FInv[ abcd, f, e ] ], solInvSol ];
     
-    mat =
-      Transpose @
-      Join[
-        Transpose @ MultiplicativeGaugeMatrix @ sym,
-        IdentityMatrix @ Length @ sym[[1]]
+    FixValue[ a_ -> b_ ] := Echo @
+      (Solve[ b == UnitaryValue[ a ], SimplestVar @ EchoLabel["b"] @b ][[1, 1]]);
+    
+    UpdateSystem[ {}, vals_ ] :=
+      vals;
+    
+    UpdateSystem[ transf_, vals_ ] :=
+      With[{ gaugeVal = FixValue[ First @ transf ] },
+        UpdateSystem[
+          DeleteCases[ transf /. gaugeVal, rule_ /; CountVariables[ rule, g ] === 0 ],
+          Append[ vals /. gaugeVal, gaugeVal ]
+        ]
       ];
     
-    rhs = Echo[
-      simplify /@
-      ReplaceAll[
-        Table[
-          Sqrt[ f * (fInv @@ f[[{1,2,3,4,6,5}]]) ]/f,
-          { f, fSymbols }
-        ],
-        Join[ FSymb , InverseFSymbols[ ring, fInv, FSymb ] ]
-      ]
+    { time, result } =
+      AbsoluteTiming[
+        solInvSol =
+          Dispatch @ Join[ FSol , InverseFSymbols[ ring, FInv, FSol ] ];
+  
+        symmetries =
+          GaugeSymmetries[ FSymbols @ ring, g];
+  
+        transforms =
+          MapAt[
+            ReplaceAll[solInvSol],
+            DeleteCases[ symmetries["Transforms"], rule_ /; CountVariables[ rule, g ] === 0 ],
+            { All, 2 }
+          ];
+        
+        gaugeVals =
+          UpdateSystem[ transforms, {} ];
+        
+        ApplyGaugeTransform[ FSol, gaugeVals, g ]
+      
       ];
     
-    { u, d, v } =
-      SmithDecomposition @ mat;
+    If[ !UnitaryGaugeQ[ ring, result, opts ], printlog[ "TUG:sol_not_unitary", {procID} ] ];
     
-    r =
-      Length[ ld = DeleteCases[0] @ Diagonal @ d ];
-    
-    consistent =
-      AddOptions[opts][ConsistentQ][ r, rhs, TrueQ[#==1]& ];
-    
-    Which[
-      returnGauge && !consistent,
-      Return @ { $Failed, {} },
-      !returnGauge && !consistent,
-      Return @ $Failed
-    ];
+    result
+  ]
+);
 
-    ZSpace =
-      v[[;;,;;r]].DiagonalMatrix[1/ld];
-    
-    ZVars =
-      Array[ m, r ];
-
-    CSpace =
-      v[[;;,r+1;;]];
-    
-    CVars =
-      If[
-        CSpace == {{}},
-        ConstantArray[ 1, Length @ ZSpace ],
-        Array[ z, Length[v] - r ]
-      ];
-    
-    cVec =
-      PowerDot[ rhs, ZSpace.u[[;;r]] ];
-    
-    phiSol =
-      (( ZSpace.u[[;;r]].Log[rhs] )/(2 Pi I) + CSpace.CVars)
-    
-(*    If[*)
-(*      returnGauge*)
-(*      ,*)
-(*      { ApplyGaugeTransform[ FSymb, sol, g ], sol }*)
-(*      ,*)
-(*       ApplyGaugeTransform[ FSymb, sol, g ]*)
-(*    ]*)
-  ];
 
 PackageExport["ToUnitaryGauge"]
 
