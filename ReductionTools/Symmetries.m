@@ -808,7 +808,12 @@ TrivialGaugeMatrix[ symbols_ ] :=
 
 PackageExport["GaugeInvariants"]
 
-GaugeInvariants[ ring_FusionRing ] :=
+Options[GaugeInvariants] :=
+  {
+    "Zeros" -> {}
+  };
+
+GaugeInvariants[ ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[{ symbols, g, sym, m, monomial, powers },
     symbols =
       Join[ FSymbols[ring], RSymbols[ring] ];
@@ -819,3 +824,4 @@ GaugeInvariants[ ring_FusionRing ] :=
     powers =
       Cases[ monomial, Power[ g[__], p_. ] :> p ]
   ];
+
