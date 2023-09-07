@@ -231,8 +231,8 @@ Options[SolveSemiLinModZ] =
 
 SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
   Module[{
-    ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
-    preEqCheck, procID, simplify, result, absTime, noc, map
+    ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS,gaugeMat,
+    preEqCheck, procID, simplify, result, absTime, map, consistent
     },
     gaugeMat =
       OptionValue["OrthogonalTo"];
@@ -278,8 +278,10 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
       expRHS =
         PowerDot[ vec, u ];
 
+      consistent =
+        AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
       
-      AddOptions[opts][CheckConsistency][ r, expRHS, # == 1 & ];
+      If[ !consistent, Return @ { } ];
 
 (*      If[*)
 (*        r < Length[ expRHS ] &&  !MissingQ[ noc =  NonOneCoeff[ expRHS[[r+1;;]] ] ],*)
