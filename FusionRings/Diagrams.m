@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-04-24 *)
 
+Package["Anyonica`"]
+
 PackageExport["LeftTreeDiagram"]
 
 LeftTreeDiagram::usage =
@@ -168,13 +170,12 @@ LeftOrderedFusionTrees::usage =
   "horizontal labels of the fusion tree (input anyons) and the last n labels denote the diagonal labels "<>
   "(fusion outcomes) from top to bottom.";
 
-LeftOrderedFusionTrees[ ring_FusionRing?FusionRingQ, level_ ] :=
+LeftOrderedFusionTrees[ ring_FusionRing, level_ ] :=
   coupleLeftTree /@
   allChains[ validTwoLevelLeftTreeQ, NZSC[ ring ], level ];
 
 
 PackageExport["RightOrderedFusionTrees"]
-
 
 RightOrderedFusionTrees::usage =
   "RightOrderedFusionTrees[ ring, n ] returns lists of labels that form valid right-ordered fusion trees with n "<>

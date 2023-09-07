@@ -285,6 +285,7 @@ InverseFSymbols[ ring_FusionRing, s_, FSymbols_ ] :=
   ];
 
 
+
 PackageExport["FTensors"]
 
 FTensors::usage =
