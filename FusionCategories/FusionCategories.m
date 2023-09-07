@@ -40,6 +40,7 @@ Options[ FusionCategory ] =
     "FusionRing"    -> Missing[],
     "FSymbols"      -> Missing[],
     "RSymbols"      -> Missing[],
+    "FormalParameters" -> Missing[],
     "PreEqualCheck" -> Identity
   };
 
@@ -72,6 +73,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "FusionRing"                -> ring,
       "FSymbols"                  -> fSymbols,
       "RSymbols"                  -> rSymbols,
+      "FormalParemeters"          -> OptionValue["FormalParameters"],
       "FrobeniusSchurIndicator"   -> Missing[],
       "UnitaryFsymbolsQ"          -> Missing[],
       "Names"                     -> Missing[]
@@ -101,7 +103,7 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
     ]
   ];
 
-PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_] :=
+PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
   With[{
     pEqns =
       Map[
@@ -202,7 +204,10 @@ FusionCategory /: RSymbols[ FusionCategory[data_] ] :=
 
 PackageExport["DirectProduct"]
 
-FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ] ] :=
+Options[DirectProduct] :=
+  Options[FusionCategory];
+
+FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ], opts:OptionsPattern[] ] :=
   Module[{ r1, r2, r, fs1, fs2, fs, rs1, rs2, rs, tupleToSingle, sTupleToSingle },
     r1 = FusionRing[fc1]; r2 = FusionRing[fc2];
     fs1 = FSymbols[fc1]; fs2 = FSymbols[fc2];
@@ -246,18 +251,19 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
     FusionCategory[
       "FusionRing" -> r,
       "FSymbols"   -> fs,
-      "RSymbols"   -> rs
+      "RSymbols"   -> rs,
+      opts
     ]
   ];
 
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
   If[
-    r["Names"] === {},
+    r["Names"] === Missing[],
     If[
-      r["FormalParameters"] =!= Missing[],
-      FusionCategory[ Sequence @@ r["FormalParameters"] ],
-      FusionCategory[ Rank[cat], Multiplicity[cat], NNSD[cat], "_" ]
+      !MissingQ[ r["FormalParameters"] ],
+      FusionCategory[ Sequence @@ r["FormalParameters"], "_" ],
+      FusionCategory[ Sequence @@ FC @ r["FusionRing"], "_" ]
     ],
     FusionCategory[ r["Names"] // First ]
   ];
