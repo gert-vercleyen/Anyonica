@@ -5,7 +5,36 @@
 
 Package["Anyonica`"]
 
-(* Options *)
+FusionCategories::usage =
+"This package contains a list of fusion categories and tools for working with fusion categories. Evaluate ?FusionCategories`* for a list of all functions.";
+
+(*
+   All the core data will be stored in an Association for convenience of
+   access. We still want FusionCategory to be the head of the object so
+   we store the association inside the function FusionRing, which will
+   only serve as a wrapper and never return a value
+*)
+
+PackageExport["FusionCategory"]
+
+FusionCategory::usage =
+  "FusionCategory[ \"GrothendieckRing\" -> r, \"FSymbols\" -> fSymbols, opts ] initializes a fusion category with fusion ring r and F-symbols fSymbols. Extra options include \"RSymbols\"-> rSymbols to initialize a braided fusion category, \"PreEqualCheck\" -> f to apply a function f to both sides of each pentagon equation before checking equality.";
+
+FusionCategory::nofusionring =
+  "No fusion ring is provided so no category could be initialized";
+FusionCategory::nofsymbols =
+  "No F-symbols were provided so no category could be initialized";
+FusionCategory::wrongfsymbolsformat =
+  "The format for the F-symbols should be a list of the form { \[ScriptCapitalF][indices__] -> value_, ... } or a list of the form { {indices__} -> value }";
+FusionCategory::wrongringformat =
+  "The fusion ring should be a fusion ring object from the FusionRings package.";
+FusionCategory::wrongrsymbolsformat =
+  "The format for the R-symbols should be a list of the form { \[ScriptCapitalR][__] ->_, ... }";
+FusionCategory::invalidfsymbols =
+  "The F-symbols are not a valid solution to the pentagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
+FusionCategory::invalidrsymbols =
+  "The R-symbols are not a valid solution to the hexagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
+
 Options[ FusionCategory ] =
   {
     "FusionRing"    -> Missing[],
@@ -14,22 +43,12 @@ Options[ FusionCategory ] =
     "PreEqualCheck" -> Identity
   };
 
-
-(* Begin private context *)
-
-
-(*
-   All the core data will be stored in an Association for convenience of
-   access. We still want FusionCategory to be the head of the object so
-   we store the association inside the function FusionRing, which will
-   only serve as a wrapper and never return a value
-*)
-PackageExport["FusionCategory"]
-
 FusionCategory[ ops:OptionsPattern[] ] :=
   FusionCategory[ InitializeFusionCategory[ ops ] ];
 
-Options[ InitializeFusionCategory ] = Options[ FusionCategory ];
+Options[ InitializeFusionCategory ] :=
+  Options[ FusionCategory ];
+
 InitializeFusionCategory[ ops:OptionsPattern[] ] :=
   Module[
     { ring, fSymbols, rSymbols, preEqualCheck, braidedQ },
@@ -55,11 +74,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "RSymbols"                  -> rSymbols,
       "FrobeniusSchurIndicator"   -> Missing[],
       "UnitaryFsymbolsQ"          -> Missing[],
-      "HasUnitaryGaugeQ"          -> Missing[],
-      "SMatrix"                   -> Missing[],
-      "Twistfactors"              -> Missing[],
-      "Names"                     -> Missing[],
-      "CentralCharge"             -> Missing[]
+      "Names"                     -> Missing[]
     ]
   ];
 
@@ -100,8 +115,20 @@ PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_] :=
     DeleteDuplicates
   ];
 
-HexagonValidityConstraints[ ring_, rSymbols_, preEqualCheck_ ] :=
-  Missing["NotImplementedYet"];
+HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
+  With[{
+    hEqns =
+      Map[
+        preEqualCheck,
+        HexagonEquations[ring]/.Dispatch[Join[ fSymbols, rSymbols ] ],
+        { 2 }
+      ]
+    },
+    hEqns //
+    DeleteCases[True] //
+    DeleteDuplicates
+  ];
+  
 
 ProperFSymbolRulesQ[ fSymbols_ ] :=
   PPSQ[ fSymbols ];
@@ -221,4 +248,16 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
       "FSymbols"   -> fs,
       "RSymbols"   -> rs
     ]
+  ];
+
+
+Format[ cat:FusionCategory[r_Association], StandardForm ] :=
+  If[
+    r["Names"] === {},
+    If[
+      r["FormalParameters"] =!= Missing[],
+      FusionCategory[ Sequence @@ r["FormalParameters"] ],
+      FusionCategory[ Rank[cat], Multiplicity[cat], NNSD[cat], "_" ]
+    ],
+    FusionCategory[ r["Names"] // First ]
   ];

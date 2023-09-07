@@ -25,6 +25,10 @@ PackageScope["R"]
 R =
   \[ScriptCapitalR];
 
+PackageExport["FilterRRules"]
+
+FilterRRules =
+  FilterRules[ #, R[__] ]&;
 
 PackageScope["ProperHexagonSolutionQ"]
 

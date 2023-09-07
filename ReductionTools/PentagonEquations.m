@@ -67,57 +67,53 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     sF =
       SparseArray @
       ReplaceAll[
-        Normal[SparseFTensor[ring]],
-          Join[
-            knowns,
-            If[
-              trivVacQ,
-              Thread[ { F[ 1, __ ] | F[ _, 1, __ ] | F[ _, _, 1, __ ] } -> 1 ],
-              {}
-            ]
-          ]
-        ];
+        ReplaceAll[
+          Normal[SparseFTensor[ring]],
+          knowns
+        ],
+        If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
+      ];
     
     pentEqns =
-    Reap[
-      (* Collect equations of the form Non0LHS == RHS *)
-      Do[
-        { p, c, d, e, q, r } = label;
-        matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
+      Reap[
+        (* Collect equations of the form Non0LHS == RHS *)
         Do[
-          { a, b, s } = label2[[ { 1, 2, 6 } ]];
-          
-          eqn =
-            (
-              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
-              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
-            );
-          
-          If[ (* Equation is not trivial *)
-            !TrueQ[eqn],
-            (* THEN Set dim equal to max size of F-matrix *)
-            dim =
-              Max[
-                dimF /@
-                GetVariables[ eqn, F ]
-              ];
-            If[
-              eqn[[2,0]] === Plus,
-              Sow[ eqn, patt[2][dim]],
-              Sow[ eqn, patt[1][dim]]
-            ]
+          { p, c, d, e, q, r } = label;
+          matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
+          Do[
+            { a, b, s } = label2[[ { 1, 2, 6 } ]];
+            
+            eqn =
+              (
+                sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
+                Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
+              );
+            
+            If[ (* Equation is not trivial *)
+              !TrueQ[eqn],
+              (* THEN Set dim equal to max size of F-matrix *)
+              dim =
+                Max[
+                  dimF /@
+                  GetVariables[ eqn, F ]
+                ];
+              If[
+                eqn[[2,0]] === Plus,
+                Sow[ eqn, patt[2][dim]],
+                Sow[ eqn, patt[1][dim]]
+              ]
+            ],
+            { label2, matches }
           ],
-          { label2, matches }
+          { label, lFInd }
         ],
-        { label, lFInd }
-      ],
-      Flatten @
-      Table[ patt[i][j], {i,2}, {j,n} ]
-    ][[2]];
+        Flatten @
+        Table[ patt[i][j], {i,2}, {j,n} ]
+      ][[2]];
     
     <|
-      "Bin" -> Association @@ Table[ i -> Flatten @ pentEqns[[i]], {i,n} ],
-      "Sum" -> Association @@ Table[ i -> Flatten @ pentEqns[[i+n]], {i,n} ]
+      "Bin" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i]], {i,n} ],
+      "Sum" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i+n]], {i,n} ]
     |>
     
   ];
