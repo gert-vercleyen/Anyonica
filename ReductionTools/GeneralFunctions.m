@@ -1088,9 +1088,14 @@ PackageScope["PowerDot"]
 PowerDot[ a_, b_ ] :=
   Inner[ Power, a, Transpose @ b, Times ];
 
-PackageScope["CheckConsistency"]
+PackageScope["ConsistentQ"]
 
-CheckConsistency[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
+Options[ConsistentQ] :=
+  {
+    "PreEqualCheck" -> Identity
+  };
+
+ConsistentQ[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
 	Module[ { FirstFailure, firstFail, check, procID },
 		check =
 			OptionValue["PreEqualCheck"];
@@ -1102,11 +1107,14 @@ CheckConsistency[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
     printlog["CS:init", { procID, rhs, r, test, {opts} }];
     
     If[
-        r < Length[ rhs ] &&  !MissingQ[ firstFail =  FirstFailure[ rhs[[r+1;;]] ] ],
-        printlog["CS:failed", { procID, rhs, r, firstFail }];
-        printlog["Gen:end", {procID } ];
-        Return[ {} ]
+      r < Length[ rhs ] &&  !MissingQ[ firstFail =  FirstFailure[ rhs[[r+1;;]] ] ]
+      ,
+      printlog["CS:failed", { procID, rhs, r, firstFail }];
+      printlog["Gen:end", {procID } ];
+      Return @ False
     ];
     
     printlog["Gen:end", {procID } ];
+    
+    True
 	];
