@@ -183,28 +183,30 @@ PackageScope["PermVecSDConj"]
 
 (* Based on anti-particles *)
 Options[PermVecSDConj] = Options[PermVecQD];
-PermVecSDConj[r_FusionRing?FusionRingQ, OptionsPattern[]] := Module[{
-  apmat = AntiparticleMatrix[r],
-  qds = QuantumDimensions[r],
-  pairs,
-  sdpos,
-  nsdpos,
-  qdSort},
-  pairs = DeleteCases[ DeleteDuplicates[ SortBy[ #, Function[ x, N[ qds[[x]] ] ] ]& /@ Position[ apmat, 1 ] ], {1,1} ];
-  qdSort[ l_List ] := SortBy[ l, qds[[#]]& ];
+PermVecSDConj[r_FusionRing?FusionRingQ, OptionsPattern[]] :=
+  Module[{ apmat = AntiparticleMatrix[r], qds = QuantumDimensions[r], pairs, sdpos, nsdpos, qdSort},
+    pairs =
+      DeleteCases[ {1,1} ] @
+      DeleteDuplicates[
+        SortBy[ #, Function[ x, N[ qds[[x]], { Infinity, 16 } ] ] ]& /@
+        Position[ apmat, 1 ]
+      ];
+    
+    qdSort[ l_List ] :=
+      SortBy[ l, qds[[#]]& ];
 
-  If[ OptionValue["Order"] == "Increasing",
-    Identity,
-    Reverse
-  ] @
-  Prepend[1] @
-  Flatten[
-    Join[
-      qdSort @ Cases[ pairs, { a_Integer, a_Integer } :> a ],
-      qdSort /@ SortBy[ Cases[ pairs, {a_Integer,b_Integer}/; a != b], Max @ N[ qds[[#]], 100000 ] & ]
+    If[ OptionValue["Order"] == "Increasing",
+      Identity,
+      Reverse
+    ] @
+    Prepend[1] @
+    Flatten[
+      Join[
+        qdSort @ Cases[ pairs, { a_Integer, a_Integer } :> a ],
+        qdSort /@ SortBy[ Cases[ pairs, {a_Integer,b_Integer}/; a != b], Max @ N[ qds[[#]], 100000 ] & ]
+      ]
     ]
-  ]
-];
+  ];
 
 
 
