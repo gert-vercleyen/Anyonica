@@ -23,7 +23,6 @@ OptimizedImport[ fileName_String, importDirectory_String ] :=
 		]
 	];
 
-
 (* Import the FusionRingList *)
 currentDirectory =
 	Directory[];
@@ -64,8 +63,8 @@ FRL::usage =
 
 FRL =
 	FusionRingList =
-		Values @ FRBC;
-
+		OptimizedImport[ "FusionRingList", importDirectory ];
+	
 SetDirectory @
 	currentDirectory;
 
