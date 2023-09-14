@@ -40,7 +40,9 @@ Options[ FusionCategory ] =
     "FusionRing"    -> Missing[],
     "FSymbols"      -> Missing[],
     "RSymbols"      -> Missing[],
-    "PreEqualCheck" -> Identity
+    "FormalParameters" -> Missing[],
+    "PreEqualCheck" -> Identity,
+    "SkipCheck"     -> False
   };
 
 FusionCategory[ ops:OptionsPattern[] ] :=
@@ -51,7 +53,7 @@ Options[ InitializeFusionCategory ] :=
 
 InitializeFusionCategory[ ops:OptionsPattern[] ] :=
   Module[
-    { ring, fSymbols, rSymbols, preEqualCheck, braidedQ },
+    { ring, fSymbols, rSymbols, preEqualCheck, skipCheck },
     ring =
       OptionValue[ "FusionRing" ];
     fSymbols =
@@ -60,11 +62,12 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "RSymbols" ];
     preEqualCheck =
       OptionValue[ "PreEqualCheck" ];
-    braidedQ =
-      rSymbols === {} || MissingQ[ rSymbols ];
+    skipCheck =
+      OptionValue[ "SkipCheck" ];
+
 
     If[
-      !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, preEqualCheck ],
+      !skipCheck && !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, preEqualCheck ],
       Message[ FusionCategory::invaliddata ]
     ];
 
@@ -254,6 +257,50 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
       "RSymbols"   -> rs
     ]
   ];
+(* Import the FusionRingList *)
+currentDirectory =
+	Directory[];
+
+importDirectory =
+	Quiet[
+		Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
+		SetDirectory @ NotebookDirectory[]],SetDirectory::fstr   (* If using notebook interface *)
+	];
+
+
+PackageExport["FusionCategoryByCode"]
+
+FusionRingByCode::usage =
+	"FusionCategoryByCode[sixTuple] returns the fusion category with formal code equal to six-tuple.";
+
+
+PackageExport["FRBC"]
+
+FCBC::usage =
+	"Shorthand for FusionCategoryByCode.";
+
+FusionCategoryByCode =
+	FRBC =
+		OptimizedImport[ "FusionCategoryAssociation", importDirectory ];
+
+
+PackageExport["FusionCategoryList"]
+
+FusionCategoryList::usage =
+	"FusionCategoryList is a list of all saved FusionRing objects.";
+
+
+PackageExport["FCL"]
+
+FCL::usage =
+	"Shorthand for FusionCategoryList.";
+
+FCL =
+	FusionCategoryList =
+    OptimizedImport[ "FusionCategoryList", importDirectory ];
+
+SetDirectory @
+	currentDirectory;
 
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
