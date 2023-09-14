@@ -96,35 +96,44 @@ ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
 (
   If[ !PPSQ[FSol], Message[ ToUnitaryGauge::wrongsolformat, FSol ]; Abort[] ];
   Module[ {
-    solInvSol, FInv, symmetries, transforms, g, SimplestVar,
-    UnitaryValue, FixValue, UpdateSystem, time, result, gaugeVals, simplify, check
+    solInvSol, FInv, symmetries, transforms, g, SimplestVar, varPowers,
+    UnitaryValue, FixValue, UpdateSystem, time, result, gaugeVals, simplify, check,nextTransform
     },
     simplify =
       OptionValue["SimplifyBy"];
     check =
       OptionValue["PreEqualCheck"];
     
-    printlog[ "TUG:init", {procID,ring,FSymb, {opts} }];
+    printlog[ "TUG:init", {procID,ring,FSol, {opts} }];
+    
+    varPowers[monomial_] :=
+      Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], Abs[ a ] } ];
     
     SimplestVar[ monomial_ ] :=
-      With[{ fList = Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], a } ] },
-        If[ fList === {}, Return[Missing[]] ];
-        MinimalBy[ fList, Abs @* Last, 1 ][[1, 1]]
+      With[{ fList = varPowers @ monomial },
+        If[ fList === {}, Return[ Missing[] ] ];
+        MinimalBy[ fList, Last, 1 ][[1, 1]]
       ];
     
     UnitaryValue[ F[ abcd__, e_, f_ ] ] :=
       simplify @ ReplaceAll[ Sqrt[ F[ abcd, e, f ] FInv[ abcd, f, e ] ], solInvSol ];
     
-    FixValue[ a_ -> b_ ] := Echo @
-      (Solve[ b == UnitaryValue[ a ], SimplestVar @ EchoLabel["b"] @b ][[1, 1]]);
+    FixValue[ a_ -> b_ ] :=
+      simplify @ Solve[ b == UnitaryValue @ a, SimplestVar @ b ][[1, 1]];
+    
+    nextTransform[ transf_ ] :=
+      First @ MinimalBy[ transf, Min[ Abs[ varPowers[#[[2]]][[;;,2]] ] ]&, 1 ];
     
     UpdateSystem[ {}, vals_ ] :=
       vals;
     
     UpdateSystem[ transf_, vals_ ] :=
-      With[{ gaugeVal = FixValue[ First @ transf ] },
+      With[{ gaugeVal = FixValue[ nextTransform @ transf ] },
         UpdateSystem[
-          DeleteCases[ transf /. gaugeVal, rule_ /; CountVariables[ rule, g ] === 0 ],
+          DeleteCases[
+            simplify[ Cancel @* Together /@ (transf /. gaugeVal ) ],
+            rule_ /; CountVariables[ rule, g ] === 0
+          ],
           Append[ vals /. gaugeVal, gaugeVal ]
         ]
       ];
@@ -132,7 +141,7 @@ ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
     { time, result } =
       AbsoluteTiming[
         solInvSol =
-          Dispatch @ Join[ FSol , InverseFSymbols[ ring, FInv, FSol ] ];
+          Dispatch @ Join[ FSol, InverseFSymbols[ ring, FInv, FSol ] ];
   
         symmetries =
           GaugeSymmetries[ FSymbols @ ring, g];
