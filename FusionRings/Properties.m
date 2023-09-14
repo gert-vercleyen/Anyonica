@@ -439,10 +439,12 @@ SetAttributes[ Barcode, Listable ];
 
 (*TODO: reset to old definition after recomputation of all codes *)
 FusionRing /: Barcode[ r_FusionRing?FusionRingQ ] :=
-(*If[
-    r["Barcode"] =!= Missing[],
+  Which[
+    r["Barcode"] =!= Missing[]
+    ,
     r["Barcode"],
-    True,*)
+    True
+    ,
     Module[{ sRing, qds,permutations},
       sRing =
         FusionRing[
@@ -457,8 +459,8 @@ FusionRing /: Barcode[ r_FusionRing?FusionRingQ ] :=
         Tuples[ Permutations /@ (GatherBy[ Range[ Rank[r] - 1 ], qds[[#]]& ] + 1) ];
 
       Max[ multTabCode[ PermuteMultTab[ MT[sRing], # ], Mult[r] ]& /@ permutations ]
-    ];
-(*  ];*)
+    ]
+  ];
 
 (* multTabCode assigns a number to a fusion ring based on the multiplication table. This
    number is unique per multiplication table but not invariant under permutations of the
