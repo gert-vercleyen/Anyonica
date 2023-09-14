@@ -257,7 +257,8 @@ BinomialSystemQ[ eqns_ ] :=
 PackageExport["BinSplit"]
 
 BinSplit::usage =
-  "BinSplit[l,f] splits list l in two lists for which f is resp True and False.";
+  "BinSplit[l,f] splits list l in two lists for which f is resp True and False.\n"<>
+  "BinSplit[f] is an operator form of BinSplit.";
   
 BinSplit[ l_List, f_ ] :=
   ReplaceAll[
@@ -268,6 +269,8 @@ BinSplit[ l_List, f_ ] :=
     Missing[___] -> {}
   ];
 
+BinSplit[f_][l_List] :=
+  BinSplit[ l, f ];
 
 PackageExport["BinomialSplit"]
 
