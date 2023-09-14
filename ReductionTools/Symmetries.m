@@ -502,7 +502,7 @@ GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_
           ]
         ];
 
-      GaugeSymmetryEquivalentQ[ gaugeMatrix, opts ][ sol1, sol2 ]
+      GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ]
 
     ]
   ];
