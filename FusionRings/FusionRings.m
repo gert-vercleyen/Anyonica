@@ -101,10 +101,10 @@ Format[ ring:FusionRing[r_Association], StandardForm ] :=
 	If[ r["Names"] === {},
 		If[
 			r["FormalParameters"] =!= Missing[],
-			FusionRing[ Sequence @@ r["FormalParameters"] ],
-			FusionRing[ Rank[ring], Multiplicity[ring], NNSD[ring], "_" ]
+			"FR"[ Sequence @@ r["FormalParameters"] ],
+			"FR"[ Rank[ring], Multiplicity[ring], NNSD[ring], "_" ]
 		],
-		FusionRing[ r["Names"] // First ]
+		"FR"[ r["Names"] // First ]
 	];
 
 Format[ FusionElement[ a_, el_Integer], StandardForm ] :=
