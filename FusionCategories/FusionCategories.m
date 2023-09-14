@@ -72,8 +72,9 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "FusionRing"                -> ring,
       "FSymbols"                  -> fSymbols,
       "RSymbols"                  -> rSymbols,
+      "FormalParameters"          -> OptionValue["FormalParameters"],
       "FrobeniusSchurIndicator"   -> Missing[],
-      "UnitaryFsymbolsQ"          -> Missing[],
+      "UnitaryFSymbolsQ"          -> Missing[],
       "Names"                     -> Missing[]
     ]
   ];
@@ -94,7 +95,7 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
         Message[ FusionCategory::wrongrsymbolsformat ]; False,
       (vc = PentagonValidityConstraints[ ring, fsymbols, preEqualCheck ]) =!= {},
         Message[ FusionCategory::invalidfsymbols, vc ]; False,
-      rsymbols =!= Missing[] && (vc = HexagonValidityConstraints[ ring, fsymbols, rsymbols, preEqualCheck ] ) =!= {},
+      !MissingQ[rsymbols] && (vc = HexagonValidityConstraints[ ring, fsymbols, rsymbols, preEqualCheck ] ) =!= {},
         Message[ FusionCategory::invalidrsymbols, vc ]; False,
       True,
         True
@@ -190,6 +191,10 @@ FusionCategory /: f_[ FusionCategory[ data1_ ], FusionCategory[ data2_ ] ] :=
 FusionCategory /: FusionRing[ FusionCategory[data_] ] :=
   data["FusionRing"];
 
+
+FusionCategory /: FormalCode[ FusionCategory[data_] ] :=
+  data["FormalParameters"];
+
 PackageExport["FSymbols"]
 
 FusionCategory /: FSymbols[ FusionCategory[data_] ] :=
@@ -252,12 +257,20 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
 
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
-  If[
-    r["Names"] === {},
-    If[
-      r["FormalParameters"] =!= Missing[],
-      FusionCategory[ Sequence @@ r["FormalParameters"] ],
-      FusionCategory[ Rank[cat], Multiplicity[cat], NNSD[cat], "_" ]
-    ],
-    FusionCategory[ r["Names"] // First ]
+  With[ { CFP = r["FormalParameters"], rn = Names @ r["FusionRing"] },
+    Which[
+      !MissingQ[CFP] && rn =!= {}
+      ,
+      "FC"[
+        "\!\(\*SubscriptBox[\(["<> First @ rn <>"]\), \("<>ToString[CFP[[-2]]]<>","<>ToString[CFP[[-1]]]<>"\)]\)"
+      ]
+      ,
+      !MissingQ[CFP]
+      ,
+      "FC"[ Sequence @@ CFP ]
+      ,
+      True
+      ,
+      "FC"[ Sequence @@ FC @ r["FusionRing"], "_" ]
+    ]
   ];
