@@ -3,6 +3,8 @@
 (* :Author: gertvercleyen *)
 (* :Date: 2023-09-14 *)
 
+Package["Anyonica`"]
+
 PackageExport["BraidedQ"]
 
 BraidedQ::usage =
@@ -11,6 +13,7 @@ BraidedQ::usage =
 BraidedQ[ fc_FusionCategory ] :=
   !MissingQ[ fc["RSymbols"] ];
 
-FusionCategory /: FSymbols[ FusionCategory[data_] ] :=
-data["FSymbols"];
-UnitaryGaugeQ[]
+FusionCategory /: UnitaryGaugeQ[ cat_FusionCategory, opts:OptionsPattern[] ] :=
+  UnitaryGaugeQ[ FusionRing @ cat, FSymbols @ cat, opts ];
+
+
