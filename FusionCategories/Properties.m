@@ -10,8 +10,8 @@ PackageExport["BraidedQ"]
 BraidedQ::usage =
   "BraidedQ[fusionCat] returns True if the fusion category has a set of R-symbols.";
   
-BraidedQ[ fc_FusionCategory ] :=
-  !MissingQ[ fc["RSymbols"] ];
+BraidedQ[ cat_FusionCategory ] :=
+  !MissingQ[ RSymbols @ cat ];
 
 FusionCategory /: UnitaryGaugeQ[ cat_FusionCategory, opts:OptionsPattern[] ] :=
   UnitaryGaugeQ[ FusionRing @ cat, FSymbols @ cat, opts ];
