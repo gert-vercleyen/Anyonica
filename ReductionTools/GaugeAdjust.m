@@ -23,57 +23,71 @@ UnitaryGaugeQ::notmultfree =
 UnitaryGaugeQ::wrongsolformat =
   "`1` should be a proper solution to the pentagon equations.";
 
-Options[UnitaryGaugeQ] =
-  {
-    "SimplifyBy" -> Identity,
-    "Numeric" -> False,
-    "Tolerance" -> 10^-32,
-    "Accuracy" -> 64
-  };
+Options[UnitaryGaugeQ] :=
+  Options[unitaryMatrixQ];
 
-UnitaryGaugeQ[ ring_, fSymbols_, OptionsPattern[] ] :=
+UnitaryGaugeQ[ ring_, fSymbols_, opts:OptionsPattern[] ] :=
   Which[
     Mult[ ring ] != 1
     ,
     Message[ UnitaryGaugeQ::notmultfree ];
     Abort[]
     ,
-    !PPSQ[ fSymbols ]
-    ,
-    Message[ UnitaryGaugeQ::wrongsolformat, fSymbols ];
-    Abort[]
-    ,
     True
     ,
-      With[
-        {
-        simplify  = OptionValue["SimplifyBy"],
-        tolerance = OptionValue["Tolerance"],
-        numQ      = OptionValue["Numeric"],
-        acc       = OptionValue["Accuracy"],
-        fMats     = FMatrices[ring]/.Dispatch[fSymbols]
-        },
-        Catch[
-          If[
-            numQ,
-            Do[
-              If[
-                !UnitaryMatrixQ[ N[ mat, { Infinity, acc } ], Tolerance -> tolerance ],
-                Throw[False]
-              ],
-              { mat, fMats }
-            ],
-            Do[
-              If[
-                !UnitaryMatrixQ[ mat, SameTest -> (Equal[ simplify[#1], simplify[#2] ]&) ],
-                Throw[False]
-              ],
-              { mat, fMats }
-            ]
-          ];
-          True
-        ]
+    With[ { fMats = FMatrices[ring]/.Dispatch[fSymbols] },
+      Catch[
+        Do[
+          If[ !AddOptions[opts][unitaryMatrixQ][mat], Throw @ False ],
+          { mat, fMats }
+        ];
+        Echo@True
       ]
+    ]
+  ];
+
+Options[unitaryMatrixQ] :=
+  {
+    "SimplifyBy" -> Identity,
+    "Numeric" -> False,
+    "Accuracy" -> 64
+  };
+
+unitaryMatrixQ[ mat_?MatrixQ, opts:OptionsPattern[] ] :=
+  With[{
+    simplify = OptionValue["SimplifyBy"],
+    numQ = OptionValue["Numeric"],
+    acc = OptionValue["Accuracy"],
+    n = Length[mat],
+    idMat = mat.ConjugateTranspose[mat]
+    },
+    If[
+      numQ,
+      Catch[
+        Do[
+          If[
+            Not @TrueQ @ N[ idMat[[i,j]] == KroneckerDelta[ i, j ], { Infinity, acc } ],
+            Echo[{idMat,i,j}];
+            Throw @ False
+          ],
+          { i, n },
+          { j, n }
+        ];
+        True
+      ]
+      ,
+      Catch[
+        Do[
+          If[
+            Not @ TrueQ[ simplify[ mat[[i]].ctmat[[j]] ] == KroneckerDelta[ i, j ] ],
+            Throw @ False
+          ],
+          { i, n },
+          { j, n }
+        ];
+        True
+      ]
+    ]
   ];
 
 PackageExport["UGQ"]
