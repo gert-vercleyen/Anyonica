@@ -840,7 +840,8 @@ GaugeSplitTransform::invalidoptionincludeonly =
 
 Options[GaugeSplitTransform] :=
   {
-    "IncludeOnly" -> All
+    "IncludeOnly" -> All,
+    "Zeros" -> {}
   };
 
 GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
@@ -848,27 +849,32 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
     
     If[ Rank[ring] == 1, Return @ If[ io =!= All, IdentityMatrix[1], IdentityMatrix[2] ] ];
     
-    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf },
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros },
+      zeros =
+        OptionValue["Zeros"];
       
       symbols =
-        Switch[ io,
-          All
-          ,
-          Join[ FSymbols[ring], RSymbols[ring] ]
-          ,
-          "FSymbols"
-          ,
-          FSymbols[ring]
-          ,
-          "RSymbols"
-          ,
-          RSymbols[ring]
-          ,
-          _
-          ,
-          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
-          Abort[]
-        ];
+        Complement[
+          Switch[ io,
+            All
+            ,
+            Join[ FSymbols[ring], RSymbols[ring] ]
+            ,
+            "FSymbols"
+            ,
+            FSymbols[ring]
+            ,
+            "RSymbols"
+            ,
+            RSymbols[ring]
+            ,
+            _
+            ,
+            Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
+            Abort[]
+          ],
+          zeros
+      ];
       
       sym =
         GaugeSymmetries[ symbols, g ];
@@ -926,7 +932,9 @@ Options[ GaugeSplitBasis ] :=
   Options[GaugeSplitTransform];
 
 GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[ { V, n, symbols, io },
+  Module[ { V, n, symbols, io, zeros },
+    zeros =
+      OptionValue["Zeros"];
     io =
       OptionValue["IncludeOnly"];
     
@@ -934,27 +942,34 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       GaugeSplitTransform[ ring, opts ];
     
     symbols =
-      Switch[ io,
-        All
-        ,
-        Join[ FSymbols[ring], RSymbols[ring] ]
-        ,
-        "FSymbols"
-        ,
-        FSymbols[ring]
-        ,
-        "RSymbols"
-        ,
-        RSymbols[ring]
+      Complement[
+        Switch[ io,
+          All
+          ,
+          Join[ FSymbols[ring], RSymbols[ring] ]
+          ,
+          "FSymbols"
+          ,
+          FSymbols[ring]
+          ,
+          "RSymbols"
+          ,
+          RSymbols[ring]
+        ],
+        zeros
       ];
       
-    Map[
-      Inner[ Power, symbols, #, Times ]&,
-      {
-        Transpose @ V[[;;,;;n]],
-        Transpose @ V[[;;,n+1;;]]
-      },
-      {2}
+    Join[
+      ConstantArray[ 0, Length @ zeros ]
+      ,
+      Map[
+        Inner[ Power, symbols, #, Times ]&,
+        {
+          Transpose @ V[[;;,;;n]],
+          Transpose @ V[[;;,n+1;;]]
+        },
+        {2}
+      ]
     ]
   ];
 
