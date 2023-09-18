@@ -41,6 +41,7 @@ Options[ FusionCategory ] =
     "FSymbols"      -> Missing[],
     "RSymbols"      -> Missing[],
     "FormalParameters" -> Missing[],
+    "Unitary"       -> Missing[],
     "PreEqualCheck" -> Identity,
     "SkipCheck"     -> False
   };
@@ -76,8 +77,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "FSymbols"                  -> fSymbols,
       "RSymbols"                  -> rSymbols,
       "FormalParameters"          -> OptionValue["FormalParameters"],
-      "FrobeniusSchurIndicator"   -> Missing[],
-      "UnitaryFSymbolsQ"          -> Missing[],
+      "Unitary"                   -> OptionValue["Unitary"],
       "Names"                     -> Missing[]
     ]
   ];
@@ -194,19 +194,29 @@ FusionCategory /: f_[ FusionCategory[ data1_ ], FusionCategory[ data2_ ] ] :=
 FusionCategory /: FusionRing[ FusionCategory[data_] ] :=
   data["FusionRing"];
 
-
 FusionCategory /: FormalCode[ FusionCategory[data_] ] :=
   data["FormalParameters"];
+
 
 PackageExport["FSymbols"]
 
 FusionCategory /: FSymbols[ FusionCategory[data_] ] :=
   data["FSymbols"];
 
+
 PackageExport["RSymbols"]
 
 FusionCategory /: RSymbols[ FusionCategory[data_] ] :=
   data["RSymbols"];
+
+
+PackageExport["UnitaryQ"]
+
+UnitaryQ::usage =
+  "UnitaryQ[fusionCat] returns True if it is known that the category has a unitary gauge.";
+
+FusionCategory /: UnitaryQ[ FusionCategory[data_] ] :=
+  data["Unitary"];
 
 PackageExport["DirectProduct"]
 
@@ -257,6 +267,8 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
       "RSymbols"   -> rs
     ]
   ];
+
+
 (* Import the FusionRingList *)
 currentDirectory =
 	Directory[];
@@ -270,17 +282,17 @@ importDirectory =
 
 PackageExport["FusionCategoryByCode"]
 
-FusionRingByCode::usage =
+FusionCategoryByCode::usage =
 	"FusionCategoryByCode[sixTuple] returns the fusion category with formal code equal to six-tuple.";
 
 
-PackageExport["FRBC"]
+PackageExport["FCBC"]
 
 FCBC::usage =
 	"Shorthand for FusionCategoryByCode.";
 
 FusionCategoryByCode =
-	FRBC =
+	FCBC =
 		OptimizedImport[ "FusionCategoryAssociation", importDirectory ];
 
 
@@ -302,6 +314,16 @@ FCL =
 SetDirectory @
 	currentDirectory;
 
+PackageExport["FusionCategories"]
+
+FusionCategories::usage =
+  "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
+
+FusionCategories[ ring_FusionRing ] :=
+  With[ { fc = FC @ ring },
+    FCBC /@
+    Select[ Keys @ FCBC, #[[;;4]] == fc& ]
+  ];
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
   With[ { CFP = r["FormalParameters"], rn = Names @ r["FusionRing"] },
