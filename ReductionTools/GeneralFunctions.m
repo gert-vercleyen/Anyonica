@@ -261,12 +261,13 @@ BinSplit::usage =
   "BinSplit[f] is an operator form of BinSplit.";
   
 BinSplit[ l_List, f_ ] :=
-  ReplaceAll[
+  Replace[
     GroupBy[
       l,
       TrueQ @* f
     ] /@ { True, False },
-    Missing[___] -> {}
+    Missing[___] -> {},
+    1
   ];
 
 BinSplit[f_][l_List] :=
