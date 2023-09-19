@@ -94,7 +94,6 @@ Options[ToUnitaryGauge2] :=
 
 ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
 (
-  If[ !PPSQ[FSol], Message[ ToUnitaryGauge::wrongsolformat, FSol ]; Abort[] ];
   Module[ {
     solInvSol, FInv, symmetries, transforms, g, SimplestVar, varPowers,
     UnitaryValue, FixValue, UpdateSystem, time, result, gaugeVals, simplify, check,nextTransform
@@ -104,7 +103,6 @@ ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
     check =
       OptionValue["PreEqualCheck"];
     
-    printlog[ "TUG:init", {procID,ring,FSol, {opts} }];
     
     varPowers[monomial_] :=
       Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], Abs[ a ] } ];
@@ -160,7 +158,7 @@ ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
       
       ];
     
-    If[ !UnitaryGaugeQ[ ring, result, opts ], printlog[ "TUG:sol_not_unitary", {procID} ] ];
+(*    If[ !UnitaryGaugeQ[ ring, result, opts ], printlog[ "TUG:sol_not_unitary", {procID} ] ];*)
     
     result
   ]
