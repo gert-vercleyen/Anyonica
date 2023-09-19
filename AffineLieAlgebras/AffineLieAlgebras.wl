@@ -389,69 +389,66 @@ WeightsOfIrrep[ rank_, cartanMat_, highestWeight_ ] :=
   ];
 
 WeightSpaceDimensions[ type_, rank_, cartanMat_, qfm_, irreps_, roots_ ] :=
-Module[
-  { rho, v, innerProd, preFactor, weights, dimension,  nWeights, dimensions, nRoots },
-  rho =
-    ConstantArray[ 1, rank ];
-  innerProd[ A_, B_ ] :=
-    A.qfm.B;
-  preFactor[ A_, B_ ] :=
-    2/( innerProd[ A + rho, A + rho ] - innerProd[ B + rho, B + rho ] );
-  v =
-    Inverse[ cartanMat ] . rho;
-  nRoots =
-    First[ Dimensions @ roots ];
+  Module[
+    { rho, v, innerProd, preFactor, weights, dimension,  nWeights, dimensions, nRoots },
+    rho =
+      ConstantArray[ 1, rank ];
+    innerProd[ A_, B_ ] :=
+      A.qfm.B;
+    preFactor[ A_, B_ ] :=
+      2/( innerProd[ A + rho, A + rho ] - innerProd[ B + rho, B + rho ] );
+    v =
+      Inverse[ cartanMat ] . rho;
+    nRoots =
+      First[ Dimensions @ roots ];
 
-  (* Returns all valid weights w + j * root, with j = 1, 2, ... *)
-  CompatibleWeights[ weights_, w_, root_ ] :=
-    Most @
-    NestWhileList[
-      # + root &,
-      w + root,
-      MemberQ[#] @ weights &
-    ];
+    (* Returns all valid weights w + j * root, with j = 1, 2, ... *)
+    CompatibleWeights[ weights_, w_, root_ ] :=
+      Most @
+      NestWhileList[
+        # + root &,
+        w + root,
+        MemberQ[#] @ weights &
+      ];
 
-  dimension[ weights_, hw_, w_ ] :=
-    dimension[ weights, hw, w ] =
-    preFactor[ hw_, w_ ] *
-    Sum[
-      innerProd[ jWeight, root ] dimension[ weights, hw_, jWeight ],
-      { root, PositiveRoots[roots] },
-      { jWeight, CompatibleWeights[ weights, w, root ] }
-    ];
+    dimension[ weights_, hw_, w_ ] :=
+      dimension[ weights, hw, w ] =
+      preFactor[ hw_, w_ ] *
+      Sum[
+        innerProd[ jWeight, root ] dimension[ weights, hw_, jWeight ],
+        { root, PositiveRoots[roots] },
+        { jWeight, CompatibleWeights[ weights, w, root ] }
+      ];
 
-  (* Find out which weights are in the rep by acting with the lowering
-     operator to the highest weight *)
-  Table[
-    weights =
-      WeightsOfIrrep[ rank, cartanMat, hw ];
-    nWeights =
-      First[ Dimensions @ weights ];
+    (* Find out which weights are in the rep by acting with the lowering
+       operator to the highest weight *)
+    Table[
+      weights =
+        WeightsOfIrrep[ rank, cartanMat, hw ];
+      nWeights =
+        First[ Dimensions @ weights ];
 
-    (*Todo: check whether weights are sorted from highest to lowest *)
-    Prepend[1] @
-    Table[ dimension[ weights, hw, w ], { w, Rest[ weights ] } ]
-    ,{ hw, irreps }
-  ]
-];
+      (*Todo: check whether weights are sorted from highest to lowest *)
+      Prepend[1] @
+      Table[ dimension[ weights, hw, w ], { w, Rest[ weights ] } ]
+      ,{ hw, irreps }
+    ]
+  ];
 
 (* TODO: make RaisingOperator work properly *)
 
 RaisingOperator[ a_AffineLieAlgebra, irrep_, w_, i_Integer ][ root_ ] :=
-With[
-  {
-    rootPos = Position[ roots, root ]
-  },
-  If[
-    MissingQ @ rootPos,
-    Message[ RaisingOperator::notaroot, root ],
+  With[
+    { rootPos = Position[ roots, root ] },
+    If[ MissingQ @ rootPos, Message[ RaisingOperator::notaroot, root ]; Abort[] ];
+    
     If[
       MemberQ[ w + i * CartanMatrix[a][[ rootPos ]]  ] @ Weights[ a, irrep ],
       w + i * CartanMatrix[a],
       0
     ]
-  ]
-];
+    
+  ];
 
 RaisingOperator[ a_AffineLieAlgebra, irrep_, w_ ] :=
   RaisingOperator[ a, irrep, w, 1 ];
