@@ -79,7 +79,7 @@ unitaryMatrixQ[ mat_?MatrixQ, opts:OptionsPattern[] ] :=
       Catch[
         Do[
           If[
-            Not @ TrueQ[ simplify[ mat[[i]].ctmat[[j]] ] == KroneckerDelta[ i, j ] ],
+            Not @ TrueQ[ simplify[ idMat[[i,j]] ] == KroneckerDelta[ i, j ] ],
             Throw @ False
           ],
           { i, n },
