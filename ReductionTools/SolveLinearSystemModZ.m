@@ -231,8 +231,8 @@ Options[SolveSemiLinModZ] =
 
 SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
   Module[{
-    ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS, NonOneCoeff, gaugeMat,
-    preEqCheck, procID, simplify, result, absTime, noc, map
+    ZSpace, u, d, v, r, ld, constVec, zVecs, CSpace, monomials, expRHS,gaugeMat,
+    preEqCheck, procID, simplify, result, absTime, map, consistent
     },
     gaugeMat =
       OptionValue["OrthogonalTo"];
@@ -276,25 +276,33 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
       ];
 
       expRHS =
-        Inner[ Power, vec, Transpose[ u ], Times ];
+        PowerDot[ vec, u ];
+
+      consistent =
+        AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
+      
+      If[ !consistent, Return @ { } ];
+
+(*      If[*)
+(*        r < Length[ expRHS ] &&  !MissingQ[ noc =  NonOneCoeff[ expRHS[[r+1;;]] ] ],*)
+(*        printlog["SSES:nonone_coeff", {procID,expRHS,r, preEqCheck @ noc}];*)
+(*        Return[ {} ],*)
+(*        constVec =*)
+(*          map[*)
+(*            simplify,*)
+(*            PowerDot[ expRHS[[;;r]], ZSpace ]*)
+(*          ]*)
+(*      ];*)
 
       ZSpace =
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
 
-      NonOneCoeff[ l_ ] :=
-        FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
-
-      If[
-        r < Length[ expRHS ] &&  !MissingQ[ noc =  NonOneCoeff[ expRHS[[r+1;;]] ] ],
-        printlog["SSES:nonone_coeff", {procID,expRHS,r, preEqCheck @ noc}];
-        Return[ {} ],
-        constVec =
-          map[
-            simplify,
-            Inner[ Power, expRHS[[;;r]], Transpose[ZSpace], Times ]
-          ]
-      ];
-
+      constVec =
+        map[
+          simplify,
+          PowerDot[ expRHS[[;;r]], ZSpace ]
+        ];
+      
       zVecs =
         Exp[ 2 Pi I * Map[ (ZSpace . #)&, Tuples[ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ] ] ];
 
@@ -307,10 +315,12 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
 
       monomials =
         If[
-          CSpace === {{}},
-          ConstantArray[ 1, Dimensions[zVecs][[2]] ],
+          CSpace === {{}}
+          ,
+          ConstantArray[ 1, Dimensions[zVecs][[2]] ]
+          ,
           With[ { parameters = param /@ Range[ Dimensions[CSpace][[2]] ] },
-            Inner[ Power, parameters, #, Times ]& /@ CSpace
+            PowerDot[ parameters, CSpace ]
           ]
         ];
       

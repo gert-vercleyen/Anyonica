@@ -182,7 +182,7 @@ RemoveCommonFactors[ poly_, s_ ] :=
     minExponents =
       Min /@ Transpose[ce][[commonVarNum]];
     commonFactor =
-      Inner[Power, vars[[commonVarNum]], minExponents, Times];
+      PowerDot[ vars[[commonVarNum]], minExponents ];
     
     Expand @ Cancel[poly/( d * commonFactor)]
   ];
@@ -1086,3 +1086,39 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
       ][[2,1]]
     ]
   ];
+
+PackageScope["PowerDot"]
+
+PowerDot[ a_, b_ ] :=
+  Inner[ Power, a, Transpose @ b, Times ];
+
+PackageScope["ConsistentQ"]
+
+Options[ConsistentQ] :=
+  {
+    "PreEqualCheck" -> Identity
+  };
+
+ConsistentQ[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
+	Module[ { FirstFailure, firstFail, check, procID },
+		check =
+			OptionValue["PreEqualCheck"];
+		FirstFailure[ l_ ] :=
+      FirstCase[ l, x_ /; !check[ test @ x ] ];
+    procID =
+      ToString @ Unique[];
+      
+    printlog["CS:init", { procID, rhs, r, test, {opts} }];
+    
+    If[
+      r < Length[ rhs ] &&  !MissingQ[ firstFail =  FirstFailure[ rhs[[r+1;;]] ] ]
+      ,
+      printlog["CS:failed", { procID, rhs, r, firstFail }];
+      printlog["Gen:end", {procID } ];
+      Return @ False
+    ];
+    
+    printlog["Gen:end", {procID } ];
+    
+    True
+	];

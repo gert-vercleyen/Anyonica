@@ -86,7 +86,7 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
 
       UpdateSystem[ {}, fixedVars_ ] :=
         fixedVars;
-      
+
       UpdateSystem[ transforms_, fixedVars_ ] :=
         UpdateSystem[
           (* Substitute new fixed gauge variable, then remove all transforms without gauge variables *)
@@ -231,7 +231,7 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
         symbol /@ Range[ Dimensions[CSpace][[2]] ];
 
       reParametrization =
-        Thread[ newVars -> ( Inner[ Power, params, #, Times ]& /@ CSpace ) ]/.revertVars;
+        Thread[ newVars ->  PowerDot[ params, CSpace ]  ]/.revertVars;
 
       newTransforms =
         (
@@ -381,7 +381,7 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
           OptionValue["PreEqualCheck"];
         invariants =
           OptionValue["GaugeInvariants"];
-        
+
         values1  =
           sol1[[;;,2]] //
           DeleteCases[0];
@@ -402,7 +402,7 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
             ,
             Throw[ False ]
           ];
-          
+
           If[(* test for Unitary equivalence *)
             unitaryGaugeQ,
             (* THEN *)
@@ -426,16 +426,14 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
 
           expRHS =
             simplify @
-            Inner[
-              Power,
+            PowerDot[
               If[
                 numericQ,
                 N[ #, { Infinity, sd } ]&,
                 Identity
               ] @
               (values1/values2),
-              Transpose[ r ],
-              Times
+              mU
             ];
 
           NonOneCoeff[ l_ ] :=
@@ -477,12 +475,12 @@ GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_
           TrueQ[ N[ #1 - #2, { Infinity, sd } ] == 0 ]&,
           TrueQ[ simplify[#1 - #2 ] == 0 ]&
         ];
-      
+
       If[ (* Gauges are trivial *)
         Times @@ Dimensions[ MultiplicativeGaugeMatrix[ symmetries ] ] === 0,
         TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
       ];
-      
+
       (* Check whether zeros are at same positions *)
       { zeroPos1, zeroPos2 } =
         Position[ _ -> 0 ] /@
@@ -577,10 +575,10 @@ PermutedFSymbols[ FSymb_, perm_List ] :=
 
 PackageExport["SEQ"]
 
-SEQ::usage = 
+SEQ::usage =
   "Shorthand for SymmetryEquivalentQ.";
 
-SEQ = 
+SEQ =
   SymmetryEquivalentQ;
 
 
@@ -627,10 +625,10 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, symmetries_, opts:OptionsPatt
             MultiplicativeGaugeMatrix[ MapAt[ Delete[ # , zeroPos ]&, symmetries, {1} ] ],
             { zeroPos, Keys[groupedSoln] }
           ];
-        
+
         invariants =
           GaugeInvariants @ ring;
-        
+
         Join @@
         MapThread[
           DeleteDuplicates[ #1 , SymmetryEquivalentQ[ ring, #2, "GaugeInvariants" -> invariants, opts ] ]&,
@@ -644,10 +642,10 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, symmetries_, opts:OptionsPatt
 
 PackageExport["DES"]
 
-DES::usage = 
+DES::usage =
   "Shorthand for DeleteEquivalentSolutions.";
 
-DES = 
+DES =
   DeleteEquivalentSolutions;
 
 
@@ -659,10 +657,10 @@ MultiplicativeGaugeMatrix[ sym_Association ] :=
       sym["Transforms"];
     var =
       sym["Symbols"];
-    
+
     { factors, newVars } =
       Most @ SimplifyVariables[ t[[;;,2]]/t[[;;,1]], GetVariables[ t, var ], g ];
-    
+
     GaugeMatRow[ #, Length[newVars], g ]& /@ factors
   ];
 
@@ -689,12 +687,12 @@ MultiplicativeGaugeMatrix[ sym_Association ] :=
       sym["Transforms"][[;;,1]];
     gaugeVars =
       GetVariables[ transforms, sym["Symbols"] ];
-    
+
     If[ gaugeVars == {}, Return[{{}}] ];
-    
+
     { eqns, newVars } =
       Most @ SimplifyVariables[ Thread[ ( transforms/vars ) == 1], gaugeVars, g ];
-    
+
     First @ BinToSemiLin[ eqns, newVars , g ]
   ];
 *)
@@ -711,7 +709,7 @@ MultiplicativeSymmetriesQ[ sym_Association ] :=
       transforms === {},
       Return[ True ]
     ];
-    
+
     TrueQ @
     With[{
       removeGauges = #/.Table[ x[__] -> 1, { x, gaugeFuncs } ]&
@@ -816,11 +814,11 @@ TrivialGaugeMatrix[ symbols_ ] :=
           Thread[ symbols -> 1 ]
         ] == 1
       ];
-    
+
     { newConstraints, newGaugeVars } =
       Most @
       SimplifyVariables[ constraints, GetVariables[ constraints, g1 ], g2 ];
-    
+
     Last @
     SolveModZSpace @
     BinToLin[ newConstraints, newGaugeVars, g2 ]
@@ -846,66 +844,57 @@ Options[GaugeSplitTransform] :=
 
 GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
   With[{ io = OptionValue["IncludeOnly"] },
-    
-    If[ Rank[ring] == 1, Return @ If[ io =!= All, IdentityMatrix[1], IdentityMatrix[2] ] ];
-    
+
+    If[ Rank[ring] == 1, Return @ If[ io =!= All, { IdentityMatrix[1], 1 }, { IdentityMatrix[2], 2 } ] ];
+
     Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros },
       zeros =
         OptionValue["Zeros"];
-      
+
       symbols =
         Complement[
           Switch[ io,
-            All
-            ,
-            Join[ FSymbols[ring], RSymbols[ring] ]
-            ,
-            "FSymbols"
-            ,
-            FSymbols[ring]
-            ,
-            "RSymbols"
-            ,
-            RSymbols[ring]
-            ,
-            _
-            ,
-            Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
-            Abort[]
+            All,        Join[ FSymbols @ ring, RSymbols @ ring ],
+            "FSymbols", FSymbols @ ring,
+            "RSymbols", RSymbols @ ring,
+            _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
           ],
           zeros
-      ];
-      
+        ];
+
       sym =
         GaugeSymmetries[ symbols, g ];
-      
+
       monomial =
         PowerExpand[
-          Inner[ Power, symbols, Array[ m, Length @ symbols ], Times ] /. sym["Transforms"] /. Thread[symbols -> 1]
+          PowerDot[ symbols, Array[ m, Length @ symbols ] ] //
+          ReplaceAll[ sym["Transforms"] ] //
+          ReplaceAll[ Thread[symbols -> 1] ]
         ];
-      
+
       powers =
         Expand @
         Cases[ monomial, Power[ g[__], p_. ] :> p ];
-      
+
       { d, v } =
         Rest @
         SmithDecomposition[
           powerToRow[ m, Length @ symbols ] /@ powers
         ];
-      
+
       r =
-        Length[
-          DeleteCases[0] @ Diagonal[d]
-        ];
-      
+        Length @ DeleteCases[0] @ Diagonal[d];
+
       (* First sort criterium: number of factors, where powers are counted as multiple factors.
          Second criterium: canonical lexicographic order on the indices (we need Reverse because the greater the row,
          the smaller the labels *)
-      
+
       sortf =
-        Order[ Prepend[ Total @ Abs @ #1 ] @ Reverse[#1], Prepend[ Total @ Abs @ #2 ] @ Reverse[#2] ]&;
-      
+        Order[
+          Prepend[ Total @ Abs @ #1 ] @ Reverse[#1],
+          Prepend[ Total @ Abs @ #2 ] @ Reverse[#2]
+        ]&;
+
       {
         Transpose @ Join[
           Sort[ Transpose[v][[r+1;;]], sortf ],
@@ -937,28 +926,22 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       OptionValue["Zeros"];
     io =
       OptionValue["IncludeOnly"];
-    
+    zeros =
+      OptionValue["Zeros"];
+
     { V, n } =
       GaugeSplitTransform[ ring, opts ];
-    
+
     symbols =
       Complement[
         Switch[ io,
-          All
-          ,
-          Join[ FSymbols[ring], RSymbols[ring] ]
-          ,
-          "FSymbols"
-          ,
-          FSymbols[ring]
-          ,
-          "RSymbols"
-          ,
-          RSymbols[ring]
+          All, Join[ FSymbols[ring], RSymbols[ring] ],
+          "FSymbols", FSymbols[ring],
+          "RSymbols", RSymbols[ring]
         ],
         zeros
       ];
-      
+
     Join[
       ConstantArray[ 0, Length @ zeros ]
       ,
@@ -982,9 +965,10 @@ Options[GaugeInvariants] =
   Options[GaugeSplitBasis];
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
-  First @ GaugeSplitBasis[ ring, opts ];
+  With[ { zeros = OptionValue["Zeros"] },
+    Join[ zeros, First @ GaugeSplitBasis[ ring, opts ] ]
+  ];
 
 
 (* Returns rows corresponding to the invariants  *)
 (*interestingInvariants[ ring_ ] :=*)
-

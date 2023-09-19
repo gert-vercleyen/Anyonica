@@ -98,6 +98,86 @@ UGQ::usage =
 UGQ = 
   UnitaryGaugeQ;
 
+PackageExport["ToUnitaryGauge2"]
+
+Options[ToUnitaryGauge2] :=
+	{
+		"SimplifyBy" -> Identity,
+		"PreEqualCheck" -> Identity
+	};
+
+ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
+(
+  Module[ {
+    solInvSol, FInv, symmetries, transforms, g, SimplestVar, varPowers,
+    UnitaryValue, FixValue, UpdateSystem, time, result, gaugeVals, simplify, check,nextTransform
+    },
+    simplify =
+      OptionValue["SimplifyBy"];
+    check =
+      OptionValue["PreEqualCheck"];
+    
+    
+    varPowers[monomial_] :=
+      Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], Abs[ a ] } ];
+    
+    SimplestVar[ monomial_ ] :=
+      With[{ fList = varPowers @ monomial },
+        If[ fList === {}, Return[ Missing[] ] ];
+        MinimalBy[ fList, Last, 1 ][[1, 1]]
+      ];
+    
+    UnitaryValue[ F[ abcd__, e_, f_ ] ] :=
+      simplify @ ReplaceAll[ Sqrt[ F[ abcd, e, f ] FInv[ abcd, f, e ] ], solInvSol ];
+    
+    FixValue[ a_ -> b_ ] :=
+      simplify @ Solve[ b == UnitaryValue @ a, SimplestVar @ b ][[1, 1]];
+    
+    nextTransform[ transf_ ] :=
+      First @ MinimalBy[ transf, Min[ Abs[ varPowers[#[[2]]][[;;,2]] ] ]&, 1 ];
+    
+    UpdateSystem[ {}, vals_ ] :=
+      vals;
+    
+    UpdateSystem[ transf_, vals_ ] :=
+      With[{ gaugeVal = FixValue[ nextTransform @ transf ] },
+        UpdateSystem[
+          DeleteCases[
+            simplify[ Cancel @* Together /@ (transf /. gaugeVal ) ],
+            rule_ /; CountVariables[ rule, g ] === 0
+          ],
+          Append[ vals /. gaugeVal, gaugeVal ]
+        ]
+      ];
+    
+    { time, result } =
+      AbsoluteTiming[
+        solInvSol =
+          Dispatch @ Join[ FSol, InverseFSymbols[ ring, FInv, FSol ] ];
+  
+        symmetries =
+          GaugeSymmetries[ FSymbols @ ring, g];
+  
+        transforms =
+          MapAt[
+            ReplaceAll[solInvSol],
+            DeleteCases[ symmetries["Transforms"], rule_ /; CountVariables[ rule, g ] === 0 ],
+            { All, 2 }
+          ];
+        
+        gaugeVals =
+          UpdateSystem[ transforms, {} ];
+        
+        ApplyGaugeTransform[ FSol, gaugeVals, g ]
+      
+      ];
+    
+(*    If[ !UnitaryGaugeQ[ ring, result, opts ], printlog[ "TUG:sol_not_unitary", {procID} ] ];*)
+    
+    result
+  ]
+);
+
 
 PackageExport["ToUnitaryGauge"]
 
@@ -303,7 +383,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             ];
           
           expRHS =
-            Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+            PowerDot[ rhsVec, mU ];
           
           ZSpace =
             mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
@@ -325,7 +405,7 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
             ],
             (* ELSE *)
             constVec =
-            Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+              PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
           ];
           
           CSpace =
@@ -357,8 +437,8 @@ ToUnitaryGauge[ ring_FusionRing, FSymb_, opts:OptionsPattern[] ] :=
                 ConstantArray[ 1, Length[zVec] ],
                 (* ELSE *)
                 vars =
-                z /@ Range[ Dimensions[ CSpace ][[2]] ];
-                Inner[ Power, vars, #, Times ]& /@ CSpace
+                  z /@ Range[ Dimensions[ CSpace ][[2]] ];
+                PowerDot[ vars, CSpace]
               ];
             
             binomialSolution =
@@ -881,7 +961,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ];
 
         expRHS =
-          Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+          PowerDot[ rhsVec, mU ];
 
         NonOneCoeff[ l_ ] :=
           FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
@@ -897,7 +977,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ZSpace =
             mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           constVec =
-            Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+            PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
 
         CheckSolution[ sol_ ] :=
@@ -1146,7 +1226,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
             ];
             
             expRHS =
-            Inner[ Power, rhsVec, Transpose[ mU ], Times ];
+              PowerDot[ rhsVec, mU ];
             
             listOfOnesQ[ l_ ] :=
             And @@
@@ -1165,7 +1245,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
               ZSpace =
               mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
               constVec =
-              Inner[ Power, rhsVec, Transpose[ ZSpace . mU[[;;rankBinomialMat]] ], Times ]
+                PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
             ];
             
             trivialSpace =
@@ -1192,7 +1272,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
               CSpace === {{}},
               ConstantArray[ 1, Length[constVec] ],
               With[ { parameters = z /@ Range[ Dimensions[CSpace][[2]] ] },
-                Inner[ Power, parameters, #, Times ]& /@ CSpace
+                PowerDot[ parameters, CSpace ]
               ]
             ];
             

@@ -105,7 +105,7 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
     ]
   ];
 
-PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_] :=
+PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
   With[{
     pEqns =
       Map[
@@ -132,7 +132,7 @@ HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
     DeleteCases[True] //
     DeleteDuplicates
   ];
-  
+
 
 ProperFSymbolRulesQ[ fSymbols_ ] :=
   PPSQ[ fSymbols ];
@@ -220,7 +220,10 @@ FusionCategory /: UnitaryQ[ FusionCategory[data_] ] :=
 
 PackageExport["DirectProduct"]
 
-FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ] ] :=
+Options[DirectProduct] :=
+  Options[FusionCategory];
+
+FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ], opts:OptionsPattern[] ] :=
   Module[{ r1, r2, r, fs1, fs2, fs, rs1, rs2, rs, tupleToSingle, sTupleToSingle },
     r1 = FusionRing[fc1]; r2 = FusionRing[fc2];
     fs1 = FSymbols[fc1]; fs2 = FSymbols[fc2];
@@ -264,7 +267,8 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
     FusionCategory[
       "FusionRing" -> r,
       "FSymbols"   -> fs,
-      "RSymbols"   -> rs
+      "RSymbols"   -> rs,
+      opts
     ]
   ];
 
