@@ -106,7 +106,7 @@ Options[ToUnitaryGauge2] :=
 		"PreEqualCheck" -> Identity
 	};
 
-ToUnitaryGauge2[ ring_, FSol_, opts:OptionsPattern[] ] :=
+ToUnitaryGauge2[ ring_FusionRing, FSol_, opts:OptionsPattern[] ] :=
 (
   Module[ {
     solInvSol, FInv, symmetries, transforms, g, SimplestVar, varPowers,
