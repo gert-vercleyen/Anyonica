@@ -16,4 +16,32 @@ BraidedQ[ cat_FusionCategory ] :=
 FusionCategory /: UnitaryGaugeQ[ cat_FusionCategory, opts:OptionsPattern[] ] :=
   UnitaryGaugeQ[ FusionRing @ cat, FSymbols @ cat, opts ];
 
+PackageExport["TopologicalSpins"]
+
+TopologicalSpins::usage =
+  "TopologicalSpins[cat] returns a list of topological spins of the braided category cat.";
+
+TopologicalSpins::nonbraidedcat =
+  "The topological spins are only defined for a braided category.";
+
+TopologicalSpins[ cat_FusionCategory ] :=
+(
+  If[ !BraidedQ[cat], Message[TopologicalSpins::nonbraidedcat]; Abort[] ];
+  Module[{ sR, qd, dMat },
+    sR =
+      SparseArray[
+        Rest[#] -> R @@ # & /@ Cases[ NZSC @ cat, { a_, a_, c_ } ] /. Dispatch[ RSymbols @ cat ]
+      ];
+    
+    qd =
+      QD @ FusionRing @ cat;
+    
+    dMat =
+      Table[ qd[[c]] / qd[[a]], { c, Rank @ cat }, { a, Rank @ cat } ];
+    
+    Tr[ sR.dMat ]
+    
+  ]
+)
+
 
