@@ -226,8 +226,8 @@ Options[DirectProduct] :=
 FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ], opts:OptionsPattern[] ] :=
   Module[{ r1, r2, r, fs1, fs2, fs, rs1, rs2, rs, tupleToSingle, sTupleToSingle },
     r1 = FusionRing[fc1]; r2 = FusionRing[fc2];
-    fs1 = FSymbols[fc1]; fs2 = FSymbols[fc2];
-    rs1 = RSymbols[fc1]; rs2 = RSymbols[fc2];
+    fs1 = FSymbols[fc1];  fs2 = FSymbols[fc2];
+    rs1 = RSymbols[fc1];  rs2 = RSymbols[fc2];
 
     r = DirectProduct[ r1, r2 ];
 
@@ -243,11 +243,11 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
     sTupleToSingle[ s_[i1__], s_[i2__] ] :=
       s @@ MapThread[ tupleToSingle, { {i1}, {i2} } ];
 
-    fs =
+    fs = Echo @
       Sort @
       Flatten @
       Table[
-        sTupleToSingle[ f1[[1]], f2[[1]] ] -> f1[[2]] * f2[[2]],
+        sTupleToSingle[ F1[[1]], F2[[1]] ] -> F1[[2]] * F2[[2]],
         { F1, fs1 }, { F2, fs2 }
       ];
 
@@ -256,12 +256,13 @@ FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCateg
       ,
       rs = {}
       ,
-      Sort @
-      Flatten @
-      Table[
-        sTupleToSingle[ r1[[1]], r2[[1]] ] -> r1[[2]] * r2[[2]],
-        { R1, rs1 }, { R2, rs2 }
-      ]
+      rs = Echo @
+        Sort @
+        Flatten @
+        Table[
+          sTupleToSingle[ R1[[1]], R2[[1]] ] -> R1[[2]] * R2[[2]],
+          { R1, rs1 }, { R2, rs2 }
+        ]
     ];
 
     FusionCategory[
