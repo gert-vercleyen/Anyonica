@@ -10,7 +10,8 @@ PackageExport["ChangeProperty"]
 
 ChangeProperty::usage =
   "ChangeProperty[ ring, opt -> val ] changes the property of type opt to val.\n"<>
-  "ChangeProperty[ ring, { opt1 -> val1, ..., optn -> valn } ] changes the properties of types opti to vali.";
+  "ChangeProperty[ ring, { opt1 -> val1, ..., optn -> valn } ] changes the properties of types opti to vali."<>
+  "ChangeProperty works for both fusion rings and fusion categories";
 
 
 ChangeProperty[ ring_, list_ ] :=
