@@ -459,6 +459,13 @@ LoweringOperator[ a_AffineLieAlgebra, irrep_, w_, i_Integer ] :=
 LoweringOperator[ a_AffineLieAlgebra, irrep_, w_ ] :=
   RaisingOperator[ a, irrep, w, -1 ];
 
+InnerProduct[ highestWeight_, operators_ ] :=
+  Module[{
+    leftmostLowerPos
+  },
+  
+  ]
+
 
 (* ::Subsubsection:: *)
 (* Properties of affine Lie algebras *)
