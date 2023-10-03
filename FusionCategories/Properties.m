@@ -5,6 +5,15 @@
 
 Package["Anyonica`"]
 
+ChangeProperty[ ring_FusionCategory, list_ ] :=
+  Module[ {opts},
+    opts = (* All defining properties of previous fusion ring *)
+    Normal @ First[ List @@ ring ];
+    AddOptions[opts][FusionCategory][ Sequence @@ list ]
+
+  ];
+
+
 PackageExport["BraidedQ"]
 
 BraidedQ::usage =

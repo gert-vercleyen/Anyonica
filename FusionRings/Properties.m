@@ -14,11 +14,10 @@ ChangeProperty::usage =
   "ChangeProperty works for both fusion rings and fusion categories";
 
 
-ChangeProperty[ ring_, list_ ] :=
+ChangeProperty[ ring_FusionRing, list_ ] :=
   Module[ {opts},
     opts = (* All defining properties of previous fusion ring *)
       Normal @ First[ List @@ ring ];
-    
     AddOptions[opts][FusionRing][ Sequence @@ list ]
 
   ];
