@@ -15,8 +15,8 @@ PentagonGroebnerSystems::usage =
 Options[PentagonGroebnerSystems] :=
   Union[
     {
-      "ReduceRoots" -> True,
-      "ReducePowerSums" -> True,
+      "ReduceRoots" -> False,
+      "ReducePowerSums" -> False,
       "SimplifyIntermediateResultsBy" -> Identity
     },
     Options[PreparePentagonSolverInput],
@@ -460,7 +460,7 @@ Options[IncrementalGroebnerBasis] :=
   Join[
     {
       "SimplifyIntermediateResultsBy" -> Identity,
-      "ReduceRoots" -> True,
+      "ReduceRoots" -> False,
       "ReducePowerSums" -> False,
       "Cutoff" -> .2,
       "Parallel" -> False,
