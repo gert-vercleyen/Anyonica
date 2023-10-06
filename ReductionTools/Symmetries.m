@@ -565,7 +565,9 @@ SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPa
     False
   ];
 
+
 PermutedFSymbols[ FSymb_, perm_List ] :=
+  Sort @
   Thread[
     Rule[
       FSymb[[;;,1]],
@@ -647,6 +649,61 @@ DES::usage =
 
 DES =
   DeleteEquivalentSolutions;
+
+PackageExport["DeleteEquivalentSolutions2"]
+
+Options["DeleteEquivalentSolutions2"] =
+  Options["DeleteEquivalenSolutions"];
+
+DeleteEquivalentSolutions2[  soln_, ring_FusionRing, symmetries_, opts:OptionsPattern[] ] :=
+  Module[{ groupedSoln, procID, result, time, invariants, automorphisms },
+    procID =
+      ToString @ Unique[];
+    check =
+    
+
+    printlog[ "DSES:init", { procID, soln, ring, symmetries, { opts } } ];
+
+    { time, result } =
+      AbsoluteTiming[
+
+        (* Group solutions by appearance of 0 values. *)
+        groupedSoln =
+          GroupBy[ soln, Position[ _ -> 0 ] ];
+
+        printlog[ "DSES:groups", { procID, groupedSoln } ];
+
+        invariants =
+          GaugeInvariants @ ring;
+        
+        automorphisms =
+          FRA @ ring;
+        
+        symEquivQ[ sol1_, sol2_ ] :=
+          Catch[
+            Do[
+              If[
+                check[ invariants/.Dispatch[ PermutedFSymbols[ sol1, aut ] ] ]
+                ==
+                check[ invariants/.Dispatch[sol2] ]
+                ,
+                Throw[ True ]
+              ],
+              { aut, automorphisms }
+            ];
+            False
+          ];
+
+        Join @@
+        Map[
+          DeleteDuplicates[ # , symEquivQ ]&,
+          { Values[ groupedSoln ] }
+        ]
+      ];
+
+    printlog["Gen:results", { procID, result, time } ];
+    result
+  ];
 
 
 PackageScope["MultiplicativeGaugeMatrix"]
