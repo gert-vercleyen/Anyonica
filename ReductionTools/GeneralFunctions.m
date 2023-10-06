@@ -1011,7 +1011,7 @@ TEL =
 
 PackageExport["TrimPolynomialList"]
 
-TrimEquationList::usage =
+TrimPolynomialList::usage =
   "Same as DeleteDuplicates @* DeleteCases[0].";
 
 TrimPolynomialList =
