@@ -613,7 +613,6 @@ DES::usage =
 DES =
   DeleteEquivalentSolutions;
 
-
 PackageExport["DeleteEquivalentSolutions2"]
 
 DeleteEquivalentSolutions2::usage =

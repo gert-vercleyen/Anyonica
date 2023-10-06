@@ -16,65 +16,72 @@ FusionCategory /: ApplyGaugeTransform[ cat_FusionCategory, gaugeVals_, s_ ] :=
   ];
 
 
-PackageExport["DirectProduct"]
+Unprotect[TensorProduct];
 
-Options[DirectProduct] :=
+Options[TensorProduct] =
   Join[
     Options[FusionCategory],
+    Options[FusionRing],
     { "SimplifyBy" -> Identity }
   ];
 
-FusionCategory /: DirectProduct[ fc1: FusionCategory[ data1_ ], fc2: FusionCategory[ data2_ ], opts:OptionsPattern[] ] :=
-  Module[{ r1, r2, r, fs1, fs2, fs, rs1, rs2, rs, tupleToSingle, sTupleToSingle, simplify },
+Protect[TensorProduct];
+
+FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_], opts:OptionsPattern[] ] :=
+  Module[ { sF1, sF2, sR1, sR2, r1, r2, fSymbols, rSymbols, simplify },
     simplify =
       OptionValue["SimplifyBy"];
     
-    r1 = FusionRing[fc1]; r2 = FusionRing[fc2];
-    fs1 = FSymbols[fc1];  fs2 = FSymbols[fc2];
-    rs1 = RSymbols[fc1];  rs2 = RSymbols[fc2];
+    r1 = Rank[cat1];
+    r2 = Rank[cat2];
     
-    r = DirectProduct[ r1, r2 ];
+    sF1 = SparseArray[ FSymbols[cat1] /. F -> List, { r1, r1, r1, r1, r1, r1 } ] ;
+    sF2 = SparseArray[ FSymbols[cat2] /. F -> List, { r2, r2, r2, r2, r2, r2 } ] ;
+    fSymbols = simplify @ MapAt[ Apply[F], Most @ ArrayRules @ KroneckerProduct[ sF1, sF2 ], { All, 1 } ];
     
-    tupleToSingle[a_,b_] :=
-      ReplaceAll[
-        { a, b },
-        Thread[
-          Flatten[ Table[ { i, j }, { i, Rank[r1] }, { j, Rank[r2] } ], 1 ] ->
-          Range[ Rank[r1] * Rank[r2] ]
-        ]
-      ];
-    
-    sTupleToSingle[ s_[i1__], s_[i2__] ] :=
-      s @@ MapThread[ tupleToSingle, { {i1}, {i2} } ];
-    
-    fs =
-      simplify @
-      Sort @
-      Flatten @
-      Table[
-        sTupleToSingle[ F1[[1]], F2[[1]] ] -> F1[[2]] * F2[[2]],
-        { F1, fs1 }, { F2, fs2 }
-      ];
-    
-    If[
-      rs1 === {} || rs2 === { }
-      ,
-      rs = {}
-      ,
-      rs =
-        simplify @
-        Sort @
-        Flatten @
-        Table[
-          sTupleToSingle[ R1[[1]], R2[[1]] ] -> R1[[2]] * R2[[2]],
-          { R1, rs1 }, { R2, rs2 }
-        ]
-    ];
+    sR1 = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ] ;
+    sR2 = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ] ;
+    rSymbols = simplify @ MapAt[ Apply[R], Most @ ArrayRules @ KroneckerProduct[ sR1, sR2 ], { All, 1 } ];
     
     AddOptions[opts][FusionCategory][
-      "FusionRing" -> r,
-      "FSymbols"   -> fs,
-      "RSymbols"   -> rs
+      "FusionRing" -> TensorProduct[ FusionRing[cat1], FusionRing[cat2] ],
+      "FSymbols"   -> fSymbols,
+      "RSymbols"   -> rSymbols,
+      "Unitary"    -> And[ UnitaryQ @ cat1, UnitaryQ @ cat2 ]
     ]
   ];
+
+PackageExport["PermutedFusionCategory"]
+
+PermutedFusionCategory::usage =
+  "PermutedFusionCategory[cat,perm] returns a fusion category whose objects are permuted by"<>
+  "the permutation vector perm";
+
+PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
+  Module[ { pVec, permuteSymbols, permutedRing },
+    pVec =
+      Permute[ Range @ Length @ perm, PermutationCycles @ perm ];
+    
+    permuteSymbols =
+      Sort @ MapAt[ ReplaceAll[ i_Integer :> pVec[[i]] ] , #, { All, 1 } ]&;
+    
+    permutedRing =
+      PermutedRing[ FusionRing @ cat, perm ];
+    
+    AddOptions[ Normal @ data ][FusionCategory][
+      "FusionRing" -> permutedRing,
+      "FSymbols"   -> permuteSymbols @ FSymbols @ cat,
+      "RSymbols"   -> permuteSymbols @ RSymbols @ cat,
+      "SkipCheck"  -> True
+    ]
+  ];
+
+PackageExport["DeleteDuplicateFusionCategories"]
+
+DeleteDuplicateFusionCategories::usage =
+  "DeleteEquivalentFusionCategories[fusionCats] removes duplicate fusion categories. Two fusion categories " <>
+  "are considered equal if there exists a combination of a gauge transform and a fusion ring automorphism that" <>
+  " transforms both F- and R-symbols of one category into the other.";
   
+
+

@@ -290,31 +290,17 @@ EquivalentFusionRings[ r_FusionRing?FusionRingQ ] :=
     Table[ PermutedRing[ r, Join[ {1}, \[Sigma] ] ], { \[Sigma], l } ]
   ];
 
-PackageExport["DirectProduct"]
-
-DirectProduct::usage =
-  "DirectProduct[ring1,ring2] returns the direct ring product of ring1 and ring2.";
-
-DirectProduct[ ring1_FusionRing?FusionRingQ, ring2_FusionRing?FusionRingQ ] :=
-  With[
-    {
-      k1 = Rank @ ring1,
-      k2 = Rank @ ring2,
-      tab1 = MultiplicationTable[ring1],
-      tab2 = MultiplicationTable[ring2]
-    },
-    FusionRing @ Rule[ "MultiplicationTable",
-      Flatten[ #, {{1,2},{3,4}} ]& @
-      Table[
-        Flatten @ Outer[ Times, tab1[[m1,n1]], tab2[[m2,n2]] ],
-        {m1,k1},{m2,k2},{n1,k1},{n2,k2}
-      ]
-    ]
+FusionRing /: TensorProduct[ ring1:FusionRing[_], ring2:FusionRing[_], opts:OptionsPattern[] ] :=
+  AddOptions[opts][FusionRing][
+    "MultiplicationTable" ->  KroneckerProduct[ MT @ ring1, MT @ ring2 ]
   ];
 
-DirectProduct[ ring1_FusionRing?FusionRingQ, ring2_FusionRing?FusionRingQ, rings__ ] :=
-  DirectProduct[ DirectProduct[ ring1, ring2 ] , rings ];
+FusionRing /: TensorProduct[ ring1:FusionRing[_], ring2:FusionRing[_], rings__, opts:OptionsPattern[] ] :=
+  TensorProduct[ TensorProduct[ ring1, ring2, opts ] , rings, opts ];
 
+(* For legacy reasons *)
+DirectProduct =
+  TensorProduct;
 
 PackageExport["ReplaceByKnownRing"]
 

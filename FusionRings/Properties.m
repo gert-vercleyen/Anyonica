@@ -717,7 +717,7 @@ FRA[ ring_FusionRing ] :=
 PackageExport["WhichDecompositions"]
 
 WhichDecompositions::usage =
-  "WhichDecompositions[ring] returns a list of lists of fusion rings whose direct product is a fusion ring isomorphic to ring.";
+  "WhichDecompositions[ring] returns a list of lists of fusion rings whose tensor product is a fusion ring isomorphic to ring.";
 
 WhichDecompositions[ r_FusionRing?FusionRingQ, list_List ] :=
 If[
@@ -726,7 +726,7 @@ If[
   With[{
     candidates = CandidatesByTQDS[ r, list ] },
     DeleteDuplicates[
-      Sort /@ Cases[ candidates, rings_/; EquivalentFusionRingsQ[ r, DirectProduct @@ rings ] ]
+      Sort /@ Cases[ candidates, rings_/; EquivalentFusionRingsQ[ r, TensorProduct @@ rings ] ]
     ]
   ]
 ];
