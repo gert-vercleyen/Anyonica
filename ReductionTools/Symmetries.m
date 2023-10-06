@@ -293,41 +293,6 @@ GaugeFreedomQ[ sym_Association, symbols_List ] :=
 (*
 +---------------------------------------------------------------------------+
 |                                                                           |
-|                       FORCING UNITARY GAUGE DEMANDS                       |
-|                                                                           |
-+---------------------------------------------------------------------------+
-*)
-
-(*Options[UnitaryGaugeDemands] = { "SimplifyBy" -> Identity };*)
-(*UnitaryGaugeDemands[ ring_, opts:OptionsPattern[] ] :=*)
-(*  With[{*)
-(*    qds  = SimplifyQDs[ QuantumDimensions[ring], opts ],*)
-(*    dual = CC[ring]*)
-(*    },*)
-(*    Table[*)
-(*      F[ a, dual[a], a, a, 1, 1 ] -> 1 / qds[[a]],*)
-(*      { a, Rank[ring] }*)
-(*    ]*)
-(*  ];*)
-
-(*Options[SimplifyQDs] = Options[UnitaryGaugeDemands];*)
-(*SimplifyQDs[ qds_, OptionsPattern[] ] :=*)
-(*  With[{*)
-(*    s = OptionValue["SimplifyBy"][ qds ]*)
-(*    },*)
-(*    Which[*)
-(*      N[qds] != N[s],*)
-(*        qds,*)
-(*      MemberQ[ qds, d_ /; d < 1 ],*)
-(*        qds,*)
-(*      True,*)
-(*        s*)
-(*    ]*)
-(*  ];*)
-
-(*
-+---------------------------------------------------------------------------+
-|                                                                           |
 |          REMOVING SOLUTIONS THAT ARE EQUIVALENT DUE TO SYMMETRY           |
 |                                                                           |
 +---------------------------------------------------------------------------+
@@ -565,12 +530,12 @@ SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPa
     False
   ];
 
-PermutedFSymbols[ FSymb_, perm_List ] :=
-  Thread[
-    Rule[
-      FSymb[[;;,1]],
-      FSymb[[;;,1]] /. ( n_Integer :> perm[[n]] ) /. Dispatch[FSymb]
-    ]
+PermuteSymbols[ Symb_, perm_List ] :=
+  Sort @
+  MapAt[
+    ReplaceAll[ i_Integer :> perm[[i]] ],
+    Symb,
+    { All, 1 }
   ];
 
 PackageExport["SEQ"]
@@ -648,6 +613,124 @@ DES::usage =
 DES =
   DeleteEquivalentSolutions;
 
+
+PackageExport["DeleteEquivalentSolutions2"]
+
+DeleteEquivalentSolutions2::usage =
+  "Experimental faster version of DeleteEquivalentSolutions. Does not have the option to delete only unitarily "<>
+  "equivalent solutions";
+
+DeleteEquivalentSolutions2::wrongrstructure =
+  "Either all solutions should be braided or none should be braided.";
+
+Options["DeleteEquivalentSolutions2"] :=
+  Options["DeleteEquivalentSolutions"];
+
+DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
+  Module[{ groupedSoln, trimmedSolutions, procID, result, time, invariants, zeroFs, braidedCheck },
+    (*procID =
+      ToString @ Unique[];
+    
+    printlog[ "DSES:init", { procID, soln, ring, symmetries, { opts } } ];*)
+
+    { time, result } =
+      AbsoluteTiming[
+
+        (* Group solutions by appearance of 0 values. *)
+        groupedSoln =
+          GroupBy[ soln, Position[ _ -> 0 ] ];
+        
+        zeroFs =
+          FSymbols[ring][[#]]& @* Flatten /@ Keys[groupedSoln];
+        
+        (*printlog[ "DSES:groups", { procID, groupedSoln } ];*)
+
+        braidedCheck =
+          Length @* FilterRRules /@ soln;
+        
+        If[
+          Not[ Equal @@ braidedCheck ],
+          Message[ DeleteEquivalentSolutions2::wrongrstructure ]; Abort[]
+        ];
+        
+        invariants =
+          GaugeInvariants[ ring, "Zeros" -> #, "IncludeOnly" -> If[ braidedCheck[[1]] == 0, "FSymbols", "All" ] ]& /@
+          zeroFs;
+        
+        (* First trim down solutions via gauge invariance without permutations: this speeds up computation *)
+        trimmedSolutions =
+          MapThread[
+            AddOptions[opts][DeleteGaugeEquivalentSolutions2][ #1, #2 ]&,
+            { Values @ groupedSoln, invariants }
+          ];
+        
+        (* Delete equivalent solutions via full equivalence *)
+        Join @@
+        MapThread[
+          DeleteDuplicates[ #1 , SymmetryEquivalentQ2[ ring, #2, opts ] ]&,
+          { trimmedSolutions, invariants }
+        ]
+      ];
+    
+    (*printlog["Gen:results", { procID, result, time } ];*)
+    result
+  ];
+
+Options[DeleteGaugeEquivalentSolutions2] :=
+  Options[GaugeSymmetryEquivalentQ];
+
+DeleteGaugeEquivalentSolutions2[ soln_, invariants_, opts:OptionsPattern[] ] :=
+  Module[{ inv, indices },
+    inv =
+      If[
+        OptionValue["Numeric"],
+        N[ #, { Infinity, OptionValue["Accuracy"] } ]&,
+        OptionValue["PreEqualCheck"] @* OptionValue["SimplifyBy"]
+      ] @
+      ReplaceAll[ invariants, Dispatch[soln] ];
+      
+    
+    indices =
+      Range @ Length @ soln;
+    
+    soln[[ DeleteDuplicatesBy[ indices, inv[[#]]& ] ]]
+  ];
+
+
+PackageExport["SymmetryEquivalentQ2"]
+
+SymmetryEquivalentQ2::usage =
+  "Experimental version of SymmetryEquivalentQ";
+
+Options[SymmetryEquivalentQ2] :=
+  Options[DeleteGaugeEquivalentSolutions2];
+
+SymmetryEquivalentQ2[ ring_, invariants_, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  Catch[
+    Do[
+      If[
+        AddOptions[opts][GaugeSymmetryEquivalentQ2][invariants] @@  { sol1, PermuteSymbols[ sol2, auto ] },
+        Throw[True]
+      ],
+      { auto, FusionRingAutomorphisms[ring] }
+    ];
+    False
+  ];
+
+Options[GaugeSymmetryEquivalentQ2] :=
+  Options[SymmetryEquivalentQ2];
+
+GaugeSymmetryEquivalentQ2[ invariants_, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  Equal @@
+  (
+    If[
+      OptionValue["Numeric"],
+      N[ #, { Infinity, OptionValue["Accuracy"] } ]&,
+      OptionValue["PreEqualCheck"] @* OptionValue["SimplifyBy"]
+    ] @
+    ReplaceAll[ invariants, Dispatch[ { sol1, sol2 } ] ]
+  );
+  
 
 PackageScope["MultiplicativeGaugeMatrix"]
 
@@ -834,11 +917,11 @@ GaugeSplitTransform::usage =
   "F-and R-symbols.";
 
 GaugeSplitTransform::invalidoptionincludeonly =
-  "The option for \"IncludeOnly\", `1`, must be either All, \"FSymbols\" or \"RSymbols\".";
+  "The option for \"IncludeOnly\", `1`, must be either \"All\", \"FSymbols\" or \"RSymbols\".";
 
 Options[GaugeSplitTransform] :=
   {
-    "IncludeOnly" -> All,
+    "IncludeOnly" -> "All",
     "Zeros" -> {}
   };
 
@@ -854,7 +937,7 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
       symbols =
         Complement[
           Switch[ io,
-            All,        Join[ FSymbols @ ring, RSymbols @ ring ],
+            "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
             "FSymbols", FSymbols @ ring,
             "RSymbols", RSymbols @ ring,
             _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
@@ -935,24 +1018,20 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
     symbols =
       Complement[
         Switch[ io,
-          All, Join[ FSymbols[ring], RSymbols[ring] ],
+          "All", Join[ FSymbols[ring], RSymbols[ring] ],
           "FSymbols", FSymbols[ring],
           "RSymbols", RSymbols[ring]
         ],
         zeros
       ];
 
-    Join[
-      ConstantArray[ 0, Length @ zeros ]
-      ,
-      Map[
-        Inner[ Power, symbols, #, Times ]&,
-        {
-          Transpose @ V[[;;,;;n]],
-          Transpose @ V[[;;,n+1;;]]
-        },
-        {2}
-      ]
+    Map[
+      Inner[ Power, symbols, #, Times ]&,
+      {
+        Transpose @ V[[;;,;;n]],
+        Transpose @ V[[;;,n+1;;]]
+      },
+      {2}
     ]
   ];
 
