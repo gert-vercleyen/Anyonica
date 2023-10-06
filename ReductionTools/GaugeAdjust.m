@@ -41,7 +41,7 @@ UnitaryGaugeQ[ ring_, fSymbols_, opts:OptionsPattern[] ] :=
           If[ !AddOptions[opts][unitaryMatrixQ][mat], Throw @ False ],
           { mat, fMats }
         ];
-        Echo@True
+        True
       ]
     ]
   ];
@@ -67,7 +67,6 @@ unitaryMatrixQ[ mat_?MatrixQ, opts:OptionsPattern[] ] :=
         Do[
           If[
             Not @TrueQ @ N[ idMat[[i,j]] == KroneckerDelta[ i, j ], { Infinity, acc } ],
-            Echo[{idMat,i,j}];
             Throw @ False
           ],
           { i, n },
