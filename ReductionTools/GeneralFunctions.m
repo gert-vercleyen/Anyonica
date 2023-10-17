@@ -1026,26 +1026,6 @@ TPL::usage =
 TPL =
   TrimPolynomialList;
 
-(* SEcho: Echos results but replaces context of variables by
-something short *)
-
-PackageScope["SEcho"]
-
-SEcho[] :=
-  SEcho[Identity];
-
-SEcho[s_String] :=
-  SEcho[ Identity, s ];
-
-SEcho[ f_ ] :=
-  EchoFunction[ f[#]/._[i__Integer] :> P`x[i]& ];
-
-SEcho[ f_, s_Symbol ] :=
-  EchoFunction[ f[#]/.s[i__Integer] :> P`x[i]& ];
-
-SEcho[ f_, s_String ] := EchoFunction[ s, f[#]/._[i__Integer] :> P`x[i]& ];
-
-SEcho[ f_, s_String, ss_Symbol ] := EchoFunction[ s, f[#]/.ss[i__Integer] :> P`x[i]& ];
 
 
 (* Update expressions one by one, throwing { False }, if any do not satisfy testf *)
