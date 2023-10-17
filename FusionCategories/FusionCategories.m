@@ -271,7 +271,9 @@ FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
 
 FusionCategories[ ring_FusionRing ] :=
-  With[ { fc = FC @ ring },
+  Module[ { fc = FC @ ring },
+    If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
+    
     FCBC /@
     Select[ Keys @ FCBC, #[[;;4]] == fc& ]
   ];
