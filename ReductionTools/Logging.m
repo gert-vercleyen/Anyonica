@@ -2034,6 +2034,61 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:trivial_gauges", { id_ } ] :=
     ]
   ];
 
+
+(* BinToSemiLin *)
+(*MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BTSL:init", { id_, eqns_, vars_, x_, optionList_ } ] :=
+Module[{ fn1, fn2, fn3 },
+  fn1 = dataFileName[ id, dir, "Equations" ];
+  safeExport[ fn1, eqns ];
+  fn2 = dataFileName[ id, dir, "Variables" ];
+  safeExport[ fn2, vars ];
+  fn3 = dataFileName[ id, dir, "Symbol" ];
+  safeExport[ fn3, x ];
+  
+  AddCell[
+    fileName,
+    nbo,
+    startCell[
+      id,
+      dir,
+      "BinToSemiLin",
+      { { "Equations", fn1 }, { "Variables", fn2 }, { "Symbol", fn3 } },
+      optionList
+    ]
+  ];
+];*)
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:trivial_gauge_transform", { id_ } ] :=
+AddCell[
+  fileName,
+  nbo,
+  Cell[
+    "The gauge transform is trivial. Removing duplicates by automorphisms of the fusion ring.",
+    "Text",
+    CellTags -> { id, "Info" }
+  ]
+];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:groups", { id_, groups_ } ] :=
+Module[{ fn },
+  fn = dataFileName[ id, dir, "Groups" ];
+  safeExport[ fn, groups ];
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ "The solutions are divided in " <> ToString @ Length[groups] <> " " ],
+        hyperlinkBox[ "group(s)", fn ],
+        inputStyle[ " based on the zero values of the F-symbols." ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+];
+
+
 (* DeleteEquivalentSolutions *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:init", { id_, soln_, ring_, sym_, optionList_ } ] :=
   Module[{fn1, fn2, fn3 },
@@ -2136,6 +2191,87 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MZV:using_database", { procID_ } ] :=
   ];
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MZV:entry_not_found", { procID_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "Entry not found in database. Calculating zero values and adding result.",
+      "Text",
+      CellTags -> { procID, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:init", { id_, mat_, sol1_, sol2_, optionList_ } ] :=
+  Module[{fn1, fn2, fn3},
+    fn1 = dataFileName[ id, dir, "HermiteDecompOfGaugeMatrix" ];
+    safeExport[ fn1, mat ];
+    fn2 = dataFileName[ id, dir, "Solution1" ];
+    safeExport[ fn2, sol1 ];
+    fn3 = dataFileName[ id, dir, "Solution2" ];
+    safeExport[ fn3, sol2 ];
+    
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "GaugeSymmetryEquivalentQ",
+        { { "HermiteDecompOfGaugeMatrix", fn1 }, { "Solution1", fn2 }, { "Solution2", fn3 } },
+        optionList
+      ]
+    ];
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:init", { id_, rhs_, r_, test_, optionList_ } ] :=
+  Module[{fn1, fn2, fn3},
+    fn1 = dataFileName[ id, dir, "RHS" ];
+    safeExport[ fn1, rhs ];
+    fn2 = dataFileName[ id, dir, "Rank" ];
+    safeExport[ fn2, r ];
+    fn3 = dataFileName[ id, dir, "Test" ];
+    safeExport[ fn3, test ];
+    
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "ConsistentQ",
+        { { "RHS", fn1 }, { "Rank", fn2 }, { "Test", fn3 } },
+        optionList
+      ]
+    ];
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:failed", { procID_, rhs_, r_, test_, firstFail_ } ] :=
+  Module[{ fn },
+    fn = dataFileName[ procID, dir, "RHSVector" ];
+    safeExport[ fn, rhs ];
+    
+    AddCell[
+      fileName,
+      nbo,
+      warningCell[
+        procID,
+        TextData[{
+          inputStyle["Warning! "],
+          hyperlinkBox[ "RHS vector", fn],
+          inputStyle[" contains an entry (= "<> ToString[InputForm @ firstFail] <>") at position greater than the rank"<>
+          " (="<>ToString[r]<>") for which "<>
+          ToString[InputForm[test]]<>" does not return True. Assuming system has no solutions. This could be"<>
+          " because Mathematica doesn't "<>
+          "simplify some expressions by default. In this case use the options \"SimplifyBy\" and/or \"IntegerCheck\" "<>
+          "to resolve the issue."
+          ]
+          
+        }]
+      ]
+    ];
+    
+    
+  ]
   AddCell[
     fileName,
     nbo,

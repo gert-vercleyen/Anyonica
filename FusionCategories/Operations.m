@@ -71,7 +71,7 @@ PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
     AddOptions[ Normal @ data ][FusionCategory][
       "FusionRing" -> permutedRing,
       "FSymbols"   -> permuteSymbols @ FSymbols @ cat,
-      "RSymbols"   -> permuteSymbols @ RSymbols @ cat,
+      "RSymbols"   -> If[ BraidedQ[cat], permuteSymbols @ RSymbols @ cat, RSymbols[cat] ],
       "SkipCheck"  -> True
     ]
   ];
