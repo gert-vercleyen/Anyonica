@@ -14,16 +14,19 @@ Package["Anyonica`"]
       "Polynomials" -> list of polynomials after reduction,
       "Assumptions" -> logical expression that expresses assumptions on the variables,
       "Values"      -> list of rules mapping the original unknowns to expressions in terms of unknowns appearing in
-                       the list of polynomials after reduction, or numbers if all polynomials have been solved for
+                       the list of polynomials after reduction, or numbers if all polynomials have been solved for,
+      "Variables"   -> list of remaining unknowns
    |>
    
-   We call this the Standard System Data Structure (SSDS)
+   We call this the Standard Polynomial System Datastructure (SPSD)
    
-   Every function that reduces a system should also have 2 standard inputs for the system: either in SSDS form or just
+   Every function that reduces a system should also have 2 standard inputs for the system: either in SPSD form or just
    as a list of polynomials.
    
    
 *)
+
+
 
 
 (*
