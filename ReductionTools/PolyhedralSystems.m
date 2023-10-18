@@ -18,29 +18,47 @@ Package["Anyonica`"]
 +---------------------------------------------------------------------------+
 *)
 
+PackageExport["PentagonSystem"]
+
+PentagonSystem::usage = 
+    "PentagonSystem[fusionRing] returns a list of polynomials coming from the pentagon equations for fusionRing";
+
+Options[ PentagonSystem ] :=
+  Options[ PentagonTower ];
+
+PentagonSystem[fusionRing_, opts:OptionsPattern[]] :=
+  If[
+   Mult[ fusionRing ] == 1
+   ,
+   With[{ tower = PentagonTower[ fusionRing, opts ] },
+     Join[
+       tower["Bin"] // Values,
+       tower["Sum"] // Values
+     ] // Flatten
+   ]
+   ,
+   PentagonSystemWithMultiplicity[ fusionRing, opts ]
+  ];
+
+PackageExport["PS"]
+
+PS::usage = 
+  "PS[fusionRing] is shorthand for PentagonSystem[fusionRing].";
+ 
+PS = PentagonSystem;
+
+
 PackageExport["PentagonEquations"]
 
 PentagonEquations::usage =
-"PentagonEquations[ ring ] returns the pentagon equations related to ring.;"
+  "PentagonEquations[ ring ] returns the pentagon equations related to ring.";
 
 (*   "all trivial and duplicate equations have been removed.";*)
-
 Options[ PentagonEquations ] :=
-Options[ PentagonTower ];
+  Options[ PentagonTower ];
 
 PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-If[
-  Mult[ ring ] == 1
-  ,
-  With[{ tower = PentagonTower[ ring, opts ] },
-    Join[
-      tower["Bin"] // Values,
-      tower["Sum"] // Values
-    ] // Flatten
-  ]
-  ,
-  PentagonEquationsWithMultiplicity[ ring, opts ]
-];
+  Thread[ PentagonSystem[ ring, opts ] == 0 ];
 
 PackageExport["PE"]
 
@@ -53,38 +71,29 @@ PentagonEquations;
 PackageExport["PentagonTower"]
 
 PentagonTower::usage=
-"PentagonTower[ring] calculates a tower of pentagon equations based on the dimensions of the F-matrices.";
+"PentagonTower[ring] calculates a tower of pentagon polynomials with levels based on the dimensions of the F-matrices.";
 
 Options[ PentagonTower ] :=
-{
-  "TrivialVacuumSymbols" -> True,
-  "Knowns" -> {}
-};
+  {
+    "TrivialVacuumSymbols" -> True,
+    "Knowns" -> {}
+  };
 
 PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  Module[{ a,b,c,d,e,p,q,r,s,n, matches, eqn, dim, patt, pentEqns, lFInd, sF, dimF, trivVacQ, knowns},
-    trivVacQ =
-    OptionValue["TrivialVacuumSymbols"];
-    knowns =
-    OptionValue["Knowns"];
-    dimF =
-    DimF @ FMatrices[ring];
-    n =
-    Rank[ring];
-    lFInd =
-    List @@@ FSymbols[ring];
+  Module[{ a,b,c,d,e,p,q,r,s,n, matches, pol, dim, pentPols, lFInd, sF, dimF, trivVacQ, knowns, patt},
+    trivVacQ  = OptionValue["TrivialVacuumSymbols"];
+    knowns    = OptionValue["Knowns"];
+    dimF      = DimF @ FMatrices[ring];
+    n         = Rank[ring];
+    lFInd     = List @@@ FSymbols[ring];
     
-    sF =
-    SparseArray @
-    ReplaceAll[
+    sF = SparseArray @
       ReplaceAll[
-        Normal[SparseFTensor[ring]],
-        knowns
-      ],
-      If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
-    ];
+        Normal[ SparseFTensor @ ring ]/.knowns,
+        If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
+      ];
     
-    pentEqns =
+    pentPols =
     Reap[
       (* Collect equations of the form Non0LHS == RHS *)
       Do[
@@ -93,37 +102,36 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
         Do[
           { a, b, s } = label2[[ { 1, 2, 6 } ]];
           
-          eqn =
-          (
-            sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
-            Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
-          );
+          pol =
+            sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] - Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ];
           
           If[ (* Equation is not trivial *)
-            !TrueQ[eqn],
+            pol =!= 0,
             (* THEN Set dim equal to max size of F-matrix *)
             dim =
-            Max[
-              dimF /@
-              GetVariables[ eqn, F ]
-            ];
+              Max[
+                dimF /@
+                GetVariables[ pol, F ]
+              ];
+            
             If[
-              eqn[[2,0]] === Plus,
-              Sow[ eqn, patt[2][dim]],
-              Sow[ eqn, patt[1][dim]]
+              Length[ MonomialList @ pol ] > 2,
+              Sow[ pol, patt[2][dim]],
+              Sow[ pol, patt[1][dim]]
             ]
           ],
           { label2, matches }
         ],
         { label, lFInd }
       ],
-      Flatten @
-      Table[ patt[i][j], {i,2}, {j,n} ]
+      
+      Flatten @ Table[ patt[i][j], {i,2}, {j,n} ]
+      
     ][[2]];
     
     <|
-      "Bin" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i]], {i,n} ],
-      "Sum" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i+n]], {i,n} ]
+      "Bin" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentPols[[i]], {i,n} ],
+      "Sum" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentPols[[i+n]], {i,n} ]
     |>
 
   ];
