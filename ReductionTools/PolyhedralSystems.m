@@ -93,8 +93,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
         If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
       ];
     
-    pentPols =
-    Reap[
+    pentPols = Reap[
       (* Collect equations of the form Non0LHS == RHS *)
       Do[
         { p, c, d, e, q, r } = label;
@@ -136,43 +135,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 
   ];
 
-PackageScope["BinomialEquationsFromTower"]
-
-BinomialEquationsFromTower[ tower_Association ] :=
-tower["Bin"] //
-Values //
-Flatten;
-
-
-PackageScope["SumEquationsFromTower"]
-
-SumEquationsFromTower[ tower_Association ] :=
-tower["Sum"] //
-Values //
-Flatten;
-
-
-PackageScope["BinSumEquationsFromTower"]
-
-BinSumEquationsFromTower[ tower_Association ] :=
-Map[
-  Flatten,
-  {
-    tower["Bin"] // Values,
-    tower["Sum"] // Values
-  }
-];
-
-
-PackageScope["PentagonEquationsFromTower"]
-
-PentagonEquationsFromTower::usage =
-"Flattens tower to a set of pentagon equations.";
-
-PentagonEquationsFromTower[ tower_Association ] :=
-Join @@ BinSumEquationsFromTower[ tower ];
-
-
+(* Get the dimensions of the F matrices *)
 DimF[regMats_] :=
 Module[ { matToRules },
   matToRules[ mat_ ] :=
@@ -185,13 +148,38 @@ Module[ { matToRules },
   ]
 ];
 
+(* Getting polynomials from a tower *)
+
+PackageScope["PolynomialsFromTower"]
+
+PolynomialsFromTower[ tower_Association ] :=
+  Join @@ BinomialsNonBinomialsFromTower[ tower ];
+
+PackageScope["BinomialsNonBinomialsFromTower"]
+
+BinomialsNonBinomialsFromTower[ tower_Association ] :=
+{
+  BinomialsFromTower @ tower,
+  NonBinomialsFromTower @ tower
+};
+
+PackageScope["BinomialsFromTower"]
+
+BinomialsFromTower[ tower_Association ] :=
+  Flatten @ Values @ tower["Bin"];
+  
+PackageScope["NonBinomialsFromTower"]
+
+NonBinomialsFromTower[ tower_Association ] :=
+  Flatten @ Values @ tower["Sum"];
+
 
 (*
 +---------------------------------------------------------------------------+
 |                             Multiplicity Case                             |
 +---------------------------------------------------------------------------+
 *)
-
+(* CONVENTION USED                                            *)
 (* a     b     c                                a     b     c *)
 (*  \   /     /                                  \     \   /  *)
 (*   \ /     /                                    \     \ /   *)
@@ -203,10 +191,10 @@ Module[ { matToRules },
 (*       │                                            │       *)
 
 
-Options[PentagonEquationsWithMultiplicity] =
+Options[PentagonSystemWithMultiplicity] =
 { "Knowns" -> {} };
 
-PentagonEquationsWithMultiplicity[ ring_FusionRing?FusionRingQ, OptionsPattern[] ] :=
+PentagonSystemWithMultiplicity[ ring_FusionRing, OptionsPattern[] ] :=
 Module[
   { fgGroupedLabels, gGroupedLabels, mt, a, b, c, d, e, l, k, h, replaceKnowns,
     matchingLabels, dim, fLabels, gLabels, hLabels, kLabels, lLabels },
@@ -276,7 +264,7 @@ Module[
             F[ a, b, l, e, { f, alp, zet }, { k, the, eta } ]
             , { zet, dim[ f, l, e ] }
           ]
-          ==
+          -
           Sum[
             F[ a, b, c, g, { f, alp, bet }, { h, kap, iot } ] *
             F[ a, h, d, e, { g, kap, gam }, { k, the, lam } ] *
@@ -325,26 +313,39 @@ Module[
 |                               General Case                                |
 +---------------------------------------------------------------------------+
 *)
+PackageExport["HexagonSystem"]
+
+HexagonSystem::usage =
+  "HexagonSystem[fusionRing] returns the polynomials related to the hexagon equations of fusionRing.";
+
+HexagonSystem::badformat =
+  "The argument given to \"Knowns\", `1`, should be a list of rules.";
+
+Options[HexagonSystem] :=
+  {
+    "Knowns" -> {},
+    "TrivialVacuumSymbols" -> True
+  };
+
+HexagonSystem[ ring_FusionRing, opts:OptionsPattern[] ] :=
+  If[
+    Mult[ring] === 1,
+    HexagonSystemWithoutMultiplicity[ ring, opts ],
+    HexagonSystemWithMultiplicity[ ring, opts ]
+  ];
+
 PackageExport["HexagonEquations"]
 
 HexagonEquations::usage =
 "HexagonEquations[ r ] returns the hexagon equations related to the fusion ring r.";
 (*The \"Knowns\" can be set to a list of rules of variables that are already known, e.g. a solution to the pentagon equations.";*)
-HexagonEquations::badformat =
-"The argument given to \"Knowns\", `1`, should be a list of rules.";
 
-Options[HexagonEquations] =
-{
-  "Knowns" -> {},
-  "TrivialVacuumSymbols" -> True
-};
+Options[HexagonEquations] :=
+  Options[HexagonSystem];
 
-HexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-If[
-  Mult[ring] === 1,
-  HexagonEquationsWithoutMultiplicity[ ring, opts ],
-  HexagonEquationsWithMultiplicity[ ring, opts ]
-];
+HexagonEquations[ args__ ] :=
+  Thread[ HexagonSystem[args] == 0 ];
+
 
 (*
 +---------------------------------------------------------------------------+
@@ -352,10 +353,10 @@ If[
 +---------------------------------------------------------------------------+
 *)
 
-Options[HexagonEquationsWithoutMultiplicity] :=
-Options[HexagonEquations];
+Options[HexagonSystemWithoutMultiplicity] :=
+  Options[HexagonSystem];
 
-HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
+HexagonSystemWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
 Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
   rSymbols =
   R @@@ NZSC[ring];
@@ -368,7 +369,7 @@ Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabe
   
   If[
     !MatchQ[ OptionValue["Knowns"], { _Rule ... } ],
-    Message[HexagonEquations::badformat, OptionValue["Knowns"] ]
+    Message[HexagonSystem::badformat, OptionValue["Knowns"] ]
   ];
   
   knowns =
@@ -411,15 +412,13 @@ Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabe
         { a, c, b, d, e, g } = List @@ ff;
         Sow[
           {
-            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
-            ==
+            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]] -
             Sum[
               sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
               { f, matchingLabels[ { a, c, b, d, e } ] }
             ]
             ,
-            sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1)
-            ==
+            sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1) -
             Sum[
               sF[[ c, a, b, d, e, f ]] sR[[ f, c, d ]]^(-1) sF[[ a, b, c, d, f, g ]],
               { f, matchingLabels[ { a, c, b, d, e } ] }
@@ -438,9 +437,10 @@ Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabe
 +---------------------------------------------------------------------------+
 *)
 
-Options[ HexagonEquationsWithMultiplicity ] :=
-Options[HexagonEquations];
-HexagonEquationsWithMultiplicity[ ring_, OptionsPattern[] ] :=
+Options[ HexagonSystemWithMultiplicity ] :=
+  Options[HexagonSystem];
+
+HexagonSystemWithMultiplicity[ ring_, OptionsPattern[] ] :=
 Module[ {
   fGroupedLabels, replaceKnowns, matchingLabels, Rt, Ft,
   DS, TP, ID, a, b, c, d, e, g, eLabels, fLabels, gLabels, op,
@@ -486,53 +486,35 @@ Module[ {
     ]
   ];
   
-  Rt =
-  replaceKnowns @
-  RTensors[ring];
-  Ft =
-  replaceKnowns @
-  FTensors[ring];
-  DS =
-  MatrixDirectSum;
-  TP =
-  KroneckerProduct;
-  ID =
-  IdentityMatrix[ mt[[##]] ]&;
+  Rt = replaceKnowns @ RTensors[ring];
+  Ft = replaceKnowns @ FTensors[ring];
+  DS = MatrixDirectSum;
+  TP = KroneckerProduct;
+  ID = IdentityMatrix[ mt[[##]] ]&;
   
   DeleteCases[True] @
   Flatten @
   Reap[
     Do[ (* Loop over valid a,b,c,d labels *)
-      { a, b, c, d } =
-      treeLabels;
-      eLabels =
-      matchingLabels[ { a, b, e }, { e, c, d }, e ];
-      fLabels =
-      fGroupedLabels[ treeLabels ][[;;,4]];
-      gLabels =
-      matchingLabels[ { c, a, g }, { g, b, d }, g ];
+      { a, b, c, d } = treeLabels;
+      eLabels = matchingLabels[ { a, b, e }, { e, c, d }, e ];
+      fLabels = fGroupedLabels[ treeLabels ][[;;,4]];
+      gLabels = matchingLabels[ { c, a, g }, { g, b, d }, g ];
       
-      op[1,1] =
-      DS @ Table[ TP[ Rt[ { c, a, g } ], ID[ g, b, d ] ], { g, gLabels } ];
+      op[1,1] = DS @ Table[ TP[ Rt[ { c, a, g } ], ID[ g, b, d ] ], { g, gLabels } ];
       
-      op[1,2] =
-      Ft[ { a, c, b, d } ];
+      op[1,2] = Ft[ { a, c, b, d } ];
       
-      op[1,3] =
-      DS @ Table[ TP[ ID[ a, f, d ], Rt[ { c, b, f } ] ], { f, fLabels } ];
+      op[1,3] = DS @ Table[ TP[ ID[ a, f, d ], Rt[ { c, b, f } ] ], { f, fLabels } ];
       
-      op[2,1] =
-      Ft[ { c, a, b, d } ];
+      op[2,1] = Ft[ { c, a, b, d } ];
       
-      swap =
-      DS @ Table[ SwapOperator[ { a, b, e }, { e, c, d } ], { e, eLabels } ];
+      swap = DS @ Table[ SwapOperator[ { a, b, e }, { e, c, d } ], { e, eLabels } ];
       
-      op[2,2] =
-      DS @ Table[ TP[ ID[ a, b, e ], Rt[ { c, e, d } ] ], { e, eLabels } ];
+      op[2,2] = DS @ Table[ TP[ ID[ a, b, e ], Rt[ { c, e, d } ] ], { e, eLabels } ];
       
       (* DS @ Table[ ID[ a, b, e ] ~ TP ~ Rt[ { c, e, d } ], { e, eLabels } ]; *)
-      op[2,3] =
-      Ft[ { a, b, c, d } ];
+      op[2,3] = Ft[ { a, b, c, d } ];
       
       Sow @
       {
@@ -545,7 +527,7 @@ Module[ {
       };
       , { treeLabels, Keys[ fGroupedLabels ]  }
     ]
-  ][[2,1]]
+  ][[2,1]]/.Equal -> Subtract
 
 ];
 
@@ -555,28 +537,24 @@ Module[ {
 +---------------------------------------------------------------------------+
 *)
 
-PackageExport["TwistFactorEquations"]
+PackageExport["TwistFactorSystem"]
 
-TwistFactorEquations::usage =
-"TwistFactorEquations[ring,twistFactors] returns the equations that relate twist factors to R-symbols for a" <>
+TwistFactorSystem::usage =
+"TwistFactorSystem[ring,twistFactors] returns the polynomials that relate twist factors to R-symbols for a" <>
 "braided fusion category with ring as Grothendieck ring.";
 
 TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
 Module[
   { t, d, a, b, c, rs },
-  t =
-  Exp[ 2 Pi I twistFactors ][[#]]&;
-  d =
-  QD[ring][[#]]&;
-  rs =
-  RSymbols[ring];
+  t = Exp[ 2 Pi I twistFactors ][[#]]&;
+  d = QD[ring][[#]]&;
+  rs = RSymbols[ring];
   
   TEL[
     Join[
       Table[
-        { a, b, c } =
-        List @@ r;
-        R[ a, b, c ] * R[ b, a, c ] == t[c] / ( t[a] t[b] ),
+        { a, b, c } = List @@ r;
+        R[ a, b, c ] * R[ b, a, c ] - t[c] / ( t[a] t[b] ),
         { r, rs }
       ]
       ,
