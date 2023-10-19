@@ -14,7 +14,7 @@ PackageExport["BreakMultiplicativeSymmetry"]
 
 BreakMultiplicativeSymmetry::usage =
   "BreakMultiplicativeSymmetry[symmetries] returns a couple of restricted symmetries and a list " <>
-  "of values that have been fixed.";
+  "of values that have been fixed.\n"<>
 
 BreakMultiplicativeSymmetry::clashingdemands =
   "Option \"Demands\" `1` is not allowed to assign values to variables given in Option \"ExcludedVariables\" `2`.";
