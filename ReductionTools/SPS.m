@@ -17,19 +17,19 @@
 
 *)
 
-ToSPS[ polynomials_, assumptions_, values_, variables_ ] :=
+ToSPS[ polynomials_, assumptions_, rules_, variables_ ] :=
   SPS[
     Association @
     {
       "Polynomials" -> polynomials,
       "Assumptions" -> assumptions,
-      "Values"      -> values,
+      "Rules"       -> rules,
       "Variables"   -> variables
     }
   ];
 
-ToSPS[ polynomials_, values_, variables_ ] :=
-  ToSPS[ polynomials, True, values, variables ];
+ToSPS[ polynomials_, rules_, variables_ ] :=
+  ToSPS[ polynomials, True, rules, variables ];
 
 ToSPS[ polynomials_, variables_ ] :=
   ToSPS[ polynomials, True, Thread[ variables -> variables ], variables ];
@@ -41,14 +41,37 @@ GetPolynomials[ SPS[ data_Association ] ] :=
 GetAssumptions[ SPS[ data_Association ] ] :=
   data["Assumptions"];
 
-GetValues[ SPS[ data_Association ] ] :=
-  data["Values"];
+GetRules[ SPS[ data_Association ] ] :=
+  data["Rules"];
 
-GetVariables[ SPS[ data_Association ] ] :=
+SPS /: GetVariables[ SPS[ data_Association ] ] :=
   data["Variables"];
 
 GetData[ SPS[ data_Association ] ] :=
   Values @ data;
+
+UpdateRules[ sys:SPS[ data_Association ], newRules_, newVars_ ] :=
+  With[{
+    vars  = GetVariables[sys],
+    rules = GetRules[sys]
+    },
+    (* Check whether the rules correspond to variables or values *)
+    If[
+      !SubsetQ[ vars, Keys @ newRules ],
+      Message[UpdateValues::nonexistingvars,rules,vars,vals]
+    ];
+    
+    ToSPS[
+      GetPolynomials[sys],
+      GetAssumptions[sys]/.newRules,
+      Thread[ Keys @ rules -> ( Values[rules]/.newRules ) ],
+      newVars
+    ]
+  ];
+
+
+UpdateRules[ sys_SPS, newRules_ ] :=
+  UpdateRules[ sys, newRules, Complement[ GetVariables[sys], Keys @ newRules ] ];
 
 Options[ ValidQ ] =
   {
