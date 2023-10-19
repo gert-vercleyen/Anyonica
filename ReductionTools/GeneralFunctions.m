@@ -141,12 +141,14 @@ PackageExport["ToStandardPolynomial"]
 Options[ToStandardPolynomial] =
   { "SimplifyBy" -> Identity };
 
+SetAttributes[ ToStandardPolynomial, Listable ];
+
 ToStandardPolynomial[ pol_, opts:OptionsPattern[] ] :=
   With[{ pol =  OptionValue["SimplifyBy"] @ RemoveFractions @ pol },
     If[
       pol === 0,
       0,
-      Cancel[ pol/CoefficientRules[ pol ][[-1,2]] ]
+      Cancel[ pol/CoefficientRules[ pol, "DegreeReverseLexicographic" ][[-1,2]] ]
     ]
   ];
 
@@ -277,15 +279,34 @@ PackageExport["BinomialSplit"]
 
 BinomialSplit::usage =
   "BinomialSplit[eqnList] splits eqnList into a list of binomial equations and a list non-binomial " <>
-  "equations.";
+  "equations.\n" <>
+  "BinomialSplit[polList] splits polList into a list of binomials and non-binomials";
 
 Options[ BinomialSplit ] =
   {
     "PreEqualCheck" -> Identity
   };
 
-BinomialSplit[ eqnList_List, OptionsPattern[] ] :=
+BinomialSplit[ eqnList_?ListOfEquationsQ, OptionsPattern[] ] :=
   BinSplit[ eqnList, BinomialEquationQ @* OptionValue["PreEqualCheck"] ];
+
+BinomialSplit[ polList_, OptionsPattern[] ] :=
+  BinSplit[ polList, BinomialQ @* OptionValue["PreEqualCheck"] ];
+
+PackageScope["ListOfEquationsQ"]
+
+ListOfEquationsQ[ l_ ] :=
+  Head[l] === List && MatchQ[ Head /@ l, { Equal ... } ];
+
+PackageScope["BinomialQ"]
+
+BinomialQ[ expr_ ] :=
+  Length[ MonomialList @ expr ] === 2;
+
+PackageScope["MonomialQ"]
+
+MonomialQ[ expr_ ] :=
+  Length[ MonomialList @ expr ] === 1;
 
 
 PackageScope["SymbolQ"]
