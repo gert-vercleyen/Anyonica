@@ -79,7 +79,7 @@ Options[ PentagonTower ] :=
     "Knowns" -> {}
   };
 
-PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
+PentagonTower[ ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[{ a,b,c,d,e,p,q,r,s,n, matches, pol, dim, pentPols, lFInd, sF, dimF, trivVacQ, knowns, patt},
     trivVacQ  = OptionValue["TrivialVacuumSymbols"];
     knowns    = OptionValue["Knowns"];
@@ -574,6 +574,221 @@ Module[
 +---------------------------------------------------------------------------+
 *)
 
+PackageScope["PreparePentagonSystems"]
+"Finds admissible sets of 0 values, gauge fixes the F-symbols, and then returns a list systems in SPS form.";
+
+
+PreparePentagonSystems::notsubring =
+"`1` is not isomorphic to any subring of `2`.";
+
+Options[PreparePentagonSystems] :=
+  Union[
+    {
+      "GaugeDemands" -> {},
+      "ZeroValues" -> None,
+      "NonSingular" -> False,
+      "PreEqualCheck" -> Identity,
+      "SimplifyBy" -> Identity,
+      "UseDatabaseOfSmithDecompositions" -> True,
+      "UseDatabaseOfZeroValues" -> False,
+      "StoreDecompositions" -> True,
+      "InjectSolution" -> {},
+      "FindZerosUsingSums" -> False
+    },
+    Options[FindZeroValues]
+  ];
+
+
+PreparePentagonSystems[ ring_FusionRing, opts:OptionsPattern[] ] :=
+Module[
+  {
+    bins, nonbins, pentPols, gaugeSymmetries, pentEqns, invMats, extraFixedFs, zeros, fSymbols, tower, unionZeros,
+    sharedVars, remainingSym, specificFixedFs, polynomials, assumptions, values, variables, g, time,
+    procID, subsSol, inject, compatibleSol, sRing, sSol, allFSymbols, vacuumSymbols, gaugeFixedAndZero, results
+  },
+  
+  procID = ToString @ Unique[];
+  
+  printlog["PPSI:init", { procID, ring, {opts} } ];
+  
+  { time, results } =
+  AbsoluteTiming[
+    
+    If[ (* Want to substitute solution *)
+      subsSol =!= {},
+      
+      (* THEN *)
+      { sRing, sSol } = subsSol;
+      
+      (* Function that maps labels in sRing to corresponding labels in ring *)
+      inject = InjectionForm[ ring, sRing ];
+      
+      If[
+        inject === None,
+        Message[PreparePentagonSolverInput::notsubring, sRing, ring ];
+        Abort[]
+      ];
+      
+      (* Rename all labels of sSol so they correspond to the labels of the sub-fusion-ring of ring *)
+      compatibleSol = MapAt[ ReplaceAll[ i_Integer  :> inject[i] ], sSol, { All, 1 } ],
+      
+      (* ELSE *)
+      compatibleSol = {}
+    ];
+    
+    allFSymbols   = FSymbols[ring];
+    vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
+    fSymbols      = Complement[ allFSymbols, vacuumSymbols, GetVariables[ compatibleSol, F ] ];
+    
+    tower             = PentagonTower[ ring, "Knowns" -> compatibleSol ];
+    { bins, nonbins } = BinEquationsFromTower[ tower ];
+    pentPols          = Join[ bins, nonbins ];
+    
+    invMats  = FMatrices[ ring ];
+    
+    gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
+    
+    (* Update matrices and gauge symmetries to take account of known F's *)
+    printlog[ "PPSI:restricting_gauges", { procID } ];
+    
+    (* Update gauges *)
+    gaugeSymmetries =
+      RestrictMultiplicativeSymmetries[
+        gaugeSymmetries,
+        vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
+        g
+      ];
+    
+    (* Remove trivial and known F-matrices from list of invertible matrices *)
+    invMats =
+      With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
+        invMats // DeleteCases[ trivialMatrixPattern ]
+      ];
+    
+    printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
+    
+    printlog[ "PPSI:zero_Fs", { procID } ];
+    
+    (* Find Configurations of non-trivial 0-values *)
+    zeros =
+    Dispatch @
+    Which[
+      OptionValue["NonSingular"] || GroupQ[ ring ]
+      ,
+      {{}}
+      ,
+      OptionValue["ZeroValues"] =!= None
+      ,
+      OptionValue["ZeroValues"]
+      ,
+      OptionValue["UseDatabaseOfZeroValues"]
+      ,
+      AddOptions[opts][MemoizedZeroValues][
+        MT[ring],
+        Which[
+          OptionValue["FindZerosUsingSums"] && OptionValue["SumSubsetParameter"] === 1
+          , (* use all sum eqns so no extra check needed *)
+          { pentPols , {} }
+          ,
+          OptionValue["FindZerosUsingSums"]
+          , (* don't use all sum eqns so need to check for consistency *)
+          { pentPols, nonbins }
+          ,
+          True
+          , (* only use binomials to find zeros so need to check for consistency *)
+          { bins, nonbins  }
+        ],
+        fSymbols,
+        "InvertibleMatrices" -> invMats(*,
+          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
+      ]
+      ,
+      True
+      ,
+      AddOptions[opts][FindZeroValues][
+        If[ OptionValue["FindZerosUsingSums"], pentPols, bins ],
+        fSymbols,
+        "InvertibleMatrices" -> invMats(*
+          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
+      ]
+    ];
+    
+    printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
+    
+    If[ Length @ Normal @ zeros === 0, Return[ { } ] ];
+    
+    printlog["PPSI:fixing_gauge", {procID } ];
+    
+    (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
+       that do not appear in any of the "zeros" from previous step *)
+    
+    (* Get all F-symbols that could be 0 for some configuration in zeros *)
+    unionZeros = Union @@ Normal[zeros][[;;,;;,1]];
+    
+    (* Get all F-symbols that can never be 0 *)
+    sharedVars = Complement[ fSymbols, unionZeros ];
+    
+    (* Fix the gauge for all the F symbols that can never be 0 *)
+    { remainingSym, extraFixedFs } =
+      AddOptions[opts][BreakMultiplicativeSymmetry][ gaugeSymmetries, "ExcludedVariables" -> unionZeros ];
+    
+    (* Remove the newly fixed F-symbols from the list of variables *)
+    fSymbols = Complement[ fSymbols, extraFixedFs[[;;,1]] ];
+    
+    printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
+    
+    (* Try to fix extra gauges, if possible, for each of the 0-configurations.
+      Also substitute 0 values, and update equations, variables, and matrices *)
+    
+    printlog[ "PPSI:fixing_extra_gauges", { procID } ];
+    
+    If[ (* All gauges are fixed *)
+      remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]]
+      ,
+      (* THEN *)
+      printlog[ "PPSI:no_gauge_freedom_left", { procID } ];
+      
+      Reap[
+        Do[
+          gaugeFixedAndZero = Dispatch[ Join[ z, extraFixedFs ] ];
+          
+          polynomials = TrimPolynomialList @ ToStandardPolynomial[ pentPols/.guageFixedAndZero, OptionValue["SimplifyBy"] ];
+          assumptions = And @@ DeterminantConditions[ invMats/.gaugeFixedAndZero ];
+          values      = Union[ Thread[ vacuumSymbols -> 1 ], extraFixedFs, compatibleSol, z ];
+          variables   = Complement[ fSymbols, z[[;;,1]] ];
+          
+          Sow @ ToSPS[ polynomials, assumptions, values, variables ]
+          ,
+          { z, Normal[zeros] }
+        ]
+      ][[2,1]]
+      ,
+      (* ELSE *)
+      printlog[ "PPSI:gauge_freedom_left", { procID } ];
+      
+      Reap[
+        Do[
+          specificFixedFs = Last @ BreakMultiplicativeSymmetry[ AddZerosToSymmetries[ remainingSym, z ] ];
+          gaugeFixedAndZero    = Dispatch[ Join[ z, extraFixedFs, specificFixedFs ] ];
+          
+          polynomials = TrimPolynomialList @ ToStandardPolynomial[ pentPols/.gaugeFixedAndZero, OptionValue["SimplifyBy"] ];
+          assumptions = And @@ DeterminantConditions[ invMats/.gaugeFixedAndZero ];
+          values      = Union[ Thread[ vacuumSymbols -> 1 ], extraFixedFs, specificFixedFs, compatibleSol, z ];
+          variables   = Complement[ fSymbols, specificFixedFs[[;;,1]], z[[;;,1]] ];
+          
+          Sow @ ToSPS[ polynomials, assumptions, values, variables ]
+          ,
+          { z, Normal[zeros] }
+        ]
+      ][[2,1]]
+    ]
+  ];
+  
+  printlog["Gen:results", { procID, results, time }];
+  
+  results
+];
+
 PackageScope["PreparePentagonSolverInput"]
 
 PreparePentagonSolverInput::usage =
@@ -830,7 +1045,7 @@ Module[
             <|
               "Equations"  -> ( pentEqns/.dz // DeleteCases[True] // DeleteDuplicates ),
               "Variables"  -> Complement[ fSymbols, z[[;;,1]]  ],
-              "Symmetries"   -> AddZerosToSymmetries[ remainingSym, dz ],
+              "Symmetries" -> AddZerosToSymmetries[ remainingSym, dz ],
               "InvertibleMatrices"  -> ( invMats/.dz ),
               "SpecificFs" -> {},
               "ExtraFixedFs"-> extraFixedFs,
@@ -879,10 +1094,76 @@ Module[
 ];
 
 
-PackageScope["ValidZerosQ"]
+PackageScope["PrepareHexagonSystems"]
 
-ValidZerosQ[ eqns_ ][ zeros_ ] :=
-FreeQ[ eqns/.Dispatch[zeros], False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
+Options[ PrepareHexagonSystems ] :=
+  Join[
+    Options[ HexagonSystems ],
+    { "TwistFactors" -> None }
+  ];
+
+PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
+Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations, tf },
+  tf = OptionValue["TwistFactors"];
+  
+  rSymbols = R @@@ NZSC[ ring ];
+  fSymbols = FSymbols[ ring ];
+  knowns   =
+    Join[
+      If[
+        OptionValue["TrivialVacuumSymbols"],
+        (* THEN *)
+        Thread[
+          Cases[ Join[ rSymbols, fSymbols ], $VacuumRPattern | $VacuumFPattern ] -> 1
+        ],
+        (* ELSE *)
+        { }
+      ],
+      Normal @ OptionValue["Knowns"]
+    ];
+  
+  procID = ToString @ Unique[];
+  
+  printlog["PHSI:init", { procID, ring, { opts } } ];
+  
+  printlog["PHSI:knowns", { procID, knowns } ];
+  
+  { time, result } =
+  AbsoluteTiming[
+    
+    (* The known symbols are fixed so we have to reduce the gauge symmetries *)
+    gaugeSym =
+    MapAt[
+      SortBy[ #, First ]&,
+      RestrictMultiplicativeSymmetries[
+        GaugeSymmetries[ Join[ fSymbols, rSymbols ], g ],
+        knowns[[;;,1]],
+        g
+      ],
+      {1}
+    ];
+    
+    printlog["PHSI:symmetries", { procID, gaugeSym } ];
+    
+    polynomials =
+      Join[
+        If[ tf =!= None, TwistFactorSystems[ ring, tf ], {} ],
+        AddOptions[opts][HexagonSystems] @ ring
+      ];
+    
+    <|
+      "Equations" ->  equations,
+      "Variables" ->  GetVariables[ equations, { R, F } ],
+      "Symmetries" -> gaugeSym,
+      "Knowns" ->     knowns
+    |>
+  
+  ];
+  
+  printlog["Gen:results", { procID, result, time } ];
+  
+  result
+];
 
 
 PackageScope["PrepareHexagonSolverInput"]
@@ -941,6 +1222,10 @@ Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equation
       ],
       {1}
     ];
+    
+    (* TODO: get rid of all gauge symmetry here *)
+    (* TODO: *)
+    
     
     printlog["PHSI:symmetries", { procID, gaugeSym } ];
     
