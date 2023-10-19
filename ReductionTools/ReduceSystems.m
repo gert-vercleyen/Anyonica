@@ -13,18 +13,150 @@ Package["Anyonica`"]
    <|
       "Polynomials" -> list of polynomials after reduction,
       "Assumptions" -> logical expression that expresses assumptions on the variables,
-      "Values"      -> list of rules mapping the original unknowns to expressions in terms of unknowns appearing in
+      "Rules"      -> list of rules mapping the original unknowns to expressions in terms of unknowns appearing in
                        the list of polynomials after reduction, or numbers if all polynomials have been solved for,
       "Variables"   -> list of remaining unknowns
    |>
    
-   We call this the Standard Polynomial System Datastructure (SPSD)
+   We call this the Standard Polynomial System (SPS). Functions for this datastructure are found in the file SPS.m
    
    Every function that reduces a system should also have 2 standard inputs for the system: either in SPSD form or just
    as a list of polynomials.
    
-   
 *)
+
+
+(*
++---------------------------------------------------------------------------+
+|                     GENERAL FUNCTION FOR REDUCTION                        |
++---------------------------------------------------------------------------+
+*)
+
+(* The general procedure for all reduction functions is the following
+ 1. Find all occurrences in a system that match some pattern. Call these <matches>.
+ 2. If <matches> is empty, return the system.
+    Else generate lists of (incompatible) substitution rules from these <matches>. Call these <newInfo>
+ 3. Create list of new systems by updating system via each list in <newInfo>. Call these <newSystems>
+ 4. Check validity of each system in <newSystems> and for each valid system, start procedure from step 1.
+*)
+Options[ReduceSystemVia] =
+  {
+    "SimplifyBy"    -> Identity,
+    "PreEqualCheck" -> Identity,
+    "ValidationCheck" -> ValidQ
+  };
+
+ReduceSystemVia[ system_SPS, getInfo_, finishedQ_, UpdateSystem_, opts:OptionsPattern[] ] :=
+  Module[{ BackTrackReduce, simplify, validQ },
+    (* TODO: simplify not used *)
+    simplify = OptionValue["SimplifyBy"];
+    validQ   = OptionValue["ValidationCheck"];
+    
+    BackTrackReduce[ sys_ ] :=
+      Module[{ newInfo },
+        If[ !AddOptions[opts][validQ][ sys ], Return @ Null ];
+        
+        newInfo = getInfo @ system;
+        
+        If[ finishedQ @ newInfo, Sow @ system ];
+        
+        Do[
+          BackTrackReduce[ UpdateSytem[ sys, info ] ],
+          { info, newInfo }
+        ]
+      ];
+    
+    Block[ { $RecursionLimit = Infinity }, Reap[ BackTrackReduce[ system ] ][[2]]/.{{x__}}:>x ]
+    
+  ];
+
+
+(*
++---------------------------------------------------------------------------+
+|                          Removing Dependencies                            |
++---------------------------------------------------------------------------+
+*)
+
+(* TODO: add weight option so that the simplest rules are kept if possible. Could also create all spanning trees and keep the one with the simplest final rules
+   *)
+(* RemoveDependencies creates a reduced set of rules such that no circular *)
+RemoveDependencies[ rules_, vars_ ] :=
+  Module[ { keys, values, valuesVars, edges, nonCircularRules },
+    keys = Keys @ rules;
+
+    valuesVars =
+      Cases[{#}, x_ /; MemberQ[x] @ vars, Infinity ] & /@ Values @ rules;
+
+    edges =
+      Flatten @
+      Table[ Thread[ DirectedEdge[ keys[[i]], valuesVars[[i]], i ] ], { i, Length[keys] } ];
+
+    nonCircularRules = rules[[ EdgeList[ FindSpanningTree[ Graph[edges] ] ][[;; , -1]] // DeleteDuplicates ]];
+
+    Thread[ Keys[nonCircularRules] -> ReplaceRepeated[ Values[nonCircularRules], nonCircularRules ] ]
+
+  ];
+
+(*
++---------------------------------------------------------------------------+
+|                     REDUCTION VIA LINEAR POLYNOMIALS                      |
++---------------------------------------------------------------------------+
+*)
+
+
+ReduceByLinearity[ system_SPS, opts:OptionsPattern[] ] :=
+  Module[{ createRules },
+    
+    createRules[ pols_, assumptions_, vars_ ] :=
+      Module[ { linRules, independentRules },
+        
+        linRules = Select[ FindLinearRule[ #, vars ]& /@ pols, Not @* MissingQ ];
+        
+        independentRules = RemoveDependencies[ linRules, vars ];
+        
+        denominators =
+          #["Denominator"]& /@ independentRules;
+        
+        
+      ]
+  ];
+
+
+Options[ SimplestLinearRule ] =
+{ "LinearReductionWeight" -> RationalWeight };
+
+RationalWeight[ num_, denom_ ] :=
+Which[
+  MonomialQ[ num ] && MonomialQ[ denom ],
+  { 0, LeafCount @ Cancel[num/denom] },
+  MonomialQ[ denom ],
+  { 1, LeafCount @ Cancel[num/denom] },
+  True,
+  { 2, LeafCount @ denom }
+];
+
+(* returns a rule that maps a variable to a tuple of its denominator and numerator *)
+FindLinearRule[ pol_, vars_ ] :=
+  Module[{ linVars, linEqnVars, var },
+    linVars =
+      Complement[
+        vars,
+        Cases[ { pol }, Power[ x_[i__], _ ] /; MemberQ[ vars, x[i] ] :> x[i], { 1, 5 } ]
+      ];
+      
+    linEqnVars =
+      Tally @
+      Cases[ pol, x_[i__] /; MemberQ[ x[i] ] @ linVars, Infinity ];
+    
+    If[
+      linEqnVars === {}
+      ,
+      Return @ Missing[]
+      ,
+      var = MinimalBy[ linVars, Last, 1 ][[1,1]];
+      Collect[ pol, var ] /. a_. * var + b_ : 0 :> var -> <| "Denominator" -> a, "Numerator" -> -b |>
+    ]
+  ];
 
 
 
