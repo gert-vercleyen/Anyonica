@@ -182,7 +182,8 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
     Message[ RestrictMultiplicativeSymmetries::symnotmultiplicative, sym ];
     Abort[]
     ,
-    Module[{
+    Module[
+      {
       s, gaugeVars, restrictingBinomials, newEqns, newVars, revertVars, CSpace,
       params, newTransforms, reParametrization, transforms, symbols, procID, result, time
       },
@@ -621,26 +622,35 @@ DeleteEquivalentSolutions2::usage =
 
 DeleteEquivalentSolutions2::wrongrstructure =
   "Either all solutions should be braided or none should be braided.";
+DeleteEquivalentSolutions2::differentzeros =
+  "Some solutions have zeros at different positions. These solutions can never be equivalent.\n"<>
+  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions2 on each set.";
 
 Options["DeleteEquivalentSolutions2"] :=
-  Options["DeleteEquivalentSolutions"];
+  {
+    "PreEqualCheck" -> Identity
+  };
 
 DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[{ groupedSoln, trimmedSolutions, procID, result, time, invariants, zeroFs, braidedCheck },
+  Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits },
     (*procID =
       ToString @ Unique[];
     
     printlog[ "DSES:init", { procID, soln, ring, symmetries, { opts } } ];*)
-
+    
+    check =
+      OptionValue["PreEqualCheck"];
+    
+    zeroPositions =
+      Position[ _ -> 0 ] /@ soln;
+    
+    If[ !MatchQ[ zeroPositions, { x_ .. } ], Message[ DeleteEquivalentSolutions2::differentzeros ]; Abort[]  ];
+    
     { time, result } =
       AbsoluteTiming[
-
-        (* Group solutions by appearance of 0 values. *)
-        groupedSoln =
-          GroupBy[ soln, Position[ _ -> 0 ] ];
         
         zeroFs =
-          FSymbols[ring][[#]]& @* Flatten /@ Keys[groupedSoln];
+          Cases[ First @ soln, HoldPattern[ f_[i__] -> 0 ] :> f[i] ];
         
         (*printlog[ "DSES:groups", { procID, groupedSoln } ];*)
 
@@ -653,22 +663,19 @@ DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
         ];
         
         invariants =
-          GaugeInvariants[ ring, "Zeros" -> #, "IncludeOnly" -> If[ braidedCheck[[1]] == 0, "FSymbols", "All" ] ]& /@
-          zeroFs;
+          GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> If[ braidedCheck[[1]] == 0, "FSymbols", "All" ] ];
         
-        (* First trim down solutions via gauge invariance without permutations: this speeds up computation *)
-        trimmedSolutions =
-          MapThread[
-            AddOptions[opts][DeleteGaugeEquivalentSolutions2][ #1, #2 ]&,
-            { Values @ groupedSoln, invariants }
+        (* For each solution we will map its index to the evaluated gauge-invariants over all automorphic solutions *)
+        
+        orbits =
+          Association @
+          Table[
+            i -> check[ invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA[ ring ] ] ],
+            { i, Length @ soln }
           ];
         
-        (* Delete equivalent solutions via full equivalence *)
-        Join @@
-        MapThread[
-          DeleteDuplicates[ #1 , SymmetryEquivalentQ2[ ring, #2, opts ] ]&,
-          { trimmedSolutions, invariants }
-        ]
+        soln[[ Keys @ DeleteDuplicates[ orbits, IntersectingQ[#1,#2]& ][[ ;;, 1 ]] ]]
+        
       ];
     
     (*printlog["Gen:results", { procID, result, time } ];*)
