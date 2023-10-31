@@ -61,15 +61,13 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
       Message[ PrintLog::cantcreatedirectory, dir ];
       Abort[]
       ,
-      Quiet[ CreateDirectory[ dataDir ] ] === $Failed
+      Quiet[ CreateDirectory[ dataDir = FileNameJoin[ { dir, "Data" }] ] ] === $Failed
       ,
       Message[ PrintLog::cantcreatedirectory, dataDir ];
       Abort[]
     ];
     
     Block[{ fileName, ovfn = OptionValue["FileName"], result },
-      dataDir =
-        FileNameJoin[ { dir, "Data" } ];
       
       fileName =
         If[
@@ -181,8 +179,8 @@ hyperlinkBox[ label_, link_ ] :=
           TemplateBox[
             {
               label,
-              { link, None },
-              link
+              { relativeLink, None },
+              relativeLink
             },
             "HyperlinkDefault"
           ]
@@ -1303,7 +1301,8 @@ Module[{fn1, fn2},
       dir,
       "ToSymmetricGauge",
       { "Ring", "FSymbols" },
-      optionList
+      optionList,
+      fn1
     ]
   ];
 ];
@@ -1631,8 +1630,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:init", { id_, ring_, optionList_
         id,
         dir,
         "PrepareHexagonSolverInput",
-        { { "Ring", fn1 } },
-        optionList
+        { "Ring" },
+        optionList,
+        fn1
       ]
     ];
   ];
