@@ -628,7 +628,9 @@ DeleteEquivalentSolutions2::differentzeros =
 
 Options["DeleteEquivalentSolutions2"] :=
   {
-    "PreEqualCheck" -> Identity
+    "PreEqualCheck" -> Identity,
+    "Numeric" -> False,
+    "Accuracy" -> 64
   };
 
 DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
@@ -639,7 +641,11 @@ DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     printlog[ "DSES:init", { procID, soln, ring, symmetries, { opts } } ];*)
     
     check =
-      OptionValue["PreEqualCheck"];
+      If[
+        OptionValue["Numeric"],
+        N[ #, {Infinity, OptionValue["Accuracy"] } ]&,
+        OptionValue["PreEqualCheck"]
+      ];
     
     zeroPositions =
       Position[ _ -> 0 ] /@ soln;
@@ -667,19 +673,27 @@ DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
         
         (* For each solution we will map its index to the evaluated gauge-invariants over all automorphic solutions *)
         
-        orbits =
+        orbits = Sow @
           Association @
           Table[
             i -> check[ invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA[ ring ] ] ],
             { i, Length @ soln }
           ];
         
-        soln[[ Keys @ DeleteDuplicates[ orbits, IntersectingQ[#1,#2]& ][[ ;;, 1 ]] ]]
+        soln[[ DeleteDuplicates[ Range @ Length @ orbits, intersectingQ[ orbits[#1], orbits[#2] ]& ] ]]
         
       ];
     
     (*printlog["Gen:results", { procID, result, time } ];*)
     result
+  ];
+
+intersectingQ[ l1_List, l2_List ] :=
+  Catch[
+    Do[
+      If[ TrueQ[ l1[[i]] == l2[[j]] ], Throw @ True ],
+      { i, Length @ l1 }, { j, Length @ l2 }
+    ]; False
   ];
 
 Options[DeleteGaugeEquivalentSolutions2] :=
