@@ -30,64 +30,82 @@ PackageExport["PrintLog"]
 PrintLog::usage =
   "PrintLog[code] exports information of intermediate results to a notebook with clickable hyperlinks.";
 
+PrintLog::tempdir =
+  "No option value for \"Directory\" given. Storing log files in a temporary directory at `1`. Note that files "<>
+  "stored here are not persistent!";
+
 PrintLog::cantcreatedirectory =
   "Directory `1` could not be found and could not be created.";
 
 Options[PrintLog] =
   {
-    "Directory" -> HomeDirectory[],
+    "Directory" -> "Temporary",
     "FileName" -> "ISODateTime"
   };
 
 SetAttributes[ PrintLog, HoldAllComplete ];
 
 PrintLog[ code_ , opts:OptionsPattern[] ] :=
-  With[{ dir = OptionValue["Directory"]},
-    If[ (* Not an existing directory & can't create directory *)
+  Module[{ dir = OptionValue["Directory"], dataDir },
+    Which[
+      dir == "Temporary"
+      ,
+      dir = CreateDirectory[];
+      dataDir = FileNameJoin[ { dir, "Data" } ];
+      CreateDirectory[dataDir];
+      Message[ PrintLog::tempdir, dir ]
+      ,
+      (* Not temporary directory, not an existing directory and can't create directory *)
       !DirectoryQ[ Evaluate @ dir ] && (Quiet[ CreateDirectory[dir] ] === $Failed)
       ,
       Message[ PrintLog::cantcreatedirectory, dir ];
       Abort[]
       ,
-      Block[{ fileName, ovfn = OptionValue["FileName"], result },
-        fileName =
-          If[
-            ovfn === "ISODateTime",
-            StringReplace[
-              FileNameJoin @ { dir, "WLLOG_" <> DateString["ISODateTime"] <> ".nb" },
-              ":" -> "-"
-            ],
-            FileNameJoin[ { dir, ovfn } ]
-          ];
+      Quiet[ CreateDirectory[ dataDir = FileNameJoin[ { dir, "Data" }] ] ] === $Failed
+      ,
+      Message[ PrintLog::cantcreatedirectory, dataDir ];
+      Abort[]
+    ];
+    
+    Block[{ fileName, ovfn = OptionValue["FileName"], result },
+      
+      fileName =
+        If[
+          ovfn === "ISODateTime",
+          StringReplace[
+            FileNameJoin @ { dir, "WLLOG_" <> DateString["ISODateTime"] <> ".nb" },
+            ":" -> "-"
+          ],
+          FileNameJoin[ { dir, ovfn } ]
+        ];
+      
+      Block[ { nbo },
+        Export[
+          fileName,
+          TextCell["Log created at " <> DateString[], "Chapter"]
+        ];
         
-        Block[ { nbo },
-          Export[
-            fileName,
-            TextCell["Log created at " <> DateString[], "Chapter"]
-          ];
-          
-          nbo =
-            NotebookOpen[fileName];
+        nbo =
+          NotebookOpen[fileName];
 
-          SetOptions[ nbo, CellGrouping -> Manual ];
-          
-          Block[ {
-            printlog =
-              Block[ {
-                Internal`$ContextMarks = False
-                },
-                MyNotebookPrint[ dir, fileName, nbo ][##]
-              ]&
-            },
-            result =
-              code;
+        SetOptions[ nbo, CellGrouping -> Manual ];
+        
+        Block[ {
+          printlog =
+            Block[ {
+              Internal`$ContextMarks = False
+              },
+              MyNotebookPrint[ dataDir, fileName, nbo ][##]
+            ]&
+          },
+          result =
+            code;
 
-            NotebookPut[ ApplyCellGrouping @ NotebookGet @ nbo, nbo ];
+          NotebookPut[ ApplyCellGrouping @ NotebookGet @ nbo, nbo ];
 
-            NotebookSave[ nbo ];
+          NotebookSave[ nbo ];
 
-            result
-          ]
+          result
         ]
       ]
     ]
@@ -136,13 +154,15 @@ safeExport[ name_, data_ ] :=
   If[
     ByteCount[data] < 10^6
     ,
-    Export[ name, data ]
-    ,
     Block[{ Internal`$ContextMarks = False },
-      Module[ { cd = Compress[data] },
-        Export[ name, Hold[Uncompress][cd] ]
-      ]
+      Export[ name, data ]
     ]
+    ,
+    Block[{ Internal`$ContextMarks = False, cd },
+      cd = Compress[data];
+      Export[ name, Hold[Uncompress][cd] ]
+    ]
+    
   ];
 
 inputStyle[ string_ ] :=
@@ -152,37 +172,29 @@ textStyle[ string_ ] :=
   StyleBox[ string, "Text"];
 
 hyperlinkBox[ label_, link_ ] :=
-  StyleBox[
-    Cell[
-      BoxData[
-        TemplateBox[
-          {
-            label,
-            { link, None},
-            link
-          },
-          "HyperlinkDefault"
-        ]
+  With[{ relativeLink = StringReplace[ link, x__ ~~ Shortest[ "/Data/" ~~ y_] :> "./Data/" <> y ] },
+    StyleBox[
+      Cell[
+        BoxData[
+          TemplateBox[
+            {
+              label,
+              { relativeLink, None },
+              relativeLink
+            },
+            "HyperlinkDefault"
+          ]
+        ],
+        "Input"
       ],
       "Input"
-    ],
-    "Input"
+    ]
   ];
 
 (* Returns a list of hyperlink boxes, riffled with comma's*)
-argumentsHyperlink[ argLinkList_ ] :=
-  Riffle[
-    hyperlinkBox @@@ argLinkList,
-    inputStyle[", "]
-  ];
-
-(* Returns a list of boxes that format options
-   and exports values of options if they can't
-   be presented in a compact way.*)
-optionsHyperlink[ id_, dir_, {} ] :=
-  {};
-optionsHyperlink[ id_, dir_, optionList_ ] :=
-  Module[{hl, maxStringLength = 30},
+argumentsHyperlink[ args_, options_, link_ ] :=
+  Module[{ hl, maxStringLength = 30 },
+    (* generate possible hyperlink for options *)
     hl[  opt_ -> val_  ] :=
       With[{
         optString = ToString[ opt ],
@@ -190,41 +202,41 @@ optionsHyperlink[ id_, dir_, optionList_ ] :=
         },
         {
           inputStyle[ optString <> " -> " ],
-          If[ (* Long option argument *)
+          If[
+            (* Short option argument *)
             StringLength[ valString ] <= maxStringLength,
             (* THEN: use value itself *)
             inputStyle[ valString ],
             (* ELSE: use hyperlink *)
-            With[
-              { fn = dataFileName[ id, dir, "Option_" <> optString ] },
-              safeExport[ fn, val ];
-              hyperlinkBox[ optString, fn ]
-            ]
+            hyperlinkBox[ optString, link ]
           ]
         }
       ];
-    Prepend[inputStyle[", "]] @
+    
     Riffle[
-      hl /@ optionList,
+      Join[
+        hyperlinkBox[ #, link ]& /@ args,
+        hl /@ options
+      ],
       inputStyle[", "]
     ]
+    
   ];
 
-startCell[ id_, dir_, funName_, argLinkList_, optionList_ ] :=
+startCell[ id_, dir_, funName_, argList_, optionList_, link_ ] :=
   Cell[
     TextData[
       Join[
         {
           inputStyle[
             StringJoin[
-              "┌ Start "<>stringID[id]<>"\n",
+              "Start "<>stringID[id]<>"\n",
               funName,
               "[ "
             ]
           ]
         },
-        argumentsHyperlink[ argLinkList ],
-        optionsHyperlink[ id, dir, optionList ],
+        argumentsHyperlink[ argList, optionList, link ],
         { inputStyle[" ]"]}
       ]
     ],
@@ -236,8 +248,8 @@ endCell[ id_, label_, link_, time_ ] :=
   Cell[
     TextData[{
       hyperlinkBox[ label, link ],
-      inputStyle[ "\nElapsed time: " <> ToString[time]<>"\n" ],
-      inputStyle[ "└ End " <> stringID[id] ]
+      inputStyle[ "\nElapsed time: " <> ToString[ InputForm @ time ]<>"\n" ],
+      inputStyle[ "End " <> stringID[id] ]
     }],
     "Text",
     CellTags -> { id, "End" }
@@ -338,13 +350,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "Gen:results", { id_, results_, time_ 
 
 (* SolveDiophantineSystem *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SDE:init", { id_, eqns_, vars_, ranges_, optionList_ } ] :=
-  Module[ { fn1, fn2, fn3 },
-    fn1 = dataFileName[ id, dir, "Equations" ];
-    fn2 = dataFileName[ id, dir, "Variables" ];
-    fn3 = dataFileName[ id, dir, "Ranges" ];
-    safeExport[ fn1, eqns ];
-    safeExport[ fn2, vars ];
-    safeExport[ fn3, ranges ];
+  Module[ { fn },
+    fn = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn, { eqns, vars, ranges, optionList } ];
     
     AddCell[
       fileName,
@@ -353,12 +361,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SDE:init", { id_, eqns_, vars_, range
         id,
         dir,
         "SolveDiophantineSystem",
-        {
-          { "Equations",  fn1 },
-          { "Variables",  fn2 },
-          { "Ranges",     fn3 }
-        },
-        optionList
+        { "Equations", "Variables", "Ranges" },
+        optionList,
+        fn
       ]
     ];
     
@@ -414,11 +419,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "EE:directory", {id_, dir_} ] :=
 
 (* FindZeroValues *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:init", { id_, constraints_, variables_, optionList_ } ] :=
- Module[{ fn1, fn2 },
-   fn1 = dataFileName[ id, dir, "Constraints" ];
-   fn2 = dataFileName[ id, dir, "Variables" ];
-   safeExport[ fn1, constraints ];
-   safeExport[ fn2, variables ];
+ Module[{ fn1 },
+   fn1 = dataFileName[ id, dir, "Arguments" ];
+   safeExport[ fn1, { constraints, variables, optionList } ];
    
    AddCell[
      fileName,
@@ -427,11 +430,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:init", { id_, constraints_, varia
        id,
        dir,
        "FindZeroValues",
-       {
-         { "Constraints", fn1 },
-         { "Variables",   fn2 }
-       },
-       optionList
+       { "Constraints", "Variables" },
+       optionList,
+       fn1
      ]
    ]
  ];
@@ -541,8 +542,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BMS:init", { id_, symmetries_, option
         id,
         dir,
         "BreakMultiplicativeSymmetry",
-        { { "Symmetries", fn } },
-        optionList
+        { "Symmetries"},
+        optionList,
+        fn
       ]
     ];
     AddCell[
@@ -599,16 +601,11 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BMS:unfixed_demanded_vars", { id_, va
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "BZV:solutions", { id_, soln_ } ] :=
   MyNotebookPrint[ dir, fileName, nbo ][ "FZV:solutions", { id, soln } ];
 
-
 (*SolveBinomialSystem*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMS:init", { id_, eqns_ ,vars_ ,param_, optionList_} ] :=
-  Module[{fn1, fn2, fn3},
-    fn1 = dataFileName[ id, dir, "Equations" ];
-    safeExport[ fn1, eqns ];
-    fn2 = dataFileName[ id, dir, "Variables" ];
-    safeExport[ fn2, vars ];
-    fn3 = dataFileName[ id, dir, "Param" ];
-    safeExport[ fn3, param ];
+  Module[{fn},
+    fn = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn, { eqns, vars, param, optionList } ];
     
     AddCell[
       fileName,
@@ -617,8 +614,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMS:init", { id_, eqns_ ,vars_ ,param
         id,
         dir,
         "SolveBinomialSystem",
-        { { "Equations", fn1 }, { "Variables", fn2 }, { "Param", fn3 } },
-        optionList
+        { "Equations", "Variables", "Param" },
+        optionList,
+        fn
       ]
     ];
     
@@ -668,13 +666,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMS:solutions", {id_,solutions_} ] :=
 
 (*SolveNonSingularBinomialSystem*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:init", { id_, eqns_, vars_, param_, optionList_ } ] :=
-  Module[{ fn1, fn2, fn3 },
-    fn1 = dataFileName[ id, dir, "Equations" ];
-    safeExport[ fn1, eqns ];
-    fn2 = dataFileName[ id, dir, "Variables" ];
-    safeExport[ fn2, vars ];
-    fn3 = dataFileName[ id, dir, "Param" ];
-    safeExport[ fn3, param ];
+  Module[{ fn1 },
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { eqns, vars, param, optionList } ];
     
     AddCell[
       fileName,
@@ -683,8 +677,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:init", { id_, eqns_, vars_, par
         id,
         dir,
         "SolveNonSingularBinomialSystem",
-        { { "Equations", fn1 }, { "Variables", fn2 }, { "Param", fn3 } },
-        optionList
+        {"Equations", "Variables", "Param" },
+        optionList,
+        fn1
       ]
     ];
     
@@ -759,6 +754,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:solutions", {id_,solutions_,___
       CellTags -> { id, "Info" }
     ]
   ];
+  
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:constraints_not_satisfied", { id_, preSolutions_, constraints_, invalidPos_ } ] :=
   Module[{ fn1, fn2, fn3 },
     fn1 = dataFileName[ id, dir, "PreSolutions" ];
@@ -796,8 +792,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMZS:init", { id_, system_, optionLis
         id,
         dir,
         "SolveModZSpace",
-        { { "System", fn } },
-        optionList
+        { "System" },
+        optionList,
+        fn
       ]
     ];
   ];
@@ -853,11 +850,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMZS:solutions", { id_, solutions_ } 
 
 (*SolveSemiLinModZ*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, param_, optionList_, ___ } ] :=
-  Module[{fn, fn2},
-    fn = dataFileName[ id, dir, "System" ];
-    safeExport[ fn, system ];
-    fn2 = dataFileName[ id, dir, "Param" ];
-    safeExport[ fn2, param ];
+  Module[{fn},
+    fn = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn, { system, param, optionList } ];
     
      AddCell[
        fileName,
@@ -866,8 +861,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:init", { id_, system_, param_, o
          id,
          dir,
          "SolveSemiLinModZ",
-         { { "System", fn }, { "Param", fn2 } },
-         optionList
+         { "System",  "Param" },
+         optionList,
+         fn
        ]
      ];
   ];
@@ -902,13 +898,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SSES:nonone_coeff", { id_, vector_, r
 
 (*SolvePolynomialSystem*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SPS:init", { id_, eqns_,vars_,param_,optionList_} ] :=
-  Module[{ fn1, fn2, fn3 },
-    fn1 = dataFileName[ id, dir, "Equations" ];
-    safeExport[ fn1, eqns ];
-    fn2 = dataFileName[ id, dir, "Variables" ];
-    safeExport[ fn2, vars ];
-    fn3 = dataFileName[ id, dir, "Param" ];
-    safeExport[ fn3, param ];
+  Module[{ fn1 },
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { eqns, vars, param, optionList } ];
     
     AddCell[
       fileName,
@@ -917,8 +909,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SPS:init", { id_, eqns_,vars_,param_,
         id,
         dir,
         "SolvePolynomialSystem",
-        { { "Equations", fn1 }, { "Variables", fn2 }, { "Param", fn3 } },
-        optionList
+        { "Equations", "Variables", "Param" },
+        optionList,
+        fn1
       ]
     ];
     
@@ -952,15 +945,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SPS:solutions", { id_, solutions_, __
 
 (*ReduceByBinomials*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBM:init", { id_, sumEqns_,monEqns_,vars_,symbol_,optionList_ } ] :=
-  Module[{ fn1, fn2, fn3, fn4 },
-    fn1 = dataFileName[ id, dir, "SumEquations" ];
-    safeExport[ fn1, sumEqns ];
-    fn2 = dataFileName[ id, dir, "BinomialEquations" ];
-    safeExport[ fn2, monEqns ];
-    fn3 = dataFileName[ id, dir, "Variables" ];
-    safeExport[ fn3, vars ];
-    fn4 = dataFileName[ id, dir, "Symbol" ];
-    safeExport[ fn4, symbol ];
+  Module[{ fn1 },
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { sumEqns, monEqns, vars, symbol, optionList } ];
     
     AddCell[
       fileName,
@@ -969,8 +956,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBM:init", { id_, sumEqns_,monEqns_,v
         id,
         dir,
         "ReduceByBinomials",
-        { { "SumEquations", fn1 }, {"BinomialEquations", fn2 }, {"Variables", fn3 }, { "Symbol", fn4 } },
-        optionList
+        { "SumEquations", "BinomialEquations", "Variables", "Symbol" },
+        optionList,
+        fn1
       ]
     ];
     
@@ -1006,15 +994,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBM:solutions", { id_, solutions_, __
 
 (*SolveAndCheck*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:init", { id_, binomialEqns_,sumEqns_,vars_,symbol_,optionList_, ___ } ] :=
-  Module[{fn1,fn2,fn3,fn4},
-    fn1 = dataFileName[ id, dir, "BinEqns" ];
-    safeExport[ fn1, binomialEqns ];
-    fn2 = dataFileName[ id, dir, "Variables" ]; 
-    safeExport[ fn2, vars ];
-    fn3 = dataFileName[ id, dir, "Symbol" ];
-    safeExport[ fn3, symbol ];
-    fn4 = dataFileName[ id, dir, "NonBinEqns" ];
-    safeExport[ fn4, sumEqns ];
+  Module[{fn1},
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { binomialEqns, sumEqns, vars, symbol, optionList } ];
     
     AddCell[
       fileName,
@@ -1023,8 +1005,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:init", { id_, binomialEqns_,sumEq
         id,
         dir,
         "SolveAndUpdate",
-        { { "BinEqns", fn1 }, { "NonBinEqns", fn4 }, { "Variables", fn2 }, { "Symbol", fn3 } },
-        optionList
+        { "BinEqns", "NonBinEqns", "Variables", "Symbol" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1113,10 +1096,8 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:remainingsol", { id_, soln_, vali
 (* ToUnitaryGauge *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:init", { id_, ring_, FSymb_, optionList_,___ } ] :=
   Module[{fn1, fn2},
-    fn1 = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn1, ring ];
-    fn2 = dataFileName[ id, dir, "FSymbols" ];
-    safeExport[ fn2, FSymb ];
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { ring, FSymb, optionList } ];
 
     AddCell[
       fileName,
@@ -1125,8 +1106,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:init", { id_, ring_, FSymb_, opti
         id,
         dir,
         "ToUnitaryGauge",
-        { { "Ring", fn1 }, { "FSymbols", fn2 } },
-        optionList
+        { "Ring", "FSymbols" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1308,10 +1290,8 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:sol_not_unitary", { id_, ___ } ] 
 (* ToSymmetricGauge *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TSG:init", { id_, ring_, FSymb_, optionList_,___ } ] :=
 Module[{fn1, fn2},
-  fn1 = dataFileName[ id, dir, "Ring" ];
-  safeExport[ fn1, ring ];
-  fn2 = dataFileName[ id, dir, "FSymbols" ];
-  safeExport[ fn2, FSymb ];
+  fn1 = dataFileName[ id, dir, "Arguments" ];
+  safeExport[ fn1, { ring, FSymb, optionList } ];
   
   AddCell[
     fileName,
@@ -1320,8 +1300,9 @@ Module[{fn1, fn2},
       id,
       dir,
       "ToSymmetricGauge",
-      { { "Ring", fn1 }, { "FSymbols", fn2 } },
-      optionList
+      { "Ring", "FSymbols" },
+      optionList,
+      fn1
     ]
   ];
 ];
@@ -1432,8 +1413,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:init", { id_, ring_, optionList
         id,
         dir,
         "SolveMultiplicityFreePentagonEquations",
-        { { "Ring", fn1 } },
-        optionList
+        { "Ring" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1459,14 +1441,12 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:solving_systems", { id_ } ] :=
       CellTags -> { id, "Info" }
     ]
   ];
+  
 (* MultiplicityFreePentagonGroebnerSystems *)
-
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGS:init", { id_, ring_, var_, optionList_ } ] :=
-  Module[ { fn1, fn2 },
-    fn1 = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn1, ring ];
-    fn2 = dataFileName[ id, dir, "Var" ];
-    safeExport[ fn2, var ];
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { ring, var, optionList } ];
     
     AddCell[
       fileName,
@@ -1475,8 +1455,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGS:init", { id_, ring_, var_, opti
         id,
         dir,
         "MultiplicityFreePentagonGroebnerSystems",
-        { { "Ring", fn1 }, { "Var", fn2 } },
-        optionList
+        { "Ring", "Var" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1527,11 +1508,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFPGS:quicksolve", { id_, systems_ } 
 
 (* MultiplicityFreeHexagonGroebnerSystems *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGS:init", { id_, ring_, var_, optionList_ } ] :=
-  Module[ { fn1, fn2 },
-    fn1 = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn1, ring ];
-    fn2 = dataFileName[ id, dir, "Var" ];
-    safeExport[ fn2, var ];
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { ring, var, optionList } ];
 
     AddCell[
       fileName,
@@ -1540,8 +1519,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGS:init", { id_, ring_, var_, opti
         id,
         dir,
         "MultiplicityFreeHexagonGroebnerSystems",
-        { { "Ring", fn1 }, { "Var", fn2 } },
-        optionList
+        { "Ring", "Var" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1556,8 +1536,8 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MFHGS:quicksolve", { id_, systems_ } 
 (* PreparePentagonSolverInput *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:init", { id_, ring_, optionList_ } ] :=
   Module[ { fn1 },
-    fn1 = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn1, ring ];
+    fn1 = dataFileName[ id, dir, "Arguments" ];
+    safeExport[ fn1, { ring, optionList } ];
     
     AddCell[
       fileName,
@@ -1566,8 +1546,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:init", { id_, ring_, optionList_
         id,
         dir,
         "PreparePentagonSolverInput",
-        { { "Ring", fn1 } },
-        optionList
+        { "Ring" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1649,8 +1630,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:init", { id_, ring_, optionList_
         id,
         dir,
         "PrepareHexagonSolverInput",
-        { { "Ring", fn1 } },
-        optionList
+        { "Ring" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -1762,11 +1744,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:symmetries", { id_, symmetries_,
 
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:init", { id_, pols_, var_, optionList_ } ] :=
-  Module[ { fn1, fn2 },
-    fn1 = dataFileName[ id, dir, "Polynomials" ];
-    safeExport[ fn1, pols ];
-    fn2 = dataFileName[ id, dir, "Var" ];
-    safeExport[ fn2, var ];
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "RBLArguments" ];
+    safeExport[ fn1, { pols, var, optionList } ];
 
     AddCell[
       fileName,
@@ -1775,14 +1755,15 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:init", { id_, pols_, var_, option
         id,
         dir,
         "ReduceByLinearity",
-        { { "Polynomials", fn1 } , { "Var", fn2 } },
-        optionList
+        { "Polynomials", "Var" },
+        optionList,
+        fn1
       ]
     ];
   ];
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBL:pol_problem", { id_, pol_, pols_ } ] :=
-  Module[{fn1},
+  Module[{fn1,fn2},
     fn1 = dataFileName[ id, dir, "Polynomials" ];
     safeExport[ fn1, pols ];
 
@@ -1984,8 +1965,8 @@ MyNotebookPrint[ dir_, fileName_, nbo_][ "RBL:reduction", { id_, denom_, s_ } ] 
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFHE:init", { id_, ring_, optionList___ } ] :=
   Module[{fn},
-    fn = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn, ring ];
+    fn = dataFileName[ id, dir, "SMFHEArguments" ];
+    safeExport[ fn, { ring, optionList } ];
     
     AddCell[
       fileName,
@@ -1994,21 +1975,18 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFHE:init", { id_, ring_, optionList
         id,
         dir,
         "SolveMultiplicityFreeHexagonEquations",
-        { { "Ring", fn } },
-        optionList
+        { "Ring"  },
+        optionList,
+        fn
       ]
     ];
   ];
 
 (* RestrictMultiplicativeSymmetries *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:init", { id_, sym_, vars_, symbol_, optsList_ } ] :=
-  Module[{fn1, fn2, fn3 },
-    fn1 = dataFileName[ id, dir, "Symmetries" ];
-    safeExport[ fn1, sym ];
-    fn2 = dataFileName[ id, dir, "Variables" ];
-    safeExport[ fn2, vars ];
-    fn3 = dataFileName[ id, dir, "Symbol" ];
-    safeExport[ fn3, symbol ];
+  Module[{fn1 },
+    fn1 = dataFileName[ id, dir, "RMSArguments" ];
+    safeExport[ fn1, { sym, vars, symbol, optsList } ];
     
     AddCell[
       fileName,
@@ -2017,8 +1995,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RMS:init", { id_, sym_, vars_, symbol
         id,
         dir,
         "RestrictMultiplicativeSymmetries",
-        { { "Symmetries", fn1 }, { "Vars", fn2 }, { "Symbol", fn3 } },
-        optsList
+        { "Symmetries", "Vars", "Symbol" },
+        optsList,
+        fn1
       ]
     ];
   ];
@@ -2091,13 +2070,9 @@ Module[{ fn },
 
 (* DeleteEquivalentSolutions *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:init", { id_, soln_, ring_, sym_, optionList_ } ] :=
-  Module[{fn1, fn2, fn3 },
-    fn1 = dataFileName[ id, dir, "Solutions" ];
-    safeExport[ fn1, soln ];
-    fn2 = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn2, ring ];
-    fn3 = dataFileName[ id, dir, "Symmetries" ];
-    safeExport[ fn3, sym ];
+  Module[{fn1},
+    fn1 = dataFileName[ id, dir, "DSESArguments" ];
+    safeExport[ fn1, { soln, ring, sym, optionList } ];
 
     AddCell[
       fileName,
@@ -2106,8 +2081,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:init", { id_, soln_, ring_, sym_
         id,
         dir,
         "DeleteEquivalentSolutions",
-        { { "Solutions", fn1 }, { "Ring", fn2 }, { "Symmetries", fn3 } },
-        optionList
+        { "Solutions", "Ring", "Symmetries" },
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -2141,7 +2117,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "DSES:groups", { id_, groups_ } ] :=
       ]
     ];
   ];
-
+    (*
 (* GaugeSymmetryEquivalentQ *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:init", { id_, mat_, sol1_, sol2_, optionList_ } ] :=
 Module[{fn1, fn2, fn3},
@@ -2178,7 +2154,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:unitary_different_abs", { id_ } 
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:nonone_coeff", data_ ] :=
   MyNotebookPrint[ dir, fileName, nbo ][ "SSES:nonone_coeff", data ];
-
+*)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MZV:using_database", { procID_ } ] :=
   AddCell[
     fileName,
@@ -2200,7 +2176,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "MZV:entry_not_found", { procID_ } ] :
       CellTags -> { procID, "Info" }
     ]
   ];
-
+    (*
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:init", { id_, mat_, sol1_, sol2_, optionList_ } ] :=
   Module[{fn1, fn2, fn3},
     fn1 = dataFileName[ id, dir, "HermiteDecompOfGaugeMatrix" ];
@@ -2222,15 +2198,12 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "GSEQ:init", { id_, mat_, sol1_, sol2_
       ]
     ];
   ];
+*)
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:init", { id_, rhs_, r_, test_, optionList_ } ] :=
-  Module[{fn1, fn2, fn3},
-    fn1 = dataFileName[ id, dir, "RHS" ];
-    safeExport[ fn1, rhs ];
-    fn2 = dataFileName[ id, dir, "Rank" ];
-    safeExport[ fn2, r ];
-    fn3 = dataFileName[ id, dir, "Test" ];
-    safeExport[ fn3, test ];
+  Module[{fn1},
+    fn1 = dataFileName[ id, dir, "CQArguments" ];
+    safeExport[ fn1, {rhs,r,test, optionList} ];
     
     AddCell[
       fileName,
@@ -2239,8 +2212,9 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:init", { id_, rhs_, r_, test_, opt
         id,
         dir,
         "ConsistentQ",
-        { { "RHS", fn1 }, { "Rank", fn2 }, { "Test", fn3 } },
-        optionList
+        { "RHS", "Rank", "Test"},
+        optionList,
+        fn1
       ]
     ];
   ];
@@ -2269,15 +2243,4 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:failed", { procID_, rhs_, r_, test
         }]
       ]
     ];
-    
-    
-  ]
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      "Entry not found in database. Calculating zero values and adding result.",
-      "Text",
-      CellTags -> { procID, "Info" }
-    ]
   ];
