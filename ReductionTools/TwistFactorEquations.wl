@@ -5,11 +5,11 @@
 
 Package["Anyonica`"]
 
-PackageExport["TwistFactorEquations"]
-
-TwistFactorEquations::usage =
+(*TwistFactorEquations::usage =
     "TwistFactorEquations[ring,twistFactors] returns the equations that relate twist factors to R-symbols for a" <>
     "braided fusion category with ring as Grothendieck ring.";
+*)
+(* TODO: this doesn't make sense since you need to provide a pivotal structure as well *)
 
 TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
   Module[
