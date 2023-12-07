@@ -2219,6 +2219,25 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:init", { id_, rhs_, r_, test_, opt
     ];
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:init", { id_, eqns_, test_, optionList_ } ] :=
+  Module[{fn1},
+    fn1 = dataFileName[ id, dir, "CQArguments" ];
+    safeExport[ fn1, {eqns,test, optionList} ];
+    
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "ConsistentQ",
+        { "Equations", "Test"},
+        optionList,
+        fn1
+      ]
+    ];
+  ];
+
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:failed", { procID_, rhs_, r_, test_, firstFail_ } ] :=
   Module[{ fn },
     fn = dataFileName[ procID, dir, "RHSVector" ];
@@ -2244,3 +2263,28 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:failed", { procID_, rhs_, r_, test
       ]
     ];
   ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "CQ:failed", { procID_, eqns_, test_, firstFail_ } ] :=
+Module[{ fn },
+  fn = dataFileName[ procID, dir, "RHSVector" ];
+  safeExport[ fn, eqns ];
+  
+  AddCell[
+    fileName,
+    nbo,
+    warningCell[
+      procID,
+      TextData[{
+        inputStyle["Warning! "],
+        hyperlinkBox[ "equations", fn],
+        inputStyle[" contain an entry (= "<> ToString[InputForm @ firstFail] <>") for which "<>
+        ToString[InputForm[test]]<>" does not return True. Assuming system has no solutions. This could be"<>
+        " because Mathematica doesn't "<>
+        "simplify some expressions by default. In this case use the options \"SimplifyBy\" and/or \"IntegerCheck\" "<>
+        "to resolve the issue."
+        ]
+        
+      }]
+    ]
+  ];
+];

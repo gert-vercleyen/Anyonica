@@ -1099,3 +1099,24 @@ ConsistentQ[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
     
     !problemQ
 	];
+
+ConsistentQ[ eqns_, test_, opts:OptionsPattern[] ] :=
+  Module[ { FirstFailure, firstFail, check, procID, t, problemQ },
+    check =
+      OptionValue["PreEqualCheck"];
+    FirstFailure[ l_ ] :=
+      FirstCase[ l, x_ /; !test[ check @ x ] ];
+    procID =
+      ToString @ Unique[];
+    
+    printlog["CQ:init", { procID, eqns, test, {opts} }];
+    
+    { t, problemQ } =
+      AbsoluteTiming[ !MissingQ[ firstFail = FirstFailure[ eqns ] ] ];
+    
+    If[ problemQ, printlog["CQ:failed", { procID, eqns, test, firstFail }] ];
+    
+    printlog["Gen:results", {procID, !problemQ, t } ];
+    
+    !problemQ
+  ];
