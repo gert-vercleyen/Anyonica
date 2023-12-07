@@ -9,13 +9,10 @@ Package["Anyonica`"]
     "TwistFactorEquations[ring,twistFactors] returns the equations that relate twist factors to R-symbols for a" <>
     "braided fusion category with ring as Grothendieck ring.";
 *)
-(* TODO: this doesn't make sense since you need to provide a pivotal structure as well *)
 
-TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
+TwistFactorEquations[ ring_FusionRing, t_ ] :=
   Module[
     { t, d, a, b, c, rs },
-    t =
-      Exp[ 2 Pi I twistFactors ][[#]]&;
     d =
       QD[ring][[#]]&;
     rs =
@@ -28,11 +25,6 @@ TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
             List @@ r;
           R[ a, b, c ] * R[ b, a, c ] == t[c] / ( t[a] t[b] ),
           { r, rs }
-        ]
-        ,
-        Table[
-          Sum[ ( d[c] / d[a] ) R[ a, a, c ], { c, Cases[ rs, R[ a, a, _ ] ][[;;,3]] } ] == t[a],
-          { a, Rank[ring] }
         ]
       ]/.$VacuumRPattern -> 1
     ]
