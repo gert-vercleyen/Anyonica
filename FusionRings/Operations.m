@@ -290,6 +290,20 @@ EquivalentFusionRings[ r_FusionRing?FusionRingQ ] :=
     Table[ PermutedRing[ r, Join[ {1}, \[Sigma] ] ], { \[Sigma], l } ]
   ];
 
+(* We need to call this before unprotecting TensorProduct since otherwise we get an error.
+I don't know why this happens though *)
+
+Options[TensorProduct];
+
+Unprotect[TensorProduct];
+
+Options[TensorProduct] =
+Join[
+  Options[FusionCategory],
+  Options[FusionRing],
+  { "SimplifyBy" -> Identity }
+];
+
 FusionRing /: TensorProduct[ ring1:FusionRing[_], ring2:FusionRing[_], opts:OptionsPattern[] ] :=
   AddOptions[opts][FusionRing][
     "MultiplicationTable" ->  KroneckerProduct[ MT @ ring1, MT @ ring2 ]

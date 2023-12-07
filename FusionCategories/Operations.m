@@ -15,6 +15,10 @@ FusionCategory /: ApplyGaugeTransform[ cat_FusionCategory, gaugeVals_, s_ ] :=
     ]
   ];
 
+(* We need to call this before unprotecting TensorProduct since otherwise we get an error.
+I don't know why this happens though *)
+
+Options[TensorProduct];
 
 Unprotect[TensorProduct];
 
