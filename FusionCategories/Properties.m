@@ -69,33 +69,67 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
     Solve[ eqns, Rest @ Array[ e, r ] ][[;;,;;,2]]
   ];
 
+PackageExport["PivotalStructure"]
 
-PackageExport["TopologicalSpins"]
+PivotalStructure::usage = 
+  "PivotalStructure[cat] returns the pivotal structure of the fusion category cat.";
+ 
+PivotalStructure[ FusionCategory[data_]] := 
+  data["PivotalStructure"];
 
-TopologicalSpins::usage =
-  "TopologicalSpins[cat] returns a list of topological spins of the braided category cat.";
+PackageExport["Twists"]
 
-TopologicalSpins::nonbraidedcat =
-  "The topological spins are only defined for a braided category.";
+Twists::usage = 
+  "Twists[cat] returns the topological twists of the fusion category cat.";
+ 
+Twists[ FusionCategory[data_] ] := 
+  data["Twists"];
 
-TopologicalSpins[ cat_FusionCategory ] :=
-(
-  If[ !BraidedQ[cat], Message[TopologicalSpins::nonbraidedcat]; Abort[] ];
-  Module[{ sR, qd, dMat },
-    sR =
-      SparseArray[
-        Rest[#] -> R @@ # & /@ Cases[ NZSC @ cat, { a_, a_, c_ } ] /. Dispatch[ RSymbols @ cat ]
-      ];
-    
-    qd =
-      QD @ FusionRing @ cat;
-    
-    dMat =
-      Table[ qd[[c]] / qd[[a]], { c, Rank @ cat }, { a, Rank @ cat } ];
-    
-    Tr[ sR.dMat ]
-    
-  ]
-)
+PackageExport["Dimensions"]
 
+QuantumDimensions::usage =
+  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
+  "of the fusion category cat";
+ 
+QuantumDimensions[ FusionCategory[data_] ] :=
+  data["Dimensions"];
 
+PackageExport["SMatrix"]
+
+SMatrix::usage =
+  "SMatrix[cat] returns the S-matrix of the fusion category cat.";
+ 
+SMatrix[ FusionCategory[data_] ] :=
+  data["SMatrix"];
+
+PackageExport["ModularQ"]
+
+ModularQ::usage =
+  "ModularQ[cat] returns True if the fusion category cat is modular.";
+ 
+ModularQ[ FusionCategory[data_] ] :=
+  data["Modular"];
+
+ModularData[ cat_FusionCategory ] :=
+  If[
+    ModularQ[ cat ],
+    { SMatrix[cat], Twists[cat] },
+    Missing["NonModularCategory"]
+  ];
+
+PackageExport["SphericalQ"]
+
+SphericalQ::usage =
+  "SphericalQ[cat] returns True if cat is a sperical fusion category.";
+ 
+SphericalQ::nodims =
+  "The category has no quantum dimensions so can not be checked for sphericality.";
+
+SphericalQ[ cat_FusionCategory ] :=
+  With[ { dims = QuantumDimensions[cat] },
+    If[
+      MissingQ[ dims ],
+      Message[ SphericalQ::nodims ],
+      And @@ Table[ RootReduce[ dims[[i]] == dims[[i+1]] ], { i, NSD[cat]+1, Rank[cat], 2 } ];
+    ]
+  ];

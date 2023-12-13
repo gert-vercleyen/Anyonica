@@ -37,13 +37,19 @@ FusionCategory::invalidrsymbols =
 
 Options[ FusionCategory ] =
   {
-    "FusionRing"    -> Missing[],
-    "FSymbols"      -> Missing[],
-    "RSymbols"      -> Missing[],
-    "FormalParameters" -> Missing[],
-    "Unitary"       -> Missing[],
-    "PreEqualCheck" -> Identity,
-    "SkipCheck"     -> False
+    "FusionRing"        -> Missing[],
+    "FSymbols"          -> Missing[],
+    "RSymbols"          -> Missing[],
+    "FormalParameters"  -> Missing[],
+    "Unitary"           -> Missing[],
+    "PivotalStructure"  -> Missing[],
+    "Dimensions"        -> Missing[],
+    "Twists"            -> Missing[],
+    "SMatrix"           -> Missing[],
+    "Modular"           -> Missing[],
+    "PreEqualCheck"     -> Identity,
+    "SimplifyBy"        -> Identity,
+    "SkipCheck"         -> False
   };
 
 FusionCategory[ ops:OptionsPattern[] ] :=
@@ -54,7 +60,7 @@ Options[ InitializeFusionCategory ] :=
 
 InitializeFusionCategory[ ops:OptionsPattern[] ] :=
   Module[
-    { ring, fSymbols, rSymbols, preEqualCheck, skipCheck },
+    { ring, fSymbols, rSymbols, preEqualCheck, skipCheck, pivStruct, dims, twists, sMat, modular },
     ring =
       OptionValue[ "FusionRing" ];
     fSymbols =
@@ -65,8 +71,17 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "PreEqualCheck" ];
     skipCheck =
       OptionValue[ "SkipCheck" ];
-
-
+    pivStruct =
+      OptionValue[ "PivotalStructure" ];
+    dims =
+      OptionValue[ "Dimensions" ];
+    twists =
+      OptionValue[ "Twists" ];
+    sMat =
+      OptionValue[ "SMatrix" ];
+    modular =
+      OptionValue[ "Modular" ];
+      
     If[
       !skipCheck && !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, preEqualCheck ],
       Message[ FusionCategory::invaliddata ]
@@ -76,6 +91,10 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "FusionRing"                -> ring,
       "FSymbols"                  -> fSymbols,
       "RSymbols"                  -> rSymbols,
+      "PivotalStructure"          -> pivStruct,
+      "Twists"                    -> twists,
+      "sMat"                      -> sMat,
+      "Modular"                   -> modular,
       "FormalParameters"          -> OptionValue["FormalParameters"],
       "Unitary"                   -> OptionValue["Unitary"],
       "Names"                     -> Missing[]
