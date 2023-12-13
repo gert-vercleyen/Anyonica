@@ -698,8 +698,13 @@ Module[
     pentEqns =
     Join[ binEqns, sumEqns ];
     
-    invMats  =
-    FMatrices[ ring ];
+    (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
+    invMats =
+      With[ { d = CC[ring] },
+        Join[
+          FMatrices[ ring ],
+          Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
+      ];
     
     gaugeSymmetries =
     GaugeSymmetries[ allFSymbols, g ];
