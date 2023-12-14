@@ -1120,3 +1120,38 @@ ConsistentQ[ eqns_, test_, opts:OptionsPattern[] ] :=
     
     !problemQ
   ];
+
+PackageExport["ToRationalPhase"]
+
+ToRationalPhase::usage =
+  "ToRationalPhase[x] approximates x by the form (-1)^q where q is a rational number.\n"<>
+  "ToRationalPhase[x,dx] approximates x by the form (-1)^q where q deviates at most dx from its actual value.";
+ 
+
+ToRationalPhase[ z_, dz_ ] :=
+  With[ { nz = InfN[ z, 100 ] },
+    Which[
+      nz == 1
+      ,
+      1
+      ,
+      nz == -1
+      ,
+      -1
+      ,
+      nz == I
+      ,
+      I
+      ,
+      nz == -I
+      ,
+      -I
+      ,
+      True
+      ,
+      (-1)^(Rationalize[Log[nz]/(I Pi),dz])
+    ]
+  ];
+  
+ToRationalPhase[ z_ ] :=
+	ToRationalPhase[ z, 0 ]
