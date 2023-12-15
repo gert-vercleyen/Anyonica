@@ -93,7 +93,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "RSymbols"                  -> rSymbols,
       "PivotalStructure"          -> pivStruct,
       "Twists"                    -> twists,
-      "sMat"                      -> sMat,
+      "SMatrix"                   -> sMat,
       "Modular"                   -> modular,
       "FormalParameters"          -> OptionValue["FormalParameters"],
       "Unitary"                   -> OptionValue["Unitary"],
