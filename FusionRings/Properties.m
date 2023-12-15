@@ -242,14 +242,14 @@ SetAttributes[ Rank, Listable ];
 FusionRing /: Rank[ r_FusionRing?FusionRingQ ] :=
   Length @ MultiplicationTable[r];
 
-PackageExport["QuantumDimensions"]
+PackageExport["FrobeniusPerronDimensions"]
 
-QuantumDimensions::usage =
-  "QuantumDimensions[Ring] returns the list of quantum dimensions of the ring.";
+FrobeniusPerronDimensions::usage =
+  "FrobeniusPerronDimensions[Ring] returns the list of Frobenius-Perron dimensions of the ring.";
 
-SetAttributes[ QuantumDimensions, Listable ];
+SetAttributes[ FrobeniusPerronDimensions, Listable ];
 
-FusionRing /: QuantumDimensions[ r_FusionRing?FusionRingQ ] :=
+FusionRing /: FrobeniusPerronDimensions[ r_FusionRing?FusionRingQ ] :=
   If[
     !MissingQ[ r["QuantumDimensions"] ]
     ,
@@ -262,36 +262,35 @@ FusionRing /: QuantumDimensions[ r_FusionRing?FusionRingQ ] :=
   ];
 
 
-PackageExport["QD"]
+PackageExport["FPDims"]
 
-QD::usage =
-  "QD is shorthand for QuantumDimensions.";
+FPDims::usage =
+  "FPDims is shorthand for FrobeniusPerronDimensions.";
 
-SetAttributes[ QD, Listable ];
+SetAttributes[ FPDims, Listable ];
 
-FusionRing /: QD[ r_FusionRing?FusionRingQ ] :=
-  QuantumDimensions[ r ];
+FusionRing /: FPDims[ r_FusionRing?FusionRingQ ] :=
+  FrobeniusPerronDimensions[ r ];
 
-PackageExport["TotalQuantumDimensionSquared"]
+PackageExport["FrobeniusPerronDimension"]
 
 
-TotalQuantumDimensionSquared::usage =
-  "TotalQuantumDimensionSquared[Ring] returns the sum of the squares of the quantum dimensions of the generators " <>
-  "of Ring";
+FrobeniusPerronDimension::usage =
+  "FrobeniusPerronDimension[Ring] returns the Frobenius-Perron dimension of Ring";
 
-SetAttributes[ TotalQuantumDimensionSquared, Listable ];
-FusionRing /: TotalQuantumDimensionSquared[ r_FusionRing?FusionRingQ ] :=
-  Total[ QuantumDimensions[r]^2 ];
+SetAttributes[ FrobeniusPerronDimension, Listable ];
+FusionRing /: FrobeniusPerronDimension[ r_FusionRing?FusionRingQ ] :=
+  Total[ FPDims[r]^2 ];
 
-PackageExport["TQDS"]
+PackageExport["FPDim"]
 
-TQDS::usage =
-  "Shorthand for TotalQuantumDimensionSquared.";
+FPDim::usage =
+  "FPDim is shorthand for FrobeniusPerronDimension.";
 
-SetAttributes[ TQDS, Listable ];
+SetAttributes[ FPDim, Listable ];
 
-FusionRing /: TQDS[ r_FusionRing?FusionRingQ ] :=
-  TotalQuantumDimensionSquared[ r ];
+FusionRing /: FPDim[ r_FusionRing?FusionRingQ ] :=
+  FrobeniusPerronDimension[ r ];
 
 PackageExport["NSelfDual"]
 
@@ -452,7 +451,7 @@ FusionRing /: Barcode[ r_FusionRing?FusionRingQ ] :=
         ];
 
       qds =
-        Rest @ QuantumDimensions[ sRing ]; (* 1 should be left alone *)
+        Rest @ FPDims[ sRing ]; (* 1 should be left alone *)
 
       permutations =
         Prepend[1] @* Flatten /@
@@ -736,7 +735,7 @@ WhichDecompositions[ r_FusionRing?FusionRingQ ] :=
 
 CandidatesByTQDS[ r_FusionRing?FusionRingQ, list_ ] :=
   Module[{
-    tqds = TotalQuantumDimensionSquared[r],
+    tqds = FPDim[r],
     R = Rank[ r ],
     partitions,
     AllQDims,
@@ -752,7 +751,7 @@ CandidatesByTQDS[ r_FusionRing?FusionRingQ, list_ ] :=
       rings =
         Table[ Cases[ list, ring_/; Rank[ring] == ran ] , { p, partitions }, { ran, p } ];
       AllQDims =
-        Map[ TotalQuantumDimensionSquared, rings, {3} ];
+        Map[ FPDim, rings, {3} ];
 
       Table[
         { rings[[i]], BackTrackQDims[ AllQDims[[i]], tqds ] },

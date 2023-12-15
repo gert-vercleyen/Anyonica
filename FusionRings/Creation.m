@@ -65,7 +65,7 @@ Options[ FusionRing ] =
       "FormalParameters",
       "DirectProductDecompositions",
       "SubFusionRings",
-      "QuantumDimensions",
+      "FrobeniusPerronDimensions",
       "SMatrices",
       "TwistFactors",
       "ModularData",

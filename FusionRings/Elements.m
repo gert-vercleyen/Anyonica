@@ -21,12 +21,12 @@ PackageExport["FusionElement"]
 FusionElement::usage =
   "FusionElement[ring, i] represents a symbolic form of the i'th generator of the fusion ring r. If no \"ElementsName\" option is set, FusionElement[ring, i] will be formated as \!\(\*SubscriptBox[\(\[Psi]\), \(i\)]\). If the \"ElementsName\" option is set to \"string\" then the FusionElement[ring,i] will be formatted as \!\(\*SubscriptBox[\(string\), \(i\)]\). If the option \"ElementNames\" is set then FusionElement[ring,i] will be formatted by the i'th entry of ring[\"ElementNames\"]";
 
-FusionElement /: QuantumDimension[ FusionElement[ r_FusionRing?FusionRingQ, el_ ] ] :=
-  QuantumDimension[ FusionElement[ r, el ] ] =
-  (QuantumDimensions[ r ])[[ el ]];
+FusionElement /: FrobeniusPerronDimension[ FusionElement[ r_FusionRing?FusionRingQ, el_ ] ] :=
+  FrobeniusPerronDimension[ FusionElement[ r, el ] ] =
+  (FrobeniusPerronDimension[ r ])[[ el ]];
 
-FusionElement /: QD[  el_FusionElement  ] :=
-  QuantumDimension[ el ];
+FusionElement /: FPDim[  el_FusionElement  ] :=
+  FrobeniusPerronDimension[ el ];
 
 (*
   Call particles by invoking ring[[el]], where el is either Integer,

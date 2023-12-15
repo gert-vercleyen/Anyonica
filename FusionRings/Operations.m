@@ -54,7 +54,7 @@ PermutedRing[ r_FusionRing?FusionRingQ, perm_List ] :=
       "FormalParameters"            -> FC @ r,
       "DirectProductDecompositions" -> r["DirectProductDecompositions"],
       "SubFusionRings"              -> PermuteSubRingParticles[ r["SubFusionRings"], properPerm ],
-      "QuantumDimensions"           -> QuantumDimensions[r][[ properPerm ]],
+      "QuantumDimensions"           -> FPDims[r][[ properPerm ]],
       "SMatrices"                   -> SMatrices[r][[ ;;, properPerm, properPerm ]],
       "TwistFactors"                -> TwistFactors[r][[ ;;, properPerm ]],
       "ModularData"                 -> PermuteModularData /@ ModularData[r],
@@ -131,7 +131,7 @@ PackageExport["SortedRing"]
 SetAttributes[ SortedRing, Listable ];
 
 Options[SortedRing] =
-  { "SortBy" -> "QuantumDimensions" };
+  { "SortBy" -> "FPDims" };
 
 SortedRing[ r_FusionRing?FusionRingQ, OptionsPattern[] ] :=
   With[{
@@ -167,7 +167,7 @@ Options[PermVecQD] =
 
 PermVecQD[r_FusionRing?FusionRingQ, OptionsPattern[] ] :=
   With[{
-    qds = QuantumDimensions[r],
+    qds = FPDims[r],
     range = Range[ Rank[r] - 1] + 1
     },
     Prepend[
@@ -184,7 +184,7 @@ PackageScope["PermVecSDConj"]
 (* Based on anti-particles *)
 Options[PermVecSDConj] = Options[PermVecQD];
 PermVecSDConj[r_FusionRing?FusionRingQ, OptionsPattern[]] :=
-  Module[{ apmat = AntiparticleMatrix[r], qds = QuantumDimensions[r], pairs, sdpos, nsdpos, qdSort},
+  Module[{ apmat = AntiparticleMatrix[r], qds = FPDims[r], pairs, sdpos, nsdpos, qdSort},
     pairs =
       DeleteCases[ {1,1} ] @
       DeleteDuplicates[
