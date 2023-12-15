@@ -85,7 +85,7 @@ Twists::usage =
 Twists[ FusionCategory[data_] ] := 
   data["Twists"];
 
-PackageExport["Dimensions"]
+PackageExport["QuantumDimensions"]
 
 QuantumDimensions::usage =
   "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
@@ -129,7 +129,7 @@ SphericalQ[ cat_FusionCategory ] :=
   With[ { dims = QuantumDimensions[cat] },
     If[
       MissingQ[ dims ],
-      Message[ SphericalQ::nodims ],
+      Message[ SphericalQ::nodims ]; $Failed,
       And @@ Table[ RootReduce[ dims[[i]] == dims[[i+1]] ], { i, NSD[cat]+1, Rank[cat], 2 } ]
     ]
   ];
