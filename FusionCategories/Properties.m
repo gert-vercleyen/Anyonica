@@ -130,6 +130,6 @@ SphericalQ[ cat_FusionCategory ] :=
     If[
       MissingQ[ dims ],
       Message[ SphericalQ::nodims ],
-      And @@ Table[ RootReduce[ dims[[i]] == dims[[i+1]] ], { i, NSD[cat]+1, Rank[cat], 2 } ];
+      And @@ Table[ RootReduce[ dims[[i]] == dims[[i+1]] ], { i, NSD[cat]+1, Rank[cat], 2 } ]
     ]
   ];
