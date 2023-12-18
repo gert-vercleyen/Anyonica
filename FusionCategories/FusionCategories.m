@@ -73,8 +73,6 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "SkipCheck" ];
     pivStruct =
       OptionValue[ "PivotalStructure" ];
-    dims =
-      OptionValue[ "Dimensions" ];
     twists =
       OptionValue[ "Twists" ];
     sMat =

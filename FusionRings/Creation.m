@@ -154,7 +154,7 @@ InitializeFusionRing[ ops:OptionsPattern[] ] :=
         "MultiplicationTable" -> multTab,
         "Names" -> names,
         "SubFusionRings" -> OptionValue["SubFusionRings"],
-        "QuantumDimensions" -> OptionValue["QuantumDimensions"],
+        "QuantumDimensions" -> OptionValue["FrobeniusPerronDimensions"],
         "SMatrices" -> OptionValue["SMatrices"],
         "TwistFactors" -> OptionValue["TwistFactors"],
         "ModularData" -> OptionValue["ModularData"],

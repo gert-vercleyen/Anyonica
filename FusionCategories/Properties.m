@@ -91,8 +91,12 @@ QuantumDimensions::usage =
   "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
   "of the fusion category cat";
  
-QuantumDimensions[ FusionCategory[data_] ] :=
-  data["Dimensions"];
+QuantumDimensions[ cat_FusionCategory ] :=
+  With[{ d = CC[cat], p = PivotalStructure[cat] },
+    Table[
+      p[[a]] F[a,d[a],a,a,1,1], { a, Rank @ cat }
+    ]/.FSymbols[cat]
+  ];
 
 PackageExport["SMatrix"]
 
