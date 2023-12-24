@@ -1,3 +1,5 @@
+(* ::Package:: *)
+
 (*
 +---------------------------------------------------------------------------+
 |                                                                           |
@@ -1154,4 +1156,17 @@ ToRationalPhase[ z_, dz_ ] :=
   ];
   
 ToRationalPhase[ z_ ] :=
-	ToRationalPhase[ z, 0 ]
+	ToRationalPhase[ z, 0 ];
+	
+PackageExport["ReplaceByKnownValue"]
+
+ReplaceByKnownValue::usage = 
+"ReplaceByKnownValues[n,vals] checks the list vals for the expression that numerically matches the number n and, if found, returns it."<>
+" If no such expression exists then the number n is returned";
+		
+Options[ReplaceByKnownValue] = { "Accuracy" -> 128 };
+ReplaceByKnownValue[n_,values_,OptionsPattern[]]:=
+Module[{ fc },
+	fc = FirstCase[ values, x_/; InfN[ x-n==0, OptionValue["Accuracy"] ] ];
+	If[ MissingQ[fc], n,fc ]
+]
