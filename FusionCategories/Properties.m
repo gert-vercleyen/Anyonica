@@ -94,7 +94,7 @@ QuantumDimensions::usage =
 QuantumDimensions[ cat_FusionCategory ] :=
   With[{ d = CC[cat], p = PivotalStructure[cat] },
     Table[
-      p[[a]] F[a,d[a],a,a,1,1], { a, Rank @ cat }
+      p[[a]] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
     ]/.FSymbols[cat]
   ];
 

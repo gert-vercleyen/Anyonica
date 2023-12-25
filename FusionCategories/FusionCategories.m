@@ -79,7 +79,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "SMatrix" ];
     modular =
       OptionValue[ "Modular" ];
-      
+
     If[
       !skipCheck && !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, preEqualCheck ],
       Message[ FusionCategory::invaliddata ]
@@ -290,7 +290,7 @@ FusionCategories::usage =
 FusionCategories[ ring_FusionRing ] :=
   Module[ { fc = FC @ ring },
     If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
-    
+
     FCBC /@
     Select[ Keys @ FCBC, #[[;;4]] == fc& ]
   ];
