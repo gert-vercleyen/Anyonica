@@ -1,7 +1,7 @@
 PacletObject[<|
   "Name" -> "Anyonica"
   ,
-  "Version" -> "0.9.6.2"
+  "Version" -> "0.9.7.0"
   ,
   "Root" -> "."
   ,
@@ -9,9 +9,9 @@ PacletObject[<|
     {
       {
         "Kernel"
-        , 
+        ,
         "Root" -> "."
-        , 
+        ,
         "Context" -> { "Anyonica`" }
       }
       ,
