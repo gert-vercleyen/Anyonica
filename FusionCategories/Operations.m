@@ -35,18 +35,18 @@ FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_
   Module[ { sF1, sF2, sR1, sR2, r1, r2, fSymbols, rSymbols, simplify },
     simplify =
       OptionValue["SimplifyBy"];
-    
+
     r1 = Rank[cat1];
     r2 = Rank[cat2];
-    
+
     sF1 = SparseArray[ FSymbols[cat1] /. F -> List, { r1, r1, r1, r1, r1, r1 } ] ;
     sF2 = SparseArray[ FSymbols[cat2] /. F -> List, { r2, r2, r2, r2, r2, r2 } ] ;
     fSymbols = simplify @ MapAt[ Apply[F], Most @ ArrayRules @ KroneckerProduct[ sF1, sF2 ], { All, 1 } ];
-    
+
     sR1 = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ] ;
     sR2 = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ] ;
     rSymbols = simplify @ MapAt[ Apply[R], Most @ ArrayRules @ KroneckerProduct[ sR1, sR2 ], { All, 1 } ];
-    
+
     AddOptions[opts][FusionCategory][
       "FusionRing" -> TensorProduct[ FusionRing[cat1], FusionRing[cat2] ],
       "FSymbols"   -> fSymbols,
@@ -61,17 +61,18 @@ PermutedFusionCategory::usage =
   "PermutedFusionCategory[cat,perm] returns a fusion category whose objects are permuted by"<>
   "the permutation vector perm";
 
+(*TODO: include pivotal structure, twists, S matrix, ... *)
 PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
   Module[ { pVec, permuteSymbols, permutedRing },
     pVec =
       Permute[ Range @ Length @ perm, PermutationCycles @ perm ];
-    
+
     permuteSymbols =
       Sort @ MapAt[ ReplaceAll[ i_Integer :> pVec[[i]] ] , #, { All, 1 } ]&;
-    
+
     permutedRing =
       PermutedRing[ FusionRing @ cat, perm ];
-    
+
     AddOptions[ Normal @ data ][FusionCategory][
       "FusionRing" -> permutedRing,
       "FSymbols"   -> permuteSymbols @ FSymbols @ cat,
@@ -83,9 +84,6 @@ PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
 PackageExport["DeleteDuplicateFusionCategories"]
 
 DeleteDuplicateFusionCategories::usage =
-  "DeleteEquivalentFusionCategories[fusionCats] removes duplicate fusion categories. Two fusion categories " <>
+  "DeleteDuplicateFusionCategories[fusionCats] removes duplicate fusion categories. Two fusion categories " <>
   "are considered equal if there exists a combination of a gauge transform and a fusion ring automorphism that" <>
   " transforms both F- and R-symbols of one category into the other.";
-  
-
-
