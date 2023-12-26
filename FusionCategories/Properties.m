@@ -207,7 +207,7 @@ Catch[
 
 	Do[
 		If[
-		ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ], Throw @ EchoLabel[FormalCode[c1]] @ True ]
+		ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ],  True ]
 		,{ a, fra}
 	];
 
