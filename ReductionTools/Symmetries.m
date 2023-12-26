@@ -837,6 +837,7 @@ GaugeTransform[ g_Symbol ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
 GaugeTransform[ g_Symbol ][ R[ a_, b_, c_ ] ] :=
   ( g[ a, b, c ] / g[ b, a, c ] )* R[a,b,c];
 
+
 (* Special gauge transforms with extra parameter *)
 GaugeTransform[ { g_Symbol, t_Symbol } ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
   (t[ a, b, c, d, e, f ] g[ a, b, e ] g[ e, c, d ] )/( g[ a, f, d ] g[ b, c, f ] ) * F[ a, b, c, d, e, f ];

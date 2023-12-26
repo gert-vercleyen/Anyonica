@@ -7,10 +7,11 @@ Package["Anyonica`"]
 
 
 FusionCategory /: ApplyGaugeTransform[ cat_FusionCategory, gaugeVals_, s_ ] :=
-  With[{ opts = Normal @ First @ ( List @@ cat ) },
+  With[{ opts = Normal @ First @ ( List @@ cat ), p = PivotalStructure @ cat, d = CC[cat] },
     AddOptions[opts][FusionCategory][
       "FSymbols" -> ApplyGaugeTransform[ FSymbols @ cat, gaugeVals, s ],
-      "RSymbols" -> ApplyGaugeTransform[ RSymbols @ cat, gaugeVals, s ],
+      "RSymbols" -> If[ BraidedQ[cat], ApplyGaugeTransform[ RSymbols @ cat, gaugeVals, s ], Missing["NonBraidedCategory"] ],
+      "PivotalStructure" -> Table[ p[[a]] s[a,d[a],1]/s[d[a],a,1] /. gaugeVals, {a,Rank[cat]} ],
       "SkipCheck" -> True
     ]
   ];
@@ -80,10 +81,3 @@ PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
       "SkipCheck"  -> True
     ]
   ];
-
-PackageExport["DeleteDuplicateFusionCategories"]
-
-DeleteDuplicateFusionCategories::usage =
-  "DeleteDuplicateFusionCategories[fusionCats] removes duplicate fusion categories. Two fusion categories " <>
-  "are considered equal if there exists a combination of a gauge transform and a fusion ring automorphism that" <>
-  " transforms both F- and R-symbols of one category into the other.";
