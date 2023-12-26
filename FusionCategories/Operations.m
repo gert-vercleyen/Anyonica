@@ -33,26 +33,48 @@ Options[TensorProduct] =
 Protect[TensorProduct];
 
 FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_], opts:OptionsPattern[] ] :=
-  Module[ { sF1, sF2, sR1, sR2, r1, r2, fSymbols, rSymbols, simplify },
+  Module[ { sF1, sF2, sR1, sR2, r1, r2, fSymbols, rSymbols, simplify, twists, modQ, sMat },
     simplify =
       OptionValue["SimplifyBy"];
 
     r1 = Rank[cat1];
     r2 = Rank[cat2];
 
-    sF1 = SparseArray[ FSymbols[cat1] /. F -> List, { r1, r1, r1, r1, r1, r1 } ] ;
-    sF2 = SparseArray[ FSymbols[cat2] /. F -> List, { r2, r2, r2, r2, r2, r2 } ] ;
+    sF1 = SparseArray[ FSymbols[cat1] /. F -> List, { r1, r1, r1, r1, r1, r1 } ];
+    sF2 = SparseArray[ FSymbols[cat2] /. F -> List, { r2, r2, r2, r2, r2, r2 } ];
     fSymbols = simplify @ MapAt[ Apply[F], Most @ ArrayRules @ KroneckerProduct[ sF1, sF2 ], { All, 1 } ];
 
-    sR1 = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ] ;
-    sR2 = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ] ;
-    rSymbols = simplify @ MapAt[ Apply[R], Most @ ArrayRules @ KroneckerProduct[ sR1, sR2 ], { All, 1 } ];
+    If[
+      BraidedQ[cat1] && BraidedQ[cat2]
+      ,
+      sR1 = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ];
+      sR2 = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ];
+      rSymbols = simplify @ MapAt[ Apply[R], Most @ ArrayRules @ KroneckerProduct[ sR1, sR2 ], { All, 1 } ];
+      twists   = Flatten @ KroneckerProduct[Twists[cat1],Twists[cat2]];
+      modQ     = TrueQ[ ModularQ[cat1] && ModularQ[cat2] ];
+
+      If[
+        modQ,
+        sMat = KroneckerProduct[ SMatrix[cat1], SMatrix[cat2] ],
+        sMat = Missing["HasNonModularSubCategory"]
+      ];
+      ,
+      rSymbols = Missing["NonBraidedCategory"];
+      twists = Missing["NonBraidedCategory"];
+      modQ = False,
+      sMat = Missing["NonBraidedCategory"]
+    ];
+
 
     AddOptions[opts][FusionCategory][
       "FusionRing" -> TensorProduct[ FusionRing[cat1], FusionRing[cat2] ],
       "FSymbols"   -> fSymbols,
       "RSymbols"   -> rSymbols,
-      "Unitary"    -> And[ UnitaryQ @ cat1, UnitaryQ @ cat2 ]
+      "Unitary"    -> And[ UnitaryQ @ cat1, UnitaryQ @ cat2 ],
+      "PivotalStructure" -> Flatten @ KroneckerProduct[ PivotalStructure[cat1], PivotalStructure[cat2] ],
+      "Twists"     -> twists,
+      "Modular"   -> modQ,
+      "SMatrix"    -> sMat
     ]
   ];
 
