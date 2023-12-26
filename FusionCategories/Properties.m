@@ -18,7 +18,7 @@ PackageExport["BraidedQ"]
 
 BraidedQ::usage =
   "BraidedQ[fusionCat] returns True if the fusion category has a set of R-symbols.";
-  
+
 BraidedQ[ cat_FusionCategory ] :=
   !MissingQ[ RSymbols @ cat ];
 
@@ -50,10 +50,10 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
         MapAt[ List@@#&, FSymbols[cat], {All,1} ],
         {r,r,r,r,r,r}
       ];
-      
+
     rhs[a_,b_,c_] :=
       sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
-   
+
     eqns =
       TEL @
       OptionValue["SimplifyBy"][
@@ -64,37 +64,50 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
           e[a] e[b] / e[c]  == rhs[a,b,c]
         ]/.e[1] -> 1
       ];
-      
+
     Prepend[1] /@
     Solve[ eqns, Rest @ Array[ e, r ] ][[;;,;;,2]]
   ];
 
 PackageExport["PivotalStructure"]
 
-PivotalStructure::usage = 
+PivotalStructure::usage =
   "PivotalStructure[cat] returns the pivotal structure of the fusion category cat.";
- 
-PivotalStructure[ FusionCategory[data_]] := 
+
+PivotalStructure[ FusionCategory[data_]] :=
   data["PivotalStructure"];
 
 PackageExport["Twists"]
 
-Twists::usage = 
+Twists::usage =
   "Twists[cat] returns the topological twists of the fusion category cat.";
- 
-Twists[ FusionCategory[data_] ] := 
+
+Twists[ FusionCategory[data_] ] :=
   data["Twists"];
+
+PackageExport["\[ScriptD]"]
+
+Unprotect[ \[ScriptD] ];
+
+ClearAll[ \[ScriptD] ];
+
+SetAttributes[ \[ScriptD], NHoldAll ];
+
+Protect[ \[ScriptD] ];
+
+\[ScriptD]::usage =
+  "Formal symbol that represents a quantum dimension.";
 
 PackageExport["QuantumDimensions"]
 
 QuantumDimensions::usage =
   "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
   "of the fusion category cat";
- 
+
 QuantumDimensions[ cat_FusionCategory ] :=
   With[{ d = CC[cat], p = PivotalStructure[cat] },
     Table[
-      p[[a]] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
+      \[ScriptD][a] -> p[[a]] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
     ]/.FSymbols[cat]
   ];
 
@@ -102,7 +115,7 @@ PackageExport["SMatrix"]
 
 SMatrix::usage =
   "SMatrix[cat] returns the S-matrix of the fusion category cat.";
- 
+
 SMatrix[ FusionCategory[data_] ] :=
   data["SMatrix"];
 
@@ -110,7 +123,7 @@ PackageExport["ModularQ"]
 
 ModularQ::usage =
   "ModularQ[cat] returns True if the fusion category cat is modular.";
- 
+
 ModularQ[ FusionCategory[data_] ] :=
   data["Modular"];
 
@@ -125,7 +138,7 @@ PackageExport["SphericalQ"]
 
 SphericalQ::usage =
   "SphericalQ[cat] returns True if cat is a sperical fusion category.";
- 
+
 SphericalQ::nodims =
   "The category has no quantum dimensions so can not be checked for sphericality.";
 
@@ -134,6 +147,70 @@ SphericalQ[ cat_FusionCategory ] :=
     If[
       MissingQ[ dims ],
       Message[ SphericalQ::nodims ]; $Failed,
-      And @@ Table[ RootReduce[ dims[[i]] == dims[[i+1]] ], { i, NSD[cat]+1, Rank[cat], 2 } ]
+      And @@ Table[ RootReduce[ \[ScriptD][i] == \[ScriptD][i+1] /. dims ], { i, NSD[cat]+1, Rank[cat], 2 } ]
     ]
   ];
+
+CheckFormalCode[c1_,c2_]:=
+	With[{fc1 = FormalCode @ c1, fc2 = FormalCode @ c2 },
+		If[ !MissingQ[fc1] && !MissingQ[fc2] && Most[fc1] =!= Most[fc2], Throw @ False ]
+	];
+
+CheckFusionRing[c1_,c2_] :=
+	With[ { eq=EquivalentFusionRingsQ[FusionRing@c1,FusionRing@c2]},
+		If[ !eq, Throw @ False ]
+	];
+
+FullInvariants[c1_]:=
+	Module[ { zeroFs,invariants },
+		zeroFs = Select[ FSymbols[c1], Last[#]===0& ][[;;,1]];
+		(* Invariants of F and R symbols *)
+		invariants =
+			GaugeInvariants[
+				FusionRing @ c1,
+				"Zeros" -> zeroFs,
+				"IncludeOnly" -> If[ !BraidedQ[c1], "FSymbols", "All" ]
+			];
+
+		(* Invariants from pivotal structure *)
+
+		Join[
+			invariants,
+			Array[ \[ScriptD], Rank[c1] ]
+		]
+	];
+
+PackageExport["EquivalentFusionCategoriesQ"]
+
+Options[EquivalentFusionCategoriesQ] = { "PreEqualCheck" -> Identity };
+
+EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ]:=
+Catch[
+	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test},
+	CheckFormalCode[c1,c2];
+	CheckFusionRing[c1,c2];
+
+	test = OptionValue["PreEqualCheck"];
+	invariants1 = FullInvariants[c1];
+	invariants2 = FullInvariants[c2];
+
+	fra = FRA @ FusionRing @ c1;
+
+	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
+	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
+	If[ BraidedQ[c1] && BraidedQ[c2],
+		rSymb1 = RSymbols[c1]; rSymb2 = RSymbols[c2],
+		rSymb1 = rSymb2 = {}
+	];
+
+	rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
+
+	Do[
+		If[
+		ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ], Throw @ EchoLabel[FormalCode[c1]] @ True ]
+		,{ a, fra}
+	];
+
+	Throw @ False
+	]
+]
