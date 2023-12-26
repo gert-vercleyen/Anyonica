@@ -531,6 +531,8 @@ SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPa
     False
   ];
 
+PackageScope["PermuteSymbols"]
+
 PermuteSymbols[ Symb_, perm_List ] :=
   Sort @
   MapAt[
@@ -637,53 +639,53 @@ DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits },
     (*procID =
       ToString @ Unique[];
-    
+
     printlog[ "DSES:init", { procID, soln, ring, symmetries, { opts } } ];*)
-    
+
     check =
       If[
         OptionValue["Numeric"],
         N[ #, {Infinity, OptionValue["Accuracy"] } ]&,
         OptionValue["PreEqualCheck"]
       ];
-    
+
     zeroPositions =
       Position[ _ -> 0 ] /@ soln;
-    
+
     If[ !MatchQ[ zeroPositions, { x_ .. } ], Message[ DeleteEquivalentSolutions2::differentzeros ]; Abort[]  ];
-    
+
     { time, result } =
       AbsoluteTiming[
-        
+
         zeroFs =
           Cases[ First @ soln, HoldPattern[ f_[i__] -> 0 ] :> f[i] ];
-        
+
         (*printlog[ "DSES:groups", { procID, groupedSoln } ];*)
 
         braidedCheck =
           Length @* FilterRRules /@ soln;
-        
+
         If[
           Not[ Equal @@ braidedCheck ],
           Message[ DeleteEquivalentSolutions2::wrongrstructure ]; Abort[]
         ];
-        
+
         invariants =
           GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> If[ braidedCheck[[1]] == 0, "FSymbols", "All" ] ];
-        
+
         (* For each solution we will map its index to the evaluated gauge-invariants over all automorphic solutions *)
-        
+
         orbits = Sow @
           Association @
           Table[
             i -> check[ invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA[ ring ] ] ],
             { i, Length @ soln }
           ];
-        
+
         soln[[ DeleteDuplicates[ Range @ Length @ orbits, intersectingQ[ orbits[#1], orbits[#2] ]& ] ]]
-        
+
       ];
-    
+
     (*printlog["Gen:results", { procID, result, time } ];*)
     result
   ];
@@ -708,11 +710,11 @@ DeleteGaugeEquivalentSolutions2[ soln_, invariants_, opts:OptionsPattern[] ] :=
         OptionValue["PreEqualCheck"] @* OptionValue["SimplifyBy"]
       ] @
       ReplaceAll[ invariants, Dispatch[soln] ];
-      
-    
+
+
     indices =
       Range @ Length @ soln;
-    
+
     soln[[ DeleteDuplicatesBy[ indices, inv[[#]]& ] ]]
   ];
 
@@ -750,7 +752,7 @@ GaugeSymmetryEquivalentQ2[ invariants_, opts:OptionsPattern[] ][ sol1_, sol2_ ] 
     ] @
     ReplaceAll[ invariants, Dispatch[ { sol1, sol2 } ] ]
   );
-  
+
 
 PackageScope["MultiplicativeGaugeMatrix"]
 
@@ -1180,29 +1182,29 @@ ToUnitaryGauge2[ ring_FusionRing, FSol_, opts:OptionsPattern[] ] :=
     OptionValue["SimplifyBy"];
     check =
     OptionValue["PreEqualCheck"];
-    
-    
+
+
     varPowers[monomial_] :=
     Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], Abs[ a ] } ];
-    
+
     SimplestVar[ monomial_ ] :=
     With[{ fList = varPowers @ monomial },
       If[ fList === {}, Return[ Missing[] ] ];
       MinimalBy[ fList, Last, 1 ][[1, 1]]
     ];
-    
+
     UnitaryValue[ F[ abcd__, e_, f_ ] ] :=
     simplify @ ReplaceAll[ Sqrt[ F[ abcd, e, f ] FInv[ abcd, f, e ] ], solInvSol ];
-    
+
     FixValue[ a_ -> b_ ] :=
     simplify @ Solve[ b == UnitaryValue @ a, SimplestVar @ b ][[1, 1]];
-    
+
     nextTransform[ transf_ ] :=
     First @ MinimalBy[ transf, Min[ Abs[ varPowers[#[[2]]][[;;,2]] ] ]&, 1 ];
-    
+
     UpdateSystem[ {}, vals_ ] :=
     vals;
-    
+
     UpdateSystem[ transf_, vals_ ] :=
     With[{ gaugeVal = FixValue[ nextTransform @ transf ] },
       UpdateSystem[
@@ -1213,31 +1215,31 @@ ToUnitaryGauge2[ ring_FusionRing, FSol_, opts:OptionsPattern[] ] :=
         Append[ vals /. gaugeVal, gaugeVal ]
       ]
     ];
-    
+
     { time, result } =
     AbsoluteTiming[
       solInvSol =
       Dispatch @ Join[ FSol, InverseFSymbols[ ring, FInv, FSol ] ];
-      
+
       symmetries =
       GaugeSymmetries[ FSymbols @ ring, g];
-      
+
       transforms =
       MapAt[
         ReplaceAll[solInvSol],
         DeleteCases[ symmetries["Transforms"], rule_ /; CountVariables[ rule, g ] === 0 ],
         { All, 2 }
       ];
-      
+
       gaugeVals =
       UpdateSystem[ transforms, {} ];
-      
+
       ApplyGaugeTransform[ FSol, gaugeVals, g ]
-    
+
     ];
-    
+
     (*    If[ !UnitaryGaugeQ[ ring, result, opts ], printlog[ "TUG:sol_not_unitary", {procID} ] ];*)
-    
+
     result
   ]
 );
@@ -1311,25 +1313,25 @@ If[
     gaugeDemands =
     Equal @@@
     OptionValue["GaugeDemands"];
-    
+
     fSymbols =
     FSymbols[ring];
-    
+
     procID =
     ToString @ Unique[];
-    
+
     printlog[ "TUG:init", {procID,ring,FSymb, {opts} }];
-    
+
     { time, result } =
     Normal @
     AbsoluteTiming[
-      
+
       gaugeSymmetries =
       GaugeSymmetries[ fSymbols, g ];
-      
+
       transforms =
       gaugeSymmetries["Transforms"];
-      
+
       vacuumConstraints =
       If[
         OptionValue["PreserveTrivialValues"],
@@ -1343,19 +1345,19 @@ If[
         (* ELSE *)
         {}
       ];
-      
+
       newFs =
       MapAt[
         If[ numericQ, InfN[ 2 * acc ], simplify ], (* 2 * acc since will lose some acc during calculations *)
         FSymb,
         { All, 2 }
       ];
-      
+
       Catch[
         (* Could replace this with properGaugeQ *)
         unitaryQ[ symb_ ] :=
         AddOptions[opts][UnitaryGaugeQ][ ring, symb ];
-        
+
         If[ (* Already have unitary gauge *)
           unitaryQ @ newFs
           ,
@@ -1367,11 +1369,11 @@ If[
             FSymb
           ]
         ];
-        
+
         (*
           Set up the constraints
         *)
-        
+
         (* Construct the 2D gauge constraints *)
         constraints2D =
         If[
@@ -1379,7 +1381,7 @@ If[
           Constraints2D[ ring, FMatrices[ring], newFs, g ],
           {}
         ];
-        
+
         (* Get the binomial equations from the set of gauge constraints *)
         { binomialConstraints, sumConstraints } =
         BinomialSplit[
@@ -1391,9 +1393,9 @@ If[
           ],
           "PreEqualCheck" -> preEqCheck
         ];
-        
+
         printlog[ "TUG:constraints", {procID,binomialConstraints,sumConstraints}];
-        
+
         (* Relabel the variables to single indexed variables *)
         { { newBinomialConstraints, newSumConstraints }, newVars, revertVars } =
         SimplifyVariables[
@@ -1401,11 +1403,11 @@ If[
           g @@@ NZSC[ring],
           u
         ];
-        
+
         (*
           Create the space of solutions to the binomial equations
         *)
-        
+
         { binomialMat, rhsVec } =
         Catch[
           AddOptions[opts][BinToSemiLin][
@@ -1415,7 +1417,7 @@ If[
           ],
           "ZeroVariableInNonSingularSystem"
         ];
-        
+
         If[
           { binomialMat, rhsVec } === { {}, {} }
           ,
@@ -1428,33 +1430,33 @@ If[
             $Failed
           ]
         ];
-        
+
         trivialGaugeSpace =
         TrivialGaugeMatrix[fSymbols];
-        
+
         { mU, mD, mV } =
         If[
           useDataBaseQ,
           AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
           SmithDecomposition @ binomialMat
         ];
-        
+
         printlog["TUG:decomposition", {procID,{mU,mD,mV}}];
-        
+
         rankBinomialMat =
         Length[
           diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
         ];
-        
+
         expRHS =
         PowerDot[ rhsVec, mU ];
-        
+
         ZSpace =
         mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
-        
+
         NonOneCoeff[ l_ ] :=
         FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
-        
+
         If[
           rankBinomialMat < Length[ expRHS ] &&
           Head[ noc = NonOneCoeff @ expRHS[[ rankBinomialMat + 1;; ]] ] =!= Missing,
@@ -1471,29 +1473,29 @@ If[
           constVec =
           PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
-        
+
         CSpace =
         IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialGaugeSpace ];
-        
+
         (* The discrete set of solutions to these equations can be too big to handle.
           Since we only need 1 solution that works, we will construct them one by one *)
-        
+
         ZTuples =
         Range[ LCM @@ Denominator /@ ZSpace ] - 1;
-        
+
         currentTuple =
         ConstantArray[ 0, Length[ ZTuples ] ];
-        
+
         (*
           Loop over all individual solutions of the binomial equations
         *)
-        
+
         While[
           currentTuple =!= Missing["ReachedEnd"]
           ,
           zVec =
           Exp[ 2 Pi I ( ZSpace . currentTuple ) ];
-          
+
           monomials =
           If[
             CSpace === {{}},
@@ -1504,14 +1506,14 @@ If[
             z /@ Range[ Dimensions[ CSpace ][[2]] ];
             PowerDot[ vars, CSpace]
           ];
-          
+
           binomialSolution =
           If[
             numericQ,
             Thread[ newVars -> InfN[ constVec * zVec, 2 * acc ]* monomials ],
             Thread[ newVars -> constVec * zVec * monomials ]
           ];
-          
+
           reducedSumConstraints =
           DeleteCases[True] @
           DeleteDuplicates @
@@ -1522,11 +1524,11 @@ If[
           ][
             newSumConstraints/.binomialSolution
           ];
-          
+
           printlog[ "TUG:parametrization", {procID,binomialSolution,reducedSumConstraints}];
-          
+
           (* Set the gauge *)
-          
+
           If[ (* No vars left *)
             vars === {},
             (* THEN: CHECK VALIDITY SOLUTION *)
@@ -1536,10 +1538,10 @@ If[
               And @@ Thread[ Im[ InfN[ binomialSolution[[;;,2]], acc ] ] == 0 ],
               And @@ Thread[ Im[ binomialSolution[[;;,2]] ] == 0 ]
             ];
-            
+
             positiveQ = (* Need to use Re because even when the complex part is smaller than 10^-acc, its still complex *)
             And @@ Thread[ Re[ binomialSolution[[;;,2]] ] > 0 ];
-            
+
             gauge =
             If[ (* Solution is both real, positive, and satisfies the sum eqns *)
               TrueQ[ realQ && positiveQ ],
@@ -1548,11 +1550,11 @@ If[
               (* ELSE *)
               {}
             ];
-            
+
             printlog[ "TUG:no_vars_conclusion", {procID,binomialSolution,realQ,positiveQ}];
             ,
             (* ELSE FIND SOLUTION REMAINING EQUATIONS*)
-            
+
             instance = (* Have to use Rationalize since FindInstance is bugged for non-exact numbers  *)
             FindInstance[
               And @@
@@ -1562,7 +1564,7 @@ If[
               ],
               vars
             ];
-            
+
             If[
               instance =!= {},
               gauge =
@@ -1582,7 +1584,7 @@ If[
             ];
             printlog[ "TUG:vars_conclusion", {procID,binomialSolution,gauge}];
           ];
-          
+
           If[
             (* Valid gauge found *)
             gauge =!= {},
@@ -1631,14 +1633,14 @@ If[
           Throw[ { $Failed, { } } ],
           Throw[ $Failed ]
         ];
-      
+
       ]
     ];
-    
+
     printlog["Gen:results", { procID, result, time } ];
-    
+
     result/.g->List
-  
+
   ]
 ];
 
@@ -1731,11 +1733,11 @@ Constraints2D[ ring_FusionRing, symFMats_List, FSymb_, r_Symbol ] :=
 Module[{zeroFLabels, nzsc , properSymFMats, sqrtNormFSymbols, a, b, c, d, e1, e2, f1, f2 },
   nzsc =
   NZSC[ring];
-  
+
   (* These only make sense if none of the F-symbols are 0 *)
   zeroFLabels =
   Cases[ FSymb, HoldPattern[ f_ -> 0 ] :> f[[;;4]] ];
-  
+
   properSymFMats =
   Cases[
     symFMats,
@@ -1743,7 +1745,7 @@ Module[{zeroFLabels, nzsc , properSymFMats, sqrtNormFSymbols, a, b, c, d, e1, e2
     Dimensions[mat][[1]] == 2 &&
     FreeQ[ zeroFLabels, mat[[1,1,;;4]] ]
   ];
-  
+
   sqrtNormFSymbols =
   Dispatch @
   MapAt[
@@ -1751,7 +1753,7 @@ Module[{zeroFLabels, nzsc , properSymFMats, sqrtNormFSymbols, a, b, c, d, e1, e2
     FSymb,
     { All, 2 }
   ];
-  
+
   DeleteCases[True] @
   Flatten @
   Reap[
@@ -1918,21 +1920,21 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
     gaugeDemands =
     Equal @@@
     OptionValue["GaugeDemands"];
-    
+
     procID =
     ToString[Unique[]];
-    
+
     printlog["TSG:init", { procID, ring, FSymb, {opts} } ];
-    
+
     { time, result } = Normal @
     AbsoluteTiming[
-      
+
       gaugeSymmetries =
       GaugeSymmetries[ FSymbols[ring], g ];
-      
+
       transforms =
       gaugeSymmetries["Transforms"];
-      
+
       vacuumConstraints =
       If[
         OptionValue["PreserveTrivialValues"],
@@ -1946,18 +1948,18 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
         (* ELSE *)
         {}
       ];
-      
+
       newFs =
       MapAt[
         If[ numericQ, InfN[2*acc], simplify ],
         FSymb,
         { All, 2 }
       ];
-      
+
       Catch[
         symGaugeQ[ symb_ ] :=
         AddOptions[opts][SymmetricGaugeQ][ ring, symb ];
-        
+
         If[ (* Already in symmetric gauge *)
           symGaugeQ @ newFs,
           printlog["TSG:already_symmetric", {procID}];
@@ -1968,27 +1970,27 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
             FSymb
           ]
         ];
-        
+
         (*
           Set up the constraints
         *)
-        
+
         constraints =
         Join[
           vacuumConstraints,
           SymmetricGaugeConstraints[g][ring]/.Dispatch[newFs],
           gaugeDemands
         ];
-        
+
         printlog[ "TSG:constraints", { procID, constraints } ];
-        
+
         { newConstraints, newVars, revertVars } =
         SimplifyVariables[
           constraints,
           g @@@ NZSC[ring],
           u
         ];
-        
+
         { binomialMat, rhsVec } =
         Catch[
           AddOptions[opts][BinToSemiLin][
@@ -1998,7 +2000,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ],
           "ZeroVariableInNonSingularSystem"
         ];
-        
+
         If[
           binomialMat === {} && rhsVec === {},
           printlog[ "TSG:off_diagonal_zero", {procID} ];
@@ -2009,27 +2011,27 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
             FSymb
           ]
         ];
-        
+
         { mU, mD, mV } =
         If[
           useDataBaseQ,
           AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
           SmithDecomposition @ binomialMat
         ];
-        
+
         printlog["TSG:decomposition",{procID,{mU,mD,mV}}];
-        
+
         rankBinomialMat =
         Length[
           diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
         ];
-        
+
         expRHS =
         PowerDot[ rhsVec, mU ];
-        
+
         NonOneCoeff[ l_ ] :=
         FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
-        
+
         If[
           (* RHS and LHS are incompatible *)
           rankBinomialMat < Length[ expRHS ] &&
@@ -2043,28 +2045,28 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           constVec =
           PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
-        
+
         CheckSolution[ sol_ ] :=
         If[
           Not @ AddOptions[opts][SymmetricGaugeQ][ ring, sol ],
           printlog["TSG:sol_not_symmetric", {procID} ];
         ];
-        
+
         gauge =
         If[
           numericQ,
           Thread[ newVars -> InfN[ constVec, acc ] ],
           Thread[ newVars -> constVec ]
         ]/.revertVars;
-        
+
         newFSolution =
         ApplyGaugeTransform[ FSymb, gauge, g ];
-        
+
         CheckSolution[ newFSolution ];
-        
+
         If[ (* Don't have further demands on gauges *)
           !unitaryGTQ,
-          
+
           (* THEN *)
           Throw @
           If[
@@ -2072,13 +2074,13 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
             { newFSolution, gauge },
             newFSolution
           ],
-          
+
           (* ELSE *)
           If[ (* const vec is not vector of phases *)
             Not[ And @@ Thread[ preEqCheck[ simplify[ Abs[expRHS] ] ] == 1 ] ],
             printlog["TSG:non_unitary_transform", {procID} ]
           ];
-          
+
           Throw @
           If[
             returnTransformQ,
@@ -2087,13 +2089,13 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ];
         ];
       ] (* END CATCH *)
-    
+
     ];
-    
+
     printlog[ "Gen:results", { procID, result, time }];
-    
+
     result/.g -> List
-  
+
   ]
 );
 
@@ -2172,7 +2174,7 @@ Which[
       diagonalElements, ZSpace, constVec, useDataBaseQ, preEqCheck, nGaugeVars, nonZeroFs,  trivialSpace, CSpace,
       monomials, time, result, procID, onlyAbsQ, values1, values2, vars, t, z, normSquaredExtraVars, absSol, a, b
     },
-    
+
     acc =
     OptionValue["Accuracy"];
     numericQ =
@@ -2187,38 +2189,38 @@ Which[
     OptionValue["OnlyMatchAbsoluteValues"];
     procID =
     ToString[Unique[]];
-    
+
     { newSol1, newSol2 } =
     If[ numericQ,
       N[ { sol1, sol2 } ],
       Map[ simplify, { sol1, sol2 }, { 2 } ]
     ];
-    
+
     { values1, values2 } =
     { newSol1, newSol2 }[[ ;;, ;;, 2 ]];
-    
+
     nGaugeVars =
     NNZSC[ring];
-    
+
     (* printlog["TSG:init", { procID, ring, FSymb, {opts} } ]; *)
-    
+
     { time, result } = Normal @
     AbsoluteTiming[
-      
+
       nonZeroFs =
       ( DeleteCases[ _ -> 0 ] @ newSol1 )[[ ;;, 1 ]];
-      
+
       gaugeSymmetries =
       GaugeSymmetries[
         nonZeroFs,
         g
       ];
-      
+
       transforms =
       gaugeSymmetries["Transforms"];
-      
+
       Catch[
-        
+
         If[ (* Solutions are the same *)
           TrivialGaugeSymmetryEquivalentQ[
             "Numeric" -> numericQ,
@@ -2230,7 +2232,7 @@ Which[
           Throw @
           Thread[ ( g @@@ NZSC[ring] ) -> 1  ]
         ];
-        
+
         If[ (* Different zero values for F-symbols *)
           Unequal @@@
           Map[
@@ -2246,7 +2248,7 @@ Which[
           values2 =
           DeleteCases[0] @ values2;
         ];
-        
+
         constraints =
         DeleteCases[True] @
         Thread[
@@ -2256,62 +2258,62 @@ Which[
             sol1
           ]
         ];
-        
+
         If[
           constraints === False,
           Throw @ { }
         ];
-        
+
         vars =
         GetVariables[ constraints, { g, t } ];
-        
+
         { newConstraints, newVars, revertVars } =
         SimplifyVariables[ constraints, vars , u ];
-        
+
         { binomialMat, rhsVec } =
         AddOptions[opts][BinToSemiLin][
           newConstraints,
           newVars,
           u
         ];
-        
+
         { mU, mD, mV } =
         If[
           useDataBaseQ,
           AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
           SmithDecomposition @ binomialMat
         ];
-        
+
         printlog["WGT:decomposition",{procID,{mU,mD,mV}}];
-        
+
         rankBinomialMat =
         Length[
           diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
         ];
-        
+
         expRHS =
         PowerDot[ rhsVec, mU ];
-        
+
         listOfOnesQ[ l_ ] :=
         And @@
         Thread[ preEqCheck[l] == 1 ];
-        
+
         If[
           (* RHS and LHS are incompatible *)
           rankBinomialMat < Length[ expRHS ] &&
           Not[ TrueQ[ listOfOnesQ[ expRHS[[ rankBinomialMat + 1;; ]] ] ] ],
-          
+
           (* THEN *)
           printlog["WGT:nonone_coeff", { procID, expRHS, rankBinomialMat } ];
           Throw @ { },
-          
+
           (* ELSE *)
           ZSpace =
           mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           constVec =
           PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
-        
+
         trivialSpace =
         With[{
           ntVars = Length[vars] - NNZSC[ring]
@@ -2327,10 +2329,10 @@ Which[
             }
           ]
         ];
-        
+
         CSpace =
         IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialSpace ];
-        
+
         monomials =
         If[
           CSpace === {{}},
@@ -2339,38 +2341,38 @@ Which[
             PowerDot[ parameters, CSpace ]
           ]
         ];
-        
+
         If[ (* Any solution goes *)
           !onlyAbsQ,
-          
+
           (* THEN *)
           Throw[
             Thread[ newVars -> constVec ]/.revertVars
           ],
-          
+
           (* ELSE *)
           (* Only want abs vals of solutions to be the same *)
           If[ (* All extra vars are already phases *)
             listOfOnesQ[
               simplify @* Abs /@ constVec[[ nGaugeVars + 1 ;;  ]]
             ],
-            
+
             (* THEN *)
             Throw[
               Thread[ newVars -> constVec ][[;;nGaugeVars]]/.revertVars
             ],
-            
+
             (* ELSE: add monomials and try to find vals of monomials s.t. extra vars become phases *)
-            
+
             If[ (* No freedom left *)
               CSpace === {{}},
               Throw @ {}
             ];
-            
+
             (* Calculate squared norm of extra vars *)
             normSquaredExtraVars =
             ( ComplexExpand[ Norm /@ constVec ]^2 * ( monomials/. z[i_] :> a[i]^2 + b[i]^2 ) )[[ nGaugeVars + 1 ;; ]];
-            
+
             (* Try to find solution with norm 1 *)
             absSol =
             FindInstance[
@@ -2378,14 +2380,14 @@ Which[
               GetVariables[ normSquaredExtraVars, { a, b } ],
               Reals
             ];
-            
+
             If[
               (* No solution found *)
               absSol === {},
-              
+
               (* THEN *)
               Throw @ {},
-              
+
               (* ELSE *)
               Throw[
                 Thread[
@@ -2397,9 +2399,9 @@ Which[
         ];
       ]
     ];
-    
+
     printlog[ "Gen:results", { procID, result, time }];
-    
+
     result
   ]
 ];
@@ -2441,7 +2443,7 @@ Module[ { OVRSymb, RSymb, ToRule },
     RSymbols[ring],
     OVRSymb
   ];
-  
+
   ToRule[ r : R[ a_, b_, c_, i_, j_ ] ] :=
   Which[
     a == 1 || b == 1,
@@ -2451,7 +2453,7 @@ Module[ { OVRSymb, RSymb, ToRule },
     a >= b,
     r -> If[ i == j, r, 0 ]
   ];
-  
+
   ToRule /@
   RSymb
 ];
