@@ -125,7 +125,7 @@ ModularQ::usage =
   "ModularQ[cat] returns True if the fusion category cat is modular.";
 
 ModularQ[ FusionCategory[data_] ] :=
-  data["Modular"];
+  If[ MissingQ[data["Modular"]], False, data["Modular"] ];
 
 ModularData[ cat_FusionCategory ] :=
   If[
