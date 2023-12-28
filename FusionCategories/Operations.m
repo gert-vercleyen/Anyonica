@@ -47,22 +47,17 @@ FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_
     If[
       BraidedQ[cat1] && BraidedQ[cat2]
       ,
-      sR1 = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ];
-      sR2 = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ];
+      sR1      = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ];
+      sR2      = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ];
       rSymbols = simplify @ MapAt[ Apply[R], Most @ ArrayRules @ KroneckerProduct[ sR1, sR2 ], { All, 1 } ];
       twists   = Flatten @ KroneckerProduct[Twists[cat1],Twists[cat2]];
       modQ     = TrueQ[ ModularQ[cat1] && ModularQ[cat2] ];
-
-      If[
-        modQ,
-        sMat = KroneckerProduct[ SMatrix[cat1], SMatrix[cat2] ],
-        sMat = Missing["HasNonModularSubCategory"]
-      ];
+      sMat     = KroneckerProduct[ SMatrix[cat1], SMatrix[cat2] ]
       ,
       rSymbols = Missing["NonBraidedCategory"];
-      twists = Missing["NonBraidedCategory"];
-      modQ = False,
-      sMat = Missing["NonBraidedCategory"]
+      twists   = Missing["NonBraidedCategory"];
+      modQ     = False,
+      sMat     = Missing["NonBraidedCategory"]
     ];
 
 
