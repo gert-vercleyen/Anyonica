@@ -111,6 +111,20 @@ QuantumDimensions[ cat_FusionCategory ] :=
     ]/.FSymbols[cat]
   ];
 
+PackageExport["RibbonQ"]
+
+RibbonQ::usage =
+  "RibbonQ[cat] returns True if cat is known to be a ribbon category.";
+
+RibbonQ[ cat_FusionCategory ] :=
+  With[{t = Twists @ cat},
+    If[
+   	  ! BraidedQ[cat] || MissingQ[t],
+   	  False,
+   	  TrueQ @ RootReduce[  t == AM[cat] . t ]
+    ]
+  ];
+
 PackageExport["SMatrix"]
 
 SMatrix::usage =
