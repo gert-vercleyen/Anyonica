@@ -61,7 +61,7 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
           Tuples[ Range @ r, 3 ],
           { a_, b_, c_ } /;
           rhs[a,b,c] =!= 0 :>
-          e[a] e[b] / e[c]  == rhs[a,b,c]
+					e[c] / (e[a] e[b] ) == rhs[a,b,c]
         ]/.e[1] -> 1
       ];
 
