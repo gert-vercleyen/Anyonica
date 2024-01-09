@@ -29,7 +29,7 @@ FusionCategory /: UnitaryGaugeQ[ cat_FusionCategory, opts:OptionsPattern[] ] :=
 PackageExport["AllPivotalStructures"]
 
 AllPivotalStructures::usage =
-  "PivotalStructure[fusionCat] returns a list of pivotal structures compatible with the "<>
+  "PivotalStructure[fusionCat] returns a list of pivotal structures compatible with the " <>
   "the F-symbols of fusionCat.";
 
 Attributes[AllPivotalStructures] = { Listable };
@@ -47,7 +47,7 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
       CC[cat];
     sF =
       SparseArray[
-        MapAt[ List@@#&, FSymbols[cat], {All,1} ],
+        MapAt[ List @@ #&, FSymbols[cat], {All,1} ],
         {r,r,r,r,r,r}
       ];
 

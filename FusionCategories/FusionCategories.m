@@ -43,7 +43,6 @@ Options[ FusionCategory ] =
     "FormalParameters"  -> Missing[],
     "Unitary"           -> Missing[],
     "PivotalStructure"  -> Missing[],
-    "Dimensions"        -> Missing[],
     "Twists"            -> Missing[],
     "SMatrix"           -> Missing[],
     "Modular"           -> Missing[],
