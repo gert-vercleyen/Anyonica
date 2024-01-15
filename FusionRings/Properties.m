@@ -1105,22 +1105,22 @@ FRC[ ring_FusionRing?FusionRingQ ] :=
 
 PackageExport["SMatrices"]
 
-SMatrices::usage =
-  "SMatrices[ring] returns a list of S matrices of the ring, if it has one, and an empty list otherwise.";
+NormalizedSMatrices::usage =
+  "NormalizedSMatrices[ring] returns a list of possible S-matrices of the ring that are normalized to be unitary.";
 
-SetAttributes[ SMatrices, Listable];
+SetAttributes[ NormalizedSMatrices, Listable];
 
-SMatrices[ ring_FusionRing?FusionRingQ ] :=
-  ring["SMatrices"]
+NormalizedSMatrices[ ring_FusionRing?FusionRingQ ] :=
+  ring["SMatrices"];
 
 
-PackageExport["SM"]
+PackageExport["NSM"]
 
-SM::usage =
-  "Shorthand for SMatrices.";
+NSM::usage =
+  "Shorthand for NormalizedSMatrices.";
 
-SM[ ring_FusionRing?FusionRingQ ] :=
-  SMatrices[ ring ];
+NSM[ ring_FusionRing?FusionRingQ ] :=
+  NormalizedSMatrices[ ring ];
 
 
 PackageExport["TwistFactors"]
