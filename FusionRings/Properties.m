@@ -19,7 +19,6 @@ ChangeProperty[ ring_FusionRing, list_ ] :=
     opts = (* All defining properties of previous fusion ring *)
       Normal @ First[ List @@ ring ];
     AddOptions[opts][FusionRing][ Sequence @@ list ]
-
   ];
 
 ChangeProperty[ ring_, a_ -> b_ ] :=
