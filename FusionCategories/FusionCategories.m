@@ -59,7 +59,7 @@ Options[ InitializeFusionCategory ] :=
 
 InitializeFusionCategory[ ops:OptionsPattern[] ] :=
   Module[
-    { ring, fSymbols, rSymbols, preEqualCheck, skipCheck, pivStruct, dims, twists, sMat, modular },
+    { ring, fSymbols, rSymbols, preEqualCheck, skipCheck, pivStruct, twists, sMat, modular },
     ring =
       OptionValue[ "FusionRing" ];
     fSymbols =
@@ -85,7 +85,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
     ];
 
     Association[
-      "FusionRing"                -> ring,
+      "FusionRing"                -> If[ !MissingQ[ FC @ ring ], Hold[FRBC][ FC @ ring ], ring ],
       "FSymbols"                  -> fSymbols,
       "RSymbols"                  -> rSymbols,
       "PivotalStructure"          -> pivStruct,
@@ -169,6 +169,15 @@ ProperRSymbolRulesQ[ rSymbols_ ] :=
   Here we overload certain functions for fusion rings to functions on fusion categories.
 *)
 
+FusionCategory /: FusionRing[ FusionCategory[data_] ] :=
+  With[ { r = data["FusionRing"] },
+    If[
+      Head[r] === Hold[FRBC],
+      ReleaseHold[r],
+      r
+    ]
+  ];
+
 (* List of functions to inherit *)
 InheritedFCFunctionsFromFRList =
   {
@@ -197,22 +206,21 @@ InheritedFCFunctionFromFRQ[ f_ ] :=
   MemberQ[f] @ InheritedFCFunctionsFromFRList;
 
 (* If function from above list is applied to FusionCategory, redirect it to the fusion ring *)
-FusionCategory /: f_[ FusionCategory[ data_ ] ] :=
-  f[ data["FusionRing"] ] /; InheritedFCFunctionFromFRQ[f];
+FusionCategory /: f_[ cat:FusionCategory[ data_ ] ] :=
+  f[ FusionRing[cat] ] /; InheritedFCFunctionFromFRQ[f];
 
-FusionCategory /: f_[ FusionCategory[ data1_ ], FusionCategory[ data2_ ] ] :=
-  f[ data1["FusionRing"], data2["FusionRing"] ] /; InheritedFCFunctionFromFRQ[f];
+FusionCategory /: f_[ cat1:FusionCategory[ data1_ ], cat2:FusionCategory[ data2_ ] ] :=
+  f[ FusionRing[cat1], FusionRing[cat2] ] /; InheritedFCFunctionFromFRQ[f];
 
 (* TODO: atm it only works for functions with 1 or 2 arguments: should work for n arguments *)
 
 (* Standard getters *)
 
-FusionCategory /: FusionRing[ FusionCategory[data_] ] :=
-  data["FusionRing"];
-
 FusionCategory /: FormalCode[ FusionCategory[data_] ] :=
   data["FormalParameters"];
-
+  
+FusionCategory /: FC[ FusionCategory[data_] ] :=
+  data["FormalParameters"];
 
 PackageExport["FSymbols"]
 
@@ -295,7 +303,7 @@ FusionCategories[ ring_FusionRing ] :=
   ];
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
-  With[ { CFP = r["FormalParameters"], rn = Names @ r["FusionRing"] },
+  With[{ CFP = r["FormalParameters"], rn = Names @ FusionRing[cat] },
     Which[
       !MissingQ[CFP] && rn =!= {}
       ,
@@ -311,6 +319,6 @@ Format[ cat:FusionCategory[r_Association], StandardForm ] :=
       ,
       True
       ,
-      "FC"[ Sequence @@ FC @ r["FusionRing"], "_" ]
+      "FC"[ Sequence @@ FC @ FusionRing[cat], "_" ]
     ]
   ];
