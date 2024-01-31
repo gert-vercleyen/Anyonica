@@ -69,6 +69,19 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
     Solve[ eqns, Rest @ Array[ e, r ] ][[;;,;;,2]]
   ];
 
+PackageExport["\[ScriptP]"]
+
+Unprotect[ \[ScriptP] ];
+
+ClearAll[ \[ScriptP] ];
+
+SetAttributes[ \[ScriptP], NHoldAll ];
+
+Protect[ \[ScriptP] ];
+
+\[ScriptP]::usage =
+  "Formal symbol that represents a pivotal coefficient.";
+
 PackageExport["PivotalStructure"]
 
 PivotalStructure::usage =
@@ -117,7 +130,7 @@ RibbonQ::usage =
   "RibbonQ[cat] returns True if cat is known to be a ribbon category.";
 
 RibbonQ[ cat_FusionCategory ] :=
-  With[{t = Twists @ cat},
+  With[{ t = Twists @ cat },
     If[
    	  ! BraidedQ[cat] || MissingQ[t],
    	  False,
@@ -198,7 +211,7 @@ PackageExport["EquivalentFusionCategoriesQ"]
 
 Options[EquivalentFusionCategoriesQ] = { "PreEqualCheck" -> Identity };
 
-EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ]:=
+EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ] :=
 Catch[
 	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test},
 	CheckFormalCode[c1,c2];
@@ -222,7 +235,7 @@ Catch[
 	Do[
 		If[
 		ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ],  True ]
-		,{ a, fra}
+		, {a,fra}
 	];
 
 	Throw @ False
