@@ -90,6 +90,19 @@ PivotalStructure::usage =
 PivotalStructure[ FusionCategory[data_]] :=
   data["PivotalStructure"];
 
+PackageExport["\[ScriptT]"]
+
+Unprotect[ \[ScriptT] ];
+
+ClearAll[ \[ScriptT] ];
+
+SetAttributes[ \[ScriptT], NHoldAll ];
+
+Protect[ \[ScriptT] ];
+
+\[ScriptT]::usage =
+  "Formal symbol that represents a topological twist.";
+
 PackageExport["Twists"]
 
 Twists::usage =
@@ -118,10 +131,10 @@ QuantumDimensions::usage =
   "of the fusion category cat";
 
 QuantumDimensions[ cat_FusionCategory ] :=
-  With[{ d = CC[cat], p = PivotalStructure[cat] },
+  With[{ d = CC[cat] },
     Table[
-      \[ScriptD][a] -> p[[a]] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
-    ]/.FSymbols[cat]
+      \[ScriptD][a] -> p[a] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
+    ]/.FSymbols[cat]/.PivotalStructure[cat]
   ];
 
 PackageExport["RibbonQ"]
