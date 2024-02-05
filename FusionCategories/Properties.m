@@ -133,7 +133,7 @@ QuantumDimensions::usage =
 QuantumDimensions[ cat_FusionCategory ] :=
   With[{ d = CC[cat] },
     Table[
-      \[ScriptD][a] -> p[a] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
+      \[ScriptD][a] -> \[ScriptP][a] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
     ]/.FSymbols[cat]/.PivotalStructure[cat]
   ];
 
@@ -143,13 +143,7 @@ RibbonQ::usage =
   "RibbonQ[cat] returns True if cat is known to be a ribbon category.";
 
 RibbonQ[ cat_FusionCategory ] :=
-  With[{ t = Twists @ cat },
-    If[
-   	  ! BraidedQ[cat] || MissingQ[t],
-   	  False,
-   	  TrueQ @ RootReduce[  t == AM[cat] . t ]
-    ]
-  ];
+  SphericalQ[cat] && BraidedQ[cat];
 
 PackageExport["SMatrix"]
 

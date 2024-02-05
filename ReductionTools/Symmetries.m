@@ -553,89 +553,28 @@ SEQ =
 PackageExport["DeleteEquivalentSolutions"]
 
 DeleteEquivalentSolutions::usage =
-  "DeleteEquivalentSolutions[ soln, ring, symmetries ] returns a list of representatives of " <>
-  "equivalence classes of the solutions.";
-(*"Here redundant means that there exists another solution in solList which is equivalent via a combination of a (possibly trivial) gauge transform and (possibly trivial) automorphism of the fusion ring. Possible options are (a) \"SimplifyBy\": function to simplify expressions whose values are checked, (b) \"Numeric\": Set to True to let the function check equality nummerically, (c) \"Accuracy\": Set the accuracy to use when checking values numerically (precision is always infinite).";*)
+  "DeleteEquivalentSolutions[ soln, ring ] returns a list of representatives of " <>
+  "equivalence classes of the solutions to the pentagon equations (possibly combined"<>
+  " with those of the hexagon equations).";
 
-Options[DeleteEquivalentSolutions] :=
-  Options[SymmetryEquivalentQ];
-
-DeleteEquivalentSolutions[ soln_, ring_FusionRing, symmetries_, opts:OptionsPattern[] ] :=
-  Module[{ groupedSoln, decomposedGaugeMatrices, procID, result, time, invariants },
-    procID =
-      ToString @ Unique[];
-
-    printlog[ "DSES:init", { procID, soln, ring, symmetries, { opts } } ];
-
-    { time, result } =
-      AbsoluteTiming[
-        If[
-          (* Trivial Gauge Transform *)
-          Times @@ Dimensions[ MultiplicativeGaugeMatrix[ symmetries ] ] === 0,
-          (* THEN *)
-          printlog["DSES:trivial_gauge_transform", {procID} ];
-          Return @
-          DeleteDuplicates[
-            soln,
-            SymmetryEquivalentQ[ symmetries, ring, opts ]
-          ]
-        ];
-
-        (* Group solutions by appearance of 0 values. *)
-        groupedSoln =
-          GroupBy[ soln, Position[ _ -> 0 ] ];
-
-        printlog[ "DSES:groups", { procID, groupedSoln } ];
-
-        decomposedGaugeMatrices =
-          HermiteDecomposition /@
-          Table[
-            MultiplicativeGaugeMatrix[ MapAt[ Delete[ # , zeroPos ]&, symmetries, {1} ] ],
-            { zeroPos, Keys[groupedSoln] }
-          ];
-
-        invariants =
-          GaugeInvariants @ ring;
-
-        Join @@
-        MapThread[
-          DeleteDuplicates[ #1 , SymmetryEquivalentQ[ ring, #2, "GaugeInvariants" -> invariants, opts ] ]&,
-          { Values[ groupedSoln ], decomposedGaugeMatrices }
-        ]
-      ];
-
-    printlog["Gen:results", { procID, result, time } ];
-    result
-  ];
-
-PackageExport["DES"]
-
-DES::usage =
-  "Shorthand for DeleteEquivalentSolutions.";
-
-DES =
-  DeleteEquivalentSolutions;
-
-PackageExport["DeleteEquivalentSolutions2"]
-
-DeleteEquivalentSolutions2::usage =
-  "Experimental faster version of DeleteEquivalentSolutions. Does not have the option to delete only unitarily "<>
-  "equivalent solutions";
-
-DeleteEquivalentSolutions2::wrongrstructure =
+DeleteEquivalentSolutions::wrongrstructure =
   "Either all solutions should be braided or none should be braided.";
-DeleteEquivalentSolutions2::differentzeros =
+
+DeleteEquivalentSolutions::differentzeros =
   "Some solutions have zeros at different positions. These solutions can never be equivalent.\n"<>
   "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions2 on each set.";
 
-Options["DeleteEquivalentSolutions2"] :=
-  {
-    "PreEqualCheck" -> Identity,
-    "Numeric" -> False,
-    "Accuracy" -> 64
-  };
+Options["DeleteEquivalentSolutions"] :=
+  Join[
+    Options[GaugeSymmetryEquivalentQ],
+    {
+      "PreEqualCheck" -> Identity,
+      "Numeric" -> False,
+      "Accuracy" -> 64
+    }
+  ];
 
-DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
+DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits },
     (*procID =
       ToString @ Unique[];
@@ -652,7 +591,7 @@ DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     zeroPositions =
       Position[ _ -> 0 ] /@ soln;
 
-    If[ !MatchQ[ zeroPositions, { x_ .. } ], Message[ DeleteEquivalentSolutions2::differentzeros ]; Abort[]  ];
+    If[ !MatchQ[ zeroPositions, { x_ .. } ], Message[ DeleteEquivalentSolutions::differentzeros ]; Abort[]  ];
 
     { time, result } =
       AbsoluteTiming[
@@ -667,7 +606,7 @@ DeleteEquivalentSolutions2[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
 
         If[
           Not[ Equal @@ braidedCheck ],
-          Message[ DeleteEquivalentSolutions2::wrongrstructure ]; Abort[]
+          Message[ DeleteEquivalentSolutions::wrongrstructure ]; Abort[]
         ];
 
         invariants =
@@ -698,10 +637,8 @@ intersectingQ[ l1_List, l2_List ] :=
     ]; False
   ];
 
-Options[DeleteGaugeEquivalentSolutions2] :=
-  Options[GaugeSymmetryEquivalentQ];
 
-DeleteGaugeEquivalentSolutions2[ soln_, invariants_, opts:OptionsPattern[] ] :=
+DeleteGaugeEquivalentSolutions[ soln_, invariants_, opts:OptionsPattern[] ] :=
   Module[{ inv, indices },
     inv =
       If[
@@ -717,6 +654,16 @@ DeleteGaugeEquivalentSolutions2[ soln_, invariants_, opts:OptionsPattern[] ] :=
 
     soln[[ DeleteDuplicatesBy[ indices, inv[[#]]& ] ]]
   ];
+
+PackageExport["DES"]
+
+DES::usage =
+  "Shorthand for DeleteEquivalentSolutions.";
+
+DES =
+  DeleteEquivalentSolutions;
+
+
 
 
 PackageExport["SymmetryEquivalentQ2"]

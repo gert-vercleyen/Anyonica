@@ -8,7 +8,7 @@ Package["Anyonica`"]
 (* This file contains functions that reduce systems of polynomials. Originally these could take either the form of a system of
    polynomial equations, or a list of polynomials but we will try to convert all functions to work with lists of polynomials.
    It is easy to convert between the two.
-   
+
    Every function that reduces a system should have a standard output in the form of
    <|
       "Polynomials" -> list of polynomials after reduction,
@@ -16,13 +16,13 @@ Package["Anyonica`"]
       "Values"      -> list of rules mapping the original unknowns to expressions in terms of unknowns appearing in
                        the list of polynomials after reduction, or numbers if all polynomials have been solved for
    |>
-   
+
    We call this the Standard System Data Structure (SSDS)
-   
+
    Every function that reduces a system should also have 2 standard inputs for the system: either in SSDS form or just
    as a list of polynomials.
-   
-   
+
+
 *)
 
 
@@ -76,7 +76,7 @@ ReduceBinomialSystem[ binomialEqns_, variables_, OptionsPattern[] ] :=
     { eqns, vars, revertVars, canEqns, x },
     { eqns, vars, revertVars } =
     SimplifyVariables[ binomialEqns, variables, x ];
-    
+
     Catch @
     FixedPoint[ UpdateEquivalences[x], { NormalForm @ ToProperBinomialEquation @ eqns, { } } ] /. revertVars
   ]
@@ -181,9 +181,9 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
     OptionValue["PreEqualCheck"];
     procID =
     ToString[Unique[]];
-    
+
     printlog["RBM:init", {procID, sumEqns, binomialEqns, vars, s, {opts}}];
-    
+
     { absTime, result } =
     AbsoluteTiming[
       constraints =
@@ -191,10 +191,10 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
         polynomialConstraints,
         DeterminantConditions @ invertibleMatrices
       ];
-      
+
       SolveRepeatedly[ { {}, nonBinEqns_ }, _, _, prevSols_, _  ] :=
       Sow[ { nonBinEqns, prevSols } ];
-      
+
       SolveRepeatedly[ { binEqns_, nonBinEqns_ }, variables_, s[i_], prevSols_, constr_ ] :=
       Module[ { updatedSystems },
         updatedSystems =
@@ -204,9 +204,9 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
           "Symmetries"    -> None
           (* Symmetries are exhausted by first call. If not set to None, the original symmetries are used and an error occurs  *)
         ];
-        
+
         If[ updatedSystems === {}, Return @ {} ];
-        
+
         Do[
           SolveRepeatedly[
             BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ],
@@ -219,7 +219,7 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
           { sys, updatedSystems }
         ]
       ];
-      
+
       firstSystems =
       AddOptions[opts][SolveAndUpdate][
         binomialEqns,
@@ -228,9 +228,9 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
         vars,
         s[1]
       ];
-      
+
       If[ firstSystems === {}, Return @ {} ];
-      
+
       Reap[
         Do[
           SolveRepeatedly[
@@ -245,10 +245,10 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
         ];
       ][[2]] /. ( s[_][i_] :> s[i] ) /. ( {x_List} :> x )
     ];
-    
+
     printlog["RBM:solutions", {procID, result}];
     printlog["Gen:results", {procID, result, absTime}];
-    
+
     result
   ]
 );
@@ -287,9 +287,9 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
   If[ OptionValue["NonSingular"], SNSBS, SBS ];
   procID =
   ToString[ Unique[] ];
-  
+
   printlog[ "SAU:init", {procID, binEqns,sumEqns,vars,s,{opts}} ];
-  
+
   { absTime, result } =
   AbsoluteTiming[
     (* Note that we simplify solutions first and then simplify sumEqns again. This is to reduce memory pressure *)
@@ -298,7 +298,7 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
       Dispatch,
       simplifySolutions @ AddOptions[opts][solve][ binEqns, vars, s ]
     ];
-    
+
     eqnSolConstr =
     Table[
       {
@@ -308,9 +308,9 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
       },
       { sol, soln }
     ];
-    
+
     printlog["SAU:updated_sys", {procID, eqnSolConstr[[;;,1]], eqnSolConstr[[;;,3]] } ];
-    
+
     notInvalidPos =
     Flatten @
     Position[
@@ -319,12 +319,12 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
       NotInvalidNonZeroSolutionQ[e,preEqCheck][sl] && c =!= {False},
       {1}
     ];
-    
+
     If[
       Length[notInvalidPos] != Length[soln],
       printlog["SAU:invalid_positions", {procID, Complement[ Range @ Length @ soln, notInvalidPos ] } ]
     ];
-    
+
     Table[
       <|
         "Equations"   -> eqnSolConstr[[i,1]],
@@ -333,12 +333,12 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
       |>,
       { i, notInvalidPos }
     ]
-  
+
   ];
-  
+
   printlog["SAU:remainingsol", {procID,soln,result}];
   printlog["Gen:results", {procID,result,absTime}];
-  
+
   result
 ];
 
@@ -355,17 +355,17 @@ Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
   OptionValue["SimplifyIntermediateResultsBy"];
   preEqCheck =
   OptionValue["PreEqualCheck"];
-  
+
   newPolConstr =
   AddOptions[opts][UpdateAndCheck][ polConstr, solution, Identity ];
-  
+
   If[ newPolConstr === { False }, Return @ { False } ];
-  
+
   newInvMats =
   AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] =!= 0& ];
-  
+
   If[ newInvMats === { False }, Return @ { False } ];
-  
+
   {
     Select[ Not @* TrueQ @* preEqCheck ] @ newPolConstr,
     DeleteCases[ mat_/; TrueQ[ Det[mat] != 0 ] ] @ newInvMats
@@ -394,12 +394,12 @@ With[
     weightfn =
     OptionValue["LinearReductionWeight"]
   },
-  
+
   If[
     cases === {},
     Return @ Missing[]
   ];
-  
+
   MinimalBy[
     cases,
     weightfn[ (#[[2]])["Numerator"], (#[[2]])["Denominator"] ]&,
@@ -465,7 +465,7 @@ Module[
   GetVariables[ polList, s ];
   RCF =
   RemoveCommonFactors[ #, s ]&;
-  
+
   If[
     parallelQ
     ,
@@ -476,14 +476,14 @@ Module[
     map =
     Map
   ];
-  
+
   rootReduce = (* TODO: might want to give user the option to turn this off *)
   If[
     MemberQ[ polList, _Root, Infinity ],
     SafeRootReduce,
     Identity
   ];
-  
+
   (* We need to store the numerator and denominator of rational functions separately because
      because Mathematica automatically cancels common factors.
      RatRule converts the target of the linear rule to an actual rational function. *)
@@ -491,19 +491,19 @@ Module[
   a -> Cancel[ b["Numerator"] / b["Denominator"] ];
   RatRule[ Missing[] ] :=
   Missing[];
-  
+
   ToPol =
   RCF @* rootReduce @* simplify @* Expand @* Numerator @* Cancel @* Together;
-  
+
   MonQ[ pol_ ] :=
   Length[ MonomialList[ pol ] ] === 1;
-  
+
   PolRest[ pol_, ps_ ] :=
   RCF @ PolynomialReduce[ pol, ps, vars ][[2]];
-  
+
   (* Make sure all Kernels know the definitions of the functions to be mapped *)
   If[ parallelQ, DistributeDefinitions[ RCF, simplify, ToPol, PolRest, GetVariables ] ];
-  
+
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, rules_  ] :=
   With[
@@ -537,7 +537,7 @@ Module[
       False
     ]
   ];
-  
+
   UpdateSystem[ pols_, nonZeroPols_, knownRules_, rule_ ] :=
   MemoryConstrained[
     {
@@ -551,7 +551,7 @@ Module[
     Sow[ { pols, nonZeroPols, knownRules } ];
     $Aborted
   ];
-  
+
   ReduceSystem[ pols_, nonZeroPols_, rules_, pol_ ] :=
   MemoryConstrained[
     {
@@ -565,7 +565,7 @@ Module[
     Sow[ { pols, nonZeroPols, rules } ];
     $Aborted
   ];
-  
+
   (* Add denominators appearing in the rules to the set of nonzero pols *)
   AddNonZeroPols[ pols_, nonZeroPols_, rules_ ] :=
   With[
@@ -587,25 +587,25 @@ Module[
       "Rules" -> SortBy[First] @ rules
     |>
   ];
-  
+
   RecursiveReduce[$Aborted] =
   $Aborted;
-  
+
   RecursiveReduce[
     ps_,    (* Polynomials:                        *)
     nzps_,  (* Non-zero polynomials: initially { } *)
     rs_     (* Substitution rules:   initially { } *)
   ] :=
   Catch[
-    
+
     If[ InvalidPolSystem[ ps, nzps, rs ], Throw @ Null ];
-    
+
     With[
       { lRule = AddOptions[opts][SimplestLinearRule][ ps, s ] },
       { denom = If[ MissingQ @ lRule, Missing[], RCF @ lRule[[2]]["Denominator"] ] },
-      
+
       printlog["RBL:simplest_rule", { id, lRule, s } ];
-      
+
       If[ (* No linear rules in system *)
         MissingQ @ lRule
         ,
@@ -613,7 +613,7 @@ Module[
         Sow[ { ps, nzps, rs } ];
         Throw @ Null
       ];
-      
+
       If[ (* Denominator in rule isn't zero *)
         MonQ @  PolRest[ denom, nzps ]
         ,
@@ -622,22 +622,22 @@ Module[
         UpdateSystem[ ps, nzps, rs, RatRule @ lRule ];
         Throw @ Null
       ];
-      
+
       (* Denominator in rule contains sum. *)
-      
+
       (* ASSUME DENOMINATOR != 0 *)
       printlog[ "RBL:assuming_nonzero_denominator", { id, lRule } ];
       RecursiveReduce @@
       UpdateSystem[ ps, Append[ denom ] @  nzps, rs, RatRule @ lRule ];
-      
+
       (* ASSUME DENOMINATOR == 0 *)
       printlog[ "RBL:reduction", { id, denom, s } ];
       RecursiveReduce @@ ReduceSystem[ ps, nzps, rs, denom ]
     ]
   ];
-  
+
   printlog["RBL:init", { procID, polList, s, { opts } } ];
-  
+
   { time, result } =
   AbsoluteTiming @
   Block[ { $RecursionLimit = Infinity },
@@ -647,11 +647,11 @@ Module[
       { { 1 }, { }, { } }
     ]
   ];
-  
+
   printlog["Gen:results", { procID, result, time } ];
-  
+
   If[ parallelQ, CloseKernels[] ];
-  
+
   result
 
 ];
@@ -669,7 +669,7 @@ FindLinearRule[ pol_, s_ ] :=
 Module[{ nonLinVars, linVars, var },
   nonLinVars =
   Cases[ { pol }, Power[ s[i__], _ ] :> s[i], { 1, 5 } ] // DeleteDuplicates;
-  
+
   linVars =
   Tally @
   Cases[
@@ -677,7 +677,7 @@ Module[{ nonLinVars, linVars, var },
     s[i__] /; FreeQ[s[i]] @ nonLinVars,
     Infinity
   ];
-  
+
   If[
     linVars === {},
     Return @ Missing[],
@@ -725,7 +725,7 @@ Module[
   OptionValue["MaxMemory"];
   parallelQ =
   OptionValue["Parallel"];
-  
+
   If[
     parallelQ
     ,
@@ -734,7 +734,7 @@ Module[
     ,
     map = Map
   ];
-  
+
   procID =
   ToString @ Unique[];
   id :=
@@ -749,7 +749,7 @@ Module[
   Length[ MonomialList[ pol ] ] === 1;
   PolRest[ pol_, ps_ ] :=
   PolynomialReduce[ pol, ps, vars ][[2]];
-  
+
   PolMod :=
   Function[
     { p1, p2, var },
@@ -757,9 +757,9 @@ Module[
       If[ gb === {}, 0, MoldPol @ gb[[1]] ]
     ]
   ];
-  
+
   If[ parallelQ, DistributeDefinitions[ GetVariables, MoldPol, PolMod ] ];
-  
+
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, linPols_  ] :=
   With[
@@ -781,7 +781,7 @@ Module[
       False
     ]
   ];
-  
+
   UpdateSystem[ pols_, nonZeroPols_, linPols_, linPol_ ] :=
   With[{ pol = linPol["Var"] * linPol["Factor"] + linPol["Term"] },
     MemoryConstrained[
@@ -806,7 +806,7 @@ Module[
       { { 1 }, { }, { } }
     ]
   ];
-  
+
   ReduceSystem[ pols_, nonZeroPols_, linPols_, denom_ ] :=
   MemoryConstrained[
     {
@@ -819,7 +819,7 @@ Module[
     Sow[ { pols, nonZeroPols, linPols } ];
     { { 1 }, { }, { } }
   ];
-  
+
   (* Add denominators appearing in the rules to the set of nonzero polList *)
   ToAssociation[ pols_, nonZeroPols_, linPols_ ] :=
   <|
@@ -828,7 +828,7 @@ Module[
     Reduce[ Thread[  nonZeroPols != 0 ], Backsubstitution -> True ],
     "LinearPolynomials" -> linPols
   |>;
-  
+
   RecursiveReduce[
     ps_,    (* Polynomials:          initially RCF /@ pols *)
     nzps_,  (* Non-zero polynomials: initially { } *)
@@ -839,16 +839,16 @@ Module[
     (* THEN *)
     Return @ Null,
     (* ELSE *)
-    
+
     With[ { linPol = AddOptions[opts][SimplestPol][ ps, s ] },
-      
+
       If[ (* No linear rules in system *)
         MissingQ @ linPol,
         (* THEN *)
         Sow[ { ps, nzps, lps } ];
         Return @ Null
       ];
-      
+
       If[ (* Denominator in rule isn't zero *)
         MonQ @  PolRest[ linPol["Factor"], nzps ],
         (* THEN *)
@@ -856,20 +856,20 @@ Module[
         UpdateSystem[ ps, nzps, lps, linPol ];
         Return @ Null
       ];
-      
+
       (* ASSUME DENOMINATOR != 0 *)
       RecursiveReduce @@
       UpdateSystem[ ps, Append[ linPol["Factor"] ] @  nzps, lps, linPol ];
-      
+
       (* ASSUME DENOMINATOR == 0 *)
       RecursiveReduce @@
       ReduceSystem[ ps, nzps, lps, RCF @ linPol["Factor"] ]
     ]
   ];
-  
-  
+
+
   printlog["RBL:init", { procID, polList, s, { opts } } ];
-  
+
   { time, result } =
   AbsoluteTiming[
     ToAssociation @@@
@@ -878,11 +878,11 @@ Module[
       { { 1 }, { }, { } }
     ]
   ];
-  
+
   printlog["Gen:results", { procID, result, time } ];
-  
+
   If[ parallelQ, CloseKernels[ ] ];
-  
+
   result
 
 ];
@@ -898,12 +898,12 @@ With[
     weightfn =
     OptionValue["WeightFunction"]
   },
-  
+
   If[
     polsInfo === {},
     Return @ Missing[]
   ];
-  
+
   MinimalBy[
     polsInfo,
     weightfn @@ { #["Factor"], #["Term"] }&,
@@ -923,7 +923,7 @@ Module[{ nonLinVars, linVars, var },
   nonLinVars =
   Cases[ { pol }, Power[ s[i__], _ ] :> s[i], { 1, 5 } ] //
   DeleteDuplicates;
-  
+
   linVars =
   Tally @
   Cases[
@@ -931,7 +931,7 @@ Module[{ nonLinVars, linVars, var },
     s[i__] /; FreeQ[s[i]] @ nonLinVars,
     Infinity
   ];
-  
+
   If[
     linVars === {},
     Return @ Missing[],
@@ -968,10 +968,10 @@ Module[ { newEqns, newVars, revertVars, s, newSystem, simplify },
   OptionValue["SimplifyBy"];
   { newEqns, newVars, revertVars } =
   SimplifyVariables[ eqnsList, vars, s ];
-  
+
   newSystem =
   UpdateSystemViaTrivialities[ s, simplify ][ {}, {}, newEqns ];
-  
+
   Normal[newSystem]/.revertVars
 ];
 

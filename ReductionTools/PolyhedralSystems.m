@@ -73,7 +73,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
     Rank[ring];
     lFInd =
     List @@@ FSymbols[ring];
-    
+
     sF =
     SparseArray @
     ReplaceAll[
@@ -83,7 +83,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
       ],
       If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
     ];
-    
+
     pentEqns =
     Reap[
       (* Collect equations of the form Non0LHS == RHS *)
@@ -92,13 +92,13 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
         matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
         Do[
           { a, b, s } = label2[[ { 1, 2, 6 } ]];
-          
+
           eqn =
           (
             sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
             Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
           );
-          
+
           If[ (* Equation is not trivial *)
             !TrueQ[eqn],
             (* THEN Set dim equal to max size of F-matrix *)
@@ -120,7 +120,7 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
       Flatten @
       Table[ patt[i][j], {i,2}, {j,n} ]
     ][[2]];
-    
+
     <|
       "Bin" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i]], {i,n} ],
       "Sum" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i+n]], {i,n} ]
@@ -204,21 +204,21 @@ Module[
     matchingLabels, dim, fLabels, gLabels, hLabels, kLabels, lLabels },
   mt =
   MT[ring];
-  
+
   fgGroupedLabels =
   GroupBy[(* Group left 3-vertex trees by equal values of a,b,c,d,e *)
     LeftOrderedFusionTrees[ ring, 3 ],
     #[[{1,2,3,4,7}]]&
   ];
-  
+
   gGroupedLabels =
   GroupBy[ (#[[5]]&) -> (#[[6]]&) ] /@
   fgGroupedLabels;
-  
+
   (* Substitutes known values in F or R tensors *)
   replaceKnowns[ expr_ ] :=
   expr/.Dispatch[ OptionValue["Knowns"] ];
-  
+
   (* Searches for intermediate fusion labels s where the two patterns are vertex labels, each containing 1 s *)
   matchingLabels[ pattern1_, pattern2_, s_ ] :=
   With[{
@@ -232,10 +232,10 @@ Module[
       Cases[ non0Ns, ReplaceAll[ pattern2, s->Blank[] ] ][[;;,n2]]
     ]
   ];
-  
+
   dim[ a_, b_, c_ ] :=
   mt[[a,b,c]];
-  
+
   DeleteCases[True] @
   Flatten @
   Reap[
@@ -250,16 +250,16 @@ Module[
       Do[
         lLabels =
         matchingLabels[ { f, l, e }, { c, d, l }, l ];
-        
+
         kLabels[ l_ ] :=
         matchingLabels[ { a, k, e }, { b, l, k }, k ];
-        
+
         hLabels[ k_ ] :=
         Intersection[
           matchingLabels[ { a, h, g }, { b, c, h }, h ],
           matchingLabels[ { b, c, h }, { h, d, k }, h ]
         ];
-        
+
         Sow @
         replaceKnowns @
         Table[
@@ -351,18 +351,18 @@ HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
 Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
   rSymbols =
   R @@@ NZSC[ring];
-  
+
   fSymbols =
   FSymbols[ring];
-  
+
   rank =
   Rank[ring];
-  
+
   If[
     !MatchQ[ OptionValue["Knowns"], { _Rule ... } ],
     Message[HexagonEquations::badformat, OptionValue["Knowns"] ]
   ];
-  
+
   knowns =
   Dispatch @
   Join[
@@ -377,24 +377,24 @@ Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabe
     ],
     Normal @ OptionValue["Knowns"]
   ];
-  
+
   (* construct a sparse array of R symbols *)
   sR =
   SparseArray[
     Thread[ NZSC[ring] -> rSymbols ]/.knowns,
     { rank, rank, rank }
   ];
-  
+
   sF =
   SparseArray @
   ReplaceAll[
     Normal @ SparseFTensor[ ring ],
     knowns
   ];
-  
+
   matchingLabels[ { a_, c_, b_, d_, e_} ] :=
   Cases[ List @@@ fSymbols, { c, a, b, d, e, _ } ][[;;,6]];
-  
+
   DeleteDuplicates @
   DeleteCases[True] @
   Flatten[
@@ -440,18 +440,18 @@ Module[ {
 },
   mt =
   MT[ring];
-  
+
   fGroupedLabels =
   GroupBy[(* Group right 2-vertex trees by equal values of a,b,c,d *)
     RightOrderedFusionTrees[ ring, 2 ],
     #[[{1,2,3,5}]]&
   ];
-  
+
   (* Substitutes known values in F or R tensors *)
   replaceKnowns[ tensors_ ] :=
   ( SparseArray[ Normal[#]/.Dispatch[ OptionValue["Knowns"] ] ] & ) /@
   tensors;
-  
+
   (* Searches for intermediate fusion labels s where the two patterns are vertex labels, each containing 1 s *)
   matchingLabels[ pattern1_, pattern2_, s_ ] :=
   With[{
@@ -465,7 +465,7 @@ Module[ {
       Cases[ non0Ns, ReplaceAll[ pattern2, s->Blank[] ] ][[;;,n2]]
     ]
   ];
-  
+
   SwapOperator[ { a_, b_, e_ }, { e_, c_, d_ } ] :=
   ArrayFlatten[
     SparseArray[
@@ -477,7 +477,7 @@ Module[ {
       ]
     ]
   ];
-  
+
   Rt =
   replaceKnowns @
   RTensors[ring];
@@ -490,7 +490,7 @@ Module[ {
   KroneckerProduct;
   ID =
   IdentityMatrix[ mt[[##]] ]&;
-  
+
   DeleteCases[True] @
   Flatten @
   Reap[
@@ -503,29 +503,29 @@ Module[ {
       fGroupedLabels[ treeLabels ][[;;,4]];
       gLabels =
       matchingLabels[ { c, a, g }, { g, b, d }, g ];
-      
+
       op[1,1] =
       DS @ Table[ TP[ Rt[ { c, a, g } ], ID[ g, b, d ] ], { g, gLabels } ];
-      
+
       op[1,2] =
       Ft[ { a, c, b, d } ];
-      
+
       op[1,3] =
       DS @ Table[ TP[ ID[ a, f, d ], Rt[ { c, b, f } ] ], { f, fLabels } ];
-      
+
       op[2,1] =
       Ft[ { c, a, b, d } ];
-      
+
       swap =
       DS @ Table[ SwapOperator[ { a, b, e }, { e, c, d } ], { e, eLabels } ];
-      
+
       op[2,2] =
       DS @ Table[ TP[ ID[ a, b, e ], Rt[ { c, e, d } ] ], { e, eLabels } ];
-      
+
       (* DS @ Table[ ID[ a, b, e ] ~ TP ~ Rt[ { c, e, d } ], { e, eLabels } ]; *)
       op[2,3] =
       Ft[ { a, b, c, d } ];
-      
+
       Sow @
       {
         ThreadMatrixEquality[
@@ -562,7 +562,7 @@ Module[
   QD[ring][[#]]&;
   rs =
   RSymbols[ring];
-  
+
   TEL[
     Join[
       Table[
@@ -637,32 +637,32 @@ Module[
   OptionValue["StoreDecompositions"];
   subsSol =
   OptionValue["InjectSolution"];
-  
+
   procID =
   ToString[Unique[]];
-  
+
   printlog["PPSI:init", { procID, ring, {opts} } ];
-  
+
   { time, solutions } =
   AbsoluteTiming[
-    
+
     If[ (* Want to substitute solution *)
       subsSol =!= {},
-      
+
       (* THEN *)
       { sRing, sSol } =
       subsSol;
-      
+
       (* Function that maps labels in sRing to corresponding labels in ring *)
       inject =
       InjectionForm[ ring, sRing ];
-      
+
       If[
         inject === None,
         Message[PreparePentagonSolverInput::notsubring, sRing, ring ];
         Abort[]
       ];
-      
+
       (* Rename all labels of sSol so they correspond to the labels of the sub-fusion-ring of ring *)
       compatibleSol =
       MapAt[
@@ -670,34 +670,34 @@ Module[
         sSol,
         { All, 1 }
       ],
-      
+
       (* ELSE *)
       compatibleSol =
       {}
     ];
-    
+
     allFSymbols =
     FSymbols[ring];
-    
+
     vacuumSymbols =
     Cases[ allFSymbols, $VacuumFPattern ];
-    
+
     fSymbols =
     Complement[
       allFSymbols,
       vacuumSymbols,
       GetVariables[ compatibleSol, F ]
     ];
-    
+
     tower =
     PentagonTower[ ring, "Knowns" -> compatibleSol ];
-    
+
     { binEqns, sumEqns } =
     BinSumEquationsFromTower[ tower ];
-    
+
     pentEqns =
     Join[ binEqns, sumEqns ];
-    
+
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
       With[ { d = CC[ring] },
@@ -705,13 +705,13 @@ Module[
           FMatrices[ ring ],
           Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
       ];
-    
+
     gaugeSymmetries =
     GaugeSymmetries[ allFSymbols, g ];
-    
+
     (* Update matrices and gauge symmetries to take account of known F's *)
     printlog[ "PPSI:restricting_gauges", { procID } ];
-    
+
     (* Update gauges *)
     gaugeSymmetries =
     RestrictMultiplicativeSymmetries[
@@ -719,18 +719,18 @@ Module[
       vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
       g
     ];
-    
+
     (* Remove trivial and known F-matrices from list of invertible matrices *)
     invMats =
     With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
       invMats //
       DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern  ]
     ];
-    
+
     printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
-    
+
     printlog[ "PPSI:zero_Fs", { procID } ];
-    
+
     (* Find Configurations of non-trivial 0-values *)
     zeros =
     Dispatch @
@@ -778,28 +778,28 @@ Module[
           "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
       ]
     ];
-    
+
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
-    
+
     If[
       Length @ Normal @ zeros === 0
       ,
       Return[ { } ]
     ];
-    
+
     printlog["PPSI:fixing_gauge", {procID } ];
     (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
        that do not appear in any of the "zeros" from previous step *)
-    
+
     (* Get all F-symbols that could be 0 for some configuration in zeros *)
     unionZeros =
     Union @@
     Normal[zeros][[;;,;;,1]];
-    
+
     (* Get all F-symbols that can never be 0 *)
     sharedVars =
     Complement[ fSymbols, unionZeros ];
-    
+
     (* Fix the gauge for all the F symbols that can never be 0 *)
     { remainingSym, extraFixedFs } =
     BreakMultiplicativeSymmetry[
@@ -807,44 +807,44 @@ Module[
       "GaugeDemands" -> gaugeDemands,
       "ExcludedVariables" -> unionZeros
     ];
-    
+
     (* Remove the newly fixed F-symbols from the list of variables *)
     fSymbols =
     Complement[ fSymbols, extraFixedFs[[;;,1]] ];
-    
+
     (* Substitute the values of the newly fixed F-symbols in the invertible matrices
        and remove trivial 1D F-matrices. *)
-    
+
     invMats =
     invMats/.extraFixedFs //
     DeleteCases[ {{n_?NumericQ}} /; n != 0 ];
-    
+
     (* Substitute the values of the newly fixed F-symbols in the equations,
        remove trivial equations and delete duplicate equations *)
-    
+
     pentEqns =
     pentEqns/.extraFixedFs //
     DeleteCases[True] //
     DeleteDuplicates;
-    
+
     printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
-    
+
     (* Try to fix extra gauges, if possible, for each of the 0-configurations.
       Also substitute 0 values, and update equations, variables, and matrices *)
-    
+
     printlog[ "PPSI:fixing_extra_gauges", { procID } ];
-    
+
     If[ (* All gauges are fixed *)
       remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]]
       ,
       (* THEN *)
       printlog[ "PPSI:no_gauge_freedom_left", { procID } ];
-      
+
       Reap[
         Do[
           dz =
           Dispatch[z];
-          
+
           Sow[
             <|
               "Equations"  -> ( pentEqns/.dz // DeleteCases[True] // DeleteDuplicates ),
@@ -863,17 +863,17 @@ Module[
       ,
       (* ELSE *)
       printlog[ "PPSI:gauge_freedom_left", { procID } ];
-      
+
       Reap[
         Do[
           dz =
           Dispatch[z];
-          
+
           { specificSym, specificFixedFs } =
           BreakMultiplicativeSymmetry[
             AddZerosToSymmetries[ remainingSym, z ]
           ];
-          
+
           Sow[
             <|
               "Equations" -> (pentEqns/.dz/.specificFixedFs // DeleteCases[True] // DeleteDuplicates),
@@ -891,9 +891,9 @@ Module[
       ][[2,1]]
     ]
   ];
-  
+
   printlog["Gen:results", { procID, solutions, time }];
-  
+
   solutions
 ];
 
@@ -919,12 +919,12 @@ PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
 Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations, tf },
   tf =
   OptionValue["TwistFactors"];
-  
+
   rSymbols =
   R @@@ NZSC[ ring ];
   fSymbols =
   FSymbols[ ring ];
-  
+
   knowns =
   Join[
     If[
@@ -938,17 +938,17 @@ Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equation
     ],
     Normal @ OptionValue["Knowns"]
   ];
-  
+
   procID =
   ToString @ Unique[];
-  
+
   printlog["PHSI:init", { procID, ring, { opts } } ];
-  
+
   printlog["PHSI:knowns", { procID, knowns } ];
-  
+
   { time, result } =
   AbsoluteTiming[
-    
+
     (* The known symbols are fixed so we have to reduce the gauge symmetries *)
     gaugeSym =
     MapAt[
@@ -960,26 +960,26 @@ Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equation
       ],
       {1}
     ];
-    
+
     printlog["PHSI:symmetries", { procID, gaugeSym } ];
-    
+
     equations =
     Join[
       If[ tf =!= None, TwistFactorEquations[ ring, tf ], {} ],
       AddOptions[opts][HexagonEquations] @ ring
     ];
-    
+
     <|
       "Equations" ->  equations,
       "Variables" ->  GetVariables[ equations, { R, F } ],
       "Symmetries" -> gaugeSym,
       "Knowns" ->     knowns
     |>
-  
+
   ];
-  
+
   printlog["Gen:results", { procID, result, time } ];
-  
+
   result
 ];
 
@@ -1035,33 +1035,33 @@ Module[{
   sumSystems, SumBinEqns, systems, AddValues, ReduceSystems, reducedSystems1, reducedSystems2, simplify,
   invertibilityConstraints
 },
-  
+
   simplify =
   Composition[
     If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
     If[ OptionValue["ReduceRoots"], RootReduce, Identity ],
     OptionValue["SimplifyIntermediateResultsBy"]
   ];
-  
+
   procID =
   ToString[Unique[]];
-  
+
   printlog[ "MFPGS:init", { procID, ring, var, {opts} } ];
-  
+
   { time, result } =
   AbsoluteTiming[
-    
+
     If[ (* Ring is trivial *)
       Rank[ring] == 1,
       Return[ { { { }, { F[1,1,1,1,1,1] -> 1 } } } ]
     ];
-    
+
     SumBinEqns =
     Reverse @* BinomialSplit;
-    
+
     solverInput =
     AddOptions[opts][PreparePentagonSolverInput] @ ring;
-    
+
     sumSystems =
     DeleteCases[ { _, {} } ] @
     Table[
@@ -1085,7 +1085,7 @@ Module[{
       },
       { input, solverInput }
     ];
-    
+
     If[
       sumSystems === {},
       Return @
@@ -1097,22 +1097,25 @@ Module[{
         |>
       }
     ];
-    
+
+    (* TODO: it would be more optimal to use the invertibilityConstraints
+       as assumptions
+    *)
     AddValues[ { preKnowns_, systems_ } ] :=
-    Table[
-      <|
-        "Polynomials" -> TPL @ ToReducedPolynomial[ sys[[1]], var , "SimplifyBy" -> simplify ],
-        "Assumptions" -> True,
-        "Rules" -> Union[ preKnowns, sys[[2]] ]
-      |>
-      , { sys, systems }
-    ];
-    
+      Table[
+        <|
+          "Polynomials" -> TPL @ ToReducedPolynomial[ sys[[1]], var , "SimplifyBy" -> simplify ],
+          "Assumptions" -> True,
+          "Rules" -> Union[ preKnowns, sys[[2]] ]
+        |>
+        , { sys, systems }
+      ];
+
     (* Set up polynomial systems *)
     systems =
     Flatten[ AddValues /@ sumSystems ];
-    
-    
+
+
     (* Reduce the systems using linearity *)
     ReduceSystems[ system_ ] :=
     With[
@@ -1126,22 +1129,22 @@ Module[{
         { nSys, newSystems }
       ]
     ];
-    
+
     reducedSystems1 =
-    Flatten[ ReduceSystems /@ systems ];
-    
+      Flatten[ ReduceSystems /@ systems ];
+
     invertibilityConstraints[ rules_ ] :=
-    And @@
-    DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
-    
+      And @@
+      DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
+
     printlog["MFPGS:systems", { procID, reducedSystems1 } ];
-    
+
     (* If only 1 variable remains it is often faster to solve the system directly *)
     reducedSystems2 =
-    Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
-    
+      Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
+
     printlog["MFPGS:quicksolve", { procID, reducedSystems2 } ];
-    
+
     Table[
       <|
         "GroebnerBasis" ->
@@ -1155,11 +1158,11 @@ Module[{
       |>,
       { sys, reducedSystems2 }
     ]
-  
+
   ];
-  
+
   printlog["Gen:results", { procID, result, time }];
-  
+
   result
 
 ];
@@ -1198,7 +1201,7 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
   opt, systems, AddKnowns, ReduceSystems,  procID, result, time, reducedSystems, simplify },
   procID =
   ToString @ Unique[];
-  
+
   simplify =
   Composition[
     OptionValue["SimplifyIntermediateResultsBy"],
@@ -1213,24 +1216,24 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
       Identity
     ]
   ];
-  
-  
+
+
   printlog["MFHGS:init", { procID, ring, var, { opts } } ];
-  
+
   { time, result } =
   AbsoluteTiming[
     If[
       Rank[ring] == 1,
       Return[ { { { }, { F[1,1,1,1,1,1] -> 1, R[1,1,1] -> 1 }  } } ]
     ];
-    
+
     SumBinEqns =
     Reverse @* BinomialSplit;
-    
+
     { equations, variables, symmetries, knowns } =
     AddOptions[opts][PrepareHexagonSolverInput][ring] /@
     { "Equations", "Variables", "Symmetries", "Knowns" };
-    
+
     opt =
     If[
       FreeQ[ variables, F[__] ],
@@ -1246,7 +1249,7 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
         knowns
       ]
     ];
-    
+
     sumSystems =
     AddOptions[opts][ReduceByBinomials][
       Sequence @@ SumBinEqns[ equations ],
@@ -1256,7 +1259,7 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
       "Symmetries" ->                       symmetries,
       "SimplifyIntermediateResultsBy" ->    simplify
     ];
-    
+
     If[
       sumSystems === {},
       Return[
@@ -1269,15 +1272,15 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
         }
       ]
     ];
-    
+
     AddKnowns[ { sumEqns_, rules_ } ] :=
     <| "Polynomials" -> ToPolynomial @ sumEqns, "Rules" -> Union[ knowns, rules ] |>;
-    
+
     (* Set up polynomial systems *)
     systems =
     AddKnowns /@
     sumSystems;
-    
+
     (* Reduce the systems using linearity *)
     ReduceSystems[ system_ ] :=
     With[
@@ -1291,21 +1294,21 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
         { nSys, newSystems }
       ]
     ];
-    
+
     reducedSystems[1] =
     Flatten[ ReduceSystems /@ systems ];
-    
+
     printlog["MFHGS:systems", { procID, reducedSystems[1] } ];
-    
+
     (* If only 1 variable remains it is often faster to solve the system directly *)
     reducedSystems[2] =
     Flatten[
       QuickSolve[ #, var, "SimplifyBy" -> simplify ]& /@
       reducedSystems[1]
     ];
-    
+
     printlog["MFHGS:quicksolve", { procID, reducedSystems[2] } ];
-    
+
     Table[
       <|
         "GroebnerBasis" ->
@@ -1319,11 +1322,11 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
       |>,
       { sys, reducedSystems[2] }
     ]
-  
+
   ];
-  
+
   printlog["Gen:results", { procID, result, time } ];
-  
+
   result
 
 ];
@@ -1341,7 +1344,7 @@ Options[QuickSolve] = { "SimplifyBy" -> Identity };
 QuickSolve[ system_, var_, opts:OptionsPattern[] ] :=
 With[{pols = system["Polynomials"] },
   If[ CountVariables[ pols, var ] =!= 1, Return[system] ];
-  
+
   With[
     {
       simplestPol =
@@ -1443,22 +1446,22 @@ Module[ { procID, time, result, bases, z, simplify },
     ],
     OptionValue["SimplifyIntermediateResultsBy"]
   ];
-  
+
   printlog[ "SMFPE:init", { procID, ring, {opts} } ];
-  
+
   { time, result } =
   AbsoluteTiming[
-    
+
     If[ (* Need special case for trivial ring to avoid errors *)
       Rank[ring] == 1,
       Return[ { { F[1,1,1,1,1,1] -> 1 } } ]
     ];
-    
+
     bases =
     AddOptions[opts][PentagonGroebnerSystems][ ring, z ];
-    
+
     printlog["SMFPE:solving_systems", { procID } ];
-    
+
     MapAt[
       simplify,
       Flatten[
@@ -1469,9 +1472,9 @@ Module[ { procID, time, result, bases, z, simplify },
       { All, All, 2 }
     ]
   ];
-  
+
   printlog["Gen:results", { procID, result, time } ];
-  
+
   result
 ];
 
@@ -1515,28 +1518,28 @@ SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, z_ , opts:OptionsPattern
 Module[{ procID, time, result, bases },
   procID =
   ToString @ Unique[];
-  
+
   printlog["SMFHE:init", { procID, ring, { opts } } ];
-  
+
   { time, result } =
   AbsoluteTiming[
     If[
       Rank[ring] == 1,
       Return[ { { F[ 1, 1, 1, 1, 1, 1 ] -> 1, R[ 1, 1, 1 ] -> 1 } } ]
     ];
-    
+
     bases =
     AddOptions[opts][HexagonGroebnerSystems][ ring, z ];
-    
+
     Flatten[
       AddOptions[opts][SolveGroebnerSystem][#,z]& /@
       bases,
       1
     ]
   ];
-  
+
   printlog["Gen:results", { procID, result, time } ];
-  
+
   result
 
 ];
