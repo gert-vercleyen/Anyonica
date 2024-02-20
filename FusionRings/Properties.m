@@ -616,10 +616,10 @@ PermutationVector[ tab1_, tab2_ ] :=
   Module[ { tabs, diagonalSums, n, prePerms, cyclePerms, newTabs, possiblePerms, p },
     tabs =
       { tab1, tab2 };
-    
+
     diagonalSums =
       Rest[ Count[ #, x_/; x > 0 ]& /@ Diagonal[ # ] ]& /@ tabs;
-    
+
     n =
       Length[ tab1 ];
 
@@ -629,13 +629,13 @@ PermutationVector[ tab1_, tab2_ ] :=
       prePerms =
         Prepend[ (PermutationList[ FindPermutation[ Sort[#], # ], n - 1 ] + 1), 1 ]& /@
         diagonalSums;
-      
+
       cyclePerms =
         PermutationCycles /@ prePerms;
-      
+
       newTabs =
         MapThread[ PermuteMultTab, { tabs, prePerms } ];
-      
+
       possiblePerms =
         PossiblePermutationVectors[ Sort @ First @  diagonalSums ];
 
@@ -1102,7 +1102,7 @@ FRC[ ring_FusionRing?FusionRingQ ] :=
   FusionRingCharacters[ ring ];
 
 
-PackageExport["SMatrices"]
+PackageExport["NormalizedSMatrices"]
 
 NormalizedSMatrices::usage =
   "NormalizedSMatrices[ring] returns a list of possible S-matrices of the ring that are normalized to be unitary.";
