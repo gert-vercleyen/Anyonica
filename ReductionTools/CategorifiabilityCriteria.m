@@ -80,10 +80,11 @@ PDCCriterion[ ring_FusionRing?CommutativeQ ] :=
       FusionRingCharacters[ring];
     c =
       #.ConjugateTranspose[#]& /@ chars;
+
     Catch[
       Do[
         If[
-          And @@ Flatten @ AlgebraicIntegerQ[ c[[j]] / chars ],
+          And @@ Flatten @ AlgebraicIntegerQ[ c[[j]] / c ],
           Throw[ False ]
         ],
         { j, Length[c] }
@@ -116,13 +117,9 @@ PUDCC[ ring_FusionRing?CommutativeQ ] :=
 PackageExport["DNCriterion"]
 
 DNCriterion[ ring_FusionRing?CommutativeQ ] :=
-  Module[{ chars, c, DNumberQ },
-
-    chars = RootReduce @
-      FusionRingCharacters[ ring ];
-
-    c =
-      #.ConjugateTranspose[#]& /@ chars;
+  Module[{ chars, c, DNumberQ, n },
+    chars = FusionRingCharacters[ring];
+    c = RootReduce[ #.ConjugateTranspose[#]& /@ chars ];
 
     DNumberQ[ x_ ] :=
       Module[{ p, a, y },
@@ -134,10 +131,12 @@ DNCriterion[ ring_FusionRing?CommutativeQ ] :=
         a =
           ( Rest @ MonomialList[p] /. y -> 1 );
 
+        n =
+          Exponent[ p, y ];
 
         And @@
         Table[
-          Mod[ a[[-1]]^i, a[[i]]^n ] == 0,
+          Mod[ a[[i]]^n, a[[-1]]^i ] == 0,
           { i, Length[a] }
         ]
       ];
@@ -222,11 +221,11 @@ PackageExport["LCriterion"]
 LCriterion[ ring_FusionRing ] :=
   Module[{ subringDims },
     subringDims =
-      TQDS /@
+      FPDim /@
       DeleteDuplicates @
       SubFusionRings[ ring ][[;;,2]];
 
-    And @@ Echo @ AlgebraicIntegerQ @ Echo @ RootReduce[ TQDS[ring]/subringDims ]
+    Not[And @@ AlgebraicIntegerQ @ RootReduce[ FPDim[ring]/subringDims ]]
 
   ];
 
