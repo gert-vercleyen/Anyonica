@@ -505,7 +505,8 @@ SubFusionRings[ ring_FusionRing?FusionRingQ] :=
         ReplaceByKnownRing[ ToRing[ #["MultTab"] ] ]
       }& /@ multTabs
     ]
-  ];
+  ]
+  );
 
 SubRingTables[ multTab_ ] :=
   With[{
