@@ -502,7 +502,7 @@ SubFusionRings[ ring_FusionRing?FusionRingQ] :=
         SubRingTables[m];
       {
         #["Subset"],
-        ReplaceByKnownRing[ ToRing[ #["MultTab"] ] ]
+        ReplaceByKnownRing @ ToRing @ #["MultTab"]
       }& /@ multTabs
     ]
   );
@@ -512,7 +512,7 @@ SubRingTables[ multTab_ ] :=
     IMQ = InternalMultiplicationQ[ multTab, # ]&,
     subsets = SubsetChoices[ multTab ]
     },
-    <| "Subset"-> #, "MultTab"-> multTab[[#,#,#]] |>& /@
+    <| "Subset"-> #, "MultTab"-> multTab[[#,#,#]]|>& /@
     Select[ subsets, IMQ ]
   ];
 
