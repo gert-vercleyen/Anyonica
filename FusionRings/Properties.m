@@ -482,22 +482,28 @@ SubFusionRings::usage =
 SetAttributes[ SubFusionRings, Listable ];
 
 SubFusionRings[ ring_FusionRing?FusionRingQ] :=
-  If[
-    ring["SubFusionRings"] =!= Missing[],
-    ReleaseHold @ ring["SubFusionRings"],
+  (
+    If[
+      ring["SubFusionRings"] =!= Missing[],
+      Return @ ReleaseHold @ ring["SubFusionRings"]
+    ];
+
     If[
       Rank[ring] === 1,
-      {},
-      Module[ {
-        m = MT[ring],
-        ToRing = FusionRing[ "MultiplicationTable" -> # ]&,
-        multTabs},
-        multTabs = SubRingTables[m];
-        {
-          #["Subset"],
-          ReplaceByKnownRing[ ToRing[ #["MultTab"] ] ]
-        }& /@ multTabs
-      ]
+      Return @ {}
+    ];
+
+    Module[ { m, ToRing, multTabs },
+      m =
+        MT[ring];
+      ToRing =
+        FusionRing[ "MultiplicationTable" -> # ]&;
+      multTabs =
+        SubRingTables[m];
+      {
+        #["Subset"],
+        ReplaceByKnownRing[ ToRing[ #["MultTab"] ] ]
+      }& /@ multTabs
     ]
   ];
 

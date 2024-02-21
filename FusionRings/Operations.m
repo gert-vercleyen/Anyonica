@@ -17,11 +17,13 @@ PermutedRing::invalidpermutation =
   "with a 1 on the first position or should contain all entries in the range 2...`2` exactly once";
 
 PermutedRing[ r_FusionRing?FusionRingQ, perm_List ] :=
+  (
+  If[ perm == Range[ Rank @ r ], Return @ r ];
   Module[{ properPerm, newMultTab, PermuteModularData },
 
     properPerm =
       If[
-        MemberQ[ perm, 1 ]
+        MemberQ[1] @ perm
         ,
         perm
         ,
@@ -55,12 +57,13 @@ PermutedRing[ r_FusionRing?FusionRingQ, perm_List ] :=
       "DirectProductDecompositions" -> r["DirectProductDecompositions"],
       "SubFusionRings"              -> PermuteSubRingParticles[ r["SubFusionRings"], properPerm ],
       "QuantumDimensions"           -> FPDims[r][[ properPerm ]],
-      "SMatrices"                   -> SMatrices[r][[ ;;, properPerm, properPerm ]],
+      "SMatrices"                   -> NormalizedSMatrices[r][[ ;;, properPerm, properPerm ]],
       "TwistFactors"                -> TwistFactors[r][[ ;;, properPerm ]],
       "ModularData"                 -> PermuteModularData /@ ModularData[r],
       "Characters"                  -> FusionRingCharacters[r][[;;,properPerm]]
     ]
-  ];
+  ]
+  );
 
 
 PermutedRing[ r_FusionRing?FusionRingQ, perm_Cycles ] :=
@@ -155,7 +158,7 @@ PackageExport["SR"]
 
 SR::usage =
   "Shorthand for SortedRing.";
-  
+
 SR =
   SortedRing;
 
@@ -191,7 +194,7 @@ PermVecSDConj[r_FusionRing?FusionRingQ, OptionsPattern[]] :=
         SortBy[ #, Function[ x, N[ qds[[x]], { Infinity, 16 } ] ] ]& /@
         Position[ apmat, 1 ]
       ];
-    
+
     qdSort[ l_List ] :=
       SortBy[ l, qds[[#]]& ];
 
