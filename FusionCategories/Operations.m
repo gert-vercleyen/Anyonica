@@ -60,16 +60,23 @@ FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_
       sMat     = Missing["NonBraidedCategory"]
     ];
 
+    pivStruct =
+      Thread[
+        Array[ \[ScriptP], r1 * r2 ] ->
+        Flatten @
+        KroneckerProduct[ Values @ PivotalStructure[cat1], Values @ PivotalStructure[cat2] ]
+      ];
 
     AddOptions[opts][FusionCategory][
       "FusionRing" -> TensorProduct[ FusionRing[cat1], FusionRing[cat2] ],
       "FSymbols"   -> fSymbols,
       "RSymbols"   -> rSymbols,
       "Unitary"    -> And[ UnitaryQ @ cat1, UnitaryQ @ cat2 ],
-      "PivotalStructure" -> Flatten @ KroneckerProduct[ PivotalStructure[cat1], PivotalStructure[cat2] ],
+      "PivotalStructure" -> pivStruct,
       "Twists"     -> twists,
-      "Modular"   -> modQ,
-      "SMatrix"    -> sMat
+      "Modular"    -> modQ,
+      "SMatrix"    -> sMat,
+      "SkipCheck"  -> True
     ]
   ];
 
