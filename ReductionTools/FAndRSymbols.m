@@ -312,19 +312,19 @@ Module[
     Do[
       { a, b, c, d } =(*EchoLabel["Key"] @*)
       key;
-      
+
       eLabels = (*EchoLabel["eLabels"]@*)
       gTrees[key][[;; , 4]];
-      
+
       fLabels = (*EchoLabel["fLabels"]@*)
       Intersection[
         Cases[ non0Ns, { a, _, d } ][[;; , 2]],
         Cases[ non0Ns, { b, c, _ } ][[;; , 3]]
       ];
-      
+
       m1[e_] := mt[[a, b, e]]; m2[e_] := mt[[e, c, d]];
       m3[f_] := mt[[a, f, d]]; m4[f_] := mt[[b, c, f]];
-      
+
       Sow[
         { a, b, c, d } ->
         ArrayFlatten @
@@ -379,7 +379,7 @@ Cases[
 ];
 
 TSOrbit[ ring_FusionRing ][ symb:F[j_,k_,l_,i_,m_,n_] ] :=
-With[ { d = CC[ring], qd = QD[ring][[#]]& },
+With[ { d = CC[ring], qd = FrobeniusPerronDimensions[ring][[#]]& },
   DeleteDuplicates[
     (
       DeleteCases[
@@ -452,10 +452,10 @@ TransparentFSymbols[ ring_FusionRing ] :=
 Module[{ d, groupQ },
   d =
   CC[ring];
-  
+
   groupQ[i_] :=
   Total[ MT[ring][[ i, d[i] ]] ] == 1;
-  
+
   Thread[ Cases[ FSymbols @ ring, F[ a_, _, c_, __ ] /; groupQ[a] || groupQ[c] ] -> 1 ]
 ];
 PackageExport["\[ScriptCapitalR]"]
