@@ -765,8 +765,8 @@ Module[
           { binEqns, sumEqns  }
         ],
         fSymbols,
-        "InvertibleMatrices" -> invMats(*,
-          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
+        "InvertibleMatrices" -> invMats,
+        "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
       ]
       ,
       True
@@ -774,8 +774,8 @@ Module[
       AddOptions[opts][FindZeroValues][
         If[ useSumsQ, pentEqns, binEqns ],
         fSymbols,
-        "InvertibleMatrices" -> invMats(*
-          "Equivalences" -> TetrahedralEquivalences[ ring, fSymbols ]*)
+        "InvertibleMatrices" -> invMats,
+        "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
       ]
     ];
 
