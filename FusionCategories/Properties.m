@@ -220,17 +220,31 @@ Options[EquivalentFusionCategoriesQ] = { "PreEqualCheck" -> Identity };
 
 EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ] :=
 Catch[
-	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test},
+	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test,eqQdims},
 	CheckFormalCode[c1,c2];
 	CheckFusionRing[c1,c2];
 
-	test = OptionValue["PreEqualCheck"];
+	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
+
+  If[ PreEqualCheck[ Sort[qDims1] ] != PreEqualCheck[ Sort[ qDims2 ] ], Throw @ False ];
+
+  fra = FRA @ FusionRing @ c1;
+
+  eqQDims =
+    Catch[
+      Do[
+        If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
+        , { a, fra }
+      ]; Throw @ False
+    ];
+
+  If[ !eqQDims, Throw @ False ];
+
+  test = OptionValue["PreEqualCheck"];
 	invariants1 = FullInvariants[c1];
 	invariants2 = FullInvariants[c2];
 
-	fra = FRA @ FusionRing @ c1;
 
-	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
 	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
 	If[ BraidedQ[c1] && BraidedQ[c2],
 		rSymb1 = RSymbols[c1]; rSymb2 = RSymbols[c2],
