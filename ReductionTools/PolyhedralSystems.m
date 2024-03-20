@@ -551,7 +551,7 @@ PackageExport["TwistFactorEquations"]
 
 TwistFactorEquations::usage =
 "TwistFactorEquations[ring,twistFactors] returns the equations that relate twist factors to R-symbols for a" <>
-"braided fusion category with ring as Grothendieck ring.";
+"ribbon fusion category with ring as Grothendieck ring.";
 
 TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
 Module[
@@ -622,24 +622,24 @@ Module[
     subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ
   },
   gaugeDemands =
-  OptionValue["GaugeDemands"];
+    OptionValue["GaugeDemands"];
   zeroValues =
-  OptionValue["ZeroValues"];
+    OptionValue["ZeroValues"];
   nonSingularQ =
-  OptionValue["NonSingular"];
+    OptionValue["NonSingular"];
   useSumsQ =
-  OptionValue["FindZerosUsingSums"];
+    OptionValue["FindZerosUsingSums"];
   preEqCheck =
-  OptionValue["PreEqualCheck"];
+    OptionValue["PreEqualCheck"];
   useDBQ =
-  OptionValue["UseDatabaseOfSmithDecompositions"];
+    OptionValue["UseDatabaseOfSmithDecompositions"];
   storeDecompQ =
-  OptionValue["StoreDecompositions"];
+    OptionValue["StoreDecompositions"];
   subsSol =
-  OptionValue["InjectSolution"];
+    OptionValue["InjectSolution"];
 
   procID =
-  ToString[Unique[]];
+    ToString[Unique[]];
 
   printlog["PPSI:init", { procID, ring, {opts} } ];
 
@@ -655,7 +655,7 @@ Module[
 
       (* Function that maps labels in sRing to corresponding labels in ring *)
       inject =
-      InjectionForm[ ring, sRing ];
+        InjectionForm[ ring, sRing ];
 
       If[
         inject === None,
@@ -677,26 +677,26 @@ Module[
     ];
 
     allFSymbols =
-    FSymbols[ring];
+      FSymbols[ring];
 
     vacuumSymbols =
-    Cases[ allFSymbols, $VacuumFPattern ];
+      Cases[ allFSymbols, $VacuumFPattern ];
 
     fSymbols =
-    Complement[
-      allFSymbols,
-      vacuumSymbols,
-      GetVariables[ compatibleSol, F ]
-    ];
+      Complement[
+        allFSymbols,
+        vacuumSymbols,
+        GetVariables[ compatibleSol, F ]
+      ];
 
     tower =
-    PentagonTower[ ring, "Knowns" -> compatibleSol ];
+      PentagonTower[ ring, "Knowns" -> compatibleSol ];
 
     { binEqns, sumEqns } =
-    BinSumEquationsFromTower[ tower ];
+      BinSumEquationsFromTower[ tower ];
 
     pentEqns =
-    Join[ binEqns, sumEqns ];
+      Join[ binEqns, sumEqns ];
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
@@ -707,18 +707,18 @@ Module[
       ];
 
     gaugeSymmetries =
-    GaugeSymmetries[ allFSymbols, g ];
+      GaugeSymmetries[ allFSymbols, g ];
 
     (* Update matrices and gauge symmetries to take account of known F's *)
     printlog[ "PPSI:restricting_gauges", { procID } ];
 
     (* Update gauges *)
     gaugeSymmetries =
-    RestrictMultiplicativeSymmetries[
-      gaugeSymmetries,
-      vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
-      g
-    ];
+      RestrictMultiplicativeSymmetries[
+        gaugeSymmetries,
+        vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
+        g
+      ];
 
     (* Remove trivial and known F-matrices from list of invertible matrices *)
     invMats =
@@ -793,12 +793,12 @@ Module[
 
     (* Get all F-symbols that could be 0 for some configuration in zeros *)
     unionZeros =
-    Union @@
-    Normal[zeros][[;;,;;,1]];
+      Union @@
+      Normal[zeros][[;;,;;,1]];
 
     (* Get all F-symbols that can never be 0 *)
     sharedVars =
-    Complement[ fSymbols, unionZeros ];
+      Complement[ fSymbols, unionZeros ];
 
     (* Fix the gauge for all the F symbols that can never be 0 *)
     { remainingSym, extraFixedFs } =
@@ -810,22 +810,22 @@ Module[
 
     (* Remove the newly fixed F-symbols from the list of variables *)
     fSymbols =
-    Complement[ fSymbols, extraFixedFs[[;;,1]] ];
+      Complement[ fSymbols, extraFixedFs[[;;,1]] ];
 
     (* Substitute the values of the newly fixed F-symbols in the invertible matrices
        and remove trivial 1D F-matrices. *)
 
     invMats =
-    invMats/.extraFixedFs //
-    DeleteCases[ {{n_?NumericQ}} /; n != 0 ];
+      invMats/.extraFixedFs //
+      DeleteCases[ {{n_?NumericQ}} /; n != 0 ];
 
     (* Substitute the values of the newly fixed F-symbols in the equations,
        remove trivial equations and delete duplicate equations *)
 
     pentEqns =
-    pentEqns/.extraFixedFs //
-    DeleteCases[True] //
-    DeleteDuplicates;
+      pentEqns/.extraFixedFs //
+      DeleteCases[True] //
+      DeleteDuplicates;
 
     printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
 
@@ -901,87 +901,87 @@ Module[
 PackageScope["ValidZerosQ"]
 
 ValidZerosQ[ eqns_ ][ zeros_ ] :=
-FreeQ[ eqns/.Dispatch[zeros], False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
+  FreeQ[ eqns/.Dispatch[zeros], False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
 
 
 PackageScope["PrepareHexagonSolverInput"]
 
 PrepareHexagonSolverInput::usage =
-"Constructs the hexagon equations and symmetries.";
+  "Constructs the hexagon equations and symmetries.";
 
 Options[ PrepareHexagonSolverInput ] :=
-Join[
-  Options[ HexagonEquations ],
-  { "TwistFactors" -> None }
-];
+  Join[
+    Options[ HexagonEquations ],
+    { "TwistFactors" -> None }
+  ];
 
 PrepareHexagonSolverInput[ ring_FusionRing, opts:OptionsPattern[] ] :=
-Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations, tf },
-  tf =
-  OptionValue["TwistFactors"];
+  Module[{ rSymbols, fSymbols, gaugeSym, g, knowns, time, result, procID, equations, tf },
+    tf =
+      OptionValue["TwistFactors"];
 
-  rSymbols =
-  R @@@ NZSC[ ring ];
-  fSymbols =
-  FSymbols[ ring ];
+    rSymbols =
+      R @@@ NZSC[ ring ];
+    fSymbols =
+      FSymbols[ ring ];
 
-  knowns =
-  Join[
-    If[
-      OptionValue["TrivialVacuumSymbols"],
-      (* THEN *)
-      Thread[
-        Cases[ Join[ rSymbols, fSymbols ], $VacuumRPattern | $VacuumFPattern ] -> 1
-      ],
-      (* ELSE *)
-      { }
-    ],
-    Normal @ OptionValue["Knowns"]
+    knowns =
+      Join[
+        If[
+          OptionValue["TrivialVacuumSymbols"],
+          (* THEN *)
+          Thread[
+            Cases[ Join[ rSymbols, fSymbols ], $VacuumRPattern | $VacuumFPattern ] -> 1
+          ],
+          (* ELSE *)
+          { }
+        ],
+        Normal @ OptionValue["Knowns"]
+      ];
+
+    procID =
+      ToString @ Unique[];
+
+    printlog["PHSI:init", { procID, ring, { opts } } ];
+
+    printlog["PHSI:knowns", { procID, knowns } ];
+
+    { time, result } =
+      AbsoluteTiming[
+
+        (* The known symbols are fixed so we have to reduce the gauge symmetries *)
+        gaugeSym =
+          MapAt[
+            SortBy[ #, First ]&,
+            RestrictMultiplicativeSymmetries[
+              GaugeSymmetries[ Join[ fSymbols, rSymbols ], g ],
+              knowns[[;;,1]],
+              g
+            ],
+            {1}
+          ];
+
+        printlog["PHSI:symmetries", { procID, gaugeSym } ];
+
+        equations =
+          Join[
+            If[ tf =!= None, TwistFactorEquations[ ring, tf ], {} ],
+            AddOptions[opts][HexagonEquations] @ ring
+          ];
+
+        <|
+          "Equations" ->  equations,
+          "Variables" ->  GetVariables[ equations, { R, F } ],
+          "Symmetries" -> gaugeSym,
+          "Knowns" ->     knowns
+        |>
+
+      ];
+
+    printlog["Gen:results", { procID, result, time } ];
+
+    result
   ];
-
-  procID =
-  ToString @ Unique[];
-
-  printlog["PHSI:init", { procID, ring, { opts } } ];
-
-  printlog["PHSI:knowns", { procID, knowns } ];
-
-  { time, result } =
-  AbsoluteTiming[
-
-    (* The known symbols are fixed so we have to reduce the gauge symmetries *)
-    gaugeSym =
-    MapAt[
-      SortBy[ #, First ]&,
-      RestrictMultiplicativeSymmetries[
-        GaugeSymmetries[ Join[ fSymbols, rSymbols ], g ],
-        knowns[[;;,1]],
-        g
-      ],
-      {1}
-    ];
-
-    printlog["PHSI:symmetries", { procID, gaugeSym } ];
-
-    equations =
-    Join[
-      If[ tf =!= None, TwistFactorEquations[ ring, tf ], {} ],
-      AddOptions[opts][HexagonEquations] @ ring
-    ];
-
-    <|
-      "Equations" ->  equations,
-      "Variables" ->  GetVariables[ equations, { R, F } ],
-      "Symmetries" -> gaugeSym,
-      "Knowns" ->     knowns
-    |>
-
-  ];
-
-  printlog["Gen:results", { procID, result, time } ];
-
-  result
-];
 
 (*+---------------------------------------------------------------------------+*)
 (*|              FINDING GROEBNER BASES FOR POLYHEDRAL SYSTEMS                |*)
@@ -1044,7 +1044,7 @@ Module[{
   ];
 
   procID =
-  ToString[Unique[]];
+    ToString[Unique[]];
 
   printlog[ "MFPGS:init", { procID, ring, var, {opts} } ];
 
@@ -1057,34 +1057,34 @@ Module[{
     ];
 
     SumBinEqns =
-    Reverse @* BinomialSplit;
+      Reverse @* BinomialSplit;
 
     solverInput =
-    AddOptions[opts][PreparePentagonSolverInput] @ ring;
+      AddOptions[opts][PreparePentagonSolverInput] @ ring;
 
     sumSystems =
-    DeleteCases[ { _, {} } ] @
-    Table[
-      {
-        Union[
-          input["Zeros"],
-          input["SpecificFs"],
-          input["ExtraFixedFs"],
-          input["SubSolution"],
-          Thread[ Cases[ FSymbols[ring], $VacuumFPattern ] -> 1 ]
-        ],
-        AddOptions[opts][ReduceByBinomials][
-          Sequence @@ SumBinEqns[ input["Equations"] ],
-          input["Variables"],
-          var,
-          "Symmetries" -> input["Symmetries"],
-          "InvertibleMatrices" -> input["InvertibleMatrices"],
-          "NonSingular" -> True,
-          "SimplifyIntermediateResultsBy" -> simplify
-        ]
-      },
-      { input, solverInput }
-    ];
+      DeleteCases[ { _, {} } ] @
+      Table[
+        {
+          Union[
+            input["Zeros"],
+            input["SpecificFs"],
+            input["ExtraFixedFs"],
+            input["SubSolution"],
+            Thread[ Cases[ FSymbols[ring], $VacuumFPattern ] -> 1 ]
+          ],
+          AddOptions[opts][ReduceByBinomials][
+            Sequence @@ SumBinEqns[ input["Equations"] ],
+            input["Variables"],
+            var,
+            "Symmetries" -> input["Symmetries"],
+            "InvertibleMatrices" -> input["InvertibleMatrices"],
+            "NonSingular" -> True,
+            "SimplifyIntermediateResultsBy" -> simplify
+          ]
+        },
+        { input, solverInput }
+      ];
 
     If[
       sumSystems === {},
@@ -1228,37 +1228,37 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
     ];
 
     SumBinEqns =
-    Reverse @* BinomialSplit;
+      Reverse @* BinomialSplit;
 
     { equations, variables, symmetries, knowns } =
-    AddOptions[opts][PrepareHexagonSolverInput][ring] /@
-    { "Equations", "Variables", "Symmetries", "Knowns" };
+      AddOptions[opts][PrepareHexagonSolverInput][ring] /@
+      { "Equations", "Variables", "Symmetries", "Knowns" };
 
     opt =
-    If[
-      FreeQ[ variables, F[__] ],
-      (* THEN  *)
-      "NonSingular" -> True,
-      (* ELSE: some F-symbols might be 0: can't set option "NonSingular" *)
-      "InvertibleMatrices" ->
-      ReplaceAll[
-        Join[
-          {{#}}& /@ ( R @@@ NZSC[ring] ),
-          FMatrices[ring]
-        ],
-        knowns
-      ]
-    ];
+      If[
+        FreeQ[ variables, F[__] ],
+        (* THEN  *)
+        "NonSingular" -> True,
+        (* ELSE: some F-symbols might be 0: can't set option "NonSingular" *)
+        "InvertibleMatrices" ->
+        ReplaceAll[
+          Join[
+            {{#}}& /@ ( R @@@ NZSC[ring] ),
+            FMatrices[ring]
+          ],
+          knowns
+        ]
+      ];
 
     sumSystems =
-    AddOptions[opts][ReduceByBinomials][
-      Sequence @@ SumBinEqns[ equations ],
-      Sort @ variables,
-      var,
-      opt,
-      "Symmetries" ->                       symmetries,
-      "SimplifyIntermediateResultsBy" ->    simplify
-    ];
+      AddOptions[opts][ReduceByBinomials][
+        Sequence @@ SumBinEqns[ equations ],
+        Sort @ variables,
+        var,
+        opt,
+        "Symmetries" ->                       symmetries,
+        "SimplifyIntermediateResultsBy" ->    simplify
+      ];
 
     If[
       sumSystems === {},
