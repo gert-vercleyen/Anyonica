@@ -34,6 +34,8 @@ FusionCategory::invalidfsymbols =
   "The F-symbols are not a valid solution to the pentagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
 FusionCategory::invalidrsymbols =
   "The R-symbols are not a valid solution to the hexagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
+FusionCategory::invaliddata = 
+  "The data provided does not correspond to a fusion category."
 
 Options[ FusionCategory ] =
   {
@@ -47,7 +49,6 @@ Options[ FusionCategory ] =
     "SMatrix"           -> Missing[],
     "Modular"           -> Missing[],
     "PreEqualCheck"     -> Identity,
-    "SimplifyBy"        -> Identity,
     "SkipCheck"         -> False
   };
 
@@ -183,7 +184,6 @@ InheritedFCFunctionsFromFRList =
   {
     MultiplicationTable, MT,
     SymbolicMultiplicationTable, SMT,
-    ElementsName,
     ElementNames,
     AntiparticleMatrix, AM,
     CommutativeQ, CQ,
@@ -258,18 +258,31 @@ importDirectory =
 PackageExport["FusionCategoryByCode"]
 
 FusionCategoryByCode::usage =
-	"FusionCategoryByCode[sixTuple] returns the fusion category with formal code equal to six-tuple.";
+	"FusionCategoryByCode[sevenTuple] returns the fusion category with formal code equal to sevenTuple."<>
+  "\nFusionCategoryByCode[sixTuple] returns the multiplicity-free category with formal code equal to sixTuple.";
 
+FusionRingByCode::notsixorseventuple = 
+	"The input `1` should be a six or seventuple of natural numbers.";
 
 PackageExport["FCBC"]
 
 FCBC::usage =
 	"Shorthand for FusionCategoryByCode.";
 
-FusionCategoryByCode =
-	FCBC =
-		OptimizedImport[ "FusionCategoryAssociation", importDirectory ];
+PackageScope["FCBCData"]
 
+FCBCData =
+	OptimizedImport[ "FusionCategoryAssociation", importDirectory ];
+
+FusionCategoryByCode[ tuple_List ] :=
+	Switch[ Length @ tuple, 
+		7, FCBCData @ tuple,
+		6, FCBCData @ Join[ { tuple[[1]] }, { 1 }, Rest @ tuple ],
+		_, Message[ FusionCategoryByCode::notsixorseventuple, tuple ]
+	];
+
+FCBC = 
+  FusionCategoryByCode;
 
 PackageExport["FusionCategoryList"]
 
@@ -299,7 +312,7 @@ FusionCategories[ ring_FusionRing ] :=
     If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
 
     FCBC /@
-    Select[ Keys @ FCBC, #[[;;4]] == fc& ]
+    Select[ Keys @ FCBCData, #[[;;4]] == fc& ]
   ];
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
