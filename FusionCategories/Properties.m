@@ -26,13 +26,35 @@ FusionCategory /: UnitaryGaugeQ[ cat_FusionCategory, opts:OptionsPattern[] ] :=
   UnitaryGaugeQ[ FusionRing @ cat, FSymbols @ cat, opts ];
 
 
+PackageExport["\[ScriptP]"]
+
+Unprotect[ \[ScriptP] ];
+
+ClearAll[ \[ScriptP] ];
+
+SetAttributes[ \[ScriptP], NHoldAll ];
+
+Protect[ \[ScriptP] ];
+
+\[ScriptP]::usage =
+  "Formal symbol that represents a pivotal coefficient.";
+
+
+PackageExport["PivotalStructure"]
+
+PivotalStructure::usage =
+  "PivotalStructure[cat] returns the pivotal structure of the fusion category cat.";
+
+PivotalStructure[ FusionCategory[data_]] :=
+  data["PivotalStructure"];
+
+
 PackageExport["AllPivotalStructures"]
 
 AllPivotalStructures::usage =
-  "PivotalStructure[fusionCat] returns a list of pivotal structures compatible with the " <>
+  "AllPivotalStructures[fusionCat] returns a list of pivotal structures compatible with the " <>
   "the F-symbols of fusionCat.";
 
-Attributes[AllPivotalStructures] = { Listable };
 
 Options[AllPivotalStructures] :=
   {
@@ -40,11 +62,13 @@ Options[AllPivotalStructures] :=
   };
 
 AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
-  Module[{ r, e, d, sF, eqns, rhs },
+  Module[{ r, p, d, sF, eqns, rhs },
     r =
       Rank @ cat;
     d =
       CC[cat];
+    p = 
+      \[ScriptP];
     sF =
       SparseArray[
         MapAt[ List @@ #&, FSymbols[cat], {All,1} ],
@@ -61,34 +85,18 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
           Tuples[ Range @ r, 3 ],
           { a_, b_, c_ } /;
           rhs[a,b,c] =!= 0 :>
-					e[c] / (e[a] e[b] ) == rhs[a,b,c]
-        ]/.e[1] -> 1
+					p[c] / (p[a] p[b] ) == rhs[a,b,c]
+        ]/.p[1] -> 1
       ];
 
-    Prepend[1] /@
-    Solve[ eqns, Rest @ Array[ e, r ] ][[;;,;;,2]]
+    Prepend[ p[1] -> 1 ] /@
+    Solve[ eqns, Rest @ Array[ p, r ] ]
   ];
 
-PackageExport["\[ScriptP]"]
-
-Unprotect[ \[ScriptP] ];
-
-ClearAll[ \[ScriptP] ];
-
-SetAttributes[ \[ScriptP], NHoldAll ];
-
-Protect[ \[ScriptP] ];
-
-\[ScriptP]::usage =
-  "Formal symbol that represents a pivotal coefficient.";
-
-PackageExport["PivotalStructure"]
-
-PivotalStructure::usage =
-  "PivotalStructure[cat] returns the pivotal structure of the fusion category cat.";
-
-PivotalStructure[ FusionCategory[data_]] :=
-  data["PivotalStructure"];
+AllPivotalStructures[ ring_FusionRing, fSymbols_List, opts:OptionsPattern[] ] := 
+  AddOptions[opts][AllPivotalStructures][ 
+    FusionCategory[ "FusionRing" -> ring, "FSymbols" -> fSymbols, "SkipCheck" -> True ] 
+  ];
 
 PackageExport["\[ScriptT]"]
 
