@@ -212,71 +212,6 @@ PermVecSDConj[r_FusionRing?FusionRingQ, OptionsPattern[]] :=
   ];
 
 
-
-(* Changing information of fusion rings.
-   Everytime you want to change information about a FusionRing you basically create a new fusion ring
-   with the desired info added. Upon creation it is checked whether the object is a valid fusion ring
-   so altering information might be a costly operation.
-*)
-
-PackageExport["RenameElements"]
-
-RenameElements::usage =
-  "RenameElements[ring,elementnames] returns a ring with with elements named after elementnames.";
-(*Here elementnames is only allowed to be a list of either String's, Integer's or Symbol's and must have a length equal to the rank of the ring.";*)
-
-RenameElements[ r_FusionRing?FusionRingQ, elNames_ ] :=
-  Module[ { r2 = r, multTab = MT[r] },
-    Which[
-      elNames =!= None && Length[ elNames ] != Length[ multTab ]
-      ,
-      Message[ FusionRing::elnameslength, Length[ elNames ], Length[ multTab ] ];
-      Abort[]
-      ,
-      !( Equal @@ Head /@ elNames)
-      ,
-      Message[ FusionRing::elnamesdifferentheads, elNames ];
-      Abort[]
-      ,
-      !(MemberQ[{String,Integer,Symbol}, Head @* First @ elNames])
-      ,
-      Message[ FusionRing::elnameswrongheads, elNames];
-      Abort[]
-    ];
-
-    r2["ElementNames"] =
-      elNames;
-    r2
-  ];
-
-
-PackageExport["AddName"]
-
-AddName::usage =
-  "AddName[ring,string] returns a ring where the name string is added to the list of possible names of ring.";
-
-AddName[ r_FusionRing?FusionRingQ, s_String ] :=
-  AddName[ r, { s } ];
-
-AddName[ r_FusionRing?FusionRingQ, names_List ] :=
-  FusionRing @@
-  FilterRules[
-    Normal[First @ r] /. ("Names" -> l_List) :> "Names" -> Join[ l, names ],
-    Options[FusionRing]
-  ];
-
-PackageExport["SetNames"]
-
-SetNames::usage =
-  "SetNames[ring,stringlist] returns a ring for which the names are now stringlist.";
-
-SetNames[ r_FusionRing?FusionRingQ, names_List ] :=
-  FusionRing @@
-  FilterRules[
-    Normal[First @ r] /. ("Names" -> l_List) :> "Names" -> names,
-    Options[FusionRing]
-  ];
-
 (* Combining, decomposing and comparing fusion rings *)
 
 PackageExport["EquivalentFusionRings"]
@@ -329,7 +264,7 @@ SetAttributes[ ReplaceByKnownRing, Listable ];
 ReplaceByKnownRing[ ring_ ] :=
   Module[{knownRings, equivRing },
      knownRings = FRBC /@
-      Cases[ Keys @ FRBC, { Rank[ring], Mult[ring], NNSD[ring], _ } ];
+      Cases[ Keys @ FRBCData, { Rank[ring], Mult[ring], NNSD[ring], _ } ];
 
     equivRing =
       FirstCase[ knownRings, r_/; EquivalentFusionRingsQ[ r, ring ] ];
