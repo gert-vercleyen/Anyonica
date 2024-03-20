@@ -340,23 +340,19 @@ FusionRingFromGroup::usage =
   "FusionRingFromGroup[g],  returns a fusion ring whose multiplication matches that of the group g. \n"<>
   "FusionRingFromGroup[multTab] returns a fusion ring whose multiplication table matches the group multiplication"<>
   " table multTab.";
+FusionRingFromGroup::notgroupmulttab = 
+  "The multiplication table `1` does not correspond to that of a group."
 
 (*Its name will be set to that of the group if the group is a PermutationGroup, SymmetricGroup, AlternatingGroup, CyclicGroup, DihedralGroup or AbelianGroup, or will be the value given by the option \"Names\".*)
-FusionRingFromGroup[ table_?MatrixQ, OptionsPattern[] ] := With[ {
+FusionRingFromGroup[ table_?MatrixQ, opts:OptionsPattern[] ] := With[ {
   n = Length[ table ]},
-  If[ GroupTableQ[table],
-    FusionRing @ Sequence[
-      Rule[
-        "MultiplicationTable",
-        Table[
-          If[ k == table[[i,j]], 1 , 0]
-          , { i, n }, { j, n }, { k, n }]
-      ],
-      Rule[
-        "Names",
-        OptionValue["Names"]
+  If[ !GroupTableQ[table], Message[ FusionRingFromGroup::notgroupmulttab, table ]; Return @ $$Failed ];
+  AddOptions[opts][FusionRing][ 
+      "MultiplicationTable" ->
+      Table[
+        If[ k == table[[i,j]], 1 , 0]
+        , { i, n }, { j, n }, { k, n }
       ]
-    ]
   ]
 ];
 
@@ -446,9 +442,10 @@ PackageExport["FusionRingRepG"]
 
 FusionRingRepG::usage =
   "FusionRingRep[G] returns the character ring of the finite group G.\n"<>
+  "FusionRingRep[string] returns the character ring whose standard name is a string.\n"<>
   "FusionRingRep[{\"gname\",n}] returns the character ring of the finite group with name gname and parameter n.";
 
-FusionRingRepG[ g_List ] :=
+FusionRingRepG[ g_/; ListQ[g] || StringQ[g] ] :=
   Module[{ ct, rank, n },
     ct =
       FiniteGroupData[ g , "CharacterTable" ];
@@ -458,15 +455,17 @@ FusionRingRepG[ g_List ] :=
     rank =
       Length @ ct;
     
-    Table[
-      ToInteger @
-      Solve[
-        ct[[i]] ct[[j]] == Sum[ n[k] ct[[k]], { k, rank } ]
-      ][[ 1, ;; , 2 ]],
-      { i, rank },
-      { j, rank }
+    FusionRing[
+      "MultiplicationTable" ->
+      Table[
+        ToInteger @
+        Solve[
+          ct[[i]] ct[[j]] == Sum[ n[k] ct[[k]], { k, rank } ]
+        ][[ 1, ;; , 2 ]],
+        { i, rank },
+        { j, rank }
+      ]
     ]
-
   ];
 
 FusionRingRepG[ g_ ] :=
