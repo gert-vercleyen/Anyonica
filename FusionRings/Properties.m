@@ -14,7 +14,7 @@ ChangeProperty::usage =
   "ChangeProperty works for both fusion rings and fusion categories";
 
 
-ChangeProperty[ ring_FusionRing, list_ ] :=
+ChangeProperty[ ring_FusionRing, list_List ] :=
   Module[ {opts},
     opts = (* All defining properties of previous fusion ring *)
       Normal @ First[ List @@ ring ];
@@ -74,20 +74,6 @@ SetAttributes[ Names, Listable ];
 
 FusionRing /: Names[ r_FusionRing?FusionRingQ ] :=
   r["Names"];
-
-PackageExport["ElementsName"]
-
-ElementsName::usage =
-  "ElementsName[ring] returns a string that labels the basis elements of the fusion ring.";
-(*  Indexed names are only used for formatting the elements during calculations. *)
-(*  To access the element of an indexed name, use ring[[index]] instead. ;*)
-(*This name can be given as an option \"ElementsName\"->\"...\" to FusionRing or added later via ring[\"ElementsName\"] = \"...\"."*)
-
-SetAttributes[ ElementsName, Listable ];
-
-FusionRing /: ElementsName[ r_FusionRing?FusionRingQ ] :=
-  r["ElementsName"];
-
 
 PackageExport["ElementNames"]
 
@@ -385,8 +371,8 @@ ConjugateCharge::usage =
 FusionRing /: ConjugateCharge[ r_FusionRing?FusionRingQ ] :=
   r["Dual"];
 
-FusionElement /: ConjugateCharge[ FusionElement[ R_FusionRing, i_ ] ] :=
-  R[[CC[R][i]]];
+FusionElement /: ConjugateCharge[ FusionElement[ r_FusionRing, i_ ] ] :=
+  r[[CC[r][i]]];
 
 PackageExport["CC"]
 
@@ -481,7 +467,7 @@ SubFusionRings::usage =
 
 SetAttributes[ SubFusionRings, Listable ];
 
-SubFusionRings[ ring_FusionRing?FusionRingQ] :=
+SubFusionRings[ ring_FusionRing ] :=
   (
     If[
       ring["SubFusionRings"] =!= Missing[],
@@ -577,16 +563,18 @@ PackageExport["SubFusionRingQ"]
 SubFusionRingQ::usage =
   "SubFusionRingQ[ ring, subRing ] returns True if subRing is a sub-ring of ring.";
 
-SubFusionRingQ[ ring_FusionRing?FusionRingQ, subring_List ] :=
-  With[ { subrings = SubFusionRings[ring][;;,2] },
+SubFusionRingQ[ ring_FusionRing, subring_FusionRing ] :=
+  With[ { subrings = SubFusionRings[ring][[;;,2]] },
+    Catch[
     Do[
       If[
         EquivalentFusionRingsQ[ subring, r ],
-        Return[True]
+        Throw @ True
       ],
       { r, subrings }
     ];
     False
+    ]
   ];
 
 PackageExport["EquivalentFusionRingsQ"]
@@ -1056,23 +1044,25 @@ PackageExport["FusionRingCommutator"]
 FusionRingCommutator::usage =
   "FusionRingCommutator[ ring, subRing ] returns the commutator of subRing in ring.";
 
-FusionRingCommutator[ ring_FusionRing, subRing_FusionRing ] :=
+FusionRingCommutator[ ring_FusionRing, subRing_List ] :=
   Which[
     !CommutativeQ[ring]
     ,
     Message[ FusionRingCommutator::noncommutativering ]; None
     ,
-    !SubFusionRingQ[ ring, subRing ]
+    !SubFusionRingQ[ ring, subRing[[2]] ]
     ,
     Message[ FusionRingCommutator::notsubring, subRing, ring ]
     ,
+    True
+    ,
     Module[ { d, subRingEl, inSubRingQ, el },
       d = CC[ring]; subRingEl = subRing[[1]];
-      inSubRingQ[ i ] :=
-      SubsetQ[
-        subRingEl,
-        FusionOutcomes[ i, d[i] ]
-      ];
+      inSubRingQ[ i_ ] :=
+        SubsetQ[
+          subRingEl,
+          FusionOutcomes[ring][ i, d[i] ]
+        ];
       el =
       Select[
         Range @ Rank @ ring,
@@ -1082,7 +1072,7 @@ FusionRingCommutator[ ring_FusionRing, subRing_FusionRing ] :=
         el,
         ReplaceByKnownRing @
         FusionRing[
-          "MultiplicationTable" -> ring[[el,el,el]]
+          "MultiplicationTable" -> MT[ring][[el,el,el]]
         ]
       }
     ]
