@@ -37,18 +37,31 @@ importDirectory =
 PackageExport["FusionRingByCode"]
 
 FusionRingByCode::usage =
-	"FusionRingByCode[four-tuple] returns the fusion ring with formal code equal to four-tuple.";
+	"FusionRingByCode[fourtuple] returns the fusion ring with formal code equal to fourtuple."<>
+	"FusionRingByCode[threetuple] returns the multiplicity-free fusion ring with formal code equal to threetuple.";
 
+FusionRingByCode::notthreeorfourtuple = 
+	"The input `1` should be a three or fourtuple of natural numbers."
 
 PackageExport["FRBC"]
 
 FRBC::usage =
 	"Shorthand for FusionRingByCode.";
 
-FusionRingByCode =
-	FRBC =
+PackageScope["FRBCData"]
+
+FRBCData =
 		OptimizedImport[ "FusionRingAssociation", importDirectory ];
 
+FusionRingByCode[ tuple_List ] := 
+		Switch[ Length @ tuple, 
+			4, FRBCData @ tuple,
+			3, FRBCData @ { tuple[[1]], 1, tuple[[2]], tuple[[3]] },
+			_, Message[ FusionRingByCode::notthreeorfourtuple, tuple ]
+		];
+
+FRBC = 
+	FusionRingByCode;
 
 PackageExport["FusionRingList"]
 
