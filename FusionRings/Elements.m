@@ -9,9 +9,9 @@ PackageExport["FusionProduct"]
 FusionProduct::usage =
   "FusionProduct[ring, {i,j}] returns a sum of FusionElements that equals the fusion product of elements i and j.";
 
-FusionProduct[ r_FusionRing?FusionRingQ, { el1_, el2_ } ] :=
+FusionProduct[ r_FusionRing, { el1_, el2_ } ] :=
   With[ { tab = MultiplicationTable[r] },
-    Sum[ ElementNames[r][[i]]tab[[ el1, el2, i ]], { i, Rank[r] } ]
+    Sum[ r[[i]] tab[[ el1, el2, i ]], { i, Rank[r] } ]
   ];
 
 
@@ -39,13 +39,13 @@ FusionRing::elnotfound =
 FusionRing::eloutofbounds =
   "Particle number `1` does not belong to any particle in the ring";
 
-FusionRing /: r_FusionRing?FusionRingQ[[el_Integer]] :=
+FusionRing /: r_FusionRing[[el_Integer]] :=
 If[ 0 < el <= Rank[r],
   FusionElement[ r, el ],
   Message[ FusionRing::eloutofbounds, el ]
 ];
 
-FusionRing /: r_FusionRing?FusionRingQ[[el_String]] :=
+FusionRing /: r_FusionRing[[el_String]] :=
 With[{
   pos = Position[ElementNames[r], el ]},
   If[ Length[pos] == 0,
@@ -54,7 +54,7 @@ With[{
   ]
 ];
 
-FusionRing /: r_FusionRing?FusionRingQ[[el_Symbol]] :=
+FusionRing /: r_FusionRing[[el_Symbol]] :=
 With[{
   pos = Position[ElementNames[r], ToString[el] ]},
   If[ Length[pos] == 0,
