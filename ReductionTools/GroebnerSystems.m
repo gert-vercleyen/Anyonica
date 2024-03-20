@@ -143,7 +143,7 @@ IGB::usage =
 "Shorthand for IncrementalGroebnerBasis.";
 
 IGB =
-IncrementalGroebnerBasis;
+  IncrementalGroebnerBasis;
 
 
 PackageScope["SolveGroebnerSystem"]
