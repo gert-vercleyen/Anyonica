@@ -366,17 +366,17 @@ Options[TetrahedralSymmetries] :=
 };
 
 TetrahedralSymmetries[ r_FusionRing, opts:OptionsPattern[] ] :=
-TetrahedralSymmetries[ r, FSymbols @ r, opts ];
+  TetrahedralSymmetries[ r, FSymbols @ r, opts ];
 
 TetrahedralSymmetries[ r_FusionRing, l_List, opts:OptionsPattern[] ] :=
-Cases[
-  Sort[
-    FixRule[ OptionValue["PreEqualCheck"] ] /@
-    DeleteCases[ a_ -> a_ ] @
-    BuildSymmetries[ Flatten[ TSOrbit[r] /@ l ], { }, OptionValue["PreEqualCheck"] ]
-  ],
-  ( a_ -> b_ ) /; NumericQ[b] || MemberQ[ l, b ] (* Want symmetry transforms to stay in our list *)
-];
+  Cases[
+    Sort[
+      FixRule[ OptionValue["PreEqualCheck"] ] /@
+      DeleteCases[ a_ -> a_ ] @
+      BuildSymmetries[ Flatten[ TSOrbit[r] /@ l ], { }, OptionValue["PreEqualCheck"] ]
+    ],
+    ( a_ -> b_ ) /; NumericQ[b] || MemberQ[ l, b ] (* Want symmetry transforms to stay in our list *)
+  ];
 
 TSOrbit[ ring_FusionRing ][ symb:F[j_,k_,l_,i_,m_,n_] ] :=
 With[ { d = CC[ring], qd = FrobeniusPerronDimensions[ring][[#]]& },
@@ -429,18 +429,50 @@ PackageExport["ProjectiveTetrahedralSymmetries"]
 
 ProjectiveTetrahedralSymmetries::usage =
 "ProjectiveTetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
-"representative that is equal via a projective tetrahedral symmetry.\n"<>
-"ProjectiveTetrahedralSymmetries[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
-"representative that is equal via a projective tetrahedral symmetry.";
+"representative that is equal via a projective tetrahedral symmetry.\n";
 
-ProjectiveTetrahedralSymmetries :=
-ProjectRHS @* TetrahedralSymmetries;
+ProjectiveTetrahedralSymmetries[ r_FusionRing ] :=
+  Flatten[ 
+   ClassToRules /@
+     TetrahedralEquivalenceClasses[r];
+   ];
 
-SetAttributes[ ProjectRHS, Listable ];
-ProjectRHS[ a_ -> b_?NumericQ ] :=
-a -> 1;
-ProjectRHS[ a_ -> b_ ] :=
-With[ { f = First @ GetVariables[ b, F ] }, a -> f ];
+TetrahedralEquivalenceClasses[ r_FusionRing] :=
+  Module[
+    { dd, ClassToRules, ToEquivClass },
+    dd = 
+      CC[r];
+
+    ToEquivClass[ F[a_, b_, c_, d_, e_, f_] ] :=
+      Union[
+        { 
+          F[a, b, c, d, e, f], F[a, c, b, dd[d], f, e], 
+          F[b, a, c, e, d, dd[f]],F[b, c, a, dd[e], dd[f], d], 
+          F[c, a, b, f, dd[d], dd[e]], F[c, b, a, dd[f], dd[e], dd[d]],
+          F[d, e, dd[c], a, b, dd[f]], F[d, dd[c], e, dd[a], dd[f], b], 
+          F[e, d, dd[c], b, a, f], F[e, dd[c], d, dd[b], f, a], 
+          F[f, dd[b], dd[d], dd[c], e, a], F[f, dd[d], dd[b], c, a, e], 
+          F[dd[a], dd[e], dd[f], dd[d], dd[b], dd[c]], F[dd[a], dd[f], dd[e], d, dd[c], dd[b]], 
+          F[dd[b], f, dd[d], e, dd[c], dd[a]], F[dd[b], dd[d], f, dd[e], dd[a], dd[c]], 
+          F[dd[c], d, e, dd[f], dd[a], dd[b]], F[dd[c], e, d, f, dd[b], dd[a]], 
+          F[dd[d], f, dd[b], a, c, dd[e]], F[dd[d], dd[b], f, dd[a], dd[e], c], 
+          F[dd[e], dd[a], dd[f], dd[b], dd[d], c], F[dd[e], dd[f], dd[a], b, c, dd[d]], 
+          F[dd[f], dd[a], dd[e], dd[c], d, b], F[dd[f], dd[e], dd[a], c, b, d]
+        } /. $VacuumFPattern -> 1
+      ]; 
+
+    ClassToRules[ l_List ] := 
+      Thread[ Rest[l] -> First[l]];
+
+    DeleteDuplicates @ 
+    DeleteCases[ toEquivClass /@ FSymbols[r], l_ /; Length[l] == 1 || MatchQ[ l, {1 ..}] ]
+  ];
+
+
+
+
+
+
 
 PackageExport["TransparentFSymbols"]
 
