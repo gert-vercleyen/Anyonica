@@ -394,7 +394,7 @@ With[ { d = CC[ring], qd = FrobeniusPerronDimensions[ring][[#]]& },
 ];
 
 BuildSymmetries[ {}, sym_, check_  ] :=
-sym;
+  sym;
 
 BuildSymmetries[ rules_, sym_, check_ ] :=
 With[{ firstRule = First @ rules, restRules = Rest @ rules },
@@ -429,45 +429,54 @@ PackageExport["ProjectiveTetrahedralSymmetries"]
 
 ProjectiveTetrahedralSymmetries::usage =
 "ProjectiveTetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
-"representative that is equal via a projective tetrahedral symmetry.\n";
+"representative that is equal via a projective tetrahedral symmetry.\n"<>
+"ProjectiveTetrahedralSymmetries[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
+"representative that is equal via a tetrahedral symmetry.";
 
-ProjectiveTetrahedralSymmetries[ r_FusionRing ] :=
+ProjectiveTetrahedralSymmetries[ r_FusionRing ] := 
   Flatten[ 
-   ClassToRules /@
-     TetrahedralEquivalenceClasses[r];
-   ];
+    ClassToRules /@
+    TetrahedralEquivalenceClasses[r]
+  ];
 
-TetrahedralEquivalenceClasses[ r_FusionRing] :=
-  Module[
-    { dd, ClassToRules, ToEquivClass },
+ProjectiveTetrahedralSymmetries[ r_FusionRing, fSymbols_ ] :=
+  Flatten[ 
+    ClassToRules @* (Intersection[ Prepend[1] @ fSymbols, # ]&) /@
+    TetrahedralEquivalenceClasses[r]
+  ];
+
+TetrahedralEquivalenceClasses[ r_FusionRing ] :=
+  Module[{ dd, ToEquivClass },
     dd = 
       CC[r];
 
     ToEquivClass[ F[a_, b_, c_, d_, e_, f_] ] :=
       Union[
-        { 
-          F[a, b, c, d, e, f], F[a, c, b, dd[d], f, e], 
-          F[b, a, c, e, d, dd[f]],F[b, c, a, dd[e], dd[f], d], 
-          F[c, a, b, f, dd[d], dd[e]], F[c, b, a, dd[f], dd[e], dd[d]],
-          F[d, e, dd[c], a, b, dd[f]], F[d, dd[c], e, dd[a], dd[f], b], 
-          F[e, d, dd[c], b, a, f], F[e, dd[c], d, dd[b], f, a], 
-          F[f, dd[b], dd[d], dd[c], e, a], F[f, dd[d], dd[b], c, a, e], 
-          F[dd[a], dd[e], dd[f], dd[d], dd[b], dd[c]], F[dd[a], dd[f], dd[e], d, dd[c], dd[b]], 
-          F[dd[b], f, dd[d], e, dd[c], dd[a]], F[dd[b], dd[d], f, dd[e], dd[a], dd[c]], 
-          F[dd[c], d, e, dd[f], dd[a], dd[b]], F[dd[c], e, d, f, dd[b], dd[a]], 
-          F[dd[d], f, dd[b], a, c, dd[e]], F[dd[d], dd[b], f, dd[a], dd[e], c], 
-          F[dd[e], dd[a], dd[f], dd[b], dd[d], c], F[dd[e], dd[f], dd[a], b, c, dd[d]], 
-          F[dd[f], dd[a], dd[e], dd[c], d, b], F[dd[f], dd[e], dd[a], c, b, d]
-        } /. $VacuumFPattern -> 1
+        {
+          F[a, b, c, d, e, f], F[a, dd[e], dd[c], dd[f], dd[b], dd[d]], 
+          F[b, a, dd[d], dd[c], e, dd[f]], F[b, dd[e], d, f, dd[a], c], 
+          F[c, e, dd[a], f, d, b], F[c, dd[d], a, dd[b], dd[e], dd[f]], 
+          F[d, dd[a], dd[b], c, f, dd[e]], F[d, dd[f], b, e, a, dd[c]], 
+          F[e, c, dd[f], a, d, dd[b]], F[e, dd[d], f, b, dd[c], dd[a]], 
+          F[f, dd[b], e, d, c, a], F[f, dd[c], dd[e], dd[a], b, dd[d]], 
+          F[dd[a], d, dd[c], b, f, e], F[dd[a], dd[f], c, dd[e], dd[d], dd[b]],
+          F[dd[b], f, dd[d], dd[e], c, dd[a]], F[dd[b], dd[c], d, a, dd[f], e], 
+          F[dd[c], f, a, e, b, d], F[dd[c], dd[b], dd[a], dd[d], dd[f], dd[e]], 
+          F[dd[d], c, b, dd[a], dd[e], f], F[dd[d], e, dd[b], dd[f], dd[c], a],
+          F[dd[e], a, f, c, dd[b], d], F[dd[e], b, dd[f], dd[d], dd[a], dd[c]], 
+          F[dd[f], d, dd[e], dd[b], a, c], F[dd[f], dd[a], e, dd[c], dd[d], b]
+        }
+         /. $VacuumFPattern -> 1
       ]; 
 
-    ClassToRules[ l_List ] := 
-      Thread[ Rest[l] -> First[l]];
-
     DeleteDuplicates @ 
-    DeleteCases[ toEquivClass /@ FSymbols[r], l_ /; Length[l] == 1 || MatchQ[ l, {1 ..}] ]
+    DeleteCases[ ToEquivClass /@ FSymbols[r], l_ /; Length[l] == 1 || MatchQ[ l, {1 ..}] ]
   ];
 
+  ClassToRules[ {} ] = 
+    {};
+  ClassToRules[ l_List ] := 
+    Thread[ Rest[l] -> First[l]];
 
 
 
