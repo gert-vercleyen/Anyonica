@@ -122,15 +122,20 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         gaugeMat = MultiplicativeGaugeMatrix[symmetries]
       ];
 
+      semiLinearSystem = 
+        AddOptions[opts][BinToSemiLin][ newEqns, newVars, symbol ];
+
+      If[ (* system contains a product equal to 0 *)
+        MemberQ[0] @ preEqCheck @ semiLinearSystem[[2]], 
+        printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
+        Return @ {}
+      ];
+
       preSolutions =
         Catch[
           Thread[ newVars -> # ]& /@
           AddOptions[opts][SolveSemiLinModZ][
-            AddOptions[opts][BinToSemiLin][
-              newEqns,
-              newVars,
-              symbol
-            ],
+            semiLinearSystem,
             internalParam,
             "OrthogonalTo" -> If[ Flatten[gaugeMat] === {}, None, gaugeMat ]
           ],
