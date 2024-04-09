@@ -14,8 +14,13 @@ Package["Anyonica`"]
       "Polynomials" -> list of polynomials after reduction,
       "Assumptions" -> logical expression that expresses assumptions on the variables,
       "Values"      -> list of rules mapping the original unknowns to expressions in terms of unknowns appearing in
-                       the list of polynomials after reduction, or numbers if all polynomials have been solved for
+                       the list of polynomials after reduction, or numbers if all polynomials have been solved for                 
+      "Symbol"      -> the symbol used for the variables
    |>
+
+   We should also use this as a standard input. 
+   We can set up the polynomials with singly-indexed variables when we create such a system and 
+   keep the old variables as keys of "Values"
 
    We call this the Standard System Data Structure (SSDS)
 
@@ -24,6 +29,108 @@ Package["Anyonica`"]
 
 
 *)
+
+(*
++---------------------------------------------------------------------------+
+|                        REDUCTION OF ANY SYSTEM                            |
++---------------------------------------------------------------------------+
+*)
+
+
+Options[ReduceSystemRecursively] := 
+  {
+    "SortRulesBy" -> None
+  };
+
+(* 
+    oracle: a function that returns True when an equation/polynomial can be used 
+    to obtain info about the system
+    toRules: a function that maps an equation/polynomial to a list of replacement rules 
+   *)
+ReduceSystemRecursively[ oracle_, toRules_ , system_] :=
+  Module[ 
+    { reduce  },
+
+    SetAttributes[ reduce, Listable ];
+
+    reduce[sys_] := 
+      ReduceSystems[oracle,toRules,ruleWeight][sys];
+   
+    FixedPoint[ reduce, { system } ]
+  ];
+(*
+ReduceSystems[ oracle_, toRules_, OptionsPattern[] ][ system_ ]
+  Module[
+    { rulesLists, sort,  },
+    sort = 
+      If[ OptionValue["SortRulesBy"] =!= None, SortBy[OptionValue["SortRulesBy"]], Identity ];
+
+    (* Obtain all info using the oracle and construct lists of rules from this info *)
+    (* The rules will be sorted by a weightfunction *)
+
+    rulesLists = 
+      Map[  
+        toRules,
+        Select[
+          SystemPolynomials[system],
+          TrueQ @* oracle
+        ]
+      ];
+
+    (* Sort rules within lists of rules by complexity and remove clashing rules *)
+      RemoveCircularRules[ SystemSymbol[system] ] @*
+      sort @ 
+
+
+
+  ]
+*)
+
+
+(* Here follows an attempt at an abstract function that reduces systems *)
+
+
+(*  Remove circular rules from a list of rules
+    ASSUMPTIONS: the variables must be indexed by a single integer!
+ *)
+
+(* The method removes too many rules though *)
+RemoveCircularRules[ x_ ][ rules_ ] :=
+  Module[{rulesLists, clashingQ},
+   rulesLists = 
+    Developer`ToPackedArray[
+     Flatten @* Join /@
+       Map[
+        GetVariables[#,x] &,
+        List @@@ rules,
+        {2}
+        ] /. x[i_] :> i
+     ];
+   
+   clashingQ[i1_, i2_] :=
+    ClashingRulesQ[rulesLists[[i1]], rulesLists[[i2]]];
+   
+   rules[[
+     DeleteDuplicates[
+      Range @ Length @ rulesLists,
+      clashingQ
+      ]
+     ]]
+   ];
+
+ClashingRulesQ[ l1_, l2_ ] :=
+  Or[
+    First[l1] === First[l2], 
+    MemberQ[ First @ l1] @ Rest[l2], 
+    MemberQ[ First @ l2] @ Rest[l1]
+  ];
+
+(* Apply a set of rules to itself until all rules are as advanced as possible. 
+  E.g. { x[1] -> x[2], x[2] -> x[3] } should become { x[1] -> x[3], x[2] -> x[3] }
+ *)
+
+
+
 
 
 (*
@@ -54,7 +161,9 @@ ReduceBinomialSystem::wrongeqnsformat =
 
 Options[ReduceBinomialSystem] =
 {
-  "SimplifyIntermediateResultsBy" -> Identity
+  "SimplifyIntermediateResultsBy" -> Identity,
+  "Method" -> "HermiteDecomposition",
+  "Parallel" -> False
 };
 
 
@@ -69,57 +178,151 @@ Which[
   Message[ ReduceBinomialSystem::wrongvarsformat, vars ]; Abort[]
 ];
 
-ReduceBinomialSystem[ binomialEqns_, variables_, OptionsPattern[] ] :=
+ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
 (
   argCheck[ binomialEqns, variables ];
   Module[
-    { eqns, vars, revertVars, canEqns, x },
-    { eqns, vars, revertVars } =
-    SimplifyVariables[ binomialEqns, variables, x ];
+    { eqns, vars, revertVars, x, procID, result, t },
 
-    Catch @
-    FixedPoint[ UpdateEquivalences[x], { NormalForm @ ToProperBinomialEquation @ eqns, { } } ] /. revertVars
+    procID = 
+      ToString @ Unique[];
+
+    printlog["RBS:init", { procID, binomialEqns, variables, {opts} } ];
+    
+    { t, result } = 
+      AbsoluteTiming[
+        { eqns, vars, revertVars } =
+          SimplifyVariables[ binomialEqns, variables, x ];
+
+        If[
+          OptionValue["Method"] === "HermiteDecomposition",
+          AddOptions[opts][ReduceBinomialSystemViaHermiteDecomposition][ eqns, vars ]/.revertVars ,
+          Catch @
+          FixedPoint[ UpdateEquivalences[x], { NormalForm @ ToProperBinomialEquation @ eqns, { } } ] /. revertVars
+        ]
+      ];
+
+    printlog[ "Gen:results", { procID, result, t  } ];
+
+    result
+
   ]
 );
 
-FindEquivalences[ eqns_, x_ ] :=
-With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
-  DeleteDuplicates[
-    DeleteCases[ eqnVarPairs, { _, { }, _ } ],
-    IntersectingQ[  Last @ #1, Last @ #2 ]&
+Options[ReduceBinomialSystemViaHermiteDecomposition] = 
+  { "Parallel" -> False };
+
+ReduceBinomialSystemViaHermiteDecomposition[ equations_, variables_, opts:OptionsPattern[] ] := 
+  Module[
+    { reduceBinEqns, nSubsys, s, map, procID },
+
+    procID = 
+      ToString @ Unique[];
+
+    nSubsys = 
+      Length @ variables;
+
+    printlog[ "RBSVHD:init", { procID, nSubsys  } ];
+
+    s = 
+      Head @ First @ variables;
+
+    reduceBinEqns[ eqns_ ] := 
+      Module[
+        { matSys },
+
+        matSys =
+          Catch[ 
+            BinToSemiLin[ eqns, variables, s ]
+          ];
+        
+        If[ Head @ First @ matSys === String, Throw @ { False } ];
+
+        ReduceSemiLinModZ[ matSys[[1]], matSys[[2]], s ]
+      ];
+    
+
+    map = 
+      If[ 
+        TrueQ @ OptionValue["Parallel"]
+        , 
+        Quiet[ LaunchKernels[] ]; 
+        DistributeDefinitions[reduceBinEqns];
+        ParallelMap, 
+        Map 
+      ];
+
+    partitionAndReduce[ eqns_ ] := 
+      Module[{ t, result },
+        { t, result } = 
+          AbsoluteTiming @ 
+          DeleteDuplicates[  
+            Join @@
+            map[
+              reduceBinEqns,
+              Partition[ eqns, UpTo[nSubsys] ]
+            ]
+          ];
+
+        printlog[ "RBSVHD:reduction", { procID, t, result } ];
+
+        result
+
+      ];
+
+    Catch[
+      FixedPoint[  
+        partitionAndReduce,
+        equations,
+        3 (* Nest at most 3 times *)
+      ]
+    ]
+
   ]
-];
+
+
+
+
+FindEquivalences[ eqns_, x_ ] :=
+  With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
+    DeleteDuplicates[
+      DeleteCases[ eqnVarPairs, { _, { }, _ } ],
+      IntersectingQ[  Last @ #1, Last @ #2 ]&
+    ]
+  ];
 
 LinearVars[ eqn_, x_ ] :=
-With[{ powerVars = Cases[ eqn, Power[ a_, b_ ] /; Abs[b] > 1 :> a, Infinity ] },
-  GetVariables[ eqn, x, powerVars ]
-];
+  With[{ powerVars = Cases[ eqn, Power[ a_, b_ ] /; Abs[b] > 1 :> a, Infinity ] },
+    GetVariables[ eqn, x, powerVars ]
+  ];
 
 EquivalencesToRules[ equivs_, x_ ] :=
-EquivToRule[x] /@ equivs;
+  EquivToRule[x] /@ equivs;
 
 EquivToRule[x_][ { eqn_, linvars_, vars_ } ] :=
-With[{ var = First @ linvars },
-  Solve[ eqn, var ][[1,1]]
-];
+  With[{ var = First @ linvars },
+    Solve[ eqn, var ][[1,1]]
+  ];
 
 UpdateEquivalences[x_][ { eqns_, equivs_ }] :=
-With[ { equivRules = EchoFunction["rules",#/.x->P`z&][ EquivToRule[x] /@ FindEquivalences[ eqns, x ] ] },
-  If[ MemberQ[0] @ equivRules[[;;,2]], Throw[{{False},{}}] ];
-  {
-    TEL @
-    NormalForm @
-    ToProperBinomialEquation @
-    ReplaceAll[ eqns, Dispatch[equivRules] ],
-    Join[ equivs/.Dispatch[equivRules], equivRules ]
-  }
-];
+  With[ { equivRules =  EquivToRule[x] /@ FindEquivalences[ eqns, x ] },
+    EchoFunction["nEqns,nRules",Map[Length]] @
+    {
+      TEL @
+      NormalForm @
+      ToProperBinomialEquation @
+      ReplaceAll[ eqns, Dispatch[equivRules] ],
+      Join[ equivs/.Dispatch[equivRules], equivRules ]
+    }
+  ];
 
 SetAttributes[NormalForm,Listable];
-NormalForm[True] = True;
-NormalForm[False] = False;
+NormalForm[True] = 
+  True;
+NormalForm[False] = 
+  False;
 NormalForm[ eqn_ ] :=
-eqn[[2]] / eqn[[1]] == 1;
+  eqn[[2]] / eqn[[1]] == 1;
 
 
 (*
@@ -144,97 +347,106 @@ ReduceByBinomials::notlistofvars =
 "`1` is not a list of variables.";
 
 Options[ ReduceByBinomials ] :=
-Options[ SolveBinomialSystem ];
+  Join[
+    Options[ SolveBinomialSystem ],
+    { "MaxNumberOfBinomialEquations" -> Infinity }
+  ];
 
 CheckArgs[ sumEqns_, binomialEqns_, vars_ ] :=
-Which[
-  !ListOfEquationsQ[sumEqns]
-  ,
-  Message[ReduceByBinomials::notlistofequations, sumEqns ];
-  Abort[]
-  ,
-  !BinomialSystemQ[binomialEqns]
-  ,
-  Message[ ReduceByBinomials::notbinomialsystem, binomialEqns ];
-  Abort[]
-  ,
-  !ListQ[vars]
-  ,
-  Message[ ReduceByBinomials::notlistofvars, vars ];
-  Abort[]
-];
+  Which[
+    !ListOfEquationsQ[sumEqns]
+    ,
+    Message[ReduceByBinomials::notlistofequations, sumEqns ];
+    Abort[]
+    ,
+    !BinomialSystemQ[binomialEqns]
+    ,
+    Message[ ReduceByBinomials::notbinomialsystem, binomialEqns ];
+    Abort[]
+    ,
+    !ListQ[vars]
+    ,
+    Message[ ReduceByBinomials::notlistofvars, vars ];
+    Abort[]
+  ];
 
 ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :=
 (
   CheckArgs[ sumEqns, binomialEqns, vars ];
   Module[{
     SolveRepeatedly, firstSystems, constraints, invertibleMatrices, polynomialConstraints, simplify,
-    preEqCheck, procID, absTime, result
-  },
+    preEqCheck, procID, absTime, result, maxNBin, newBinEqns, newNonBinEqns
+    },
     invertibleMatrices =
-    OptionValue["InvertibleMatrices"];
+      OptionValue["InvertibleMatrices"];
     polynomialConstraints =
-    OptionValue["PolynomialConstraints"];
+      OptionValue["PolynomialConstraints"];
     simplify =
-    OptionValue["SimplifyIntermediateResultsBy"];
+      OptionValue["SimplifyIntermediateResultsBy"];
     preEqCheck =
-    OptionValue["PreEqualCheck"];
+      OptionValue["PreEqualCheck"];
+    maxNBin = 
+      Min[ Length[binomialEqns], OptionValue["MaxNumberOfBinomialEquations"] ];
     procID =
-    ToString[Unique[]];
+      ToString[Unique[]];
 
     printlog["RBM:init", {procID, sumEqns, binomialEqns, vars, s, {opts}}];
 
     { absTime, result } =
     AbsoluteTiming[
       constraints =
-      Join[
-        polynomialConstraints,
-        DeterminantConditions @ invertibleMatrices
-      ];
-
-      SolveRepeatedly[ { {}, nonBinEqns_ }, _, _, prevSols_, _  ] :=
-      Sow[ { nonBinEqns, prevSols } ];
-
-      SolveRepeatedly[ { binEqns_, nonBinEqns_ }, variables_, s[i_], prevSols_, constr_ ] :=
-      Module[ { updatedSystems },
-        updatedSystems =
-        AddOptions[opts][SolveAndUpdate][
-          binEqns, nonBinEqns, constr, variables, s[i],
-          "NonSingular"   -> True,
-          "Symmetries"    -> None
-          (* Symmetries are exhausted by first call. If not set to None, the original symmetries are used and an error occurs  *)
+        Join[
+          polynomialConstraints,
+          DeterminantConditions @ invertibleMatrices
         ];
 
-        If[ updatedSystems === {}, Return @ {} ];
+      SolveRepeatedly[ { {}, nonBinEqns_ }, _, _, prevSols_, _  ] :=
+        Sow[ { nonBinEqns, prevSols } ];
 
-        Do[
-          SolveRepeatedly[
-            BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ],
-            GetVariables[ Normal @ sys["Equations"], s[i] ] ,
-            s[i+1],
-            Normal @ prevSols /. sys["Solution"],
-            sys["Constraints"]
+      SolveRepeatedly[ { binEqns_, nonBinEqns_ }, variables_, s[i_], prevSols_, constr_ ] :=
+        Module[ { updatedSystems },
+          updatedSystems =
+            AddOptions[opts][SolveAndUpdate][
+              binEqns, nonBinEqns, constr, variables, s[i],
+              "NonSingular"   -> True,
+              "Symmetries"    -> None  (* Symmetries are exhausted by first call. If not set to None, the original symmetries are used and an error occurs  *)
+            ];
+
+          If[ updatedSystems === {}, Return @ {} ];
+
+          Do[
+            SolveRepeatedly[
+              BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ] // MoveEquations[maxNBin],
+              GetVariables[ Normal @ sys["Equations"], s[i] ] ,
+              s[i+1],
+              Normal @ prevSols /. sys["Solution"],
+              sys["Constraints"]
+            ]
+            ,
+            { sys, updatedSystems }
           ]
-          ,
-          { sys, updatedSystems }
-        ]
-      ];
+        ];
+
+      (* Possibly only use a maximum number of the binomial Equations per reduction step *)
+
+      { newBinEqns, newNonBinEqns } = 
+        MoveEquations[maxNBin][ { binomialEqns, sumEqns } ];
 
       firstSystems =
-      AddOptions[opts][SolveAndUpdate][
-        binomialEqns,
-        sumEqns,
-        { polynomialConstraints, invertibleMatrices },
-        vars,
-        s[1]
-      ];
+        AddOptions[opts][SolveAndUpdate][
+          newBinEqns,
+          newNonBinEqns,
+          { polynomialConstraints, invertibleMatrices },
+          vars,
+          s[1]
+        ];
 
       If[ firstSystems === {}, Return @ {} ];
 
       Reap[
         Do[
           SolveRepeatedly[
-            BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ],
+            BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ] // MoveEquations[maxNBin],
             GetVariables[ Normal @ sys["Solution"], s[1] ],
             s[2],
             Normal @ sys["Solution"],
@@ -253,17 +465,25 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
   ]
 );
 
+(* Move n eqns from l1 to l2 *)
+MoveEquations[n_][ { l1_, l2_ } ] := 
+  With[
+    { split = TakeDrop[ l1, Min[ n, Length @ l1 ] ] },
+    EchoFunction["NBinEqns,NSumEqns",Length/@#&] @
+    { First @ split, Join[ Last @ split, l2 ] }
+  ];
+
 PackageExport["RBB"]
 
 RBB::usage =
-"Shorthand for ReduceByBinomials.";
+  "Shorthand for ReduceByBinomials.";
 
 RBB =
-ReduceByBinomials;
+  ReduceByBinomials;
 
 
 Options[SolveAndUpdate] :=
-Options[ReduceByBinomials];
+  Options[ReduceByBinomials];
 
 (* Solves binEqns, updates sumEqns and constraints and checks for validity.
   A list of triples { sumEqns_i, sol_i, constr_i } is returned
@@ -271,7 +491,7 @@ Options[ReduceByBinomials];
 SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern[] ] :=
 Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, result, eqnSolConstr, notInvalidPos },
   simplify =
-  OptionValue["SimplifyIntermediateResultsBy"];
+    OptionValue["SimplifyIntermediateResultsBy"];
   simplifySolutions =
   Function[
     solutions,
