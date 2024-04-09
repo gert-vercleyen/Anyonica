@@ -30,7 +30,8 @@ Options[ FindZeroValues ] :=
       "Equivalences" -> {}
     },
     Options[SumEqnsToProp],
-    Options[BooleanZeroValues]
+    Options[BooleanZeroValues],
+    Options[ReduceViaLogic]
   ];
 
 CheckArgs[ eqns_, vars_ ] :=
@@ -59,7 +60,8 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       regMats, simpleEqns, simpleVars, revertVars, simpleMats, b, procID,
       result, absTime, proposition, knowns, equivs, reducedVars, AddExtraInfo,
       preProp, binEqns, sumEqns, trivialVars, eRules, reducedMats, reducedEqns,
-      simpleERules, remainingVars, FilterSolutions
+      simpleERules, remainingVars, FilterSolutions, trivialVarsFromMats, trivialVarsFromEquivalences,
+      properEquivalences, allsatSolutions
     },
     regMats =
       OptionValue["InvertibleMatrices"];
@@ -83,11 +85,20 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           ];
 
         (* We can use a reduced set of variables by using tetrahedral equivalences *)
+        (* First we split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
+           zero and (2) rules that express F-symbols in terms of other F-symbols *)
+
+        { trivialVarsFromEquivalences, properEquivalences } =
+          BinSplit[ simpleERules, #[[2]] === 1& ];
+
         reducedMats =
           simpleMats/.Dispatch[simpleERules];
 
         trivialVars =
-          Cases[ reducedMats, {{a_}} /; a =!= 0 :> a ];
+          Join[
+            Cases[ reducedMats, {{a_}} /; a =!= 0 :> a ],
+            Keys[trivialVarsFromEquivalences]
+          ];
 
         reducedMats =
           reducedMats ~ WithMinimumDimension ~ 2;
@@ -99,19 +110,18 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         ];
 
         reducedVars =
-          Union[ Complement[ simpleVars/.Dispatch[simpleERules], trivialVars ] ];
+          Union[ Complement[ simpleVars/.Dispatch[properEquivalences], trivialVars ] ];
 
-        If[
-          Length[trivialVars] == Length[reducedVars]
+        If[ (* I think this should be Length[reducedVars == 0 ]*)
+          Length[reducedVars] === 0
           ,
           printlog["FZV:all_vars_trivial", { procID } ];
           Throw @ { { } }
         ];
 
         reducedEqns =
-          DeleteDuplicates @*
-          DeleteCases[True] /@
-          ( simpleEqns/.Dispatch[simpleERules] );
+          TEL /@
+          ( simpleEqns/.Dispatch[properEquivalences] );
 
         { binEqns, sumEqns } =
           BinomialSplit @
@@ -150,28 +160,34 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           ]
         ];
 
+
         FilterSolutions[ soln_ ] :=
           Select[
             soln,
-            FreeQ[ sumEqns/.Dispatch[#], False  | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ]&
+              FreeQ[ 
+                sumEqns/.Dispatch[#], 
+                False  | 
+                0 == HoldPattern[Times[__]] | 
+                HoldPattern[Times[__]] == 0 |
+                0 == Power[ a_, b_ ] |
+                Power[ a_, b_ ] == 0
+              ]&
           ];
 
         AddExtraInfo[ sol_ ] :=
-          With[ { knownsFromEquivs = Select[ equivs/.Dispatch[sol], BooleanQ @* Last ] },
-            SortBy[First] @
-            Select[ Last[#] == 0 & ] @
-            ReplaceAll[
-              Join[
-                sol,
-                knowns,
-                simpleERules/.knowns/.Dispatch[sol]/.knownsFromEquivs,
-                equivs/.Dispatch[sol]
-              ]/.False -> 0,
-              revertVars
-            ]
-          ];
+          SortBy[First] @
+          Select[ Last[#] == 0 & ] @
+          (
+            Join[
+              sol,
+              knowns,
+              properEquivalences/.Dispatch[Join[knowns,equivs]]/.Dispatch[sol],
+              equivs/.Dispatch[sol]
+            ]/.False -> 0
+          );
 
-        FilterSolutions[
+
+        allsatSolutions = 
           Map[
             AddExtraInfo,
             Switch[ OptionValue["FindZerosBy"],
@@ -180,7 +196,13 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
               "CCode",  CCodeZeroValues
             ] @@
             { proposition, remainingVars }
-          ]
+          ];
+
+        printlog["FZV:allsat_solutions", { procID, allsatSolutions } ];
+
+        ReplaceAll[ 
+          FilterSolutions @ allsatSolutions,
+          revertVars
         ]
       ]
       ];
@@ -398,12 +420,20 @@ ZeroValuesFromReduce[ prop_, reducedVars_ ] :=
 CCodeZeroValues[ prop_, reducedVars_ ] :=
   SolveDiophantineSystem[ PropToEqns @ prop, reducedVars, { 0, 1 } ];
 
+Options[ReduceViaLogic] = 
+  {
+    "LevelOfSimplification" -> 1
+  };
 
-ReduceViaLogic[ proposition_ ] :=
+ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
   Module[
     { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv,
-      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences
+      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences, lSymp, combinedSimplification 
     },
+
+    (* TODO: implement error message if lSymp > 4 *)
+    lSymp =
+      Min[ 4, OptionValue["LevelOfSimplification"] ];
 
     (* Transfer known values from equivs to knowns *)
     TransferKnowns[ { prop_, knowns_, equivs_ } ] :=
@@ -520,14 +550,14 @@ ReduceViaLogic[ proposition_ ] :=
         #
       ]&;
 
+      combinedSimplify = 
+        Composition @@ 
+        { simplify4, simplify3, simplify2, simplify1 }[[-lSymp;;]];
+
       MapAt[
         BooleanMinimize
         ,
-        { proposition, { }, { } } //
-        simplify1 (*//
-                    simplify2 //
-        simplify3 //
-        simplify4*)
+        combinedSimplify @ { proposition, { }, { } } 
         ,
         { 1 }
       ]
