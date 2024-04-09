@@ -144,11 +144,11 @@ Options[ToStandardPolynomial] =
   { "SimplifyBy" -> Identity };
 
 ToStandardPolynomial[ pol_, opts:OptionsPattern[] ] :=
-  With[{ pol =  OptionValue["SimplifyBy"] @ RemoveFractions @ pol },
+  With[{ poly =  OptionValue["SimplifyBy"] @ RemoveFractions @ pol },
     If[
-      pol === 0,
+      poly === 0,
       0,
-      Cancel[ pol/CoefficientRules[ pol ][[-1,2]] ]
+      Cancel[ poly/CoefficientRules[ poly ][[-1,2]] ]
     ]
   ];
 
@@ -1074,7 +1074,7 @@ PackageScope["PowerDot"]
 PowerDot[ a_, b_ ] :=
   If[ 
     MatchQ[ a, { 1 .. } ],
-    a,
+    ConstantArray[1,Length[b]],
     Inner[ Power, a, Transpose @ b, Times ]
   ];
 
