@@ -316,3 +316,101 @@ LeftHandedBasis[cat_FusionCategory,nAnyons_, a_]:=
       First[#] == a && Last[#] == 1 &
     ]
   ];
+
+
+(*Function for calculating matrix representation of braiding operation on a pair of anyons in specified Hilbert space
+*)
+(*Inputs:
+cat - which fusion category 
+nanyons - how many total "leaves" there are in the anyon fusion diagram, should be more than 2
+anyontype - which anyon of the theory the leaves correspond to (should belong to {1,...,rank(fcat)})
+nBraid - which braid the matrix corresponds to, i.e. 1 corresponds to braiding the first and second anyons, 
+             2 the third and fourth, etc.
+Outputs:
+matrix - matrix representation of the specified braid
+ *)
+
+
+PackageExport["BraidMatrix"]
+
+BraidMatrix::usage = 
+"BraidMatrix[ cat, nAnyons, a, nBraid] returns the matrix representation of the result of braiding the nBraid and nBraid + 1th anyons in a fusion tree with nAnyons total anyons from modular fusion category cat, each of type a. The matrix is written in the basis returned from the leftHandedBasis function.";
+
+BraidMatrix::braidnumoutofbounds =
+  "The braidnumber `1` does not lie in the range 1, \[Ellipsis], `2`";
+  
+ValidBraidNumQ[ nBraid_, nAnyons_ ] :=
+  1 <= nBraid <= nAnyons - 1;
+  
+(* a is the type of the anyon *)
+
+BraidMatrix[ cat_, nAnyons_, a_, nBraid_ ] :=
+  Module[{ edgeLabels, R, F,dim,relevantLabels,mLP,aMiddle, nonZeroCoeff, zeroMatrixCoeffQ,matCoeff },
+
+    (* Check validity of various inputs *)
+    If[
+      !ValidBraidNumQ[ nBraid, nAnyons ],
+      Message[ BraidMatrix::braidnumoutofbounds, nBraid, nAnyons - 1 ];
+      Return @ $Failed
+    ];
+
+    edgeLabels=
+      LeftHandedBasis[ cat, nAnyons, a ];
+
+    If[ FailureQ @  edgeLabels, Return @ $Failed ];
+
+    R = RSymbols @ cat;
+
+    (* If the first two anyons are braided then the representation is just the R-matrix *)
+    If[ 
+      nBraid == 1, 
+      Return @
+      DiagonalMatrix[ \[ScriptCapitalR][ a, a, Last[#] ]&/@ edgeLabels /.R ]
+    ];
+
+    F = FSymbols @ cat;
+
+    (*Number of basis vectors is the length of the edgeLabels list*)
+    dim = Length @ edgeLabels;
+
+    (* Returns relevant edge labels, {a1,a2,a3}, based on nBraid. If nBraid is 2, the edge labels are formatted differently *)
+    relevantLabels[p_] :=
+      If[
+        nBraid==2,
+        { a, edgeLabels[[p]][[-1]], edgeLabels[[p]][[-2]] },
+        Reverse @ 
+        edgeLabels[[p]][[ nAnyons - nBraid;; nAnyons - nBraid + 2 ]]
+      ];
+
+    (* Position of the middle label: the only label that is allowed to change after the transforms *)
+    mLP =
+      If[ nBraid == 2, -1, nAnyons - nBraid + 1 ];
+
+    (* Label corresponding to the current column *)
+    aMiddle[q_] := 
+      If[
+        nBraid==2, Last @ edgeLabels[[q]], edgeLabels[[q]][[nAnyons - nBraid + 1]]
+      ];
+
+    nonZeroCoeff[ a1_, a2_, a3_, aMid_ ] :=
+      Sum[
+        \[ScriptCapitalF][ a1, a, a, a3, a2, x ]*
+        \[ScriptCapitalR][ a, a, x ] *
+        Conjugate[ \[ScriptCapitalF][ a1, a, a, a3, aMid, x ] ],
+        { x, Rank[cat] }
+      ]/.F/.R/.\[ScriptCapitalF][__]->0;
+
+    zeroMatrixCoeffQ[ p_, q_ ] := (* different tree obtained at other positions than mLP *)
+      Delete[mLP] @ edgeLabels[[p]] =!= Delete[mLP] @ edgeLabels[[q]];
+
+    matCoeff[ p_, q_ ] := 
+      Module[ {a1,a2,a3,aMid},
+        { a1, a2, a3 } = relevantLabels[p];
+
+        aMid = aMiddle[q];
+
+        If[ zeroMatrixCoeffQ[ p, q ], 0, nonZeroCoeff[ a1, a2, a3, aMid ] ]
+      ];
+
+    Array[ matCoeff, { dim, dim } ]
+  ];
