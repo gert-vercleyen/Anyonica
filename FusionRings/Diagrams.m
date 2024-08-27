@@ -414,3 +414,12 @@ BraidMatrix[ cat_, nAnyons_, a_, nBraid_ ] :=
 
     Array[ matCoeff, { dim, dim } ]
   ];
+
+
+PackageExport["BraidRepresentationGenerators"]
+
+BraidRepresentationGenerators::usage = 
+"BraidRepresentationGenerators[ cat, nAnyons, a] returns matrix representations for all possible braids given nAnyons anyons in a fusion tree with nAnyons total anyons from modular fusion category cat, each of type anyonType. The matrices are written in the basis returned from the leftHandedBasis function.";
+
+BraidRepresentationGenerators[ cat_, nAnyons_, anyonType_] :=
+	Table[BraidMatrix[cat, nAnyons, anyonType, nBraid], {nBraid, 1, nAnyons - 1}];
