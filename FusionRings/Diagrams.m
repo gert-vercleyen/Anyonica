@@ -1,3 +1,5 @@
+(* ::Package:: *)
+
 (* Mathematica Source File *)
 (* Created by the Wolfram Language Plugin for IntelliJ, see http://wlplugin.halirutan.de/ *)
 (* :Author: gertvercleyen *)
@@ -242,3 +244,75 @@ coupleRightTree[l_] :=
 
 
 
+(*Returns a list of labels for the external edges of the left handed basis trees for a given Hilbert space.  The vacuum charge appears at the beginning of the list.
+*)
+(*Inputs:
+cat - which fusion category 
+nanyons - how many total "leaves" there are in the anyon fusion diagram, should be more than 2
+anyontype - which anyon of the theory the leaves correspond to (should belong to {1,...,rank(fcat)})
+Outputs:
+edgeLabels - a list of combinations of internal edge labels corresponding to the left handed basis trees of the Hilbert space
+ *)
+
+PackageExport["LeftHandedBasis"]
+
+LeftHandedBasis::usage = 
+"LeftHandedBasis[ cat, nAnyons, a] returns a list of lists of internal edge labels corresponding to the possible left handed basis trees for a given number nAnyons of total anyons each of type a from modular fusion category cat.  Each sublist is ordered from bottom to top and assumes vacuum 
+total charge, so that each of the sublists will have 1 as the first element.";
+
+LeftHandedBasis::categorynotmodular =
+  "The fusion category `1` is not modular";
+LeftHandedBasis::anyontypeoutofbounds =
+  "anyontype `1` must be between 1 and  `2`  for this category.";
+LeftHandedBasis::anyontypeabelian =
+  "The anyontype `1` is abelian, only non-abelian anyons can be used for computation";
+LeftHandedBasis::incorrectnumberofanyons =
+  "nAnyons `1` is not sufficient, need 3 or more anyons for a qubit";
+
+LeftHandedBasis[cat_FusionCategory,nAnyons_, a_]:=
+  Module[{basisList, ring},
+  (*Check validity of various inputs*)
+    If[
+      !ModularQ[cat],
+       Message[ LeftHandedBasis::categorynotmodular, cat];
+       Return @ $Failed
+    ];
+
+    If[
+      Not[ 1 <= a <= Rank[cat] ], 
+      Message[ LeftHandedBasis::anyontypeoutofbounds, a, Rank[cat]]; 
+      Return @ $Failed
+    ];
+
+    If[(*number of anyons check*)
+      nAnyons <=2, 
+      Message[ LeftHandedBasis::incorrectnumberofanyons, nAnyons]; 
+      Return @ $Failed
+    ];
+
+    If[
+      QuantumDimensions[cat][[a]][[2]] == 1, 
+      Message[ LeftHandedBasis::anyontypeabelian, a]; 
+      Return @ $Failed
+    ];
+
+    ring = FusionRing @ cat;
+
+    (*Only use nonzero structure constants with anyontype as 2nd fusion label*)
+    validStructConst = 
+      Select[ #[[2]] == a &] @ NZSC @ ring;
+
+    (*top to bottom basis labels*)
+    Reverse @* 
+    (#[[ nAnyons + 1;; 2 nAnyons - 1 ]]&) /@
+    Select[
+      coupleLeftTree/@
+      allChains[
+        validTwoLevelLeftTreeQ,
+        validStructConst,
+        nAnyons - 1
+      ],
+      (*Select trees with all leaves anyontype and total charge is vacuum*)
+      First[#] == a && Last[#] == 1 &
+    ]
+  ];
