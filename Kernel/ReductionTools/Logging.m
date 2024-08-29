@@ -1988,7 +1988,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, n_ } ] :=
       TextData[{
         inputStyle[ 
           "Reducing system via HermiteDecomposition on subsystems with at most " <> 
-          ToString[n] <> " equations.\nThis procedure will be applied at most 3 times." 
+          ToString[n] <> " equations.\nThis procedure will be applied at most 5 times." 
         ]
       }],
       "Text",

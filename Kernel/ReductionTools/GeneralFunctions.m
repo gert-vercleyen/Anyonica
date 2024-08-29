@@ -1174,3 +1174,31 @@ Module[{ fc },
 	fc = FirstCase[ values, x_/; InfN[ x-n==0, OptionValue["Accuracy"] ] ];
 	If[ MissingQ[fc], n,fc ]
 ]
+
+PackageExport["EchoIn"]
+
+EchoIn::usage = 
+  "EchoIn[ n, label, function ][ code ] aplies EchoFunction[ label, function ] to"<> 
+  " code, about once every n times it is called.\n"<> 
+  "EchoIn[ n, label ][ code ] equals EchoIn[ n, label, Identity ][ code ]";
+
+PackageScope["$EchoCounter"]
+
+$EchoCounter = CreateDataStructure["Counter", 0];
+
+SetAttributes[EchoIn, HoldAllComplete];
+
+EchoIn[ n_Integer, label_, function_][ code_ ] :=
+  (
+   $EchoCounter["Increment"];
+   If[ 
+    Mod[$EchoCounter["Get"], n] == 0
+    ,
+    EchoFunction[label, function][code]
+    ,
+    code
+    ]
+   );
+
+EchoIn[ n_Integer, label_ ][code_] := 
+  EchoIn[ n, label, Identity, code ];

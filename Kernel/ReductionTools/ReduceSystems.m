@@ -159,24 +159,26 @@ ReduceBinomialSystem::wrongvarsformat =
 ReduceBinomialSystem::wrongeqnsformat =
 "`1` should be a list of binomial equations";
 
-Options[ReduceBinomialSystem] =
-{
-  "SimplifyIntermediateResultsBy" -> Identity,
-  "Method" -> "HermiteDecomposition",
-  "Parallel" -> False
-};
+Options[ReduceBinomialSystem] :=
+  Join[
+    Options[ ReduceBinomialSystemViaHermiteDecomposition ],
+    {
+      "SimplifyIntermediateResultsBy" -> Identity,
+      "Method" -> "HermiteDecomposition"
+    }
+  ];
 
 
 argCheck[ binEqns_, vars_ ] :=
-Which[
-  !BinomialSystemQ[binEqns]
-  ,
-  Message[ ReduceBinomialSystem::wrongeqnsformat, binEqns ]; Abort[]
-  ,
-  Head[vars] =!= List
-  ,
-  Message[ ReduceBinomialSystem::wrongvarsformat, vars ]; Abort[]
-];
+  Which[
+    !BinomialSystemQ[binEqns]
+    ,
+    Message[ ReduceBinomialSystem::wrongeqnsformat, binEqns ]; Abort[]
+    ,
+    Head[vars] =!= List
+    ,
+    Message[ ReduceBinomialSystem::wrongvarsformat, vars ]; Abort[]
+  ];
 
 ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
 (
@@ -192,7 +194,7 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
     { t, result } = 
       AbsoluteTiming[
         { eqns, vars, revertVars } =
-          SimplifyVariables[ binomialEqns, variables, x ];
+          SimplifyVariables[ ToProperBinomialEquation @ binomialEqns, variables, x ];
 
         If[
           OptionValue["Method"] === "HermiteDecomposition",
@@ -209,8 +211,11 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
   ]
 );
 
-Options[ReduceBinomialSystemViaHermiteDecomposition] = 
-  { "Parallel" -> False };
+Options[ReduceBinomialSystemViaHermiteDecomposition] := 
+  Join[
+    Options[ ReduceSemiLinModZ ],
+    { "Parallel" -> False }
+  ];
 
 ReduceBinomialSystemViaHermiteDecomposition[ equations_, variables_, opts:OptionsPattern[] ] := 
   Module[
@@ -220,7 +225,7 @@ ReduceBinomialSystemViaHermiteDecomposition[ equations_, variables_, opts:Option
       ToString @ Unique[];
 
     nSubsys = 
-      Length @ variables;
+      Floor[ Length[variables] / 2 ];
 
     printlog[ "RBSVHD:init", { procID, nSubsys  } ];
 
@@ -238,7 +243,7 @@ ReduceBinomialSystemViaHermiteDecomposition[ equations_, variables_, opts:Option
         
         If[ Head @ First @ matSys === String, Throw @ { False } ];
 
-        ReduceSemiLinModZ[ matSys[[1]], matSys[[2]], s ]
+        AddOptions[opts][ReduceSemiLinModZ][ matSys[[1]], matSys[[2]], s ]
       ];
     
 
@@ -257,10 +262,12 @@ ReduceBinomialSystemViaHermiteDecomposition[ equations_, variables_, opts:Option
         { t, result } = 
           AbsoluteTiming @ 
           DeleteDuplicates[  
-            Join @@
-            map[
-              reduceBinEqns,
-              Partition[ eqns, UpTo[nSubsys] ]
+            Flatten[ (* This Flatten operation will riffle the lists of equations. *)
+              map[
+                reduceBinEqns,
+                Partition[ eqns, UpTo[nSubsys] ]
+              ],
+              { 2, 1 }
             ]
           ];
 
@@ -274,14 +281,11 @@ ReduceBinomialSystemViaHermiteDecomposition[ equations_, variables_, opts:Option
       FixedPoint[  
         partitionAndReduce,
         equations,
-        3 (* Nest at most 3 times *)
+        5 (* Nest at most 5 times *)
       ]
     ]
 
-  ]
-
-
-
+  ];
 
 FindEquivalences[ eqns_, x_ ] :=
   With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
@@ -306,11 +310,11 @@ EquivToRule[x_][ { eqn_, linvars_, vars_ } ] :=
 
 UpdateEquivalences[x_][ { eqns_, equivs_ }] :=
   With[ { equivRules =  EquivToRule[x] /@ FindEquivalences[ eqns, x ] },
-    EchoFunction["nEqns,nRules",Map[Length]] @
+    EchoIn[ 500, "NewKnowns", Last ] @
     {
       TEL @
       NormalForm @
-      ToProperBinomialEquation @
+      ToProperBinomialEquation @  (* This should not be necessary when only working with binomial equations, still the computer takes ages when I leave this function out*)
       ReplaceAll[ eqns, Dispatch[equivRules] ],
       Join[ equivs/.Dispatch[equivRules], equivRules ]
     }
@@ -469,7 +473,6 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
 MoveEquations[n_][ { l1_, l2_ } ] := 
   With[
     { split = TakeDrop[ l1, Min[ n, Length @ l1 ] ] },
-    EchoFunction["NBinEqns,NSumEqns",Length/@#&] @
     { First @ split, Join[ Last @ split, l2 ] }
   ];
 
@@ -1187,10 +1190,10 @@ Module[ { newEqns, newVars, revertVars, s, newSystem, simplify },
   simplify =
   OptionValue["SimplifyBy"];
   { newEqns, newVars, revertVars } =
-  SimplifyVariables[ eqnsList, vars, s ];
+    SimplifyVariables[ eqnsList, vars, s ];
 
   newSystem =
-  UpdateSystemViaTrivialities[ s, simplify ][ {}, {}, newEqns ];
+    UpdateSystemViaTrivialities[ s, simplify ][ {}, {}, newEqns ];
 
   Normal[newSystem]/.revertVars
 ];
@@ -1215,38 +1218,38 @@ With[{
 ];
 
 MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][ { knownVars_List, mapToReps_List, {} } ] :=
-{ knownVars, mapToReps, {} };
+  { knownVars, mapToReps, {} };
 MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][
   { knownVars_List, mapToReps_, eqnsList_?ListOfEquationsQ }
 ] :=
-With[{
-  newVarsAndEqns =
-  FixedPoint[ UpdateVariablesAndSystem[s,simplify], {  knownVars, eqnsList } ]
-},
   With[{
-    newEquivClassesAndEqns =
-    FixedPoint[ UpdateEquivalenceClasses[s,simplify], {  mapToReps, newVarsAndEqns[[2]] } ]
-  },
-    {
-      newVarsAndEqns[[1]],
-      newEquivClassesAndEqns[[1]],
-      DeleteDuplicates @
-      Map[
-        Sort,
-        newEquivClassesAndEqns[[2]]
-      ]
-    }
-  ]
-];
+    newVarsAndEqns =
+      FixedPoint[ UpdateVariablesAndSystem[s,simplify], {  knownVars, eqnsList } ]
+    },
+    With[{
+      newEquivClassesAndEqns =
+        FixedPoint[ UpdateEquivalenceClasses[s,simplify], {  mapToReps, newVarsAndEqns[[2]] } ]
+      },
+      {
+        newVarsAndEqns[[1]],
+        newEquivClassesAndEqns[[1]],
+        DeleteDuplicates @
+        Map[
+          Sort,
+          newEquivClassesAndEqns[[2]]
+        ]
+      }
+    ]
+  ];
 
 UpdateVariablesAndSystem[ s_Symbol, simplify_ ][ { knownVars_List, {} } ] :=
-{ knownVars, {} };
+  { knownVars, {} };
 UpdateVariablesAndSystem[ s_Symbol, simplify_ ][ { knownVars_List, eqnsList_?ListOfEquationsQ } ] :=
-With[{
-  newKnownVars =
-  UpdateKnownVars[ knownVars, eqnsList, s ] //
-  simplify
-},
+  With[{
+    newKnownVars =
+    UpdateKnownVars[ knownVars, eqnsList, s ] //
+    simplify
+  },
   {
     newKnownVars,
     ReplaceAll[ eqnsList, Dispatch[newKnownVars] ] //

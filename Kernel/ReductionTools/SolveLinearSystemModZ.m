@@ -671,16 +671,29 @@ FactorListToSparseInput[ list_, i_, s_ ] :=
   
  *)
 
-PackageScope["ReduceSemiLinModZ"]
+PackageExport["ReduceSemiLinModZ"]
 
 Options[ReduceSemiLinModZ] := 
-  Options[ConsistentQ];
+  Join[
+    Options[ConsistentQ],
+    {
+      "UseDatabaseOfHermiteDecompositions" -> True,
+      "StoreHermiteDecompositions" -> False
+    }
+  ];
 
 ReduceSemiLinModZ[ mat_, rhs_, s_, opts:OptionsPattern[]  ] := 
   Module[{ uInv, upperTriang, leftHandSides, rightHandSides },
     
     { uInv, upperTriang  } =
-      HermiteDecomposition[mat];
+      Normal @ 
+      If[
+        OptionValue["UseDatabaseOfHermiteDecompositions"]
+        ,
+        AddOptions[opts][MemoizedHermiteDecomposition][ mat ]
+        ,
+        HermiteDecomposition[mat];
+      ];
 
     (* rank of system *)
     r = 
