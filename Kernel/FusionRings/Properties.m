@@ -1051,6 +1051,12 @@ UniversalGrading[ ring_ ] :=
     }
   ];
 
+PackageExport["UG"]
+
+UG::usage = 
+  "Shorthand for UniversalGrading."
+
+
 PackageExport["AllGradings"]
 
 AllGradings::usage = 
