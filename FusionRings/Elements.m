@@ -14,8 +14,6 @@ FusionProduct[ r_FusionRing, { el1_, el2_ } ] :=
     Sum[ r[[i]] tab[[ el1, el2, i ]], { i, Rank[r] } ]
   ];
 
-
-
 PackageExport["FusionElement"]
 
 FusionElement::usage =
@@ -40,28 +38,28 @@ FusionRing::eloutofbounds =
   "Particle number `1` does not belong to any particle in the ring";
 
 FusionRing /: r_FusionRing[[el_Integer]] :=
-If[ 0 < el <= Rank[r],
-  FusionElement[ r, el ],
-  Message[ FusionRing::eloutofbounds, el ]
-];
+  If[ 0 < el <= Rank[r],
+    FusionElement[ r, el ],
+    Message[ FusionRing::eloutofbounds, el ]
+  ];
 
 FusionRing /: r_FusionRing[[el_String]] :=
-With[{
-  pos = Position[ElementNames[r], el ]},
-  If[ Length[pos] == 0,
-    Message[ FusionRing::elnotfound, el ],
-    FusionElement[ r, pos[[1,1]] ]
-  ]
-];
+  With[{
+    pos = Position[ElementNames[r], el ]},
+    If[ Length[pos] == 0,
+      Message[ FusionRing::elnotfound, el ],
+      FusionElement[ r, pos[[1,1]] ]
+    ]
+  ];
 
 FusionRing /: r_FusionRing[[el_Symbol]] :=
-With[{
-  pos = Position[ElementNames[r], ToString[el] ]},
-  If[ Length[pos] == 0,
-    Message[ FusionRing::elnotfound, el ],
-    FusionElement[ r, pos[[1,1]] ]
-  ]
-];
+  With[{
+    pos = Position[ElementNames[r], ToString[el] ]},
+    If[ Length[pos] == 0,
+      Message[ FusionRing::elnotfound, el ],
+      FusionElement[ r, pos[[1,1]] ]
+    ]
+  ];
 
 (* Use CenterDot (esc . esc) notation for the fusion product between elements *)
 FusionElement /:
@@ -76,4 +74,3 @@ CenterDot[ a___, ( x_ + y_ ), c___ ] := Expand[ CenterDot[ a, x, c ] + CenterDot
 CenterDot[ x_ ] := x ;
 CenterDot[ a_Integer, b_Integer ] := a * b;
 CenterDot[ a_, b_, c__] := Expand[ CenterDot[ CenterDot[ a, b ], CenterDot[c] ] ];
-
