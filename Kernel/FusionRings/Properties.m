@@ -511,7 +511,11 @@ SubsetChoices[ multTab_ ] :=
     Join @@@
     Subsets[ DeleteDuplicates[ apPairs ] ][[2;;-2]]
   ];
+  
+PackageExport["SFR"]
 
+SFR::usage = 
+  "Shorthand for SubFusionRings";
 
 PackageExport["InjectionForm"]
 
@@ -604,6 +608,14 @@ EquivalentFusionRingsQ[ r1_FusionRing?FusionRingQ, r2_FusionRing?FusionRingQ ] :
       ]
     ]
   ];
+
+PackageExport["EFRQ"]
+
+EFRQ::usage = 
+  "Shorthand for EquivalentFusionRingsQ";
+
+EFRQ = 
+  EquivalentFusionRingsQ;
 
 PackageScope["PermutationVector"]
 
