@@ -994,40 +994,40 @@ UniversalGrading::usage =
 UniversalGrading[ ring_ ] :=
   Module[ { irreps, nIrreps, elements, grading, cond, mt },
     irreps =
-    AdjointIrreps[ ring ];
+      AdjointIrreps[ ring ];
 
     nIrreps =
-    Length @ irreps;
+      Length @ irreps;
 
     elements =
-    Range @	nIrreps;
+      Range @	nIrreps;
 
     grading =
-    Sort @
-    Flatten @
-    MapThread[
-      Thread[#2 -> #1] &,
-      { elements, irreps }
-    ];
+      Sort @
+      Flatten @
+      MapThread[
+        Thread[ #2 -> #1 ] &,
+        { elements, irreps }
+      ];
 
     cond[ l1_List, l2_List, l3_List ] :=
-    SubsetQ[
-      l3,
-      Flatten @ Table[
-        FusionOutcomes[ring][ i, j ],
-        { i, l1 }, { j, l2 }
-      ]
-    ];
+      SubsetQ[
+        l3,
+        Flatten @ Table[
+          FusionOutcomes[ring][ i, j ],
+          { i, l1 }, { j, l2 }
+        ]
+      ];
 
     mt =
-    Table[
-      If[
-        cond[ irreps[[a]], irreps[[b]], irreps[[c]] ],
-        1,
-        0
-      ],
-      { a, nIrreps }, { b, nIrreps }, { c, nIrreps }
-    ];
+      Table[
+        If[
+          cond[ irreps[[a]], irreps[[b]], irreps[[c]] ],
+          1,
+          0
+        ],
+        { a, nIrreps }, { b, nIrreps }, { c, nIrreps }
+      ];
 
     {
       grading,
@@ -1038,6 +1038,10 @@ UniversalGrading[ ring_ ] :=
     }
   ];
 
+PackageExport["AllGradings"]
+
+AllGradings::usage = 
+  "AllGradings[ r ] returns all possible gradings of the fusion ring r.";
 
 PackageExport["FusionRingCommutator"]
 
@@ -1146,7 +1150,7 @@ ModularData::usage =
   "obeys (ST\!\(\*SuperscriptBox[\()\), \(3\)]\) == \!\(\*SuperscriptBox[\(\[Lambda]S\), \(2\)]\) with \[Lambda] a " <>
   "non-zero complex number. If there are no compatible T-matrices for any S-matrix an empty list is returned.";
 
-SetAttributes[ ModularData, Listable];
+SetAttributes[ ModularData, Listable ];
 
 ModularData[ ring_FusionRing?FusionRingQ ] :=
   ring["ModularData"];
