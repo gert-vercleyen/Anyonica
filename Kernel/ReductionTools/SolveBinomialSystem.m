@@ -76,8 +76,7 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
       OptionValue["PreEqualCheck"];
     
     filteredEqns =
-      DeleteCases[True] @
-      eqnList;
+      TEL @ eqnList;
     s1 =
       Unique["x"];
     gs =

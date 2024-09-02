@@ -437,6 +437,28 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:init", { id_, constraints_, varia
    ]
  ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:allsat_solutions", { id_, soln_, ___ } ] :=
+  Module[{fn},
+    fn = dataFileName[ id, dir, "allsat_Solutions" ];
+    safeExport[ fn, soln ];
+    
+    AddCell[
+      fileName,
+      nbo,
+      Cell[
+        TextData[{
+          inputStyle[ ToString[Length[soln]] <> " " ],
+          hyperlinkBox[ "configuration(s)", fn ],
+          inputStyle[" of 0 values found using a subset of the equations with more than two terms.\n"<>
+          "Filtering out those that are compatible with the other equations..."
+          ]
+        }],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]
+    ];
+  ];
+
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:solutions", { id_, soln_, ___ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "Solutions" ];
@@ -446,7 +468,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:solutions", { id_, soln_, ___ } ]
       fileName,
       nbo,
       Cell[
-        ToString[Length[soln]]<> " configuration(s) of 0 values found.",
+        ToString[Length[soln]]<> " final configuration(s) of 0 values found.",
         "Text",
         CellTags -> { id, "Info" }
       ]
@@ -1618,25 +1640,6 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:fixing_gauge", { id_, ___ } ] :=
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:init", { id_, ring_, optionList_ } ] :=
-  Module[ { fn1 },
-    fn1 = dataFileName[ id, dir, "Ring" ];
-    safeExport[ fn1, ring ];
-
-    AddCell[
-      fileName,
-      nbo,
-      startCell[
-        id,
-        dir,
-        "PrepareHexagonSolverInput",
-        { "Ring" },
-        optionList,
-        fn1
-      ]
-    ];
-  ];
-
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:fixed_fs", { id_, fixedFs_, ___ } ] :=
   Module[{fn},
     fn = dataFileName[ id, dir, "FixedFs" ];
@@ -1656,6 +1659,19 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:fixed_fs", { id_, fixedFs_, ___ 
       ]
     ];
   ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:reducing_bin_eqns", { id_, ___ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      "Started reducing binomial equations that don't contain F-symbols that are possibly zero.",
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PPSI:fixing_extra_gauges", { id_, ___ } ] :=
   AddCell[
@@ -1701,6 +1717,25 @@ AddCell[
     CellTags -> { id, "info" }
   ]
 ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:init", { id_, ring_, optionList_ } ] :=
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "Ring" ];
+    safeExport[ fn1, ring ];
+
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "PrepareHexagonSolverInput",
+        { "Ring" },
+        optionList,
+        fn1
+      ]
+    ];
+  ];
 
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PHSI:knowns", { id_, knowns_, ___ } ] :=
   Module[{fn},
@@ -1926,6 +1961,57 @@ MyNotebookPrint[ dir_, fileName_, nbo_][ "RBL:reduction", { id_, denom_, s_ } ] 
   ];
 
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:init", { id_, equations_, vars_, optionList_ } ] :=
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "RBSArguments" ];
+    safeExport[ fn1, { equations, vars, optionList } ];
+
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "ReduceBinomialSystem",
+        { "Equations", "Variables" },
+        optionList,
+        fn1
+      ]
+    ];
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, n_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Reducing system via HermiteDecomposition on subsystems with at most " <> 
+          ToString[n] <> " equations.\nThis procedure will be applied at most 5 times." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, equations_ } ] :=
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "smallerSystem" ];
+    safeExport[ fn1, equations ];
+
+    AddCell[
+      fileName,
+      nbo,
+      TextData[{
+        inputStyle[ "A reduced " ],
+        hyperlinkBox[ "system", fn1 ],
+        inputStyle[ " of "<> ToString[Length@equations]<> " equations was obtained after "<> ToString[time] <> " seconds."]
+      }]
+    ];
+  ];
 
 (*MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:systems", { id_, solverInput_, ___ } ] :=*)
 (*  Module[{fn},*)

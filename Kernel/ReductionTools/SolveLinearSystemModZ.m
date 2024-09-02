@@ -461,7 +461,7 @@ BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
 
 PackageScope["ConstMonSplit"]
 
-ConstMonSplit[ x_NumericQ, _ ] :=
+ConstMonSplit[ x_?NumericQ, _ ] :=
   { x, 1 };
 
 ConstMonSplit[ mon_, x_ ] :=
@@ -671,4 +671,49 @@ FactorListToSparseInput[ list_, i_, s_ ] :=
   
  *)
 
+PackageExport["ReduceSemiLinModZ"]
 
+Options[ReduceSemiLinModZ] := 
+  Join[
+    Options[ConsistentQ],
+    {
+      "UseDatabaseOfHermiteDecompositions" -> True,
+      "StoreHermiteDecompositions" -> False
+    }
+  ];
+
+ReduceSemiLinModZ[ mat_, rhs_, s_, opts:OptionsPattern[]  ] := 
+  Module[{ uInv, upperTriang, leftHandSides, rightHandSides },
+    
+    { uInv, upperTriang  } =
+      Normal @ 
+      If[
+        OptionValue["UseDatabaseOfHermiteDecompositions"]
+        ,
+        AddOptions[opts][MemoizedHermiteDecomposition][ mat ]
+        ,
+        HermiteDecomposition[mat];
+      ];
+
+    (* rank of system *)
+    r = 
+      Length[ upperTriang ] - Count[ upperTriang, { 0 .. } ];
+    
+    expRHS =
+      PowerDot[ rhs, uInv ];
+
+    (* New right hand side of system should be trivial for trivial LHS *)
+    consistent =
+      AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
+      
+    If[ !consistent, Return @ { False } ];
+
+    rightHandSides = 
+      expRHS[[;;r]];
+
+    leftHandSides = 
+      PowerDot[ Array[ s, Last @ Dimensions[mat] ], upperTriang[[;;r]] ];
+
+    Thread[ leftHandSides == rightHandSides ]
+
+  ]

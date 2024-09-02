@@ -1,20 +1,18 @@
 PacletObject[<|
   "Name" -> "Anyonica"
   ,
-  "Version" -> "0.9.12.0"
-  ,
-  "Root" -> "."
+  "Version" -> "0.9.13.0"
   ,
   "Extensions" ->
     {
       {
         "Kernel"
         ,
-        "Root" -> "."
+        "Root" -> "Kernel"
         ,
-        "Context" -> { "Anyonica`" }
+        "Context" -> "Anyonica`"
       }
       ,
-      { "Documentation", Language -> "English" }
+      { "Documentation", Language -> "English", "MainPage" -> "Guides/Anyonica" }
     }
 |>]

@@ -144,11 +144,11 @@ Options[ToStandardPolynomial] =
   { "SimplifyBy" -> Identity };
 
 ToStandardPolynomial[ pol_, opts:OptionsPattern[] ] :=
-  With[{ pol =  OptionValue["SimplifyBy"] @ RemoveFractions @ pol },
+  With[{ poly =  OptionValue["SimplifyBy"] @ RemoveFractions @ pol },
     If[
-      pol === 0,
+      poly === 0,
       0,
-      Cancel[ pol/CoefficientRules[ pol ][[-1,2]] ]
+      Cancel[ poly/CoefficientRules[ poly ][[-1,2]] ]
     ]
   ];
 
@@ -1072,7 +1072,11 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
 PackageScope["PowerDot"]
 
 PowerDot[ a_, b_ ] :=
-  Inner[ Power, a, Transpose @ b, Times ];
+  If[ 
+    MatchQ[ a, { 1 .. } ],
+    ConstantArray[1,Length[b]],
+    Inner[ Power, a, Transpose @ b, Times ]
+  ];
 
 PackageScope["ConsistentQ"]
 
@@ -1170,3 +1174,31 @@ Module[{ fc },
 	fc = FirstCase[ values, x_/; InfN[ x-n==0, OptionValue["Accuracy"] ] ];
 	If[ MissingQ[fc], n,fc ]
 ]
+
+PackageExport["EchoIn"]
+
+EchoIn::usage = 
+  "EchoIn[ n, label, function ][ code ] aplies EchoFunction[ label, function ] to"<> 
+  " code, about once every n times it is called.\n"<> 
+  "EchoIn[ n, label ][ code ] equals EchoIn[ n, label, Identity ][ code ]";
+
+PackageScope["$EchoCounter"]
+
+$EchoCounter = CreateDataStructure["Counter", 0];
+
+SetAttributes[EchoIn, HoldAllComplete];
+
+EchoIn[ n_Integer, label_, function_][ code_ ] :=
+  (
+   $EchoCounter["Increment"];
+   If[ 
+    Mod[$EchoCounter["Get"], n] == 0
+    ,
+    EchoFunction[label, function][code]
+    ,
+    code
+    ]
+   );
+
+EchoIn[ n_Integer, label_ ][code_] := 
+  EchoIn[ n, label, Identity, code ];

@@ -64,62 +64,62 @@ Options[ PentagonTower ] :=
 PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   Module[{ a,b,c,d,e,p,q,r,s,n, matches, eqn, dim, patt, pentEqns, lFInd, sF, dimF, trivVacQ, knowns},
     trivVacQ =
-    OptionValue["TrivialVacuumSymbols"];
+      OptionValue["TrivialVacuumSymbols"];
     knowns =
-    OptionValue["Knowns"];
+      OptionValue["Knowns"];
     dimF =
-    DimF @ FMatrices[ring];
+      DimF @ FMatrices[ring];
     n =
-    Rank[ring];
+      Rank[ring];
     lFInd =
-    List @@@ FSymbols[ring];
+      List @@@ FSymbols[ring];
 
     sF =
-    SparseArray @
-    ReplaceAll[
+      SparseArray @
       ReplaceAll[
-        Normal[SparseFTensor[ring]],
-        knowns
-      ],
-      If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
-    ];
+        ReplaceAll[
+          Normal[SparseFTensor[ring]],
+          knowns
+        ],
+        If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
+      ];
 
     pentEqns =
-    Reap[
-      (* Collect equations of the form Non0LHS == RHS *)
-      Do[
-        { p, c, d, e, q, r } = label;
-        matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
+      Reap[
+        (* Collect equations of the form Non0LHS == RHS *)
         Do[
-          { a, b, s } = label2[[ { 1, 2, 6 } ]];
+          { p, c, d, e, q, r } = label;
+          matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
+          Do[
+            { a, b, s } = label2[[ { 1, 2, 6 } ]];
 
-          eqn =
-          (
-            sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
-            Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
-          );
+            eqn =
+            (
+              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
+              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
+            );
 
-          If[ (* Equation is not trivial *)
-            !TrueQ[eqn],
-            (* THEN Set dim equal to max size of F-matrix *)
-            dim =
-            Max[
-              dimF /@
-              GetVariables[ eqn, F ]
-            ];
-            If[
-              eqn[[2,0]] === Plus,
-              Sow[ eqn, patt[2][dim]],
-              Sow[ eqn, patt[1][dim]]
-            ]
+            If[ (* Equation is not trivial *)
+              !TrueQ[eqn],
+              (* THEN Set dim equal to max size of F-matrix *)
+              dim =
+              Max[
+                dimF /@
+                GetVariables[ eqn, F ]
+              ];
+              If[
+                eqn[[2,0]] === Plus,
+                Sow[ eqn, patt[2][dim]],
+                Sow[ eqn, patt[1][dim]]
+              ]
+            ],
+            { label2, matches }
           ],
-          { label2, matches }
+          { label, lFInd }
         ],
-        { label, lFInd }
-      ],
-      Flatten @
-      Table[ patt[i][j], {i,2}, {j,n} ]
-    ][[2]];
+        Flatten @
+        Table[ patt[i][j], {i,2}, {j,n} ]
+      ][[2]];
 
     <|
       "Bin" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i]], {i,n} ],
@@ -610,7 +610,8 @@ Union[
     "InjectSolution" -> {},
     "FindZerosUsingSums" -> False
   },
-  Options[FindZeroValues]
+  Options[FindZeroValues],
+  Options[ReduceBinomialSystem]
 ];
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
@@ -619,7 +620,8 @@ Module[
     binEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
     unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
     g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
-    subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ
+    subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ, newBinEqns, newSumEqns,
+    neverZeroBinEqns
   },
   gaugeDemands =
     OptionValue["GaugeDemands"];
@@ -665,11 +667,11 @@ Module[
 
       (* Rename all labels of sSol so they correspond to the labels of the sub-fusion-ring of ring *)
       compatibleSol =
-      MapAt[
-        ReplaceAll[ i_Integer  :> inject[i] ],
-        sSol,
-        { All, 1 }
-      ],
+        MapAt[
+          ReplaceAll[ i_Integer  :> inject[i] ],
+          sSol,
+          { All, 1 }
+        ],
 
       (* ELSE *)
       compatibleSol =
@@ -722,10 +724,10 @@ Module[
 
     (* Remove trivial and known F-matrices from list of invertible matrices *)
     invMats =
-    With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
-      invMats //
-      DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern  ]
-    ];
+      With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
+        invMats //
+        DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern  ]
+      ];
 
     printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
 
@@ -733,51 +735,51 @@ Module[
 
     (* Find Configurations of non-trivial 0-values *)
     zeros =
-    Dispatch @
-    Which[
-      OptionValue["NonSingular"]
-      ,
-      {{}}
-      ,
-      OptionValue["ZeroValues"] =!= None
-      ,
-      OptionValue["ZeroValues"]
-      ,
-      GroupQ[ring]
-      ,
-      {{}}
-      ,
-      OptionValue["UseDatabaseOfZeroValues"]
-      ,
-      AddOptions[opts][MemoizedZeroValues][
-        MT[ring],
-        Which[
-          useSumsQ && OptionValue["SumSubsetParameter"] === 1
-          , (* use all sum eqns so no check needed *)
-          { pentEqns , {} }
-          , (* don't use all sum eqns so need to check for consistency *)
-          useSumsQ
-          ,
-          { pentEqns, sumEqns }
-          ,
-          True
-          ,
-          { binEqns, sumEqns  }
-        ],
-        fSymbols,
-        "InvertibleMatrices" -> invMats,
-        "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
-      ]
-      ,
-      True
-      ,
-      AddOptions[opts][FindZeroValues][
-        If[ useSumsQ, pentEqns, binEqns ],
-        fSymbols,
-        "InvertibleMatrices" -> invMats,
-        "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
-      ]
-    ];
+      Dispatch @
+      Which[
+        OptionValue["NonSingular"]
+        ,
+        {{}}
+        ,
+        OptionValue["ZeroValues"] =!= None
+        ,
+        OptionValue["ZeroValues"]
+        ,
+        GroupQ[ring]
+        ,
+        {{}}
+        ,
+        OptionValue["UseDatabaseOfZeroValues"]
+        ,
+        AddOptions[opts][MemoizedZeroValues][
+          MT[ring],
+          Which[
+            useSumsQ && OptionValue["SumSubsetParameter"] === 1
+            , (* use all sum eqns so no check needed *)
+            { pentEqns , {} }
+            , (* don't use all sum eqns so need to check for consistency *)
+            useSumsQ
+            ,
+            { pentEqns, sumEqns }
+            ,
+            True
+            ,
+            { binEqns, sumEqns  }
+          ],
+          fSymbols,
+          "InvertibleMatrices" -> invMats,
+          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
+        ]
+        ,
+        True
+        ,
+        AddOptions[opts][FindZeroValues][
+          If[ useSumsQ, pentEqns, binEqns ],
+          fSymbols,
+          "InvertibleMatrices" -> invMats,
+          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
+        ]
+      ];
 
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 
@@ -802,11 +804,11 @@ Module[
 
     (* Fix the gauge for all the F symbols that can never be 0 *)
     { remainingSym, extraFixedFs } =
-    BreakMultiplicativeSymmetry[
-      gaugeSymmetries,
-      "GaugeDemands" -> gaugeDemands,
-      "ExcludedVariables" -> unionZeros
-    ];
+      BreakMultiplicativeSymmetry[
+        gaugeSymmetries,
+        "GaugeDemands" -> gaugeDemands,
+        "ExcludedVariables" -> unionZeros
+      ];
 
     (* Remove the newly fixed F-symbols from the list of variables *)
     fSymbols =
@@ -816,18 +818,60 @@ Module[
        and remove trivial 1D F-matrices. *)
 
     invMats =
-      invMats/.extraFixedFs //
-      DeleteCases[ {{n_?NumericQ}} /; n != 0 ];
+      WithMinimumDimension[ invMats/.extraFixedFs, 2 ];
 
     (* Substitute the values of the newly fixed F-symbols in the equations,
        remove trivial equations and delete duplicate equations *)
 
     pentEqns =
-      pentEqns/.extraFixedFs //
-      DeleteCases[True] //
-      DeleteDuplicates;
+      TEL[ pentEqns/.extraFixedFs ];
+
+    { newBinEqns, newSumEqns } =
+      BinomialSplit[ pentEqns ]; 
+
+    Remove[binEqns,sumEqns];
 
     printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
+
+
+    (* Set up a common set of binomial equations that don't contain F-symbols that could
+       be zero *)
+
+    printlog[ "PPSI:reducing_bin_eqns", { procID } ];
+
+    neverZeroBinEqns = 
+      With[{ 
+        varsLists = 
+          Join @@@
+          Map[ 
+            GetVariables[ #, F ]&,
+            List @@@ newBinEqns, 
+            {2}
+          ]
+        },
+      
+        pentEqns[[
+          DeleteCases[ (* delete indices of equations that contain a possible zero F-symbol *)
+            Range @ Length @ varsLists, 
+            i_/; IntersectingQ[ varsLists[[i]], unionZeros ]
+          ]
+        ]]
+      ];
+
+    (* Reduce this system of binomial equations and add it to the non-binomial equations *)
+    
+    pentEqns = 
+      Join[
+        AddOptions[opts][ReduceBinomialSystem][ 
+          neverZeroBinEqns, 
+          Complement[ fSymbols, unionZeros ] 
+        ]
+        ,
+        newSumEqns
+      ];
+
+    Remove[newBinEqns,newSumEqns,neverZeroBinEqns];
+
 
     (* Try to fix extra gauges, if possible, for each of the 0-configurations.
       Also substitute 0 values, and update equations, variables, and matrices *)
@@ -843,11 +887,11 @@ Module[
       Reap[
         Do[
           dz =
-          Dispatch[z];
+            Dispatch[z];
 
           Sow[
             <|
-              "Equations"  -> ( pentEqns/.dz // DeleteCases[True] // DeleteDuplicates ),
+              "Equations"  -> TEL[ pentEqns/.dz // TEL ],
               "Variables"  -> Complement[ fSymbols, z[[;;,1]]  ],
               "Symmetries"   -> AddZerosToSymmetries[ remainingSym, dz ],
               "InvertibleMatrices"  -> ( invMats/.dz ),
@@ -870,13 +914,13 @@ Module[
           Dispatch[z];
 
           { specificSym, specificFixedFs } =
-          BreakMultiplicativeSymmetry[
-            AddZerosToSymmetries[ remainingSym, z ]
-          ];
+            BreakMultiplicativeSymmetry[
+              AddZerosToSymmetries[ remainingSym, z ]
+            ];
 
           Sow[
             <|
-              "Equations" -> (pentEqns/.dz/.specificFixedFs // DeleteCases[True] // DeleteDuplicates),
+              "Equations" -> TEL[ pentEqns/.dz/.specificFixedFs ],
               "Variables" -> Complement[ fSymbols, specificFixedFs[[;;,1]], z[[;;,1]] ],
               "Symmetries" -> specificSym,
               "InvertibleMatrices" -> (invMats/.dz/.specificFixedFs // DeleteCases[ {{n_?NumericQ}} /; n != 0 ]),
@@ -995,16 +1039,17 @@ PentagonGroebnerSystems::usage =
 (*Options include all options for solving the pentagon equations and all options for finding groebner bases.";*)
 
 Options[PentagonGroebnerSystems] :=
-Union[
-  {
-    "ReduceRoots" -> False,
-    "ReducePowerSums" -> False,
-    "SimplifyIntermediateResultsBy" -> Identity
-  },
-  Options[PreparePentagonSolverInput],
-  Options[ReduceByLinearity],
-  Options[IncrementalGroebnerBasis]
-];
+  Union[
+    {
+      "ReduceRoots" -> False,
+      "ReducePowerSums" -> False,
+      "SimplifyIntermediateResultsBy" -> Identity
+    },
+    Options[PreparePentagonSolverInput],
+    Options[ReduceByBinomials],
+    Options[ReduceByLinearity],
+    Options[IncrementalGroebnerBasis]
+  ];
 
 PentagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[] ] :=
 Which[
@@ -1062,6 +1107,10 @@ Module[{
     solverInput =
       AddOptions[opts][PreparePentagonSolverInput] @ ring;
 
+
+    (* TODO: This is very inefficient: we should reduce the system of binomial equations 
+       first for all equations that never contain a 0 F-symbol. Otherwise we're reducing that same set
+       again for each set of zero values. *)
     sumSystems =
       DeleteCases[ { _, {} } ] @
       Table[
@@ -1398,7 +1447,7 @@ SolvePentagonEquations::substitutesolutionwrongformat =
 "isomorphic to a subring of `1` and solution is a solution to the pentagon equations for ring.";
 
 Options[SolvePentagonEquations] :=
-Options[PentagonGroebnerSystems];
+  Options[PentagonGroebnerSystems];
 
 SolvePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 Which[
