@@ -345,23 +345,24 @@ FusionRing /: NSDNSD[ r_FusionRing?FusionRingQ ] :=
   NSelfDualNonSelfDual[ r ];
 
 
-PackageExport["GroupQ"]
+PackageExport["GroupRingQ"]
 
-GroupQ::usage =
-  "GroupQ[ring] returns True if the multiplication table comes from a finite group.";
+GroupRingQ::usage =
+  "GroupRingQ[ring] returns True if the multiplication table comes from a finite group.\n 
+  GroupRingQ[category] returns True if the Grothendieck ring of the fusion category is a group ring.";
 
-SetAttributes[ GroupQ, Listable ];
+SetAttributes[ GroupRingQ, Listable ];
 
-FusionRing /: GroupQ[ r_FusionRing?FusionRingQ ] :=
+FusionRing /: GroupRingQ[ r_FusionRing?FusionRingQ ] :=
   Total[ Flatten[ MultiplicationTable[ r ] ] ] == Rank[ r ]^2;
 
-PackageExport["GQ"]
+PackageExport["GRQ"]
 
-GQ::usage =
-  "Shorthand for GroupQ.";
+GRQ::usage =
+  "Shorthand for GroupRingQ.";
 
-FusionRing /: GQ[ r_FusionRing?FusionRingQ ] :=
-  GroupQ[r];
+FusionRing /: GRQ[ r_FusionRing?FusionRingQ ] :=
+  GroupRingQ[r];
 
 PackageExport["ConjugateCharge"]
 

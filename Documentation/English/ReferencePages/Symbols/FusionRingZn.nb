@@ -107,9 +107,9 @@ Cell[TextData[{
   ButtonData->"paclet:Anyonica/ref/EquivalentFusionRingsQ"],
  "\[NonBreakingSpace]",
  StyleBox["\[FilledVerySmallSquare] ", "InlineSeparator"],
- ButtonBox["GroupQ",
+ ButtonBox["GroupRingQ",
   BaseStyle->"Link",
-  ButtonData->"paclet:Anyonica/ref/GroupQ"],
+  ButtonData->"paclet:Anyonica/ref/GroupRingQ"],
  "\[NonBreakingSpace]"
 }], "SeeAlso",
  CellChangeTimes->{{3.891673539191453*^9, 3.891673544773602*^9}, {
