@@ -131,6 +131,9 @@ WP =
 (* SORTING ELEMENTS OF RINGS *)
 PackageExport["SortedRing"]
 
+SortedRing::usage = 
+  "SortedRing[ring] returns a fusion ring with its elements sorted."
+
 SetAttributes[ SortedRing, Listable ];
 
 Options[SortedRing] =
