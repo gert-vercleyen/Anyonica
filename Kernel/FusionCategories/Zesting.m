@@ -11,7 +11,7 @@ BackTrack2Cocycles[
 	w_
 	] :=
 (
-	If[ !GroupQ[G] || ! GroupQ[A], Print["Rings should be group rings"]; Abort[] ];
+	If[ !GroupRingQ[G] || ! GroupRingQ[A], Print["Rings should be group rings"]; Abort[] ];
 	Module[{GNRules, ANRules, GProd, RProd, GElements, RElements,
 		cocycleEquations, leftAct, CompleteCocycle, newRule, trivialRules, unknowns
 		},
