@@ -39,17 +39,18 @@ FusionCategory::invaliddata =
 
 Options[ FusionCategory ] =
   {
-    "FusionRing"        -> Missing[],
-    "FSymbols"          -> Missing[],
-    "RSymbols"          -> Missing[],
-    "FormalParameters"  -> Missing[],
-    "Unitary"           -> Missing[],
-    "PivotalStructure"  -> Missing[],
-    "Twists"            -> Missing[],
-    "SMatrix"           -> Missing[],
-    "Modular"           -> Missing[],
-    "PreEqualCheck"     -> Identity,
-    "SkipCheck"         -> False
+    "FusionRing"              -> Missing[],
+    "FSymbols"                -> Missing[],
+    "RSymbols"                -> Missing[],
+    "FormalParameters"        -> Missing[],
+    "Unitary"                 -> Missing[],
+    "PivotalStructure"        -> Missing[],
+    "Twists"                  -> Missing[],
+    "SMatrix"                 -> Missing[],
+    "Modular"                 -> Missing[],
+    "PreEqualCheck"           -> Identity,
+    "ReplaceRingByKnownRing"  -> False,
+    "SkipCheck"               -> False
   };
 
 FusionCategory[ ops:OptionsPattern[] ] :=
@@ -85,8 +86,13 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       Message[ FusionCategory::invaliddata ]
     ];
 
+    If[ 
+      OptionValue["ReplaceRingByKnownRing"], 
+      ring = Hold[FRBC][ FC @ ReplaceByKnownRing @ ring ]
+    ];
+
     Association[
-      "FusionRing"                -> If[ !MissingQ[ FC @ ring ], Hold[FRBC][ FC @ ring ], ring ],
+      "FusionRing"                -> ring,
       "FSymbols"                  -> fSymbols,
       "RSymbols"                  -> rSymbols,
       "PivotalStructure"          -> pivStruct,
@@ -243,7 +249,6 @@ FusionCategory /: UnitaryQ[ FusionCategory[data_] ] :=
   data["Unitary"];
 
 
-
 (* Import the FusionRingList *)
 currentDirectory =
 	Directory[];
@@ -251,7 +256,7 @@ currentDirectory =
 importDirectory =
 	Quiet[
 		Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
-		SetDirectory @ NotebookDirectory[]],SetDirectory::fstr   (* If using notebook interface *)
+		SetDirectory @ NotebookDirectory[]], SetDirectory::fstr   (* If using notebook interface *)
 	];
 
 
