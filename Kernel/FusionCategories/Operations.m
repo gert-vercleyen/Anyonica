@@ -86,7 +86,7 @@ PermutedFusionCategory::usage =
   "PermutedFusionCategory[cat,perm] returns a fusion category whose objects are permuted by"<>
   "the permutation vector perm";
 
-(*TODO: include pivotal structure, twists, S matrix, ... *)
+(*TODO: include dims ... *)
 PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
   Module[ { pVec, permuteSymbols, permutedRing, sMat },
     pVec =
