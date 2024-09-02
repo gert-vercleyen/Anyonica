@@ -473,10 +473,10 @@ TetrahedralEquivalenceClasses[ r_FusionRing ] :=
     DeleteCases[ ToEquivClass /@ FSymbols[r], l_ /; Length[l] == 1 || MatchQ[ l, {1 ..}] ]
   ];
 
-  ClassToRules[ {} ] = 
-    {};
-  ClassToRules[ l_List ] := 
-    Thread[ Rest[l] -> First[l]];
+ClassToRules[ {} ] = 
+  {};
+ClassToRules[ l_List ] := 
+  Thread[ Rest[l] -> First[l]];
 
 
 
@@ -499,6 +499,7 @@ Module[{ d, groupQ },
 
   Thread[ Cases[ FSymbols @ ring, F[ a_, _, c_, __ ] /; groupQ[a] || groupQ[c] ] -> 1 ]
 ];
+
 PackageExport["\[ScriptCapitalR]"]
 
 Unprotect[ \[ScriptCapitalR] ];
