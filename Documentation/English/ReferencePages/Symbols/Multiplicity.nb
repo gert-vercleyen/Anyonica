@@ -135,7 +135,7 @@ Cell[TextData[{
   CellTags->"7835a8da-9ac8-466a-9282-10e33ef44f29",ExpressionUUID->
   "f17ab21b-6fa9-4335-9926-7e2527c1356c"],
  StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
- Cell[BoxData["GroupQ"], "InlineSeeAlsoFunction",
+ Cell[BoxData["GroupRingQ"], "InlineSeeAlsoFunction",
   TaggingRules->{"PageType" -> "Function"},
   CellTags->"861d0bd5-59d5-4ec6-8c18-ab8d119f826b",ExpressionUUID->
   "e447441b-0954-4c03-af87-bc8bb32bedca"],

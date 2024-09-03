@@ -345,23 +345,24 @@ FusionRing /: NSDNSD[ r_FusionRing?FusionRingQ ] :=
   NSelfDualNonSelfDual[ r ];
 
 
-PackageExport["GroupQ"]
+PackageExport["GroupRingQ"]
 
-GroupQ::usage =
-  "GroupQ[ring] returns True if the multiplication table comes from a finite group.";
+GroupRingQ::usage =
+  "GroupRingQ[ring] returns True if the multiplication table comes from a finite group.\n 
+  GroupRingQ[category] returns True if the Grothendieck ring of the fusion category is a group ring.";
 
-SetAttributes[ GroupQ, Listable ];
+SetAttributes[ GroupRingQ, Listable ];
 
-FusionRing /: GroupQ[ r_FusionRing?FusionRingQ ] :=
+FusionRing /: GroupRingQ[ r_FusionRing?FusionRingQ ] :=
   Total[ Flatten[ MultiplicationTable[ r ] ] ] == Rank[ r ]^2;
 
-PackageExport["GQ"]
+PackageExport["GRQ"]
 
-GQ::usage =
-  "Shorthand for GroupQ.";
+GRQ::usage =
+  "Shorthand for GroupRingQ.";
 
-FusionRing /: GQ[ r_FusionRing?FusionRingQ ] :=
-  GroupQ[r];
+FusionRing /: GRQ[ r_FusionRing?FusionRingQ ] :=
+  GroupRingQ[r];
 
 PackageExport["ConjugateCharge"]
 
@@ -510,7 +511,11 @@ SubsetChoices[ multTab_ ] :=
     Join @@@
     Subsets[ DeleteDuplicates[ apPairs ] ][[2;;-2]]
   ];
+  
+PackageExport["SFR"]
 
+SFR::usage = 
+  "Shorthand for SubFusionRings";
 
 PackageExport["InjectionForm"]
 
@@ -603,6 +608,14 @@ EquivalentFusionRingsQ[ r1_FusionRing?FusionRingQ, r2_FusionRing?FusionRingQ ] :
       ]
     ]
   ];
+
+PackageExport["EFRQ"]
+
+EFRQ::usage = 
+  "Shorthand for EquivalentFusionRingsQ";
+
+EFRQ = 
+  EquivalentFusionRingsQ;
 
 PackageScope["PermutationVector"]
 
@@ -994,40 +1007,40 @@ UniversalGrading::usage =
 UniversalGrading[ ring_ ] :=
   Module[ { irreps, nIrreps, elements, grading, cond, mt },
     irreps =
-    AdjointIrreps[ ring ];
+      AdjointIrreps[ ring ];
 
     nIrreps =
-    Length @ irreps;
+      Length @ irreps;
 
     elements =
-    Range @	nIrreps;
+      Range @	nIrreps;
 
     grading =
-    Sort @
-    Flatten @
-    MapThread[
-      Thread[#2 -> #1] &,
-      { elements, irreps }
-    ];
+      Sort @
+      Flatten @
+      MapThread[
+        Thread[ #2 -> #1 ] &,
+        { elements, irreps }
+      ];
 
     cond[ l1_List, l2_List, l3_List ] :=
-    SubsetQ[
-      l3,
-      Flatten @ Table[
-        FusionOutcomes[ring][ i, j ],
-        { i, l1 }, { j, l2 }
-      ]
-    ];
+      SubsetQ[
+        l3,
+        Flatten @ Table[
+          FusionOutcomes[ring][ i, j ],
+          { i, l1 }, { j, l2 }
+        ]
+      ];
 
     mt =
-    Table[
-      If[
-        cond[ irreps[[a]], irreps[[b]], irreps[[c]] ],
-        1,
-        0
-      ],
-      { a, nIrreps }, { b, nIrreps }, { c, nIrreps }
-    ];
+      Table[
+        If[
+          cond[ irreps[[a]], irreps[[b]], irreps[[c]] ],
+          1,
+          0
+        ],
+        { a, nIrreps }, { b, nIrreps }, { c, nIrreps }
+      ];
 
     {
       grading,
@@ -1038,6 +1051,16 @@ UniversalGrading[ ring_ ] :=
     }
   ];
 
+PackageExport["UG"]
+
+UG::usage = 
+  "Shorthand for UniversalGrading."
+
+
+PackageExport["AllGradings"]
+
+AllGradings::usage = 
+  "AllGradings[ r ] returns all possible gradings of the fusion ring r.";
 
 PackageExport["FusionRingCommutator"]
 
@@ -1146,7 +1169,7 @@ ModularData::usage =
   "obeys (ST\!\(\*SuperscriptBox[\()\), \(3\)]\) == \!\(\*SuperscriptBox[\(\[Lambda]S\), \(2\)]\) with \[Lambda] a " <>
   "non-zero complex number. If there are no compatible T-matrices for any S-matrix an empty list is returned.";
 
-SetAttributes[ ModularData, Listable];
+SetAttributes[ ModularData, Listable ];
 
 ModularData[ ring_FusionRing?FusionRingQ ] :=
   ring["ModularData"];

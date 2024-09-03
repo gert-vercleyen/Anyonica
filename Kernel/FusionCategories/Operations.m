@@ -86,22 +86,34 @@ PermutedFusionCategory::usage =
   "PermutedFusionCategory[cat,perm] returns a fusion category whose objects are permuted by"<>
   "the permutation vector perm";
 
-(*TODO: include pivotal structure, twists, S matrix, ... *)
+(*TODO: include dims ... *)
 PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
-  Module[ { pVec, permuteSymbols, permutedRing },
+  Module[ { pVec, permuteSymbols, permutedRing, sMat },
     pVec =
       Permute[ Range @ Length @ perm, PermutationCycles @ perm ];
 
     permuteSymbols =
       Sort @ MapAt[ ReplaceAll[ i_Integer :> pVec[[i]] ] , #, { All, 1 } ]&;
 
-    permutedRing =
+    permutedRing = 
       PermutedRing[ FusionRing @ cat, perm ];
 
+    sMat = 
+      If[ ModularQ @ cat, SMatrix[cat][[ perm, perm ]], SMatrix @ cat ];
+    
+    twists = 
+      If[ BraidedQ[cat] && SphericalQ[cat], permuteSymbols @ Twists @ cat, Twists @ cat ];   
+
     AddOptions[ Normal @ data ][FusionCategory][
-      "FusionRing" -> permutedRing,
-      "FSymbols"   -> permuteSymbols @ FSymbols @ cat,
-      "RSymbols"   -> If[ BraidedQ[cat], permuteSymbols @ RSymbols @ cat, RSymbols[cat] ],
-      "SkipCheck"  -> True
+      "FusionRing"        -> permutedRing,
+      "FSymbols"          -> permuteSymbols @ FSymbols @ cat,
+      "RSymbols"          -> If[ BraidedQ[cat], permuteSymbols @ RSymbols @ cat, RSymbols[cat] ],
+      "PivotalStructure"  -> permuteSymbols @ PivotalStructure @ cat,
+      "Twists"            -> twists,
+      "SMatrix"           -> sMat,
+      "FormalParameters"  -> FormalCode @ cat,
+      "Unitary"           -> UnitaryQ @ cat,
+      "Modular"           -> ModularQ @ cat,
+      "SkipCheck"         -> True
     ]
   ];

@@ -2125,13 +2125,13 @@ Cell[BoxData[
                  Evaluator->Automatic]},
                {
                 ButtonBox[
-                 StyleBox["GroupQ", "InformationGridButton"],
+                 StyleBox["GroupRingQ", "InformationGridButton"],
                  Appearance->None,
                  BaseStyle->"InformationGridLink",
                  
                  ButtonData:>{
                   "Info-060fda4b-47a0-413e-acfb-3401f505ec6d", {
-                   "GroupQ", "Anyonica`"}, False},
+                   "GroupRingQ", "Anyonica`"}, False},
                  ButtonNote->"Anyonica`",
                  Evaluator->Automatic], 
                 ButtonBox[
@@ -6388,7 +6388,7 @@ Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"GroupQ", "[", " ", "r", " ", "]"}], " ", 
+  RowBox[{"GroupRingQ", "[", " ", "r", " ", "]"}], " ", 
   RowBox[{"(*", " ", 
    RowBox[{"Or", " ", 
     RowBox[{"GQ", "[", " ", "r", " ", "]"}]}], " ", "*)"}]}]], "Code",

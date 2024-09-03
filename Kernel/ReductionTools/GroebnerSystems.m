@@ -20,7 +20,7 @@ ParallelGroebnerBasis[ pols_, vars_, opts:OptionsPattern[] ] :=
 Module[ { Groebner, varsLists, basis },
   Quiet[
     LaunchKernels[];
-    
+
     varsLists =
     If[
       (* More orders than kernels *)
@@ -32,22 +32,22 @@ Module[ { Groebner, varsLists, basis },
       (* ELSE: all permutations *)
       Permutations[ vars ]
     ];
-    
+
     Groebner[ variables_ ] :=
     GroebnerBasis[ pols, variables, opts ];
-    
+
     DistributeDefinitions[Groebner];
-    
+
     basis =
     ParallelTry[
       Groebner, varsLists
     ];
-    
+
     CloseKernels[]
     ,
     { LaunchKernels::nodef }
   ];
-  
+
   basis
 ];
 
@@ -82,12 +82,12 @@ IncrementalGroebnerBasis[ pols_, vars_, opts : OptionsPattern[] ] :=
 Module[
   { cutoff, weight, ReduceSystem, Slice, RecursiveGroebner, parallelQ, Groebner,simplify },
   cutoff  =
-  OptionValue["Cutoff"];
+    OptionValue["Cutoff"];
   weight =
-  OptionValue["GroebnerWeightFunction"];
+    OptionValue["GroebnerWeightFunction"];
   parallelQ =
-  OptionValue["Parallel"];
-  
+    OptionValue["Parallel"];
+
   simplify =
   Composition[
     OptionValue["SimplifyIntermediateResultsBy"],
@@ -102,29 +102,29 @@ Module[
       Identity
     ]
   ];
-  
+
   Slice[ sys_, gb_ ] :=
   Join[
     gb,
     sys[[ ;; Ceiling[ Length[sys] * cutoff ] ]]
   ];
-  
+
   Groebner =
   If[
     parallelQ,
     ParallelGroebnerBasis,
     GroebnerBasis
   ];
-  
+
   ReduceSystem[ sys_, gb_ ] :=
-  SortBy[ #, Function[ pol, weight[ pol, vars ] ] ] & @
-  DeleteDuplicates @
-  DeleteCases[0] @
-  Map[
-    simplify[ PolynomialReduce[ #, gb, vars ][[2]] ]&,
-    sys
-  ];
-  
+    SortBy[ #, Function[ pol, weight[ pol, vars ] ] ] & @
+    DeleteDuplicates @
+    DeleteCases[0] @
+    Map[
+      simplify[ PolynomialReduce[ #, gb, vars ][[2]] ]&,
+      sys
+    ];
+
   RecursiveGroebner[ sys_, gb_ ] :=
   If[
     sys === {},
@@ -133,7 +133,7 @@ Module[
       RecursiveGroebner[ ReduceSystem[ sys, newGB ], newGB ]
     ]
   ];
-  
+
   RecursiveGroebner[ simplify /@ pols, { } ]
 ];
 
@@ -180,4 +180,3 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
       ]
     ]
   ];
-

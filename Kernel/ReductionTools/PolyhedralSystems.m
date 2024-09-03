@@ -745,7 +745,7 @@ Module[
         ,
         OptionValue["ZeroValues"]
         ,
-        GroupQ[ring]
+        GroupRingQ[ring]
         ,
         {{}}
         ,

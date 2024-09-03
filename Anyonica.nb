@@ -1026,13 +1026,13 @@ Cell[BoxData[
                  ButtonNote->"Anyonica`",
                  Evaluator->Automatic], 
                 ButtonBox[
-                 StyleBox["GroupQ", "InformationGridButton"],
+                 StyleBox["GroupRingQ", "InformationGridButton"],
                  Appearance->None,
                  BaseStyle->"InformationGridLink",
                  
                  ButtonData:>{
                   "Info-74ad5764-d39e-4491-a71e-36ab88db2208", {
-                   "GroupQ", "Anyonica`"}, False},
+                   "GroupRingQ", "Anyonica`"}, False},
                  ButtonNote->"Anyonica`",
                  Evaluator->Automatic], 
                 ButtonBox[
@@ -3607,7 +3607,7 @@ multTab.\"\>", "InformationUsageText",
                     "NSelfDualNonSelfDual", "[", 
                     "Anyonica`Properties`PackagePrivate`r", "]"}]}]}, {" "}, {
                     RowBox[{
-                    RowBox[{"GroupQ", "[", 
+                    RowBox[{"GroupRingQ", "[", 
                     
                     RowBox[{
                     "Anyonica`Properties`PackagePrivate`r_FusionRing", "?", 
@@ -3632,7 +3632,7 @@ multTab.\"\>", "InformationUsageText",
                     "FusionRingQ"}], "]"}], "^:=", 
                     
                     RowBox[{
-                    "GroupQ", "[", "Anyonica`Properties`PackagePrivate`r", 
+                    "GroupRingQ", "[", "Anyonica`Properties`PackagePrivate`r", 
                     "]"}]}]}, {" "}, {
                     RowBox[{
                     RowBox[{"ConjugateCharge", "[", 
@@ -4416,7 +4416,7 @@ ring based on the given multiplication table multTab.", "Documentation" ->
           Pattern[Anyonica`Properties`PackagePrivate`r, 
            Blank[Anyonica`FusionRing]], Anyonica`FusionRingQ]] :> 
        Anyonica`NSelfDualNonSelfDual[Anyonica`Properties`PackagePrivate`r], 
-       Anyonica`GroupQ[
+       Anyonica`GroupRingQ[
          PatternTest[
           Pattern[Anyonica`Properties`PackagePrivate`r, 
            Blank[Anyonica`FusionRing]], Anyonica`FusionRingQ]] :> Total[
@@ -4427,7 +4427,7 @@ ring based on the given multiplication table multTab.", "Documentation" ->
          PatternTest[
           Pattern[Anyonica`Properties`PackagePrivate`r, 
            Blank[Anyonica`FusionRing]], Anyonica`FusionRingQ]] :> 
-       Anyonica`GroupQ[Anyonica`Properties`PackagePrivate`r], 
+       Anyonica`GroupRingQ[Anyonica`Properties`PackagePrivate`r], 
        Anyonica`ConjugateCharge[
          PatternTest[
           Pattern[Anyonica`Properties`PackagePrivate`r, 
@@ -6573,7 +6573,7 @@ Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{
-  RowBox[{"GroupQ", "[", " ", "r", " ", "]"}], " ", 
+  RowBox[{"GroupRingQ", "[", " ", "r", " ", "]"}], " ", 
   RowBox[{"(*", " ", 
    RowBox[{"Or", " ", 
     RowBox[{"GQ", "[", " ", "r", " ", "]"}]}], " ", "*)"}]}]], "Code",

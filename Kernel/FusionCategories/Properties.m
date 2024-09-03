@@ -215,7 +215,6 @@ FullInvariants[c1_]:=
 			];
 
 		(* Invariants from pivotal structure *)
-
 		Join[
 			invariants,
 			Array[ \[ScriptD], Rank[c1] ]
