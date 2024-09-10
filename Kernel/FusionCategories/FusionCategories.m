@@ -193,6 +193,7 @@ InheritedFCFunctionsFromFRList =
     ElementNames,
     AntiparticleMatrix, AM,
     CommutativeQ, CQ,
+    GroupRingQ,
     Multiplicity, Mult,
     MultiplicityFreeQ, MFQ,
     NonZeroStructureConstants, NZSC,
