@@ -5,7 +5,7 @@ WL package for finding and exploring properties of fusion categories
 
 ## Installation 
 
-1. Download the paclet file from the latest release at [https://github.com/gert-vercleyen/Anyonica/releases].
+1. Download the paclet file from the latest release at https://github.com/gert-vercleyen/Anyonica/releases.
 2. Locate the file path of the paclet file and evaluate ```PacletInstall["path_of_paclet_file"]``` in Mathematica. If you don't know how to find the path of a file you can also type ```PacletInstall["``` in Mathematica, and it should offer to browse the files on your computer.
 
 ## Loading the package
