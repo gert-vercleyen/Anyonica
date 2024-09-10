@@ -16,6 +16,6 @@ To load the package, evaluate
 in Mathematica. If this is the first time you load the package, it can take some time. After the first time, however, loading it again should be fast.
 
 ## Documentation
-There is a notebook Documentation.nb at the top of the code directory, which can also be downloaded from [https://github.com/gert-vercleyen/Anyonica/releases]. This notebook contains typical use cases for many functions. 
+There is a notebook Documentation.nb at the top of the code directory, which can also be downloaded from https://github.com/gert-vercleyen/Anyonica/releases. This notebook contains typical use cases for many functions. 
 
 I am working on implementing complete documentation in the documentation center, but this takes time.
