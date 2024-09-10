@@ -18,4 +18,11 @@ in Mathematica. If this is the first time you load the package, it can take some
 ## Documentation
 There is a notebook Documentation.nb at the top of the code directory, which can also be downloaded from https://github.com/gert-vercleyen/Anyonica/releases. This notebook contains typical use cases for many functions. 
 
-I am working on implementing complete documentation in the documentation center, but this takes time.
+I am working on implementing complete documentation in the documentation center, but this takes time. 
+
+## Requesting Features, Documentation, or Help
+If you would like to see new features implemented or more in-depth documentation, you can always request it by opening an issue or sending an email to gertX.vercleyenX@Xprotonmail.comX (where you need to remove the X's to get the actual email address). If you need help with a project, you can also send an email to this address.
+
+## Citing 
+You can site the package by using the following DOI: [![DOI](https://zenodo.org/badge/629083448.svg)](https://zenodo.org/doi/10.5281/zenodo.10686859)
+
