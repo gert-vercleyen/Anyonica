@@ -492,6 +492,12 @@ TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
     ]
   ];
 
+PackageExport["GSEQ"]
+GSEQ::usage =
+  "GSEQ is shorthand for GaugeSymmetryEquivalentQ.";
+
+GSEQ = GaugeSymmetryEquivalentQ;
+
 PackageExport["SymmetryEquivalentQ"]
 
 SymmetryEquivalentQ::usage =
@@ -515,6 +521,8 @@ SymmetryEquivalentQ[ ring_FusionRing, symmetries_Association, opts:OptionsPatter
     ];
     False
   ];
+  
+
 
 SymmetryEquivalentQ[ ring_FusionRing, gaugeMat_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   SymmteryEquivalentQ[ ring, HermiteDecomposition @ gaugeMat, opts ][ sol1, sol2 ];
