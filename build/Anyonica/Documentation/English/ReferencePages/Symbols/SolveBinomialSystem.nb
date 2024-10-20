@@ -1,0 +1,415 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 14.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     15783,        405]
+NotebookOptionsPosition[     12054,        326]
+NotebookOutlinePosition[     14330,        383]
+CellTagsIndexPosition[     14245,        378]
+WindowTitle->SolveBinomialSystem
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA SYMBOL", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "18515e55-eb48-4ea9-857a-f4d359ebd1d4"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "fff73c49-a494-4dd9-8616-784f31e7cf31"],
+        Background->RGBColor[0.490196, 0.576471, 0.690196],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[{
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "Related Guides",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "0c0359b8-812a-41eb-a029-8cde65730162"]
+         }],ExpressionUUID->"a4451b63-ee90-4ff0-98e7-ced1b16ee2e9"],
+         StripOnInput->False],{
+        "\"Anyonica\"" :> 
+         Documentation`HelpLookup["paclet:Anyonica/guide/Anyonica"]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"MoreAbout"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "41fdb7d0-4179-449f-af8b-22e90d0486a6"],
+     "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
+\[ThickSpace]",
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "URL",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "009dc9e7-1c8e-445d-9f4e-f164d90c377c"]
+         }],ExpressionUUID->"5bee62e7-1ae7-46c3-a4c0-4739965e0d3f"],
+         StripOnInput->False],{
+        "\"Anyonica/ref/SolveBinomialSystem\"" :> None, 
+         "\"Copy Wolfram Documentation Center URL\"" :> 
+         Module[{DocumentationSearch`Private`nb$}, 
+           DocumentationSearch`Private`nb$ = 
+            NotebookPut[
+             Notebook[{Cell["Anyonica/ref/SolveBinomialSystem"]}, Visible -> 
+               False]]; 
+           SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+           FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+           NotebookClose[DocumentationSearch`Private`nb$]; Null], Delimiter, 
+         "\"Copy web URL\"" :> 
+         Module[{DocumentationSearch`Private`nb$}, 
+           DocumentationSearch`Private`nb$ = 
+            NotebookPut[
+             Notebook[{
+               Cell[BoxData[
+                 MakeBoxes[
+                  Hyperlink[
+                   "http://reference.wolfram.com/language/Anyonica/ref/\
+SolveBinomialSystem.html"], StandardForm]], "Input", TextClipboardType -> 
+                 "PlainText"]}, Visible -> False]]; 
+           SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+           FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+           NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+         "\"Go to web URL\"" :> 
+         FrontEndExecute[{
+           NotebookLocate[{
+             URL[If[TrueQ[False], 
+                 "http://reference.wolfram.com/system-modeler/", 
+                 "http://reference.wolfram.com/language/"] <> 
+               "Anyonica/ref/SolveBinomialSystem" <> ".html"], None}]}]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"URLMenu"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "eda7891d-d575-4d27-8110-7613d1a42568"]
+    }], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "73312ab9-fb78-484f-a020-d08e418358e8"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"f472bf45-a497-4900-ab8e-294612577612"],
+
+Cell["Anyonica`", "ContextNameCell",ExpressionUUID->"b318f45a-22aa-4274-8664-5f8ee67f01a2"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[GridBox[{
+   {Cell[TextData[{
+     Cell[
+     "SolveBinomialSystem", "ObjectName",ExpressionUUID->
+      "db921ced-89aa-4cf5-9b0f-a61c52d13300"],
+     Cell[BoxData[
+      TemplateBox[{8},
+       "Spacer1"]],ExpressionUUID->"37fd3a83-48de-432d-a33e-dca5f4455a33"],
+     Cell[BoxData[
+     ""], "ObjectNameTranslation",ExpressionUUID->
+      "15ad7fa4-a84c-4b04-bc96-60b11b533d27"]
+    }],ExpressionUUID->"c6b05be8-e163-45d6-a517-80abc84b47f0"], 
+    "\[SpanFromLeft]"}
+  }]], "ObjectNameGrid",ExpressionUUID->"350c05cb-3321-4479-bea9-\
+8b0df1852ee6"],
+
+Cell[BoxData[GridBox[{
+   {"", Cell[TextData[{
+     Cell[BoxData[
+      RowBox[{
+       TemplateBox[{
+         Cell[
+          TextData["SolveBinomialSystem"]], 
+         "paclet:Anyonica/ref/SolveBinomialSystem", "Anyonica Package Symbol"},
+        "PackageLink",
+        BaseStyle->"InlineFormula"], "[", 
+       RowBox[{
+        StyleBox["binEqns", "TI"], ",", 
+        StyleBox["vars", "TI"], ",", 
+        StyleBox["s", "TI"]}], "]"}]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "5ad9f019-a3a0-4c15-a504-acb83fea87ad"],
+     "\[LineSeparator]solves the system of binomial equations ",
+     Cell[BoxData[
+      StyleBox["binEqns", "TI"]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "5cbd5898-f2b0-4fee-9d7c-b2a4d62da0cd"],
+     " in variables ",
+     Cell[BoxData[
+      StyleBox["vars", "TI"]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "d95216ab-b818-47c2-a0d5-d1132889e560"],
+     " and returns a solution parametrized by ",
+     Cell[BoxData[
+      StyleBox["s", "TI"]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "a45a3272-dd61-4210-a861-d5bc407825b3"],
+     "."
+    }],ExpressionUUID->"86aee4b5-f20c-4bdd-bdcd-7743a9f529ed"]}
+  }]], "Usage",
+ CellID->1154989406,ExpressionUUID->"6561907c-3239-4464-ac38-17bfed3f0706"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[Cell[BoxData[
+ ButtonBox[Cell[TextData[{
+   Cell[BoxData[
+    DynamicBox[ToBoxes[
+      If[
+       MatchQ[
+        CurrentValue[
+         EvaluationNotebook[], {TaggingRules, "Openers", "NotesSection"}, 
+         Closed], 
+        Alternatives[Open, True]], 
+       Style[
+        Graphics[{
+          Thickness[0.18], 
+          RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+          Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+         PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+        0.68 Inherited], 
+       Rotate[
+        Style[
+         Graphics[{
+           Thickness[0.18], 
+           RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+           Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+          PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+         0.68 Inherited], Rational[1, 2] Pi, {-1.65, -1}]]],
+     ImageSizeCache->{20., {0.5000000000000009, 19.5}}]],ExpressionUUID->
+    "9fb4e4a6-5a65-46f3-9e9d-c311859dbb84"],
+   Cell[BoxData[
+    TemplateBox[{1},
+     "Spacer1"]],ExpressionUUID->"ae33cd91-a47b-4ec5-804d-a9cfe9073e37"],
+   "Details and Options"
+  }], "NotesFrameText",ExpressionUUID->"9fbac8af-9b97-4236-bf26-82a8deb19141"],
+  Appearance->{Automatic, None, "Normal", Automatic},
+  BaseStyle->None,
+  ButtonFunction:>(FrontEndExecute[{
+     FrontEnd`SelectionMove[
+      FrontEnd`SelectedNotebook[], All, ButtonCell], 
+     FrontEndToken["OpenCloseGroup"], 
+     FrontEnd`SelectionMove[
+      FrontEnd`SelectedNotebook[], After, CellContents]}]& ),
+  Evaluator->None,
+  Method->
+   "Preemptive"]],ExpressionUUID->"ffdf3e9e-a157-4b4e-b9a8-f56e1bffb481"]], \
+"NotesSection",
+ WholeCellGroupOpener->True,
+ CellGroupingRules->{"SectionGrouping", 50},
+ CacheGraphics->False,
+ CellID->1112057176,ExpressionUUID->"e1dce58d-ab62-475c-9e3b-b1fc67d5bd22"],
+
+Cell["The following options can be given: ", "Notes",
+ CellID->802261409,ExpressionUUID->"c4f28bf7-7584-4f11-8500-4a29facd777f"]
+}, Dynamic[CurrentValue[
+ EvaluationNotebook[], {TaggingRules, "Openers", "NotesSection"}, Closed]]]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ Cell[BoxData[
+  DynamicBox[ToBoxes[
+    If[
+     MatchQ[
+      CurrentValue[
+       EvaluationNotebook[], {
+       TaggingRules, "Openers", "PrimaryExamplesSection"}, Open], 
+      Alternatives[True, Open]], 
+     Style[
+      Graphics[{
+        Thickness[0.18], 
+        RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+        Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+       PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+      0.68 Inherited], 
+     Rotate[
+      Style[
+       Graphics[{
+         Thickness[0.18], 
+         RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+         Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+        PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+       0.68 Inherited], Rational[1, 2] Pi, {-1.65, -1}]]],
+   ImageSizeCache->{20., {7., 13.}}]],ExpressionUUID->
+  "dce0955e-5f52-4b09-9840-f32c10c57d97"],
+ Cell[BoxData[
+  TemplateBox[{1},
+   "Spacer1"]],ExpressionUUID->"965d9e71-8d6f-44c1-ac3d-2d7919623a63"],
+ "Examples",
+ "\[NonBreakingSpace]\[NonBreakingSpace]",
+ Cell["(0)", "ExampleCount",ExpressionUUID->
+  "f517578b-8823-4c41-9238-1b74549a9964"]
+}], "PrimaryExamplesSection",
+ WholeCellGroupOpener->True,
+ CacheGraphics->False,
+ CellTags->"PrimaryExamplesSection",
+ CellID->794777191,ExpressionUUID->"42f68619-f1b0-41bd-90fe-c6116a5d84f7"],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<Anyonica`\>\"", "]"}]], "Input", "ExampleInitialization",
+ CellLabel->"In[1]:=",
+ CellID->88995661,ExpressionUUID->"f8e5d3f6-fcd8-4ca0-8209-b601ff040f24"]
+}, Dynamic[CurrentValue[
+ EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, 
+  Closed]]]],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, 
+       "RelatedFunction.png"]],
+     ImageSizeCache->{75., {40., 50.}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"See", " ", "Also"}], "SeeAlsoSection"]}
+     }]}
+  }]], "SeeAlsoSection",ExpressionUUID->"60a043ee-01a1-4226-8f7c-\
+9a0cb8527f82"],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, "RelatedGuide.png"]],
+     ImageSizeCache->{75., {40., 50.}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"Related", " ", "Guides"}], "MoreAboutSection"]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Anyonica"]], "paclet:Anyonica/guide/Anyonica"},
+          "RefLinkPlain",
+          BaseStyle->{"MoreAbout"}]], "MoreAbout",ExpressionUUID->
+         "1c933640-31ac-4c03-a5de-b3877b7ba550"]}]}
+     }]}
+  }]], "MoreAboutSection",ExpressionUUID->"b4543cd7-c1ec-4439-9e24-\
+a77e96263dd0"],
+
+Cell[" ", "FooterCell",ExpressionUUID->"892fa766-de8f-42a2-ba97-cd26709043e7"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"SolveBinomialSystem",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}, 
+    "AllOptsTable" -> Closed, "NotesSection" -> Closed}, "NewStyles" -> True, 
+  "CitationPopupData" -> $Failed, "ShowCitation" -> False, "HasOptions" -> 
+  True, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2024, 10, 19, 20, 9, 39.233654}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Symbol", "language" -> "en", "paclet" -> "Anyonica", "status" -> 
+    "None", "summary" -> 
+    "SolveBinomialSystem[binEqns, vars, s] solves the system of binomial \
+equations binEqns in variables vars and returns a solution parametrized by \
+s.", "synonyms" -> {}, "tabletags" -> {}, "title" -> "SolveBinomialSystem", 
+    "titlemodifier" -> "", "metadescription" -> "", "windowtitle" -> 
+    "SolveBinomialSystem", "type" -> "Symbol", "uri" -> 
+    "Anyonica/ref/SolveBinomialSystem"}},
+CellContext->"Global`",
+FrontEndVersion->"14.0 for Mac OS X x86 (64-bit) (October 24, 2023)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> "Global`"], 
+   Cell[
+    StyleData["Output"], CellContext -> "Global`"]}, Visible -> False, 
+  FrontEndVersion -> "14.0 for Mac OS X x86 (64-bit) (October 24, 2023)", 
+  StyleDefinitions -> "Default.nb"],
+ExpressionUUID->"b4368818-4f56-4e99-8091-e59753ac3eca"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{
+ "PrimaryExamplesSection"->{
+  Cell[9179, 244, 1390, 37, 54, "PrimaryExamplesSection",ExpressionUUID->"42f68619-f1b0-41bd-90fe-c6116a5d84f7",
+   CellTags->"PrimaryExamplesSection",
+   CellID->794777191]}
+ }
+*)
+(*CellTagsIndex
+CellTagsIndex->{
+ {"PrimaryExamplesSection", 14046, 371}
+ }
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[591, 21, 4366, 106, 84, "AnchorBarGrid",ExpressionUUID->"f472bf45-a497-4900-ab8e-294612577612",
+ CellID->1],
+Cell[4960, 129, 91, 0, 35, "ContextNameCell",ExpressionUUID->"b318f45a-22aa-4274-8664-5f8ee67f01a2"],
+Cell[CellGroupData[{
+Cell[5076, 133, 562, 14, 88, "ObjectNameGrid",ExpressionUUID->"350c05cb-3321-4479-bea9-8b0df1852ee6"],
+Cell[5641, 149, 1361, 34, 198, "Usage",ExpressionUUID->"6561907c-3239-4464-ac38-17bfed3f0706",
+ CellID->1154989406]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7039, 188, 1882, 47, 56, "NotesSection",ExpressionUUID->"e1dce58d-ab62-475c-9e3b-b1fc67d5bd22",
+ CellGroupingRules->{"SectionGrouping", 50},
+ CellID->1112057176],
+Cell[8924, 237, 128, 1, 70, "Notes",ExpressionUUID->"c4f28bf7-7584-4f11-8500-4a29facd777f",
+ CellID->802261409]
+}, Dynamic[CurrentValue[EvaluationNotebook[], {TaggingRules, "Openers", "NotesSection"}, Closed]]]],
+Cell[CellGroupData[{
+Cell[9179, 244, 1390, 37, 54, "PrimaryExamplesSection",ExpressionUUID->"42f68619-f1b0-41bd-90fe-c6116a5d84f7",
+ CellTags->"PrimaryExamplesSection",
+ CellID->794777191],
+Cell[10572, 283, 196, 3, 47, "Input",ExpressionUUID->"f8e5d3f6-fcd8-4ca0-8209-b601ff040f24",
+ CellID->88995661]
+}, Dynamic[CurrentValue[EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, Closed]]]],
+Cell[10886, 291, 380, 11, 172, "SeeAlsoSection",ExpressionUUID->"60a043ee-01a1-4226-8f7c-9a0cb8527f82"],
+Cell[11269, 304, 700, 18, 172, "MoreAboutSection",ExpressionUUID->"b4543cd7-c1ec-4439-9e24-a77e96263dd0"],
+Cell[11972, 324, 78, 0, 70, "FooterCell",ExpressionUUID->"892fa766-de8f-42a2-ba97-cd26709043e7"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
