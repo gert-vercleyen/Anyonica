@@ -541,6 +541,13 @@ Module[ {
 
 ];
 
+PackageExport["HE"]
+
+HE::usage =
+  "Shorthand for HexagonEquations.";
+
+HE = HexagonEquations;
+
 (*
 +---------------------------------------------------------------------------+
 |                           TWIST FACTOR EQUATIONS                          |
