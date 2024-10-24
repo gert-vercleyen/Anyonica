@@ -293,7 +293,7 @@ FCBC =
 PackageExport["FusionCategoryList"]
 
 FusionCategoryList::usage =
-	"FusionCategoryList is a list of all saved FusionRing objects.";
+	"FusionCategoryList is a list of all saved FusionCategory objects.";
 
 
 PackageExport["FCL"]

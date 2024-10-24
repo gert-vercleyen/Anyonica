@@ -82,7 +82,8 @@ F[ 1, __ ] | F[ _, 1, __ ] | F[ _, _, 1, __ ];
 PackageExport["FSymbols"]
 
 FSymbols::usage =
-"FSymbols[r] returns a list of well-defined F-symbols of the fusion ring r.";
+"FSymbols[r] returns a list of well-defined F-symbols of the fusion ring r.\n"<>
+"FSymbols[cat] returns the F-symbols of the fusion category cat.";
 
 FSymbols[ ring_FusionRing?FusionRingQ ] :=
 If[

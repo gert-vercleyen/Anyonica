@@ -234,6 +234,10 @@ PackageExport["FSymbols"]
 FusionCategory /: FSymbols[ FusionCategory[data_] ] :=
   data["FSymbols"];
 
+PackageExport["FMatrices"]
+
+FMatrices[ cat_FusionCategory ] := 
+  ReplaceAll[ FMatrices @ FusionRing @ cat, FSymbols @ cat ];
 
 PackageExport["RSymbols"]
 
