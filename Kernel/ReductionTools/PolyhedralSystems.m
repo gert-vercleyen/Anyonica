@@ -48,7 +48,7 @@ PE::usage =
 "Shorthand for PentagonEquations.";
 
 PE =
-PentagonEquations;
+  PentagonEquations;
 
 PackageExport["PentagonTower"]
 
@@ -162,20 +162,20 @@ PentagonEquationsFromTower::usage =
 "Flattens tower to a set of pentagon equations.";
 
 PentagonEquationsFromTower[ tower_Association ] :=
-Join @@ BinSumEquationsFromTower[ tower ];
+  Join @@ BinSumEquationsFromTower[ tower ];
 
 
 DimF[regMats_] :=
-Module[ { matToRules },
-  matToRules[ mat_ ] :=
-  With[{ n = Length[mat] },
-    Flatten @ Map[ # -> n &, mat, {2} ]
+  Module[ { matToRules },
+    matToRules[ mat_ ] :=
+    With[{ n = Length[mat] },
+      Flatten @ Map[ # -> n &, mat, {2} ]
+    ];
+    Association @@
+    Flatten[
+      matToRules /@ regMats
+    ]
   ];
-  Association @@
-  Flatten[
-    matToRules /@ regMats
-  ]
-];
 
 
 (*
@@ -348,81 +348,81 @@ Options[HexagonEquationsWithoutMultiplicity] :=
 Options[HexagonEquations];
 
 HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
-Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
-  rSymbols =
-  R @@@ NZSC[ring];
+  Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
+    rSymbols =
+    R @@@ NZSC[ring];
 
-  fSymbols =
-  FSymbols[ring];
+    fSymbols =
+    FSymbols[ring];
 
-  rank =
-  Rank[ring];
+    rank =
+    Rank[ring];
 
-  If[
-    !MatchQ[ OptionValue["Knowns"], { _Rule ... } ],
-    Message[HexagonEquations::badformat, OptionValue["Knowns"] ]
-  ];
-
-  knowns =
-  Dispatch @
-  Join[
     If[
-      TrueQ @ OptionValue["TrivialVacuumSymbols"],
-      (* THEN *)
-      Thread[
-        Cases[ Join[ rSymbols, fSymbols ], $VacuumRPattern | $VacuumFPattern ] -> 1
-      ],
-      (* ELSE *)
-      {}
-    ],
-    Normal @ OptionValue["Knowns"]
-  ];
+      !MatchQ[ OptionValue["Knowns"], { _Rule ... } ],
+      Message[HexagonEquations::badformat, OptionValue["Knowns"] ]
+    ];
 
-  (* construct a sparse array of R symbols *)
-  sR =
-  SparseArray[
-    Thread[ NZSC[ring] -> rSymbols ]/.knowns,
-    { rank, rank, rank }
-  ];
-
-  sF =
-  SparseArray @
-  ReplaceAll[
-    Normal @ SparseFTensor[ ring ],
-    knowns
-  ];
-
-  matchingLabels[ { a_, c_, b_, d_, e_} ] :=
-  Cases[ List @@@ fSymbols, { c, a, b, d, e, _ } ][[;;,6]];
-
-  DeleteDuplicates @
-  DeleteCases[True] @
-  Flatten[
-    Reap[
-      Do[ (* Loop over valid F-symbols and construct equations *)
-        { a, c, b, d, e, g } = List @@ ff;
-        Sow[
-          {
-            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
-            ==
-            Sum[
-              sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
-              { f, matchingLabels[ { a, c, b, d, e } ] }
-            ]
-            ,
-            sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1)
-            ==
-            Sum[
-              sF[[ c, a, b, d, e, f ]] sR[[ f, c, d ]]^(-1) sF[[ a, b, c, d, f, g ]],
-              { f, matchingLabels[ { a, c, b, d, e } ] }
-            ]
-          }
+    knowns =
+    Dispatch @
+    Join[
+      If[
+        TrueQ @ OptionValue["TrivialVacuumSymbols"],
+        (* THEN *)
+        Thread[
+          Cases[ Join[ rSymbols, fSymbols ], $VacuumRPattern | $VacuumFPattern ] -> 1
         ],
-        { ff, fSymbols }
-      ]
-    ][[2]]
-  ]
-];
+        (* ELSE *)
+        {}
+      ],
+      Normal @ OptionValue["Knowns"]
+    ];
+
+    (* construct a sparse array of R symbols *)
+    sR =
+    SparseArray[
+      Thread[ NZSC[ring] -> rSymbols ]/.knowns,
+      { rank, rank, rank }
+    ];
+
+    sF =
+    SparseArray @
+    ReplaceAll[
+      Normal @ SparseFTensor[ ring ],
+      knowns
+    ];
+
+    matchingLabels[ { a_, c_, b_, d_, e_} ] :=
+    Cases[ List @@@ fSymbols, { c, a, b, d, e, _ } ][[;;,6]];
+
+    DeleteDuplicates @
+    DeleteCases[True] @
+    Flatten[
+      Reap[
+        Do[ (* Loop over valid F-symbols and construct equations *)
+          { a, c, b, d, e, g } = List @@ ff;
+          Sow[
+            {
+              sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
+              ==
+              Sum[
+                sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
+                { f, matchingLabels[ { a, c, b, d, e } ] }
+              ]
+              ,
+              sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1)
+              ==
+              Sum[
+                sF[[ c, a, b, d, e, f ]] sR[[ f, c, d ]]^(-1) sF[[ a, b, c, d, f, g ]],
+                { f, matchingLabels[ { a, c, b, d, e } ] }
+              ]
+            }
+          ],
+          { ff, fSymbols }
+        ]
+      ][[2]]
+    ]
+  ];
 
 (*
 +---------------------------------------------------------------------------+
@@ -1052,23 +1052,23 @@ Options[PentagonGroebnerSystems] :=
   ];
 
 PentagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[] ] :=
-Which[
-  (* CHECK proper format injected solution *)
-  !MatchQ[ OptionValue["InjectSolution"], {} | { _FusionRing, _?PPSQ } ]
-  ,
-  Message[ PentagonGroebnerSystems::substitutesolutionwrongformat, ring ];
-  Abort[]
-  ,
-  (* CHECK multiplicity *)
-  Mult[ring] == 1
-  ,
-  MultiplicityFreePentagonGroebnerSystems[ ring, var, opts ]
-  ,
-  True
-  ,
-  Print["Not implemented yet"];
-  Abort[]
-];
+  Which[
+    (* CHECK proper format injected solution *)
+    !MatchQ[ OptionValue["InjectSolution"], {} | { _FusionRing, _?PPSQ } ]
+    ,
+    Message[ PentagonGroebnerSystems::substitutesolutionwrongformat, ring ];
+    Abort[]
+    ,
+    (* CHECK multiplicity *)
+    Mult[ring] == 1
+    ,
+    MultiplicityFreePentagonGroebnerSystems[ ring, var, opts ]
+    ,
+    True
+    ,
+    Print["Not implemented yet"];
+    Abort[]
+  ];
 
 
 Options[MultiplicityFreePentagonGroebnerSystems] :=
@@ -1383,53 +1383,53 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
 PackageExport["HGS"]
 
 HGS::usage =
-"Shorthand for HexagonGroebnerSystems.";
+  "Shorthand for HexagonGroebnerSystems.";
 
 HGS =
-HexagonGroebnerSystems;
+  HexagonGroebnerSystems;
 
 Options[QuickSolve] = { "SimplifyBy" -> Identity };
 
 QuickSolve[ system_, var_, opts:OptionsPattern[] ] :=
-With[{pols = system["Polynomials"] },
-  If[ CountVariables[ pols, var ] =!= 1, Return[system] ];
+  With[{pols = system["Polynomials"] },
+    If[ CountVariables[ pols, var ] =!= 1, Return[system] ];
 
-  With[
-    {
-      simplestPol =
-      First @
-      Flatten @
-      MinimalBy[ pols, Exponent[ #, First @ GetVariables[ pols, var ] ]&, 1 ],
-      assumptions =
-      system["Assumptions"]
-    },
-    {
-      soln =
-      Cases[
-        OptionValue["SimplifyBy"]@
-        ToNumericRootIsolation @
-        SolveUsingReduce[
-          simplestPol == 0,
-          { var }
-        ],
-        sol_ /;
-        And[
-          TrueQ[ assumptions /. sol ],
-          MatchQ[ SafeRootReduce[ pols/.sol ], {0...} ]
-        ]
-      ]
-    },
-    Table[
-      Association @ {
-        "Polynomials" -> {},
-        "Assumptions" -> True,
-        "Rules" -> system["Rules"] /. s
+    With[
+      {
+        simplestPol =
+        First @
+        Flatten @
+        MinimalBy[ pols, Exponent[ #, First @ GetVariables[ pols, var ] ]&, 1 ],
+        assumptions =
+        system["Assumptions"]
       },
-      { s, soln }
+      {
+        soln =
+        Cases[
+          OptionValue["SimplifyBy"]@
+          ToNumericRootIsolation @
+          SolveUsingReduce[
+            simplestPol == 0,
+            { var }
+          ],
+          sol_ /;
+          And[
+            TrueQ[ assumptions /. sol ],
+            MatchQ[ SafeRootReduce[ pols/.sol ], {0...} ]
+          ]
+        ]
+      },
+      Table[
+        Association @ {
+          "Polynomials" -> {},
+          "Assumptions" -> True,
+          "Rules" -> system["Rules"] /. s
+        },
+        { s, soln }
+      ]
     ]
-  ]
 
-];
+  ];
 
 (*
 +---------------------------------------------------------------------------+
@@ -1592,3 +1592,141 @@ Module[{ procID, time, result, bases },
   result
 
 ];
+
+PackageExport["CheckPentagonEquations"]
+
+CheckPentagonEquations::usage = 
+  "CheckPentagonEquations[ ring, fSymbols ] returns True if the fSymbols solve the pentagon equations"<>
+  " of ring. If not it returns a couple { False, eqn } where eqn is the first formal equation that is"<>
+  " not satisfied."
+
+Options[CheckPentagonEquations] := 
+  { "PreEqualCheck" -> Identity };
+
+CheckPentagonEquations[ ring_, fSymbols_  ] := 
+  Module[ { fInd, p, c, d, e, q, r, a, b, s, n, matches, fs, eqn, simplify, sF },
+    n = Rank @ ring;
+    fInd = List @@@ fSymbols[[;;,1]];
+    sF = SparseArray[ Thread[ fInd -> Values @ fSymbols ], { n, n, n, n, n, n } ];
+    fs = Dispatch[fSymbols];
+    simplify = OptionValue["PreEqualCheck"];
+    Catch[
+      Do[
+        { p, c, d, e, q, r } = label;
+        matches = Cases[ fInd, { a_, b_, r, e, p, s_ } ];
+        Do[
+          { a, b, s } = 
+            label2[[ { 1, 2, 6 } ]];
+
+          eqn = 
+            simplify[ 
+              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
+              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ] 
+            ];
+
+          If[ 
+            !TrueQ[ eqn ], 
+            Throw[ { False, F[p,c,d,e,q,r] F[a,b,r,e,p,s] ==
+            Sum[ F[b,c,d,s,x,r] F[a,b,c,q,p,x] F[a,x,d,e,q,s], {x,n} ] } ]
+          ],
+          { label2, matches }
+        ],
+        { label, fInd }
+      ];
+      True
+    ]
+  ];
+
+PackageExport["CheckHexagonEquations"]
+
+CheckHexagonEquations::usage = 
+  "CheckHexagonEquations[ ring, fSymbols, rSymbols ] returns True if fSymbols and rSymbols solve"<> 
+  " the hexagon equations of ring. If not it returns a couple { False, eqn } where eqn is the "<>
+  "first formal equation that is not satisfied.";
+
+Options[CheckHexagonEquations] = 
+  {
+    "PreEqualCheck" -> Identity
+  };
+
+CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
+  Module[{ a, b, c, d, e, g, sR, sF, rank, matchingLabels, eqn1, eqn2, fLabels, simplify },
+    simplify = 
+      OptionValue["PreEqualCheck"];
+
+    fLabels =
+      List @@@ Keys[fSymbols];
+    
+    rank =
+      Rank[ring];
+
+    (* construct a sparse array of R symbols *)
+    sR =
+      SparseArray[
+        Thread[ NZSC[ring] -> Values[rSymbols] ],
+        { rank, rank, rank }
+      ];
+
+    sF =
+      SparseArray[
+        Thread[ fLabels -> Values[fSymbols] ],
+        { rank, rank, rank, rank, rank, rank }
+      ];
+
+    matchingLabels[ { a_, c_, b_, d_, e_} ] :=
+      Cases[ fLabels, { c, a, b, d, e, _ } ][[;;,6]];
+
+    Catch[
+      Do[ (* Loop over valid F-symbols and construct equations *)
+        { a, c, b, d, e, g } = fl;
+          
+        eqn1 = 
+          simplify[   
+            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
+            ==
+            Sum[
+              sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          ];
+
+        If[ 
+          !TrueQ[ eqn1 ],
+          Throw @
+          { 
+            False, 
+            R[ c, a, e ] F[a,c,b,d,e,g] R[ c, b, g ] ==
+            Sum[
+              F[ c, a, b, d, e, f ] R[ c, f, d ] F[ a, b, c, d, f, g ],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          }
+        ];
+
+        eqn2 = 
+          simplify[
+            sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1) ==
+            Sum[
+              sF[[ c, a, b, d, e, f ]] sR[[ f, c, d ]]^(-1) sF[[ a, b, c, d, f, g ]],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          ];
+        
+        If[
+          !TrueQ[ eqn2 ],
+          Throw @ 
+          {
+            False,
+            R[ a, c, e ]^(-1) F[a,c,b,d,e,g] R[ b, c, g ]^(-1) ==
+            Sum[
+              F[ c, a, b, d, e, f ] R[ f, c, d ]^(-1) F[ a, b, c, d, f, g ],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          }
+        ]  
+        ,
+        { fl, fLabels }
+      ];
+      True
+    ]
+  ];
