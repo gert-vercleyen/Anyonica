@@ -196,7 +196,8 @@ If[
       Do[
         If[
           ( newMat =
-          Normal[sparseF][[a,b,c,d,;;,;;]] //
+          sparseF[[a,b,c,d,;;,;;]] //
+          Normal //
           RemoveZeroColumns //
           RemoveZeroRows
           )
