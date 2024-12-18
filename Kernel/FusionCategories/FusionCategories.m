@@ -205,6 +205,7 @@ InheritedFCFunctionsFromFRList =
     NNonSelfDual, NNSD,
     NSelfDualNonSelfDual, NSDNSD,
     ConjugateCharge, CC,
+    FusionRingAutomorphisms, FRA,
     InjectionForm
     (*FusionProduct*)
   };
