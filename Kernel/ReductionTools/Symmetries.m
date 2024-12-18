@@ -713,15 +713,13 @@ PackageScope["MultiplicativeGaugeMatrix"]
 
 MultiplicativeGaugeMatrix[ sym_Association ] :=
   Module[{ t, var, factors, g, newVars },
-    t =
-      sym["Transforms"];
-    var =
-      sym["Symbols"];
+    t = sym["Transforms"];
+    var = sym["Symbols"];
 
     { factors, newVars } =
-      Most @ SimplifyVariables[ t[[;;,2]]/t[[;;,1]], GetVariables[ t, var ], g ];
+      Most @ SimplifyVariables[ Values[t]/Keys[t], GetVariables[ t, var ], g ];
 
-    GaugeMatRow[ #, Length[newVars], g ]& /@ factors
+    GaugeMatRow[ #, Length @ newVars, g ]& /@ factors
   ];
 
 
@@ -731,12 +729,10 @@ GaugeMatRow[ 1, n_, x_ ] :=
 GaugeMatRow[ factor_, n_, x_ ] :=
   Normal @
   SparseArray[
-    Cases[
-      factor,
-      Power[ x[i_], b_. ] :> ( { i } -> b  )
-    ],
+    Flatten[ Rest[FactorList[factor]]/.{ x[i_], j_ }:> { {i} -> j } ]
+    ,
     { n }
-  ];
+	];
 
 (*
 MultiplicativeGaugeMatrix[ sym_Association ] :=
