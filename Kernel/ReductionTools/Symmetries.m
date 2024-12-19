@@ -1012,9 +1012,10 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
 PackageExport["GaugeInvariants"]
 
 GaugeInvariants::usage =
-  "GaugeInvariants[ ring ] returns a basis of the gauge invariant polynomials in the F-and R-symbols of the ring.";
+  "GaugeInvariants[ ring ] returns a basis of the gauge invariant Laurent polynomials in the F-and R-symbols of the fusion ring ring.\n"<>
+  "GaugeInvariants[ cat ] returns a basis of the gauge invariant Laurent polynomials in the F-and R-symbols with their values of the fusion category cat.";
 
-Options[GaugeInvariants] =
+Options[GaugeInvariants] :=
   Options[GaugeSplitBasis];
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=

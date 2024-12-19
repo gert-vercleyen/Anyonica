@@ -267,4 +267,27 @@ Catch[
 
 	Throw @ False
 	]
-]
+];
+
+GaugeInvariants::nonbraidedcat = 
+  "Gauge invariants for braided category requested but category is not braided.\n"<>
+  " Use option \"IncludeOnly\" -> \"FSymbols\" for gauge invariants with only F-symbols.";
+
+GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] := 
+  Module[
+    { io, bq, zeros, gi },
+    io = OptionValue["IncludeOnly"];
+
+    If[ 
+      io === "All" && !BraidedQ[cat], 
+      Message[GaugeInvariants::nonbraidedcat]; Return @ $Failed  
+    ];
+
+    bq = BraidedQ[cat] && OptionValue["IncludeOnly"] =!= "FSymbols";
+
+    zeros = Keys @ Select[ FSymbols @ cat,  #[[2]] === 0& ];
+
+    gi = AddOptions[opts][GaugeInvariants][ FusionRing @ cat, "Zeros" -> zeros ];
+
+    Thread[ gi -> ( gi/.Dispatch[ Join[ FSymbols @ cat, If[ bq, RSymbols @ cat, {} ] ] ] ) ]
+  ];
