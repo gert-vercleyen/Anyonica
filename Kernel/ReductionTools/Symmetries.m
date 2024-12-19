@@ -983,8 +983,6 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       OptionValue["Zeros"];
     io =
       OptionValue["IncludeOnly"];
-    zeros =
-      OptionValue["Zeros"];
 
     { V, n } =
       GaugeSplitTransform[ ring, opts ];
