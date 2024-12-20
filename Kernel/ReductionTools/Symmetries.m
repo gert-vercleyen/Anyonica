@@ -925,22 +925,26 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
       monomial =
         PowerExpand[
           PowerDot[ symbols, Array[ m, Length @ symbols ] ] //
-          ReplaceAll[ sym["Transforms"] ] //
-          ReplaceAll[ Thread[symbols -> 1] ]
+          ReplaceAll[ Dispatch @ sym["Transforms"] ] //
+          ReplaceAll[ Dispatch @ Thread[symbols -> 1] ]
         ];
 
       powers =
         Expand @
         Cases[ monomial, Power[ g[__], p_. ] :> p ];
 
-      { d, v } =
-        Rest @
-        SmithDecomposition[
-          powerToRow[ m, Length @ symbols ] /@ powers
-        ];
+      d = (* It's faster to do a Hermite decomp first and throw away rows of zeros *) 
+				DeleteCases[
+					Last @ 
+					HermiteDecomposition[
+						powerToRow[ m, Length @ symbols ] /@ powers
+					], 
+					{ 0 .. }
+				];
 
-      r =
-        Length @ DeleteCases[0] @ Diagonal[d];
+      { d, v } = Rest @ SmithDecomposition @ d;
+
+      r = Length @ DeleteCases[0] @ Diagonal[d];
 
       (* First sort criterium: number of factors, where powers are counted as multiple factors.
          Second criterium: canonical lexicographic order on the indices (we need Reverse because the greater the row,
