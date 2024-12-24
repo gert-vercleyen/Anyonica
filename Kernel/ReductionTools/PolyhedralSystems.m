@@ -1481,8 +1481,8 @@ Options[SolvePentagonEquations];
 
 SolveMultiplicityFreePentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 Module[ { procID, time, result, bases, z, simplify },
-  procID =
-  ToString[Unique[]];
+  procID = ToString[Unique[]];
+
   simplify =
   Composition[
     If[
@@ -1506,8 +1506,7 @@ Module[ { procID, time, result, bases, z, simplify },
       Return[ { { F[1,1,1,1,1,1] -> 1 } } ]
     ];
 
-    bases =
-    AddOptions[opts][PentagonGroebnerSystems][ ring, z ];
+    bases = AddOptions[opts][PentagonGroebnerSystems][ ring, z ];
 
     printlog["SMFPE:solving_systems", { procID } ];
 
