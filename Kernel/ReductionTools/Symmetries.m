@@ -399,7 +399,7 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
                 Identity
               ] @
               (values1/values2),
-              mU
+              r
             ];
 
           NonOneCoeff[ l_ ] :=
