@@ -1980,7 +1980,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:init", { id_, equations_, vars_, 
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, n_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, n_, opts_ } ] :=
   AddCell[
     fileName,
     nbo,
@@ -1996,22 +1996,37 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, n_ } ] :=
     ]
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:onehermite", { id_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Subsystem size equals size of system. Performing a single Hermite decomposition."
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, equations_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, pols_, prevLength_ } ] :=
   Module[ { fn1 },
     fn1 = dataFileName[ id, dir, "smallerSystem" ];
-    safeExport[ fn1, equations ];
+    safeExport[ fn1, pols ];
 
     AddCell[
       fileName,
       nbo,
       TextData[{
-        inputStyle[ "A reduced " ],
+        inputStyle[ "The system of "<>ToString[prevLength]<>" equations has been reduced to\na " ],
         hyperlinkBox[ "system", fn1 ],
-        inputStyle[ " of "<> ToString[Length@equations]<> " equations was obtained after "<> ToString[time] <> " seconds."]
+        inputStyle[ " of "<> ToString[Length@pols]<> " equations/polynomials\nin "<> ToString[time] <> " seconds."]
       }]
     ];
   ];
+
 
 (*MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:systems", { id_, solverInput_, ___ } ] :=*)
 (*  Module[{fn},*)
