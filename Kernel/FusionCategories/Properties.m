@@ -291,3 +291,128 @@ GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] :=
 
     Thread[ gi -> ( gi/.Dispatch[ Join[ FSymbols @ cat, If[ bq, RSymbols @ cat, {} ] ] ] ) ]
   ];
+
+PackageExport["FusionCategoryAutomorphisms"]
+
+FusionCategoryAutomorphisms::usage =
+  "FusionCategoryAutomorphisms[cat] returns the automorphisms of the fusion category cat.";
+
+Options[FusionCategoryAutomorphisms] :=
+	Join[
+		Options[AutomorphismEquations], 
+    Options[FusionRingAutomorphisms],
+    { "Permutations" -> Missing[] }
+	];
+
+FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
+	Module[
+		{ ring, FRAuth, catAuth, g, eqnsPerPerm, vars, symmetries, solutions, 
+		z, trivialSymbols, structConst, reducedSymmetries, autEqns, fixedSymbols, AddKnowns,
+		reducedSystem }, 
+		ring = FusionRing @ cat; 
+		
+		FRAuth = 
+			If[ 
+				OptionValue["Permutations"] =!= Missing[],
+				OptionValue["Permutations"],
+				AddOptions[opts][FusionRingAutomorphisms][ ring ]
+		];
+		
+		structConst = NZSC @ cat;
+
+		vars = u @@@ structConst;
+		
+		symmetries = 
+			<|
+				"Transforms" -> ( u[##] -> ( g[#1] g[#2] / g[#3] ) u[##] & ) @@@ structConst, 
+				"Symbols" -> {g}
+			|>;
+		
+		trivialSymbols = Thread[ u @@@ Cases[ structConst, { 1, __ } | { _, 1, _ }] -> 1 ];
+		
+		(* Only symmetries that keep the trivial u symbols invariant are allowed *)
+		reducedSymmetries = 
+      RestrictMultiplicativeSymmetries[ symmetries, Keys @ trivialSymbols, g ];
+    
+    (* Break the symmetry *)
+    fixedSymbols = Last @ BreakMultiplicativeSymmetry[ reducedSymmetries ];
+			
+		(* Function that adds trivial data and fixed symbols to solution *)
+		AddKnowns[ sol_ ] := Sort @ Join[ trivialSymbols, fixedSymbols, sol ];
+			
+		solutions = 
+      DeleteDuplicates[ #, GSEQ[ MultiplicativeGaugeMatrix[symmetries] ] ]& /@
+			Table[
+				autEqns = 
+          AddOptions[opts][AutomorphismEquations][ cat, perm, u ] //
+          ReplaceAll[ Dispatch @ Join[ trivialSymbols, fixedSymbols ] ] //
+          TEL;
+
+        If[
+          MemberQ[False] @ autEqns,
+          { },
+
+          reducedSystem = 
+            ( # == 0 ) & /@
+            ReduceBinomialSystem[ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
+
+          AddKnowns /@ 
+          SolveBinomialSystem[ reducedSystem, GetVariables[ reducedSystem, u ], z, "NonSingular" -> True ]
+        ]
+        ,	
+				{ perm, FRAuth } 
+			];
+    
+		Flatten[
+			Table[ { FRAuth[[i]], # }& /@ solutions[[i]], { i, Length @ FRAuth }  ], 
+			1
+		]
+	];
+
+PackageExport["FCA"]
+
+FCA::usage =
+  "Shorthand for FusionCategoryAutomorphisms.";
+
+FCA = FusionCategoryAutomorphisms;
+
+	
+Options[AutomorphismEquations] = 
+	{ "Type" -> "Braided" };
+
+AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
+	Module[{ring, permute, transform, symbols, nbq },
+		nbq = !BraidedQ[cat] || OptionValue["Type"] =!= "Braided";
+		
+		ring = FusionRing @ cat;
+		
+		permute = 
+			ReplaceAll[
+				If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
+				{ 
+					g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
+					F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
+				}
+			];
+		
+		transform = 
+			ReplaceAll[ 
+				If[ nbq, Identity, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ] ] @
+				{ 
+					g[i__] :> permute @ g[i], 
+					F[i__] :> permute @ GaugeTransform[g] @ F[i]
+				}
+			];
+			
+		symbols = 
+			Join[
+				FSymbols @ ring,
+				If[ nbq, {}, RSymbols @ ring ]
+			];
+			
+		
+		TrimEquationList[
+			Thread[ symbols == transform @ symbols ]/.
+			Dispatch[ Join[ FSymbols @ cat, If[ nbq, {}, RSymbols @ cat ] ] ]
+		]
+	]
