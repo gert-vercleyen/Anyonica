@@ -222,96 +222,114 @@ Options[ReduceBinSysHermite] :=
 ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] := 
   Module[ { nSubsys, s, procID, nPart, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
     subMat1, reducedMat1, matSubsys2, mat2, rhs2, reducedMat2, reducedrhs2, rhsFinal, 
-    u, h, mat}, 
+    u, h, mat, pols, time, result }, 
 
-    procID = ToString @ Unique[];
-   
-    nPart = OptionValue["NumPartitionsFunction"];
-
-    (* Quite arbitrary, this resulted in doable partition sizes on my computer*)
-    nSubsys = Max[ Floor @ nPart[ equations, variables ], 1 ];
-
-    (*Transform the system to a matrix equation. This step is expensive 
-      so best to do it only once*)
-    s = Head @ First @ variables;
-
-    { mat, rhs } =  
-        Catch @ Normal @ AddOptions[opts][BinToSemiLin][ equations, variables, s ];
+    { time, result } = 
+    AbsoluteTiming[
+      Catch[
+      procID = ToString @ Unique[];
     
-    If[ Head @ mat === String, Return @ { False } ];
+      nPart = OptionValue["NumPartitionsFunction"];
 
-    If[ 
-      nSubsys === 1,
-      { u, h } = HermiteDecomposition[ mat ];
-      Return @ 
+      (* Quite arbitrary, this resulted in doable partition sizes on my computer*)
+      nSubsys = Max[ Floor @ nPart[ equations, variables ], 1 ];
+
+      subsysSize = Floor[ Length[equations] / nSubsys ];
+
+      printlog[ "RBSVHD:init", { procID, subsysSize, {opts} } ];
+
+      (* Transform the system to a matrix equation. This step is expensive 
+        so best to do it only once*)
+      s = Head @ First @ variables;
+
+      { mat, rhs } =  
+          Catch @ Normal @ AddOptions[opts][BinToSemiLin][ equations, variables, s ];
+      
+      
+      If[ Head @ mat === String, Throw @ { False } ];
+
+      If[ (* Only 1 subsystem *) 
+        nSubsys === 1
+        ,
+        printlog[ "RBSVHD:onehermite", { prodID } ];
+
+        { u, h } = HermiteDecomposition[ mat ];
+
+        pols = TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ];
+
+        Throw @ 
+        <| 
+          "Polynomials" -> pols,
+          "Assumptions" -> True,
+          "Values" -> Thread[ variables -> variables ]
+        |>;
+      ];
+      
+    
+      (* ================================================= *)
+      (* Reduction of subsystem of eqns who's RHS equals 1 *)
+      (* ================================================= *)
+
+      rhs1Pos = Flatten @ Position[ rhs, 1 ];
+
+      (* Sorting rows lexicographically => groups eqns with equal vars together *)
+      subMat1 = ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
+
+      reducedMat1 = 
+        Catch[
+          FixedPoint[
+            partitionAndReduce[ #, subsysSize, procID ] &, 
+            subMat1, 
+            5 (*Nest at most 5 times*)
+          ]
+        ];
+
+      (* ========================================================= *)
+      (* Reduction of subsystem of eqns who's RHS does not equal 1 *)
+      (* ========================================================= *)
+      
+      rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
+      
+      (* Now the RHS matters => need to combine mat with RHS when sorting *) 
+      matSubsys2 =
+        ReverseSortBy[
+          AppendRHS[ mat[[rhsNon1Pos]], rhs[[rhsNon1Pos]] ],
+          Abs
+        ];
+      
+      mat2 = matSubsys2[[ ;;, ;;-2 ]];
+      
+      rhs2 = matSubsys2[[ ;;, -1 ]];
+      
+      { reducedMat2, reducedrhs2 } = 
+        Catch[
+          FixedPoint[ partitionAndReduce[ #, subsysSize, procID ]&, { mat2, rhs2 }, 5 ] 
+        ];
+      
+      (* Final Hermite Decomposition of combination two reduced systems *)
+      { u, h } = 
+        HermiteDecomposition[ reducedMat1 ~ Join ~ reducedMat2 ];
+      
+      (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
+      rhsFinal = 
+        PowerDot[
+          PadLeft[ reducedrhs2, Length[reducedMat1] + Length[reducedMat2], 1 ], 
+          u 
+        ];
+
+      pols = TPL @ Thread[ PowerDot[ variables, h ] - rhsFinal ];
+
       <| 
-        "Polynomials" ->
-          TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ] // TPL,
+        "Polynomials" -> pols,
         "Assumptions" -> True,
         "Values" -> Thread[ variables -> variables ]
       |>
+      ]
     ];
 
-    
-    subsysSize = Floor[ Length[equations] / nSubsys ];
-   
-    (* ================================================= *)
-    (* Reduction of subsystem of eqns who's RHS equals 1 *)
-    (* ================================================= *)
+    printlog[ "RBSVHD:reduction", { prodID, time, pols, Length @ equations } ];
 
-    rhs1Pos = Flatten @ Position[ rhs, 1 ];
-
-    (* Sorting rows lexicographically=> groups eqns with equal vars together *)
-    subMat1 = ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
-
-    reducedMat1 = 
-      Catch[
-        FixedPoint[
-          partitionAndReduce[ #, subsysSize, procID ] &, 
-          subMat1, 
-          5 (*Nest at most 5 times*)
-        ]
-      ];
-
-    (* ========================================================= *)
-    (* Reduction of subsystem of eqns who's RHS does not equal 1 *)
-    (* ========================================================= *)
-    
-    rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
-    
-    (* Now the RHS matters => need to combine mat with RHS when sorting *) 
-    matSubsys2 =
-      ReverseSortBy[
-        AppendRHS[ mat[[rhsNon1Pos]], rhs[[rhsNon1Pos]] ],
-        Abs
-      ];
-    
-    mat2 = matSubsys2[[ ;;, ;;-2 ]];
-    
-    rhs2 = matSubsys2[[ ;;, -1 ]];
-    
-    { reducedMat2, reducedrhs2 } = 
-      Catch[
-        FixedPoint[ partitionAndReduce[ #, subsysSize, procID ]&, { mat2, rhs2 } ] 
-      ];
-
-    (* Final Hermite Decomposition of combination two reduced systems *)
-    { u, h } = 
-      HermiteDecomposition[ reducedMat1 ~ Join ~ reducedMat2 ];
-    
-    (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
-    rhsFinal = 
-      PowerDot[
-        PadLeft[ reducedrhs2, Length[reducedMat1] + Length[reducedMat2], 1 ], 
-        u 
-      ];
-    
-    <| 
-      "Polynomials" ->
-        TPL @ Thread[ PowerDot[ variables, h ] - rhsFinal ],
-      "Assumptions" -> True,
-      "Values" -> Thread[ variables -> variables ]
-    |>
+    result
   ];
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
@@ -329,7 +347,7 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] :=
       AbsoluteTiming @
       ReverseSortBy[
         DeleteDuplicates @
-        Flatten[ (*This Flatten operation will riffle the lists of equations.*)
+        Flatten[ 
           Map[ 
             reduceMat, 
             Table[ mat[[pos]], { pos, partitionPos } ]
@@ -339,7 +357,7 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] :=
         Abs
       ];
 
-    (*printlog["RBSVHD:reduction",{procID,t,result}];*)
+    (* printlog["RBSVHD:reduction",{procID,t,result}]; *)
     result
   ];
 
@@ -352,9 +370,9 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_]
     AbsoluteTiming[
       partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
 
-      decomps = 
+      decomps =  
         Map[ 
-          MemoizedHermiteDecomposition[#, "StoreHermiteDecompositions" -> True] &, 
+          EchoTiming[ MemoizedHermiteDecomposition[EchoLabel["HermiteMatNon1RHS"][ # ], "StoreHermiteDecompositions" -> True ] ]&, 
           Table[ mat[[pos]], { pos, partitionPos } ]
         ];
 
