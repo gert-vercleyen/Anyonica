@@ -13,18 +13,18 @@ PackageExport["TowerOfExpressions"]
 TowerOfExpressions::usage =
   "TowerOfExpressions[exprList,s] returns a tower of couples containing variables" <>
   " and expressions in those variables.";
+  (*"such that the first couple contains polynomials with the least number of unknowns, \*)
+  (*the second couple contains polynomials with the least number of \*)
+  (*unknowns under the assumption that the unknowns of the first couple \*)
+  (*are known etc. Options include \"Symbol\" -> x to assume the \*)
+  (*variables are of the form x[__], and \"LevelSpec\" -> n to take only \*)
+  (*for variables up to level n into account.";*)
 
 TowerOfExpressions::wrongformat =
   "Argument `1` must be a list of expressions.";
 
 TowerOfExpressions::notasymbol =
   "Argument `1` is not a symbol";
-(*"such that the first couple contains polynomials with the least number of unknowns, \*)
-(*the second couple contains polynomials with the least number of \*)
-(*unknowns under the assumption that the unknowns of the first couple \*)
-(*are known etc. Options include \"Symbol\" -> x to assume the \*)
-(*variables are of the form x[__], and \"LevelSpec\" -> n to take only \*)
-(*for variables up to level n into account.";*)
 
 Options[TowerOfExpressions] :=
   Options[ VarExprPairs ];
@@ -46,7 +46,7 @@ TowerOfExpressions[ exprList_, s_, opts:OptionsPattern[] ] :=
     ,
     True
     ,
-    VarExprPairs[ exprList, s, opts ]//
+    VarExprPairs[ exprList, s, opts ] //
     GroupExpressions
   ];
 
