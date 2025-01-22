@@ -802,31 +802,31 @@ Rest[
 ];
 
 SetPartitions[ {} ] :=
-{ {} };
+  { {} };
 
 SetPartitions[ s_List ] :=
-Array[ KSetPartitions[ s ], Length[s] ] // Flatten[#,1]&;
+  Array[ KSetPartitions[ s ], Length[s] ] // Flatten[#,1]&;
 
 KSetPartitions[ {} ][ 0 ] :=
-{ {} };
+  { {} };
 
 KSetPartitions[ s_List ][ 0 ] :=
-{};
+  {};
 
 KSetPartitions[ s_List ][ k_Integer ] :=
-{} /; ( k > Length[s] );
+  {} /; ( k > Length[s] );
 
 KSetPartitions[ s_List ][ k_Integer ] :=
-{ Map[ { # }&, s ] } /; (k === Length[s]);
+  { Map[ { # }&, s ] } /; (k === Length[s]);
 
 KSetPartitions[ s_List ][ k_Integer ] :=
-Block[ { $RecursionLimit = Infinity },
-  Join[(* Put first element in subset of its own *)
-    Prepend[ #, {First[s]} ] & /@ KSetPartitions[ Rest[s] ][ k-1 ],
-    (* Put first el in one of the subsets  *)
-    Table[ PrependAt[ #, First @ s, j ], {j,Length[#]}]& /@ KSetPartitions[ Rest[s] ][ k ] // Flatten[#,1]&
-  ]
-]/; ( k > 0 ) && ( k < Length[s] );
+  Block[ { $RecursionLimit = Infinity },
+    Join[(* Put first element in subset of its own *)
+      Prepend[ #, {First[s]} ] & /@ KSetPartitions[ Rest[s] ][ k-1 ],
+      (* Put first el in one of the subsets  *)
+      Table[ PrependAt[ #, First @ s, j ], {j,Length[#]}]& /@ KSetPartitions[ Rest[s] ][ k ] // Flatten[#,1]&
+    ]
+  ]/; ( k > 0 ) && ( k < Length[s] );
 
 PrependAt[ listoflists_, element_, position_ ] :=
   Module[{ l = listoflists },
