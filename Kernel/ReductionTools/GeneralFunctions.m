@@ -657,7 +657,7 @@ WithMaximumDimension[ matList_List, k_Integer, opts:OptionsPattern[] ] :=
   WithDimension[ matList, { 0, k }, opts ];
 
 
-PackageScope["MatrixDirectSum"]
+PackageExport["MatrixDirectSum"]
 
 MatrixDirectSum::usage =
   "MatrixDirectSum[ listOfMatrices ] returns the direct sum of the matrices in listOfMatrices as a sparse matrix.";
