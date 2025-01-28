@@ -904,20 +904,24 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
 
     If[ Rank[ring] == 1, Return @ If[ io =!= All, { IdentityMatrix[1], 1 }, { IdentityMatrix[2], 2 } ] ];
 
-    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros },
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros, zeroPos, symbolsWithZeros },
       zeros =
         OptionValue["Zeros"];
 
-      symbols =
-        Complement[
-          Switch[ io,
-            "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
-            "FSymbols", FSymbols @ ring,
-            "RSymbols", RSymbols @ ring,
-            _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
-          ],
-          zeros
+      symbolsWithZeros =
+        Switch[ io,
+          "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
+          "FSymbols", FSymbols @ ring,
+          "RSymbols", RSymbols @ ring,
+          _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
         ];
+
+      zeroPos = 
+        Flatten @ 
+        Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, Heads -> False ];
+
+      symbols =
+        Complement[ symbolsWithZeros, zeros ]; 
 
       sym =
         GaugeSymmetries[ symbols, g ];
@@ -957,15 +961,36 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
         ]&;
 
       {
-        Transpose @ Join[
+        If[ zeroPos === {}, Identity, AddZerosToTransform[ zeroPos ] ] @
+        Transpose @ 
+        Join[
           Sort[ Transpose[v][[r+1;;]], sortf ],
           Sort[ Transpose[v][[;;r]], sortf ]
-        ],
+        ]
+        ,
         Length[v] - r
       }
     ]
   ];
 
+AddZerosToTransform[ {} ][ tMat_ ] :=
+  tMat;
+
+AddZerosToTransform[ zeroPos_List][ tMat_?MatrixQ ] := 
+  Module[ { nZeros, newDim, nonZeroPos, mat, oneAt, zeroMat }, 
+    nZeros = Length @ zeroPos;
+
+    newDim = nZeros + First @ Dimensions @ tMat;
+		
+		nonZeroPos = Complement[ Range @ newDim, zeroPos ]; 
+		
+		mat = ConstantArray[ 0, { newDim, newDim } ];
+		
+		mat[[zeroPos]] = PadRight[ #, newDim ]& /@ IdentityMatrix[nZeros];
+		mat[[nonZeroPos]] = PadLeft[ #, newDim ]& /@ tMat;
+		
+		mat
+  ];
 
 powerToRow[ s_, n_ ][ pow_ ] :=
   Normal @ SparseArray[ Cases[ pow, i_. * s[j_] :> { j } -> i ], {n} ];
@@ -992,13 +1017,10 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       GaugeSplitTransform[ ring, opts ];
 
     symbols =
-      Complement[
-        Switch[ io,
-          "All", Join[ FSymbols[ring], RSymbols[ring] ],
-          "FSymbols", FSymbols[ring],
-          "RSymbols", RSymbols[ring]
-        ],
-        zeros
+      Switch[ io,
+        "All", Join[ FSymbols[ring], RSymbols[ring] ],
+        "FSymbols", FSymbols[ring],
+        "RSymbols", RSymbols[ring]
       ];
 
     Map[
@@ -1022,7 +1044,7 @@ Options[GaugeInvariants] :=
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
   With[ { zeros = OptionValue["Zeros"] },
-    Join[ zeros, First @ GaugeSplitBasis[ ring, opts ] ]
+    First @ GaugeSplitBasis[ ring, opts ]
   ];
 
 
