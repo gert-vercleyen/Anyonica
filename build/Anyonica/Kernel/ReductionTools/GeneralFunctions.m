@@ -1069,12 +1069,12 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
     ]
   ];
 
-PackageScope["PowerDot"]
+PackageExport["PowerDot"]
 
 PowerDot[ a_, b_ ] :=
   If[ 
     MatchQ[ a, { 1 .. } ],
-    ConstantArray[1,Length[b]],
+    ConstantArray[ 1, Length @ b ],
     Inner[ Power, a, Transpose @ b, Times ]
   ];
 
