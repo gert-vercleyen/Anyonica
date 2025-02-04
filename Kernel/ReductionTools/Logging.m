@@ -2059,13 +2059,13 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:nontoric", { id_, length_ } ] 
     ]  
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toricresults", { id_, time_, length_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:nontoricresults", { id_, time_, length_ } ] :=
   AddCell[
     fileName,
     nbo,
     Cell[
       TextData[{
-        inputStyle[ "Toric subsystem reduced to one of "
+        inputStyle[ "Non-toric subsystem reduced to one of "
           <> ToString[length]
           <> " equations in " <> ToString[time] <> "s." 
         ]
@@ -2121,8 +2121,8 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PAR:reduction", { id_, time_, n_ } ] 
     Cell[
       TextData[{
         inputStyle[ 
-          "Reduced matrix with " <> ToString[length] <> 
-          " nonzero rows obtained in " <> ToString[n] <> 
+          "Reduced matrix with " <> ToString[n] <> 
+          " nonzero rows obtained in " <> ToString[time] <> 
           "s." 
         ]
       }],

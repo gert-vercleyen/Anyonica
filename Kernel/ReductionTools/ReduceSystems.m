@@ -267,15 +267,20 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
 
       printlog["RBSVHD:toric", { procID, Length @ subMat1 }];
 
-      { trm1, reducedMat1 } =
-        AbsoluteTiming @  
-        Catch[
+      If[ 
+        subMat1 === {{}}
+        ,
+        { trm1, reducedMat1 } = AbsoluteTiming[ {{}} ]
+        ,
+        { trm1, reducedMat1 } =
+          AbsoluteTiming @  
+          Catch @
           FixedPoint[
             partitionAndReduce[ #, subsysSize, procID ] &, 
             subMat1, 
             5 (*Nest at most 5 times*)
           ]
-        ];
+      ];
 
       printlog["RBSVHD:toricresults", { procID, trm1, Length @ reducedMat1 }];
 
@@ -286,24 +291,32 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
       rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
       
       (* Now the RHS matters => need to combine mat with RHS when sorting *) 
-      matSubsys2 =
+      matSubsys2 = 
         ReverseSortBy[
           AppendRHS[ mat[[rhsNon1Pos]], rhs[[rhsNon1Pos]] ],
           Abs
         ];
       
-      mat2 = Echo @ matSubsys2[[ ;;, ;;-2 ]];
-      
-      rhs2 = Echo @ matSubsys2[[ ;;, -1 ]];
-      
-      printlog["RBSVHD:nontoric", { procID, Length @ mat2 }];
+      printlog["RBSVHD:nontoric", { procID, Length @ matSubsys2 }];
 
-      { trm2, { reducedMat2, reducedrhs2 } } =
-        AbsoluteTiming @ 
-        Catch[
-          FixedPoint[ partitionAndReduce[ #, subsysSize, procID ]&, { mat2, rhs2 } ] 
-        ];
-
+      If[ 
+        matSubsys2 === {{}}
+        ,
+        { trm2, { reducedMat2, reducedrhs2 } } =
+          AbsoluteTiming[ { {}, {} } ]
+        ,
+        { trm2, { reducedMat2, reducedrhs2 } } =
+          AbsoluteTiming[
+            mat2 = matSubsys2[[ ;;, ;;-2 ]];
+            rhs2 = matSubsys2[[ ;;, -1 ]];
+            Catch @
+            FixedPoint[ 
+              partitionAndReduce[ #, subsysSize, procID ]&, 
+              { mat2, rhs2 }, 
+              5 
+            ] 
+          ]
+      ];
       
       printlog["RBSVHD:nontoricresults", { procID, trm2, Length @ reducedMat2 } ];
 
@@ -333,10 +346,13 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
     result
   ];
 
+
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   all elements of the RHS equal 1 *)
 partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] := 
   Module[{ t, result, partitionPos, reduceMat }, 
+    (* Check for empty matrix *)
+    If[ ByteCount[ mat < 1024 ] && Flatten[mat] === {}, Return @ {{}} ];
 
     printlog["PAR:init", {procID,Length @ mat,subsysSize} ];
 
@@ -370,6 +386,9 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] :=
   none of the elements of the RHS equal 1 *)
 partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_] := 
   Module[{ t, result, partitionPos, decomps, newMat, newRHS, newSys },  
+
+    (* Check for empty system *)
+    If[ ByteCount[ rhs < 1024 ] && Flatten[rhs] === {}, Return @ { {{}}, { } } ];
 
     printlog["PAR:init", {procID,Length @ mat,subsysSize} ];
   
@@ -410,8 +429,12 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_]
     result
   ];
 
-AppendRHS[ mat_, rhs_ ] := 
-  ArrayFlatten[ { { mat, Transpose @ { rhs } } } ];
+AppendRHS[ mat_, rhs_ ] := ArrayFlatten[ { { mat, Transpose @ { rhs } } } ];
+
+AppendRHS[ {{}}, _ ] := {{}};
+
+AppendRHS[ _, {} ] := {{}}
+
 
 FindEquivalences[ eqns_, x_ ] :=
   With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
