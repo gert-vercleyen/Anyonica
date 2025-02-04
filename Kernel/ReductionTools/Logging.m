@@ -98,8 +98,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
               MyNotebookPrint[ dataDir, fileName, nbo ][##]
             ]&
           },
-          result =
-            code;
+          result = code;
 
           NotebookPut[ ApplyCellGrouping @ NotebookGet @ nbo, nbo ];
 
@@ -118,14 +117,14 @@ ApplyCellGrouping[ notebook_Notebook ] :=
       a__,
       Longest[
         PatternSequence[
-          p1 : Cell[__, CellTags -> {x_, "Start"}, ___ ],
+          p1 : Cell[__, CellTags -> { x_, "Start" }, ___ ],
           seq___,
-          p2 : Cell[__, CellTags -> {x_, "End"}, ___ ]
+          p2 : Cell[__, CellTags -> { x_, "End" }, ___ ]
         ]
       ],
       b__
     } :>
-    { a, CellGroupData[ { p1, seq, p2} ], b }
+    { a, CellGroupData[ { p1, seq, p2 } ], b }
   ] //
   ReplaceAll[
     Notebook[ { firstCell_Cell, a_Cell, b__, c_Cell }, y__ ] :>
@@ -1980,14 +1979,14 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:init", { id_, equations_, vars_, 
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, n_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] :=
   AddCell[
     fileName,
     nbo,
     Cell[
       TextData[{
         inputStyle[ 
-          "Reducing system via HermiteDecomposition on subsystems with at most " <> 
+          "Reducing system of "<>ToString[length] <> " equations via HermiteDecomposition on subsystems with at most " <> 
           ToString[n] <> " equations.\nThis procedure will be applied at most 5 times." 
         ]
       }],
@@ -2005,14 +2004,132 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, equa
     AddCell[
       fileName,
       nbo,
-      TextData[{
-        inputStyle[ "A reduced " ],
-        hyperlinkBox[ "system", fn1 ],
-        inputStyle[ " of "<> ToString[Length@equations]<> " equations was obtained after "<> ToString[time] <> " seconds."]
-      }]
+      Cell[
+        TextData[{
+          inputStyle[ "A reduced " ],
+          hyperlinkBox[ "system", fn1 ],
+          inputStyle[ " of "<> ToString[Length@equations]<> " equations was obtained after "<> ToString[time] <> " seconds."]
+        }],
+        "Text",
+        CellTags -> { id, "Info" }
+      ]  
     ];
   ];
 
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toric", { id_, length_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ "Started reduction of toric subsystem with "<> ToString[length] <> " equations." ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]  
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toricresults", { id_, time_, length_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[ 
+      TextData[{
+        inputStyle[ "Toric subsystem reduced to one of "
+          <> ToString[length]
+          <> " equations in " <> ToString[time] <> "s." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]  
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:nontoric", { id_, length_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[ 
+      TextData[{
+        inputStyle[ "Started reduction of non-toric subsystem with "<> ToString[length] <> " equations." ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]  
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toricresults", { id_, time_, length_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ "Toric subsystem reduced to one of "
+          <> ToString[length]
+          <> " equations in " <> ToString[time] <> "s." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]  
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:intermediatereduction", { id_, mat } ] :=
+  Module[ { fn1 },
+    fn1 = dataFileName[ id, dir, "firstSmallerSystem" ];
+    safeExport[ fn1, equations ];
+
+    AddCell[
+      fileName,
+      nbo,
+      Cell[ 
+        TextData[{
+          inputStyle[ "Combined toric reduced matrix and non-toric reduced matrix into a new " ],
+          hyperlinkBox[ "matrix", fn1 ],
+          inputStyle[ " with "<> ToString[Length@Normal@mat]<> " rows.\n"<>
+          "Performing a final HermiteDecomposition."]
+        }],
+      "Text",
+      CellTags -> { id, "Info" }
+      ]  
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PAR:init", { id_, length_, n_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Partitioning matrix with " <> ToString[length] <> 
+          " nonzero rows into submatrices of at most " <> ToString[n] <> 
+          " rows and reducing to equivalent matrix." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "PAR:reduction", { id_, time_, n_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Reduced matrix with " <> ToString[length] <> 
+          " nonzero rows obtained in " <> ToString[n] <> 
+          "s." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
 (*MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SMFPE:systems", { id_, solverInput_, ___ } ] :=*)
 (*  Module[{fn},*)
 (*    fn = dataFileName[ id, dir, "SolverInput" ];*)
