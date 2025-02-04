@@ -1202,3 +1202,12 @@ EchoIn[ n_Integer, label_, function_][ code_ ] :=
 
 EchoIn[ n_Integer, label_ ][code_] := 
   EchoIn[ n, label, Identity, code ];
+
+PackageExport["EchoPerformance"]
+
+EchoPerformance::usage = 
+"EchoPerformance[expr] prints the absolute number "<>
+"of seconds and memory in bytes used to evaluate expr and returns expr.\n" <>
+"EchoPerformance[expr,label] prepends label to a printed expression."
+
+EchoPerformance := GeneralUtilities`EchoPerformance;
