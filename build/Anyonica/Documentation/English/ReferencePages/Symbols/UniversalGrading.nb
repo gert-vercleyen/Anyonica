@@ -1,0 +1,438 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 14.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     16452,        428]
+NotebookOptionsPosition[     12802,        350]
+NotebookOutlinePosition[     14997,        406]
+CellTagsIndexPosition[     14912,        401]
+WindowTitle->UniversalGrading
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA SYMBOL", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "fcaa26d6-e1ad-4cbb-98b0-bee52941b03e"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "58a784d3-edd7-43c6-b365-5b1cc668b787"],
+        Background->RGBColor[0.490196, 0.576471, 0.690196],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[{
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "Related Guides",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "36d0f976-bc37-41c3-9d66-86c62dc92260"]
+         }],ExpressionUUID->"3f197012-6ea4-4411-9f8e-85e99d2fe792"],
+         StripOnInput->False],{
+        "\"Anyonica\"" :> 
+         Documentation`HelpLookup["paclet:Anyonica/guide/Anyonica"]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"MoreAbout"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "61d5742b-6ba7-433e-b159-da0b14c9420c"],
+     "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
+\[ThickSpace]",
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "URL",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "5f5d25cc-460e-402a-8861-3e73f78e244e"]
+         }],ExpressionUUID->"637132ef-8f6d-4098-9ef1-3001aa1eaf6e"],
+         StripOnInput->False],{
+        "\"Anyonica/ref/UniversalGrading\"" :> None, 
+         "\"Copy Wolfram Documentation Center URL\"" :> 
+         Module[{DocumentationSearch`Private`nb$}, 
+           DocumentationSearch`Private`nb$ = 
+            NotebookPut[
+             Notebook[{Cell["Anyonica/ref/UniversalGrading"]}, Visible -> 
+               False]]; 
+           SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+           FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+           NotebookClose[DocumentationSearch`Private`nb$]; Null], Delimiter, 
+         "\"Copy web URL\"" :> 
+         Module[{DocumentationSearch`Private`nb$}, 
+           DocumentationSearch`Private`nb$ = 
+            NotebookPut[
+             Notebook[{
+               Cell[BoxData[
+                 MakeBoxes[
+                  Hyperlink[
+                   "http://reference.wolfram.com/language/Anyonica/ref/\
+UniversalGrading.html"], StandardForm]], "Input", TextClipboardType -> 
+                 "PlainText"]}, Visible -> False]]; 
+           SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+           FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+           NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+         "\"Go to web URL\"" :> 
+         FrontEndExecute[{
+           NotebookLocate[{
+             URL[If[TrueQ[False], 
+                 "http://reference.wolfram.com/system-modeler/", 
+                 "http://reference.wolfram.com/language/"] <> 
+               "Anyonica/ref/UniversalGrading" <> ".html"], None}]}]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"URLMenu"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "740a2dd7-7001-473e-b465-e4180e1599bd"]
+    }], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "3ee2497a-e635-4166-a5af-871356a40cd7"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"f74fe407-246d-455e-b1e3-4d68fb758b8d"],
+
+Cell["Anyonica`", "ContextNameCell",ExpressionUUID->"fce3560e-4d8a-445a-8d23-85357302c8a0"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[GridBox[{
+   {Cell[TextData[{
+     Cell[
+     "UniversalGrading", "ObjectName",ExpressionUUID->
+      "fb3ecbf1-4243-4735-9203-9df0ba938d59"],
+     Cell[BoxData[
+      TemplateBox[{8},
+       "Spacer1"]],ExpressionUUID->"65990d61-3df9-40ca-abcc-7bf1ce588ce0"],
+     Cell[BoxData[
+     ""], "ObjectNameTranslation",ExpressionUUID->
+      "8b03ce5b-6671-4c7d-a4c0-6f136a4418ac"]
+    }],ExpressionUUID->"c67749c2-7817-4ca7-9c52-444c5de7750d"], 
+    "\[SpanFromLeft]"}
+  }]], "ObjectNameGrid",ExpressionUUID->"8193e9b8-c30e-45a7-ad94-\
+a20c4543f0ae"],
+
+Cell[BoxData[GridBox[{
+   {"", Cell[TextData[{
+     Cell[BoxData[
+      RowBox[{
+       TemplateBox[{
+         Cell[
+          TextData["UniversalGrading"]], 
+         "paclet:Anyonica/ref/UniversalGrading", "Anyonica Package Symbol"},
+        "PackageLink",
+        BaseStyle->"InlineFormula"], "[", " ", 
+       StyleBox["ring", "TI"], " ", "]"}]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "b012a336-1581-48c3-ae6f-dc27ba296107"],
+     "\[LineSeparator]returns the universal grading of the fusion ring ",
+     Cell[BoxData[
+      StyleBox["ring", "TI"]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "d69fb7b9-be2d-4e12-a30c-cb0a303b285c"],
+     "."
+    }],ExpressionUUID->"bd49f5af-ee8c-464b-ba16-4f6a0c20a337"]}
+  }]], "Usage",
+ CellID->1628331273,ExpressionUUID->"3e314f82-8dd3-40fd-b9d7-227f00ce95ef"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[Cell[BoxData[
+ ButtonBox[Cell[TextData[{
+   Cell[BoxData[
+    DynamicBox[ToBoxes[
+      If[
+       MatchQ[
+        CurrentValue[
+         EvaluationNotebook[], {TaggingRules, "Openers", "NotesSection"}, 
+         Closed], 
+        Alternatives[Open, True]], 
+       Style[
+        Graphics[{
+          Thickness[0.18], 
+          RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+          Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+         PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+        0.68 Inherited], 
+       Rotate[
+        Style[
+         Graphics[{
+           Thickness[0.18], 
+           RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+           Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+          PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+         0.68 Inherited], Rational[1, 2] Pi, {-1.65, -1}]]],
+     ImageSizeCache->{20., {0.5000000000000009, 19.5}}]],ExpressionUUID->
+    "7ea97b21-5c00-4452-9317-7b24fd043bb9"],
+   Cell[BoxData[
+    TemplateBox[{1},
+     "Spacer1"]],ExpressionUUID->"5fcd3cad-15fa-418e-a1b3-12e5c5c24016"],
+   "Details and Options"
+  }], "NotesFrameText",ExpressionUUID->"1bcd70b0-e3d7-4f8f-b5aa-41370c79346b"],
+  Appearance->{Automatic, None, "Normal", Automatic},
+  BaseStyle->None,
+  ButtonFunction:>(FrontEndExecute[{
+     FrontEnd`SelectionMove[
+      FrontEnd`SelectedNotebook[], All, ButtonCell], 
+     FrontEndToken["OpenCloseGroup"], 
+     FrontEnd`SelectionMove[
+      FrontEnd`SelectedNotebook[], After, CellContents]}]& ),
+  Evaluator->None,
+  Method->
+   "Preemptive"]],ExpressionUUID->"006a2e50-1d96-4387-bc90-06debb357320"]], \
+"NotesSection",
+ WholeCellGroupOpener->True,
+ CellGroupingRules->{"SectionGrouping", 50},
+ CacheGraphics->False,
+ CellID->1238535186,ExpressionUUID->"eba718e9-8e22-4216-b3e9-ca6ea56410d4"],
+
+Cell[TextData[{
+ "The universal grading is represented as a couple { ",
+ Cell[BoxData[
+  StyleBox["grading", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "d13a6ea9-a3f5-4ad8-a7e5-a76cc602b855"],
+ ", ",
+ Cell[BoxData[
+  StyleBox["groupRing", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "8dd6e835-8459-4186-a798-6b402d8394f9"],
+ " } where ",
+ Cell[BoxData[
+  StyleBox["grading", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "2679a58e-dcf6-4bcf-8bf5-264e18e57e86"],
+ " is a list of rules of elements from ",
+ Cell[BoxData[
+  StyleBox["ring", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "72ac5153-93e5-4018-b7ca-4ddad6c88c49"],
+ " to ",
+ Cell[BoxData[
+  StyleBox["groupRing", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "5bc0d74e-ee1d-4dc0-9d0f-0f05da332bec"],
+ " and ",
+ Cell[BoxData[
+  StyleBox["groupRing", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "2f998e8b-9427-4594-bbcb-9b4bdd919cbe"],
+ " is the universal group that grades the fusion ring ",
+ Cell[BoxData[
+  StyleBox["ring", "TI"]], "InlineFormula",
+  FontFamily->"Source Sans Pro",ExpressionUUID->
+  "73099d04-d43a-4817-afbe-84931c6ce8ab"],
+ "."
+}], "Notes",
+ CellID->1979591590,ExpressionUUID->"f0f5d823-5d4c-4acd-a000-e092ffc14624"]
+}, Dynamic[CurrentValue[
+ EvaluationNotebook[], {TaggingRules, "Openers", "NotesSection"}, Closed]]]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ Cell[BoxData[
+  DynamicBox[ToBoxes[
+    If[
+     MatchQ[
+      CurrentValue[
+       EvaluationNotebook[], {
+       TaggingRules, "Openers", "PrimaryExamplesSection"}, Open], 
+      Alternatives[True, Open]], 
+     Style[
+      Graphics[{
+        Thickness[0.18], 
+        RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+        Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+       PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+      0.68 Inherited], 
+     Rotate[
+      Style[
+       Graphics[{
+         Thickness[0.18], 
+         RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+         Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+        PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+       0.68 Inherited], Rational[1, 2] Pi, {-1.65, -1}]]],
+   ImageSizeCache->{20., {7., 13.}}]],ExpressionUUID->
+  "67840b33-b4a1-49c2-9451-9db3b670fb44"],
+ Cell[BoxData[
+  TemplateBox[{1},
+   "Spacer1"]],ExpressionUUID->"8845dd89-bbec-4f25-bfd5-f2343abeb35b"],
+ "Examples",
+ "\[NonBreakingSpace]\[NonBreakingSpace]",
+ Cell["(0)", "ExampleCount",ExpressionUUID->
+  "1f70d0f9-af34-49b3-83a0-96a07cc9e5d0"]
+}], "PrimaryExamplesSection",
+ WholeCellGroupOpener->True,
+ CacheGraphics->False,
+ CellTags->"PrimaryExamplesSection",
+ CellID->501880731,ExpressionUUID->"15cac1a7-ed7b-4ff3-be08-48b509dc8d3f"],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<Anyonica`\>\"", "]"}]], "Input", "ExampleInitialization",
+ CellLabel->"In[1]:=",
+ CellID->79902498,ExpressionUUID->"493d9ee9-1115-4b86-8376-aa15553e3064"]
+}, Dynamic[CurrentValue[
+ EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, 
+  Closed]]]],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, 
+       "RelatedFunction.png"]],
+     ImageSizeCache->{75., {40., 50.}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"See", " ", "Also"}], "SeeAlsoSection"]}
+     }]}
+  }]], "SeeAlsoSection",ExpressionUUID->"907b1c8a-2473-4715-8b23-\
+37b1a5d8411c"],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, "RelatedGuide.png"]],
+     ImageSizeCache->{75., {40., 50.}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"Related", " ", "Guides"}], "MoreAboutSection"]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Anyonica"]], "paclet:Anyonica/guide/Anyonica"},
+          "RefLinkPlain",
+          BaseStyle->{"MoreAbout"}]], "MoreAbout",ExpressionUUID->
+         "519a83a7-9484-423e-b7ff-f0620dd90972"]}]}
+     }]}
+  }]], "MoreAboutSection",ExpressionUUID->"5781c9ee-2c76-4732-b136-\
+679dc4abf3aa"],
+
+Cell[" ", "FooterCell",ExpressionUUID->"18e48d9f-4d83-4b1c-903e-f2b4af0ed49c"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"UniversalGrading",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}, 
+    "AllOptsTable" -> Closed, "NotesSection" -> Closed}, "NewStyles" -> True, 
+  "CitationPopupData" -> $Failed, "ShowCitation" -> False, "HasOptions" -> 
+  True, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2024, 10, 19, 20, 9, 53.667115}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Symbol", "language" -> "en", "paclet" -> "Anyonica", "status" -> 
+    "None", "summary" -> 
+    "UniversalGrading[ring ] returns the universal grading of the fusion ring \
+ring.", "synonyms" -> {}, "tabletags" -> {}, "title" -> "UniversalGrading", 
+    "titlemodifier" -> "", "metadescription" -> "", "windowtitle" -> 
+    "UniversalGrading", "type" -> "Symbol", "uri" -> 
+    "Anyonica/ref/UniversalGrading"}},
+CellContext->"Global`",
+FrontEndVersion->"14.0 for Mac OS X x86 (64-bit) (October 24, 2023)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> "Global`"], 
+   Cell[
+    StyleData["Output"], CellContext -> "Global`"]}, Visible -> False, 
+  FrontEndVersion -> "14.0 for Mac OS X x86 (64-bit) (October 24, 2023)", 
+  StyleDefinitions -> "Default.nb"],
+ExpressionUUID->"de08142b-e9b2-4a48-88da-6ff4f880c86f"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{
+ "PrimaryExamplesSection"->{
+  Cell[9927, 268, 1390, 37, 54, "PrimaryExamplesSection",ExpressionUUID->"15cac1a7-ed7b-4ff3-be08-48b509dc8d3f",
+   CellTags->"PrimaryExamplesSection",
+   CellID->501880731]}
+ }
+*)
+(*CellTagsIndex
+CellTagsIndex->{
+ {"PrimaryExamplesSection", 14713, 394}
+ }
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[588, 21, 4354, 106, 84, "AnchorBarGrid",ExpressionUUID->"f74fe407-246d-455e-b1e3-4d68fb758b8d",
+ CellID->1],
+Cell[4945, 129, 91, 0, 35, "ContextNameCell",ExpressionUUID->"fce3560e-4d8a-445a-8d23-85357302c8a0"],
+Cell[CellGroupData[{
+Cell[5061, 133, 559, 14, 88, "ObjectNameGrid",ExpressionUUID->"8193e9b8-c30e-45a7-ad94-a20c4543f0ae"],
+Cell[5623, 149, 873, 21, 166, "Usage",ExpressionUUID->"3e314f82-8dd3-40fd-b9d7-227f00ce95ef",
+ CellID->1628331273]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6533, 175, 1882, 47, 56, "NotesSection",ExpressionUUID->"eba718e9-8e22-4216-b3e9-ca6ea56410d4",
+ CellGroupingRules->{"SectionGrouping", 50},
+ CellID->1238535186],
+Cell[8418, 224, 1382, 38, 70, "Notes",ExpressionUUID->"f0f5d823-5d4c-4acd-a000-e092ffc14624",
+ CellID->1979591590]
+}, Dynamic[CurrentValue[EvaluationNotebook[], {TaggingRules, "Openers", "NotesSection"}, Closed]]]],
+Cell[CellGroupData[{
+Cell[9927, 268, 1390, 37, 54, "PrimaryExamplesSection",ExpressionUUID->"15cac1a7-ed7b-4ff3-be08-48b509dc8d3f",
+ CellTags->"PrimaryExamplesSection",
+ CellID->501880731],
+Cell[11320, 307, 196, 3, 47, "Input",ExpressionUUID->"493d9ee9-1115-4b86-8376-aa15553e3064",
+ CellID->79902498]
+}, Dynamic[CurrentValue[EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, Closed]]]],
+Cell[11634, 315, 380, 11, 172, "SeeAlsoSection",ExpressionUUID->"907b1c8a-2473-4715-8b23-37b1a5d8411c"],
+Cell[12017, 328, 700, 18, 172, "MoreAboutSection",ExpressionUUID->"5781c9ee-2c76-4732-b136-679dc4abf3aa"],
+Cell[12720, 348, 78, 0, 32, "FooterCell",ExpressionUUID->"18e48d9f-4d83-4b1c-903e-f2b4af0ed49c"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

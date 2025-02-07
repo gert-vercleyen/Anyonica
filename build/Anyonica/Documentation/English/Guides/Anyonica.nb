@@ -1,0 +1,2347 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[     93071,       2337]
+NotebookOptionsPosition[     80545,       2105]
+NotebookOutlinePosition[     82222,       2146]
+CellTagsIndexPosition[     82179,       2143]
+WindowTitle->Anyonica
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA GUIDE", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "0441395d-df23-4b62-89d8-2fd36cdac1b5"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "c061bf2f-caae-4c28-a5f2-d2ce69019536"],
+        Background->RGBColor[0.85098, 0.396078, 0],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[{
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "Functions",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "3bfc3deb-e591-4017-9b19-cbc1fc92683b"]
+         }],ExpressionUUID->"a7cf2b60-6e30-4d44-8c2c-84d062933d79"],
+         StripOnInput->False],{
+        StyleBox[
+          "\"AdjointIrreps\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/AdjointIrreps"], 
+         StyleBox["\"AFRQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/AFRQ"], 
+         StyleBox["\"AGT\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/AGT"], 
+         StyleBox["\"AI\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/AI"], 
+         StyleBox[
+          "\"AllFusionRingsQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/AllFusionRingsQ"], 
+         StyleBox[
+          "\"AllPivotalStructures\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/AllPivotalStructures"], 
+         StyleBox[
+          "\"ApplyGaugeTransform\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/ApplyGaugeTransform"], 
+         StyleBox["\"BraidedQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/BraidedQ"], 
+         StyleBox["\"Cases\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:ref/Cases"], 
+         StyleBox[
+          "\"DeleteEquivalentSolutions\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/DeleteEquivalentSolutions"], 
+         StyleBox["\"EFRQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/EFRQ"], 
+         StyleBox[
+          "\"EquivalentFusionCategoriesQ\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/EquivalentFusionCategoriesQ"], 
+         StyleBox[
+          "\"EquivalentFusionRingsQ\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/EquivalentFusionRingsQ"], 
+         StyleBox["\"FCBC\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FCBC"], 
+         StyleBox["\"FCL\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FCL"], 
+         StyleBox[
+          "\"FindZeroValues\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FindZeroValues"], 
+         StyleBox["\"FMatrices\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FMatrices"], 
+         StyleBox["\"FPDims\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FPDims"], 
+         StyleBox["\"FRA\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FRA"], 
+         StyleBox["\"FRBC\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FRBC"], 
+         StyleBox["\"FRC\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FRC"], 
+         StyleBox["\"FRL\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FRL"], 
+         StyleBox[
+          "\"FrobeniusPerronDimensions\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/FrobeniusPerronDimensions"], 
+         StyleBox["\"FSymbols\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FSymbols"], 
+         StyleBox[
+          "\"FusionCategory\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionCategory"], 
+         StyleBox[
+          "\"FusionCategoryByCode\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/FusionCategoryByCode"], 
+         StyleBox[
+          "\"FusionCategoryList\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionCategoryList"], 
+         StyleBox["\"FusionRing\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRing"], 
+         StyleBox[
+          "\"FusionRingAutomorphisms\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/FusionRingAutomorphisms"], 
+         StyleBox[
+          "\"FusionRingByCode\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingByCode"], 
+         StyleBox[
+          "\"FusionRingCharacters\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/FusionRingCharacters"], 
+         StyleBox[
+          "\"FusionRingFromGroup\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingFromGroup"], 
+         StyleBox[
+          "\"FusionRingHI\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingHI"], 
+         StyleBox[
+          "\"FusionRingList\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingList"], 
+         StyleBox[
+          "\"FusionRingPSU2k\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingPSU2k"], 
+         StyleBox["\"FusionRingQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingQ"], 
+         StyleBox[
+          "\"FusionRingSON2\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingSON2"], 
+         StyleBox[
+          "\"FusionRingSU2k\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingSU2k"], 
+         StyleBox[
+          "\"FusionRingTY\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingTY"], 
+         StyleBox[
+          "\"FusionRingZn\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/FusionRingZn"], 
+         StyleBox[
+          "\"GaugeSymmetries\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/GaugeSymmetries"], 
+         StyleBox[
+          "\"GaugeSymmetryEquivalentQ\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/GaugeSymmetryEquivalentQ"], 
+         StyleBox[
+          "\"GaugeTransform\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/GaugeTransform"], 
+         StyleBox["\"GS\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/GS"], 
+         StyleBox["\"GSEQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/GSEQ"], 
+         StyleBox["\"GT\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/GT"], 
+         StyleBox["\"HE\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/HE"], 
+         StyleBox[
+          "\"HexagonEquations\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/HexagonEquations"], 
+         StyleBox[
+          "\"HexagonGroebnerSystems\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/ref/HexagonGroebnerSystems"], 
+         StyleBox["\"HGS\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/HGS"], 
+         StyleBox["\"MD\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/MD"], 
+         StyleBox["\"ModularData\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/ModularData"], 
+         StyleBox["\"ModularQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/ModularQ"], 
+         StyleBox["\"MT\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/MT"], 
+         StyleBox[
+          "\"MultiplicationTable\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/MultiplicationTable"], 
+         StyleBox["\"PE\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/PE"], 
+         StyleBox[
+          "\"PentagonEquations\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/PentagonEquations"], 
+         StyleBox[
+          "\"PentagonGroebnerSystems\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/PentagonGroebnerSystems"], 
+         StyleBox[
+          "\"PermutedRing\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/PermutedRing"], 
+         StyleBox["\"PGS\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/PGS"], 
+         StyleBox[
+          "\"PivotalStructure\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/PivotalStructure"], 
+         StyleBox["\"PR\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/PR"], 
+         StyleBox[
+          "\"QuantumDimensions\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/QuantumDimensions"], 
+         StyleBox["\"RBKR\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/RBKR"], 
+         StyleBox[
+          "\"ReplaceByKnownRing\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/ReplaceByKnownRing"], 
+         StyleBox["\"RibbonQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/RibbonQ"], 
+         StyleBox["\"RSymbols\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/RSymbols"], 
+         StyleBox["\"SBS\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SBS"], 
+         StyleBox["\"Select\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:ref/Select"], 
+         StyleBox["\"SEQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SEQ"], 
+         StyleBox["\"SFR\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SFR"], 
+         StyleBox["\"SGQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SGQ"], 
+         StyleBox["\"SHE\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SHE"], 
+         StyleBox["\"SMatrix\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SMatrix"], 
+         StyleBox[
+          "\"SolveBinomialSystem\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SolveBinomialSystem"], 
+         StyleBox[
+          "\"SolveHexagonEquations\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/SolveHexagonEquations"], 
+         StyleBox[
+          "\"SolvePentagonEquations\"", "SeeAlsoRelated", StripOnInput -> 
+           False] :> Documentation`HelpLookup[
+          "paclet:Anyonica/ref/SolvePentagonEquations"], 
+         StyleBox["\"SortedRing\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SortedRing"], 
+         StyleBox["\"SPE\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SPE"], 
+         StyleBox["\"SphericalQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SphericalQ"], 
+         StyleBox["\"SR\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SR"], 
+         StyleBox[
+          "\"SubFusionRings\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SubFusionRings"], 
+         StyleBox[
+          "\"SymmetricGaugeQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SymmetricGaugeQ"], 
+         StyleBox[
+          "\"SymmetryEquivalentQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/SymmetryEquivalentQ"], 
+         StyleBox[
+          "\"TensorProduct\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/TensorProduct"], 
+         StyleBox[
+          "\"ToSymmetricGauge\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/ToSymmetricGauge"], 
+         StyleBox[
+          "\"ToUnitaryGauge\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/ToUnitaryGauge"], 
+         StyleBox["\"TP\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/TP"], 
+         StyleBox["\"TSG\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/TSG"], 
+         StyleBox["\"TUG\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/TUG"], 
+         StyleBox["\"Twists\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/Twists"], 
+         StyleBox["\"UCS\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/UCS"], 
+         StyleBox["\"UG\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/UG"], 
+         StyleBox["\"UGQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/UGQ"], 
+         StyleBox[
+          "\"UnitaryGaugeQ\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/UnitaryGaugeQ"], 
+         StyleBox[
+          "\"UniversalGrading\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/UniversalGrading"], 
+         StyleBox[
+          "\"UpperCentralSeries\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/UpperCentralSeries"], 
+         StyleBox["\"WD\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/WD"], 
+         StyleBox["\"WGT\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/WGT"], 
+         StyleBox[
+          "\"WhichDecompositions\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/WhichDecompositions"], 
+         StyleBox[
+          "\"WhichGaugeTransform\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/WhichGaugeTransform"], 
+         StyleBox[
+          "\"WhichPermutation\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/WhichPermutation"], 
+         StyleBox["\"WP\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/WP"], 
+         StyleBox["\"\[ScriptD]\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/\[ScriptD]"], 
+         StyleBox[
+          "\"\[ScriptCapitalF]\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/\[ScriptCapitalF]"], 
+         StyleBox["\"\[ScriptP]\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/\[ScriptP]"], 
+         StyleBox[
+          "\"\[ScriptCapitalR]\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/\[ScriptCapitalR]"], 
+         StyleBox["\"\[ScriptT]\"", "SeeAlsoRelated", StripOnInput -> False] :> 
+         Documentation`HelpLookup["paclet:Anyonica/ref/\[ScriptT]"]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"GuideFunction"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "1a5832b5-653a-46a6-9598-7499a86536bc"],
+     "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
+\[ThickSpace]",
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "Related Guides",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "440a51f7-401b-4aec-b6c4-ab8ee0d3d936"]
+         }],ExpressionUUID->"cbd8bbfd-58f4-4d76-af91-e33263784208"],
+         StripOnInput->False],{
+        "\"Properties of Fusion Rings\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/guide/PropertiesofFusionRings"], 
+         "\"Additional Useful Functions\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/guide/AdditionalUsefulFunctions"]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"GuideMoreAbout"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "8eab79f2-0844-4267-9d5c-69510b6fa422"],
+     "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
+\[ThickSpace]",
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "Tech Notes",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "36217ffd-dd73-42ec-b6c1-56d1ac117d3c"]
+         }],ExpressionUUID->"5766caab-43f7-4975-a71e-ba61c5c8c0fc"],
+         StripOnInput->False],{
+        "\"Finding Fusion Rings With Certain Properties\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/tutorial/FindingFusionRingsWithCertainProperties"],
+          "\"Solving the Pentagon Equations\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/tutorial/SolvingthePentagonEquations"], 
+         "\"Solving the Hexagon Equations\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/tutorial/SolvingtheHexagonEquations"], 
+         "\"Reducing Systems of Polynomial Equations\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/tutorial/ReducingSystemsofPolynomialEquations"], 
+         "\"Dealing with Symmetries\"" :> 
+         Documentation`HelpLookup[
+          "paclet:Anyonica/tutorial/DealingwithSymmetries"]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"GuideTutorial"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "081a3357-eef3-4660-bfb3-f81e4f88e11e"],
+     "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
+\[ThickSpace]",
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "URL",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "c6faec7d-474d-4460-b6f1-68ccfaaadef3"]
+         }],ExpressionUUID->"e1c074a3-efeb-4d53-8f86-3463660d7fe5"],
+         StripOnInput->False],{
+        "\"Anyonica/guide/Anyonica\"" :> None, 
+         "\"Copy Wolfram Documentation Center URL\"" :> 
+         CopyToClipboard["Anyonica/guide/Anyonica"], Delimiter, 
+         "\"Copy web URL\"" :> 
+         Module[{DocumentationSearch`Private`nb$}, 
+           DocumentationSearch`Private`nb$ = 
+            NotebookPut[
+             Notebook[{
+               Cell[BoxData[
+                 MakeBoxes[
+                  Hyperlink[
+                   "http://reference.wolfram.com/language/Anyonica/guide/\
+Anyonica.html"], StandardForm]], "Input", TextClipboardType -> "PlainText"]}, 
+               Visible -> False]]; 
+           SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+           FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+           NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+         "\"Go to web URL\"" :> 
+         FrontEndExecute[{
+           NotebookLocate[{
+             URL[If[TrueQ[False], 
+                 "http://reference.wolfram.com/system-modeler/", 
+                 "http://reference.wolfram.com/language/"] <> 
+               "Anyonica/guide/Anyonica" <> ".html"], None}]}]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"URLMenu"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "372d6e31-63ce-45d2-9875-2e2dd8c8520f"]
+    }], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "36aae9e5-173f-4a2b-8c02-7f55e8114bd6"]}
+  }]], "AnchorBarGrid",
+ CellID->1,ExpressionUUID->"a46eb83d-6936-4f6d-845f-b4932255ef61"],
+
+Cell[CellGroupData[{
+
+Cell["Anyonica", "GuideTitle",
+ CellID->571056029,ExpressionUUID->"d39a4752-4146-42f6-a3cb-2a85f8226d43"],
+
+Cell["\<\
+The Anyonica package provides tools for working with anyon models and related \
+mathematical structures such as fusion categories.\
+\>", "GuideAbstract",
+ CellID->126564683,ExpressionUUID->"258f37ca-b23b-41d7-9fe8-8b753662f4e7"],
+
+Cell["\t", "GuideDelimiterSubsection",ExpressionUUID->"409ce50c-72d8-4551-9f77-4c3934912f74"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Fusion Rings", "GuideFunctionsSection",
+ CellID->1819086648,ExpressionUUID->"51051fea-5c85-440c-9c5a-45aeefc59e28"],
+
+Cell[CellGroupData[{
+
+Cell["Creating Fusion Rings", "GuideFunctionsSubsection",
+ CellID->173109221,ExpressionUUID->"8cfa2db2-80e0-4e45-928e-24ebdeafcbd4"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRing"]], "paclet:Anyonica/ref/FusionRing", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "9d1af35b-f896-4104-b712-b2600446bda2"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a fusion ring with given multiplication table"
+}], "GuideText",
+ CellID->1480393679,ExpressionUUID->"6b256a9f-38b4-42af-813b-a442fc9b07fd"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingQ"]], "paclet:Anyonica/ref/FusionRingQ", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "494e4e23-f982-4d58-98d4-fe8a8e3d14d7"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " checks whether an expression is a valid fusion ring"
+}], "GuideText",
+ CellID->1588313377,ExpressionUUID->"5826e043-620a-4b67-920d-3eff6dade8f3"],
+
+Cell["\t", "GuideDelimiter",
+ CellID->754498983,ExpressionUUID->"303c6928-42b2-4f8f-bc23-8f118621e67e"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingPSU2k"]], "paclet:Anyonica/ref/FusionRingPSU2k", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",ExpressionUUID->
+  "12302074-bee7-4d04-a8a3-9ef2d0953528"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingSU2k"]], "paclet:Anyonica/ref/FusionRingSU2k", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"0f088885-eb1c-40e2-84f5-99d5eae2c2d3",ExpressionUUID->
+  "bee54765-dc58-41c6-8b6c-21539d1dd0fd"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingSON2"]], "paclet:Anyonica/ref/FusionRingSON2", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"f4a50580-adce-416a-9efd-38c8c5219c72",ExpressionUUID->
+  "646aaad3-8831-47ee-8960-0a29f5056796"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingZn"]], "paclet:Anyonica/ref/FusionRingZn", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"75d5fbac-b7e0-4c78-a90c-287eee31389c",ExpressionUUID->
+  "aaaeac29-c1b5-4868-b325-2ed0a2e0797b"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingFromGroup"]], 
+    "paclet:Anyonica/ref/FusionRingFromGroup", "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"2ac4b9f8-5b75-4457-9568-bcda33887d26",ExpressionUUID->
+  "62923830-d499-4108-b52f-051bdaa4723e"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingHI"]], "paclet:Anyonica/ref/FusionRingHI", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"e562cd97-8c74-4399-ab5b-04c8b3d68b79",ExpressionUUID->
+  "454924cf-280a-495f-a930-0360e1d0db2b"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionRingTY"]], "paclet:Anyonica/ref/FusionRingTY", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"50e3964d-8bcd-44a3-bddd-5dd0e7eb91e8",ExpressionUUID->
+  "dad15b7f-b94c-490e-ab00-a62712bace2e"],
+ StyleBox[" ", "InlineSeparator"]
+}], "InlineGuideFunctionListing",
+ CellID->1141131825,ExpressionUUID->"33f96bd0-6b28-4325-bf1c-5c94ed3a648f"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Accessing Built-in Fusion Rings", "GuideFunctionsSubsection",
+ CellID->176420623,ExpressionUUID->"21660505-7e7d-46aa-9df3-6b24fc466c43"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FusionRingList"]], "paclet:Anyonica/ref/FusionRingList", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FRL"]], "paclet:Anyonica/ref/FRL", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "0580bdb7-6989-4e18-ac78-c721428bdb42"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " list of all stored fusion rings"
+}], "GuideText",
+ CellID->2026335533,ExpressionUUID->"8820e3e2-59c7-48a4-b2d0-fc0eb410c72b"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FusionRingByCode"]], "paclet:Anyonica/ref/FusionRingByCode", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FRBC"]], "paclet:Anyonica/ref/FRBC", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "64f326af-6e77-4251-a6d4-f40584904d81"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a fusion ring with corresponding formal code"
+}], "GuideText",
+ CellID->212735481,ExpressionUUID->"39b59712-3410-42b4-8a16-09579ef69963"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["ReplaceByKnownRing"]], 
+    "paclet:Anyonica/ref/ReplaceByKnownRing", "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "b74609c5-5065-45a0-acee-f75fb88f83a7"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns the equivalent built-in fusion ring"
+}], "GuideText",
+ CellID->1396874107,ExpressionUUID->"0c169eec-1bce-47e7-8bdd-a8658dde99de"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["AllFusionRingsQ"]], "paclet:Anyonica/ref/AllFusionRingsQ", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["AFRQ"]], "paclet:Anyonica/ref/AFRQ", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "1aee8036-7ea7-41d9-b5c2-6c5c4a623314"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns true if all fusion rings of a certain rank and multiplicity are \
+available"
+}], "GuideText",
+ CellID->381551518,ExpressionUUID->"e3f73e4a-955b-42de-aa4d-53bace64268d"],
+
+Cell["\t", "GuideDelimiter",
+ CellID->1248037091,ExpressionUUID->"bbcc9f14-4277-41a2-b07d-1bc102df07f7"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["Cases"]], "paclet:ref/Cases"},
+   "RefLink",
+   BaseStyle->{"InlineFunctionSans"}]], "InlineFunctionSans",ExpressionUUID->
+  "bfd964c4-44dd-486a-976f-59028f71c10a"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["Select"]], "paclet:ref/Select"},
+   "RefLink",
+   BaseStyle->{"InlineFunctionSans"}]], "InlineFunctionSans",
+  CellTags->"0f088885-eb1c-40e2-84f5-99d5eae2c2d3",ExpressionUUID->
+  "3d5e2632-c4c1-4388-b6e3-0635db031261"]
+}], "InlineGuideFunctionListing",
+ CellID->1652315288,ExpressionUUID->"b6ec0872-f2cb-4822-b964-846a8c97170b"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Properties of Fusion Rings", "GuideFunctionsSubsection",
+ CellID->1399932576,ExpressionUUID->"a96ff913-9722-4069-83e5-f0131b17e0dd"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["MultiplicationTable"]], 
+     "paclet:Anyonica/ref/MultiplicationTable", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["MT"]], "paclet:Anyonica/ref/MT", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "fafcb4b0-b814-4e0c-81c8-3a3ce6cb1e56"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " multiplication table of a fusion ring"
+}], "GuideText",
+ CellID->1069194790,ExpressionUUID->"70145de1-2466-4642-bf34-92498e3d58d7"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FrobeniusPerronDimensions"]], 
+     "paclet:Anyonica/ref/FrobeniusPerronDimensions", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FPDims"]], "paclet:Anyonica/ref/FPDims", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "49da1fcc-08d7-4b23-98bb-62a172c6d39e"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " Frobenius Perron dimensions of a fusion ring"
+}], "GuideText",
+ CellID->212199621,ExpressionUUID->"a6714ff8-2611-406e-909c-7a33ccbaf0f8"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FusionRingCharacters"]], 
+     "paclet:Anyonica/ref/FusionRingCharacters", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FRC"]], "paclet:Anyonica/ref/FRC", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "bb8b41a6-5e2a-4498-b805-fa4b86b9e7c7"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " characters of a fusion ring"
+}], "GuideText",
+ CellID->1629715337,ExpressionUUID->"ab9f7075-4f4b-477b-8191-ecf6b1448cb1"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["ModularData"]], "paclet:Anyonica/ref/ModularData", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["MD"]], "paclet:Anyonica/ref/MD", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "8bca19ce-9ed9-4034-8ab2-54b62e0d42c3"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " modular data of a fusion ring"
+}], "GuideText",
+ CellID->448631953,ExpressionUUID->"1c1a0cfa-3d1c-4a81-a8fa-ec3e8bed75be"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FusionRingAutomorphisms"]], 
+     "paclet:Anyonica/ref/FusionRingAutomorphisms", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FRA"]], "paclet:Anyonica/ref/FRA", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "68767c47-2ffc-42c5-90cd-583036a33bfd"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " fusion ring automorphisms"
+}], "GuideText",
+ CellID->1155673481,ExpressionUUID->"2e64ea88-66ee-4078-a8fb-e9e1d8e43ecb"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["EquivalentFusionRingsQ"]], 
+     "paclet:Anyonica/ref/EquivalentFusionRingsQ", "Anyonica Package Symbol"},
+    
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["EFRQ"]], "paclet:Anyonica/ref/EFRQ", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "98acdbf9-0c59-4c60-8c50-73a410754e19"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " checks whether two fusion rings are equivalent"
+}], "GuideText",
+ CellID->1050930201,ExpressionUUID->"071d428b-53d0-4b79-b1f5-f9f5b320fae1"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SubFusionRings"]], "paclet:Anyonica/ref/SubFusionRings", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SFR"]], "paclet:Anyonica/ref/SFR", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "ff04931a-3f75-45c2-b9d6-8dfae5cbc20b"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " sub fusion rings of a fusion ring together with their injections"
+}], "GuideText",
+ CellID->1546267716,ExpressionUUID->"a466ec7d-2ffc-45c3-8cef-16a345c60802"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["WhichDecompositions"]], 
+     "paclet:Anyonica/ref/WhichDecompositions", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["WD"]], "paclet:Anyonica/ref/WD", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "13c4572a-0372-4594-9591-c71d44798531"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " tensor product decompositions of a fusion ring"
+}], "GuideText",
+ CellID->1672832400,ExpressionUUID->"2b67e459-bc1b-47b9-bec9-2a4f25809a72"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["AdjointIrreps"]], "paclet:Anyonica/ref/AdjointIrreps", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["AI"]], "paclet:Anyonica/ref/AI", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "59a04f8e-274a-4dfb-9fa7-01de20dc3940"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " adjoint irreducible representations of a fusion ring"
+}], "GuideText",
+ CellID->488583512,ExpressionUUID->"60b8fd1d-5d64-4874-9f9d-1bdeac06a237"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["UpperCentralSeries"]], 
+     "paclet:Anyonica/ref/UpperCentralSeries", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["UCS"]], "paclet:Anyonica/ref/UCS", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "996577d0-15f3-4f6c-a808-05f5a3d05cda"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " upper central series of a fusion ring"
+}], "GuideText",
+ CellID->1113662129,ExpressionUUID->"6ddeedb2-1517-4379-b42e-b0a77e270c13"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["UniversalGrading"]], "paclet:Anyonica/ref/UniversalGrading", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["UG"]], "paclet:Anyonica/ref/UG", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "01763873-146e-4303-bab8-b7016b64952a"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " universal grading of a fusion ring"
+}], "GuideText",
+ CellID->1477032185,ExpressionUUID->"7bd513e4-b8e1-4743-bb4a-47e92be5f2c8"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     BoxData[
+      TemplateBox[{
+        Cell[
+         TextData["..."]], "paclet:Anyonica/guide/"}, "RefLinkPlain", 
+       BaseStyle -> {"InlineFunctionSans"}]]], 
+    "paclet:Anyonica/guide/FusionRings"},
+   "RefLinkPlain",
+   BaseStyle->{"InlineFunctionSans"}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "f8033ba2-246f-443d-93cf-6ea1fb6a2347"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ "  full page on properties of fusion rings"
+}], "GuideText",
+ CellID->503847891,ExpressionUUID->"5523d8c0-5a24-4a3b-8312-f4c5ee07dc7f"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Operations on Fusion Rings", "GuideFunctionsSubsection",
+ CellID->1829804897,ExpressionUUID->"f071c52e-9926-4397-a120-bc439b75105a"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SortedRing"]], "paclet:Anyonica/ref/SortedRing", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SR"]], "paclet:Anyonica/ref/SR", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "48abcba2-0a3c-46f7-8b53-d593c7488e1c"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a fusion ring with elements sorted "
+}], "GuideText",
+ CellID->1321120343,ExpressionUUID->"98df8bcc-eddc-4800-9848-4a2df232d22a"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["PermutedRing"]], "paclet:Anyonica/ref/PermutedRing", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["PR"]], "paclet:Anyonica/ref/PR", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "74cac0b0-bbb6-4222-ba84-27164954ba0c"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a fusion ring with elements sorted "
+}], "GuideText",
+ CellID->1944417713,ExpressionUUID->"7753b828-3d92-4054-97c1-e29f50429bfe"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["WhichPermutation"]], "paclet:Anyonica/ref/WhichPermutation", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["WP"]], "paclet:Anyonica/ref/WP", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "831fba51-38db-4c62-b8fe-0db2fca3bae3"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a permutation of elements that relates two rings"
+}], "GuideText",
+ CellID->353248259,ExpressionUUID->"175b0829-c5d5-4070-9709-1c781f315217"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["TensorProduct"]], "paclet:Anyonica/ref/TensorProduct", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["TP"]], "paclet:Anyonica/ref/TP", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "e070252f-03dc-4454-bbfb-354a80160225"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns the direct product of two fusion rings"
+}], "GuideText",
+ CellID->2001476499,ExpressionUUID->"bcecaa79-e2a8-4b01-89e3-5794dddf115e"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["ReplaceByKnownRing"]], 
+     "paclet:Anyonica/ref/ReplaceByKnownRing", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["RBKR"]], "paclet:Anyonica/ref/RBKR", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "88e88e74-445d-4b92-899b-48070d3eb8c0"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " replaces a ring by an equivalent one from the database"
+}], "GuideText",
+ CellID->669091370,ExpressionUUID->"de24c3ec-9cda-4f2c-ba09-a5e8e8d8932e"],
+
+Cell["\t", "GuideDelimiter",
+ CellID->875222923,ExpressionUUID->"9ef9544e-5f89-4d7e-8232-1600d9738bc7"],
+
+Cell[TextData[{
+ StyleBox[" ", "InlineSeparator"],
+ Cell["SetNames", "InlineFunctionSansUnlinked",
+  CellTags->"0f088885-eb1c-40e2-84f5-99d5eae2c2d3",ExpressionUUID->
+  "24727491-95d5-490b-bdfc-7f2f4e3bdad6"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell["RenameElements", "InlineFunctionSansUnlinked",
+  CellTags->"75d5fbac-b7e0-4c78-a90c-287eee31389c",ExpressionUUID->
+  "7467a0f3-e33f-4485-9c56-d1b1aa6b5536"]
+}], "InlineGuideFunctionListing",
+ CellID->2111704650,ExpressionUUID->"82c6eb83-569f-4140-92ed-d4484a1e5b39"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Fusion Categories", "GuideFunctionsSection",
+ CellID->981863825,ExpressionUUID->"071cb080-6a53-44f0-88d5-0ac2d0010e75"],
+
+Cell[CellGroupData[{
+
+Cell["Accessing Built-in Fusion Categories", "GuideFunctionsSubsection",
+ CellID->547730234,ExpressionUUID->"7d6e22c6-28ec-402d-9d0f-f2d2279704f2"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FusionCategoryList"]], 
+     "paclet:Anyonica/ref/FusionCategoryList", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FCL"]], "paclet:Anyonica/ref/FCL", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "435e747c-1682-41d8-bfc9-a5c9bf9fbf8a"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " list of built-in fusion categories"
+}], "GuideText",
+ CellID->485530766,ExpressionUUID->"e0a3ee72-6004-4309-9a6a-8b72a10cba0e"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["FusionCategoryByCode"]], 
+     "paclet:Anyonica/ref/FusionCategoryByCode", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["FCBC"]], "paclet:Anyonica/ref/FCBC", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "0f2875e1-1715-4c61-a1d4-9ffe2cc8dd2a"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns the fusion category with the respective formal code"
+}], "GuideText",
+ CellID->70115292,ExpressionUUID->"34effeaa-99c4-4311-9fb7-6b9aa2e20701"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Creating Fusion Categories", "GuideFunctionsSubsection",
+ CellID->288669869,ExpressionUUID->"17be2ec4-18fe-4377-9eea-ffbcfdc55c43"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FusionCategory"]], "paclet:Anyonica/ref/FusionCategory", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "55567525-0114-47b3-813e-010b595b455b"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a fusion category with the given Grothendieck ring and F-symbols"
+}], "GuideText",
+ CellID->595678337,ExpressionUUID->"a036423f-431d-46bd-9a4d-71e1307c62a9"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Properties of Fusion Categories", "GuideFunctionsSubsection",
+ CellID->538827649,ExpressionUUID->"df444621-247e-4249-8cc1-fb79e613ea1e"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FSymbols"]], "paclet:Anyonica/ref/FSymbols", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "599feaef-bc77-4a95-b842-9f8f5a69e5e8"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " F-symbols of the fusion category"
+}], "GuideText",
+ CellID->137757344,ExpressionUUID->"87f1bc49-2252-4113-985f-282f18187aa7"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FMatrices"]], "paclet:Anyonica/ref/FMatrices", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "a533b09b-40d7-4467-a505-4421a77ab583"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " F-matrices of the fusion category"
+}], "GuideText",
+ CellID->1802496941,ExpressionUUID->"13b8dd5d-e6c9-4b18-80f4-66d7a02dcae2"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["RSymbols"]], "paclet:Anyonica/ref/RSymbols", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "b0d4e5ac-f348-4833-adf3-49cddde5a253"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " R-symbols of the fusion category"
+}], "GuideText",
+ CellID->1015817612,ExpressionUUID->"89db749d-80fd-4852-847b-3e0575da3d95"],
+
+Cell[TextData[{
+ Cell["RMatrices", "InlineFunctionSansUnlinked",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "b06e79af-61fc-4ae4-bbb2-9fbe93b71179"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " R-matrices of the fusion category"
+}], "GuideText",
+ CellID->14279158,ExpressionUUID->"b70ec5f4-168e-4583-b2e5-891f9629939e"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["PivotalStructure"]], "paclet:Anyonica/ref/PivotalStructure", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "5c726e24-c8f2-48aa-bffc-6e70cc29af7f"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " pivotal structure of the fusion category"
+}], "GuideText",
+ CellID->1619123689,ExpressionUUID->"d53ecbce-20ba-4e91-9885-39ab96ff985f"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["AllPivotalStructures"]], 
+    "paclet:Anyonica/ref/AllPivotalStructures", "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "1ee6fd25-8a25-4624-b8f3-303674f227c5"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " all pivotal structures compatible with the F-symbols"
+}], "GuideText",
+ CellID->1610758078,ExpressionUUID->"498f5975-3b96-4065-b58a-e7450dd62f58"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["QuantumDimensions"]], "paclet:Anyonica/ref/QuantumDimensions", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "b590f14e-c6dc-4c51-b963-1aad2f1e541f"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " quantum dimensions  of the fusion category"
+}], "GuideText",
+ CellID->1693416855,ExpressionUUID->"c57ea27c-9ecb-4aac-9d3f-23549c0ce126"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["Twists"]], "paclet:Anyonica/ref/Twists", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "8ca0ecf2-bf67-47a0-8861-e5e78a1b0d24"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " topological twists of the fusion category"
+}], "GuideText",
+ CellID->330522171,ExpressionUUID->"1370ef3d-140f-4bf5-95fa-c91c90394257"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["SMatrix"]], "paclet:Anyonica/ref/SMatrix", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "9c0a958e-f5e1-45fa-ab81-4376094fd7af"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " S-matrix  of the fusion category"
+}], "GuideText",
+ CellID->656308294,ExpressionUUID->"a755c5f4-95ee-407d-a3da-b202ac224872"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["EquivalentFusionCategoriesQ"]], 
+    "paclet:Anyonica/ref/EquivalentFusionCategoriesQ", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "6231f1ce-6605-4cab-a22e-f3c2798b4b52"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " checks whether two fusion categories are equivalent"
+}], "GuideText",
+ CellID->1791446900,ExpressionUUID->"afb6c2a1-c11b-4ca4-8950-47aaeb711422"],
+
+Cell["\t", "GuideDelimiter",
+ CellID->2087747951,ExpressionUUID->"da401f59-34c7-4974-9426-96a368f6cd37"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["BraidedQ"]], "paclet:Anyonica/ref/BraidedQ", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"0f088885-eb1c-40e2-84f5-99d5eae2c2d3",ExpressionUUID->
+  "35a2d32b-944e-466d-bb73-b7e42ae453ad"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["SphericalQ"]], "paclet:Anyonica/ref/SphericalQ", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"f4a50580-adce-416a-9efd-38c8c5219c72",ExpressionUUID->
+  "201852c0-84eb-44e1-80cb-b2d2e58baedb"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["RibbonQ"]], "paclet:Anyonica/ref/RibbonQ", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"75d5fbac-b7e0-4c78-a90c-287eee31389c",ExpressionUUID->
+  "9ffe81c6-0176-4c32-8bf7-04281bbeb457"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["ModularQ"]], "paclet:Anyonica/ref/ModularQ", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"2ac4b9f8-5b75-4457-9568-bcda33887d26",ExpressionUUID->
+  "b9882dd7-a740-4f85-bcb1-febb20bffbe8"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell["ModularData", "InlineFunctionSansUnlinked",
+  CellTags->"e562cd97-8c74-4399-ab5b-04c8b3d68b79",ExpressionUUID->
+  "f74f3003-af66-4fa4-bebd-0734e1ae5ccd"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["\[ScriptCapitalF]"]], "paclet:Anyonica/ref/\[ScriptCapitalF]", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"50e3964d-8bcd-44a3-bddd-5dd0e7eb91e8",ExpressionUUID->
+  "fb21b7e6-ba6c-4f0a-8225-1f04f1a2a07d"],
+ StyleBox["  \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["\[ScriptCapitalR]"]], "paclet:Anyonica/ref/\[ScriptCapitalR]", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"02943571-457a-495e-b19f-5e5dcb9feda6",ExpressionUUID->
+  "a46f4adb-69e5-4bec-ba3b-211c63296a8f"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["\[ScriptP]"]], "paclet:Anyonica/ref/\[ScriptP]", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"04e46940-920c-42c8-ba81-2dfa1f2af07e",ExpressionUUID->
+  "2527e2d6-e493-4194-b3a4-e03e752c9c7d"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["\[ScriptD]"]], "paclet:Anyonica/ref/\[ScriptD]", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"8cca6b3c-8b9e-490b-a947-0fdcaf5f76de",ExpressionUUID->
+  "6b1dd948-a7d9-4025-bf5a-03f227c8fd35"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["\[ScriptT]"]], "paclet:Anyonica/ref/\[ScriptT]", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"fe4026fc-6ec6-4044-9a08-e98f6423b95f",ExpressionUUID->
+  "6a920c2f-f1a9-4bad-87e4-e9c6ba86c62c"]
+}], "InlineGuideFunctionListing",
+ CellID->1044504124,ExpressionUUID->"3013c360-580a-44cd-8c31-1aa5a69b29d3"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Categorification of Fusion Rings", "GuideFunctionsSubsection",
+ CellID->1508040201,ExpressionUUID->"5d3d7d71-7010-4892-ad42-cca781fbfe36"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SolvePentagonEquations"]], 
+     "paclet:Anyonica/ref/SolvePentagonEquations", "Anyonica Package Symbol"},
+    
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SPE"]], "paclet:Anyonica/ref/SPE", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "da81e2ea-2bae-4508-bb80-faa0c3a2842f"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " solves the pentagon equations for a fusion ring"
+}], "GuideText",
+ CellID->662847526,ExpressionUUID->"8de56ab0-3bc1-46c8-943e-c2e14b3239a7"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["PentagonGroebnerSystems"]], 
+     "paclet:Anyonica/ref/PentagonGroebnerSystems", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["PGS"]], "paclet:Anyonica/ref/PGS", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "850975f8-0667-4ae3-9c43-2c24a669a634"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " finds Groebner bases together with all necessary data to solve the \
+pentagon equations "
+}], "GuideText",
+ CellID->1673359001,ExpressionUUID->"5c49dead-e21b-4347-9d3c-b72b1f620008"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SolveHexagonEquations"]], 
+     "paclet:Anyonica/ref/SolveHexagonEquations", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SHE"]], "paclet:Anyonica/ref/SHE", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "c17457a0-4340-4808-8799-4c38f94fb20e"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " solves the hexagon equations for a fusion ring"
+}], "GuideText",
+ CellID->1485711716,ExpressionUUID->"012d637b-893d-4809-bb6f-e681bfab9ee3"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["HexagonGroebnerSystems"]], 
+     "paclet:Anyonica/ref/HexagonGroebnerSystems", "Anyonica Package Symbol"},
+    
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["HGS"]], "paclet:Anyonica/ref/HGS", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "9553cefa-d624-43ee-945a-86a4caf72043"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " finds Groebner bases together with all necessary data to solve the hexagon \
+equations "
+}], "GuideText",
+ CellID->310520178,ExpressionUUID->"8156aa59-d08d-4a7a-87d7-06f1d437e34b"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Working With Symmetry ", "GuideFunctionsSubsection",
+ CellID->1044354302,ExpressionUUID->"1342b015-aad4-4916-b3ea-443890b14f02"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["ToUnitaryGauge"]], "paclet:Anyonica/ref/ToUnitaryGauge", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["TUG"]], "paclet:Anyonica/ref/TUG", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "76107d3c-ad21-4b03-a2ce-f07bff9b82d1"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " tries to put  \[ScriptCapitalF]-matrices in a unitary gauge"
+}], "GuideText",
+ CellID->546983968,ExpressionUUID->"4e936fae-0584-42a1-b08a-fcdf15eccb2f"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["ToSymmetricGauge"]], "paclet:Anyonica/ref/ToSymmetricGauge", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["TSG"]], "paclet:Anyonica/ref/TSG", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "9437513a-24db-43d0-a2f5-1c0d72cae4c0"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " tries to put  \[ScriptCapitalF]-matrices in a symmetric gauge"
+}], "GuideText",
+ CellID->493092523,ExpressionUUID->"443fac38-d111-4eab-b5d7-078a2ff65d2f"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["WhichGaugeTransform"]], 
+     "paclet:Anyonica/ref/WhichGaugeTransform", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["WGT"]], "paclet:Anyonica/ref/WGT", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "4ec849f0-3631-4435-8b3a-1525a5188dc8"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns a gauge transform that relates two equivalent solutions"
+}], "GuideText",
+ CellID->2106074407,ExpressionUUID->"7a8c2dbc-0bbd-4035-a0f4-d9b875fd0ad7"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["GaugeSymmetryEquivalentQ"]], 
+     "paclet:Anyonica/ref/GaugeSymmetryEquivalentQ", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["GSEQ"]], "paclet:Anyonica/ref/GSEQ", 
+      "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "d6be1be0-6364-4d26-81cb-022321b50b80"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns true if two sets of \[ScriptCapitalF]-symbols are \
+gauge-equivalent"
+}], "GuideText",
+ CellID->489005761,ExpressionUUID->"5e4dfd48-aa84-4603-aeed-f9881aac577a"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SymmetryEquivalentQ"]], 
+     "paclet:Anyonica/ref/SymmetryEquivalentQ", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SEQ"]], "paclet:Anyonica/ref/SEQ", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "fca94dc7-ee0d-4df5-a88a-4ad9f1c9a94f"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " returns true if two sets of \[ScriptCapitalF]-symbols are equivalent via a \
+combination of a gauge transform and a fusion ring automorphism"
+}], "GuideText",
+ CellID->921750252,ExpressionUUID->"055d6a31-d73c-4848-8de1-58c7f45e6812"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["DeleteEquivalentSolutions"]], 
+     "paclet:Anyonica/ref/DeleteEquivalentSolutions", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", "DES", ")"}]}]], "InlineFunctionSans",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "491b7916-db4f-4afd-8948-775ac36050b2"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " deletes duplicate sets of \[ScriptCapitalF]-symbols based on equivalence \
+via symmetry"
+}], "GuideText",
+ CellID->767224731,ExpressionUUID->"8b3035b4-f1d0-4e86-9bcf-9c031a3e7995"],
+
+Cell["\t", "GuideDelimiter",
+ CellID->1346545561,ExpressionUUID->"869b6893-6f42-45c1-877f-662674d11337"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["UnitaryGaugeQ"]], "paclet:Anyonica/ref/UnitaryGaugeQ", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["UGQ"]], "paclet:Anyonica/ref/UGQ", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  ExpressionUUID->"57ffd3c4-95de-48b3-bfb5-f6dbad9d4fbc"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SymmetricGaugeQ"]], "paclet:Anyonica/ref/SymmetricGaugeQ", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SGQ"]], "paclet:Anyonica/ref/SGQ", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"0f088885-eb1c-40e2-84f5-99d5eae2c2d3",ExpressionUUID->
+  "f432046f-390e-4088-a5f7-b8b666cfbf04"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["GaugeTransform"]], "paclet:Anyonica/ref/GaugeTransform", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["GT"]], "paclet:Anyonica/ref/GT", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"de395189-a750-4850-9c36-9c1e450e8c20",ExpressionUUID->
+  "f1062efd-1cc9-4571-8aa7-0c7db918a7cb"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["ApplyGaugeTransform"]], 
+     "paclet:Anyonica/ref/ApplyGaugeTransform", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["AGT"]], "paclet:Anyonica/ref/AGT", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"59a0f48f-2250-4694-885a-f44753304e92",ExpressionUUID->
+  "cc7dfa94-c3d7-41ed-9712-9ccf2b6edda1"],
+ StyleBox[" \[FilledVerySmallSquare] ", "InlineSeparator"],
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["GaugeSymmetries"]], "paclet:Anyonica/ref/GaugeSymmetries", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["GS"]], "paclet:Anyonica/ref/GS", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"6b5fc32c-9e1f-45da-a287-d40e03cd1d27",ExpressionUUID->
+  "4c50c11a-5501-4c4e-ac76-185454fd6248"]
+}], "InlineGuideFunctionListing",
+ CellID->107454243,ExpressionUUID->"2c2b5fb3-d11d-480c-9fac-14e134e00aa1"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Manual Reduction of Systems of Polynomial Equations", \
+"GuideFunctionsSubsection",
+ CellID->1327790127,ExpressionUUID->"c604b14e-8acc-4354-9b02-8a4cb67668e4"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["PentagonEquations"]], "paclet:Anyonica/ref/PentagonEquations",
+      "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["PE"]], "paclet:Anyonica/ref/PE", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "462920da-2eec-4da9-b80b-ebe59f724ba2"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " constructs the pentagon equations for a fusion ring"
+}], "GuideText",
+ CellID->1582780902,ExpressionUUID->"5f0cea00-1708-4dbd-9272-22dba60e8192"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["HexagonEquations"]], "paclet:Anyonica/ref/HexagonEquations", 
+     "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["HE"]], "paclet:Anyonica/ref/HE", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "5a51f8e9-1316-4ae8-9d66-f025cb4e3b97"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " constructs the hexagon equations for a fusion ring"
+}], "GuideText",
+ CellID->2057228436,ExpressionUUID->"5acec0c4-2f7a-4855-a56e-162634afbb0c"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "9dda06b2-6e57-47c3-a3c2-89922151284d"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->1351607152,ExpressionUUID->"cda98740-b8ba-47df-9498-6309872b6b99"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  RowBox[{
+   TemplateBox[{
+     Cell[
+      TextData["SolveBinomialSystem"]], 
+     "paclet:Anyonica/ref/SolveBinomialSystem", "Anyonica Package Symbol"},
+    "PackageLink",
+    BaseStyle->"InlineFunctionSans"], " ", 
+   RowBox[{"(", 
+    TemplateBox[{
+      Cell[
+       TextData["SBS"]], "paclet:Anyonica/ref/SBS", "Anyonica Package Symbol"},
+     "PackageLink",
+     BaseStyle->"InlineFunctionSans"], ")"}]}]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "0b5e1130-7682-4764-9239-7b3e7c087800"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " solves a system of polynomial equations with two terms per equation"
+}], "GuideText",
+ CellID->379385698,ExpressionUUID->"a525ac17-f199-4fa9-80c8-6089dfc0084c"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "047f99f2-9980-40b5-ba58-bf8e4b86adae"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->456478343,ExpressionUUID->"3aa9566e-0bbd-4988-aa5e-727dcfe361f0"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "e87b16d6-55a4-464f-8125-d0eb13139be1"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->1219923717,ExpressionUUID->"10c25b1a-4c57-4201-9e7b-d4a4472ca805"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "52f818a6-dab1-426d-a4aa-b259eec45aa0"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->1231533710,ExpressionUUID->"960b4e1f-4c07-4171-a1a4-eac39b3e3fae"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "6a97b7ea-d337-4b38-86fb-75f3d830547b"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->939674184,ExpressionUUID->"f0d8bb62-286b-41bd-abe3-2c55f17f6d2e"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "3eae1a2e-e79d-46d5-acd0-9098120c4c4e"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->509270450,ExpressionUUID->"85651ef6-e4c3-49fa-9da1-8a3313c4e1ac"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  TemplateBox[{
+    Cell[
+     TextData["FindZeroValues"]], "paclet:Anyonica/ref/FindZeroValues", 
+    "Anyonica Package Symbol"},
+   "PackageLink",
+   BaseStyle->"InlineFunctionSans"]], "InlineFunctionSans",
+  CellTags->"c40ac8e4-27e1-4161-a8df-4d4f38357a23",ExpressionUUID->
+  "d9b719f4-3ee8-49b0-81f9-271919f2b960"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " find which variables can be simultaneously equal to 0"
+}], "GuideText",
+ CellID->1586119855,ExpressionUUID->"52929ffe-ebf7-4385-bf4e-55fe273938f1"],
+
+Cell[TextData[{
+ Cell["...", "InlineFunctionSansUnlinked",
+  CellTags->"c5c6736a-1ff4-4e4e-8fcf-2d9846cbae62",ExpressionUUID->
+  "59205e96-6553-487b-834e-8315da7fc4e8"],
+ " ",
+ StyleBox["\[LongDash]", "GuideEmDash"],
+ " work in progress"
+}], "GuideText",
+ CellID->1205903936,ExpressionUUID->"170d4457-8f9f-4a5b-baf6-3305d78cf1a1"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, 
+       "RelatedTutorial.png"]],
+     ImageSizeCache->{75., {39.708984375, 50.291015625}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"Tech", " ", "Notes"}], "GuideTutorialsSection"]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Finding Fusion Rings With Certain Properties"]], 
+           "paclet:Anyonica/tutorial/FindingFusionRingsWithCertainProperties"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideTutorial"}]], "GuideTutorial",ExpressionUUID->
+         "d829fdb1-8307-458a-8712-4990e0266407"]}]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Solving the Pentagon Equations"]], 
+           "paclet:Anyonica/tutorial/SolvingthePentagonEquations"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideTutorial"}]], "GuideTutorial",ExpressionUUID->
+         "4c8837ea-d332-4fea-ba12-858443b69baa"]}]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Solving the Hexagon Equations"]], 
+           "paclet:Anyonica/tutorial/SolvingtheHexagonEquations"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideTutorial"}]], "GuideTutorial",ExpressionUUID->
+         "de9d5965-9ced-403b-8969-9863becbff78"]}]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Reducing Systems of Polynomial Equations"]], 
+           "paclet:Anyonica/tutorial/ReducingSystemsofPolynomialEquations"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideTutorial"}]], "GuideTutorial",ExpressionUUID->
+         "12dfc819-e117-45cc-9900-8a90884c0f7b"]}]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Dealing with Symmetries"]], 
+           "paclet:Anyonica/tutorial/DealingwithSymmetries"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideTutorial"}]], "GuideTutorial",ExpressionUUID->
+         "6b65f98a-2809-4bac-b958-c1388fd109cf"]}]}
+     }]}
+  }]], "GuideTutorialsSection",ExpressionUUID->"ac4672e7-10a1-47ee-a902-\
+950d4a53c5d1"],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, "RelatedGuide.png"]],
+     ImageSizeCache->{75., {39.708984375, 50.291015625}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"Related", " ", "Guides"}], "GuideMoreAboutSection"]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Properties of Fusion Rings"]], 
+           "paclet:Anyonica/guide/PropertiesofFusionRings"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideMoreAbout"}]], "GuideMoreAbout",ExpressionUUID->
+         "e1a9a343-b1d2-460c-9e06-b9e8f24adfbe"]}]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Additional Useful Functions"]], 
+           "paclet:Anyonica/guide/AdditionalUsefulFunctions"},
+          "RefLinkPlain",
+          BaseStyle->{"GuideMoreAbout"}]], "GuideMoreAbout",ExpressionUUID->
+         "e645570d-89c6-4960-ac52-3b0258d85e14"]}]}
+     }]}
+  }]], "GuideMoreAboutSection",ExpressionUUID->"81c79aba-7eb3-43fe-b7a3-\
+040c82c3e279"],
+
+Cell[" ", "FooterCell",ExpressionUUID->"388cfd74-49e7-4184-8684-de634f3b3988"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"Anyonica",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}}, 
+  "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
+  False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 41, 58.417863}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {
+     "Anyons Tensor Categories Fusion Fusion Rings Fusion Categories"}, 
+    "specialkeywords" -> {}, "tutorialcollectionlinks" -> {}, "index" -> True,
+     "label" -> "Anyonica Guide", "language" -> "en", "paclet" -> "Anyonica", 
+    "status" -> "None", "summary" -> 
+    "The Anyonica package provides tools for working with anyon models and \
+related mathematical structures such as fusion categories.", "synonyms" -> {},
+     "tabletags" -> {}, "title" -> "Anyonica", "titlemodifier" -> "", 
+    "metadescription" -> "", "windowtitle" -> "Anyonica", "type" -> "Guide", 
+    "uri" -> "Anyonica/guide/Anyonica"}},
+CacheGraphics->False,
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->FrontEnd`FileName[{"Wolfram"}, "Reference.nb", 
+  CharacterEncoding -> "UTF-8"],
+ExpressionUUID->"72dfb914-0c83-462f-ad1a-732827470b25"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[576, 21, 23723, 444, 70, "AnchorBarGrid",ExpressionUUID->"a46eb83d-6936-4f6d-845f-b4932255ef61",
+ CellID->1],
+Cell[CellGroupData[{
+Cell[24324, 469, 105, 1, 70, "GuideTitle",ExpressionUUID->"d39a4752-4146-42f6-a3cb-2a85f8226d43",
+ CellID->571056029],
+Cell[24432, 472, 238, 4, 70, "GuideAbstract",ExpressionUUID->"258f37ca-b23b-41d7-9fe8-8b753662f4e7",
+ CellID->126564683],
+Cell[24673, 478, 93, 0, 70, "GuideDelimiterSubsection",ExpressionUUID->"409ce50c-72d8-4551-9f77-4c3934912f74"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24803, 483, 121, 1, 70, "GuideFunctionsSection",ExpressionUUID->"51051fea-5c85-440c-9c5a-45aeefc59e28",
+ CellID->1819086648],
+Cell[CellGroupData[{
+Cell[24949, 488, 132, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"8cfa2db2-80e0-4e45-928e-24ebdeafcbd4",
+ CellID->173109221],
+Cell[25084, 491, 540, 14, 70, "GuideText",ExpressionUUID->"6b256a9f-38b4-42af-813b-a442fc9b07fd",
+ CellID->1480393679],
+Cell[25627, 507, 540, 14, 70, "GuideText",ExpressionUUID->"5826e043-620a-4b67-920d-3eff6dade8f3",
+ CellID->1588313377],
+Cell[26170, 523, 103, 1, 70, "GuideDelimiter",ExpressionUUID->"303c6928-42b2-4f8f-bc23-8f118621e67e",
+ CellID->754498983],
+Cell[26276, 526, 2812, 71, 70, "InlineGuideFunctionListing",ExpressionUUID->"33f96bd0-6b28-4325-bf1c-5c94ed3a648f",
+ CellID->1141131825]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[29125, 602, 142, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"21660505-7e7d-46aa-9df3-6b24fc466c43",
+ CellID->176420623],
+Cell[29270, 605, 744, 21, 70, "GuideText",ExpressionUUID->"8820e3e2-59c7-48a4-b2d0-fc0eb410c72b",
+ CellID->2026335533],
+Cell[30017, 628, 777, 22, 70, "GuideText",ExpressionUUID->"39b59712-3410-42b4-8a16-09579ef69963",
+ CellID->212735481],
+Cell[30797, 652, 546, 14, 70, "GuideText",ExpressionUUID->"0c169eec-1bce-47e7-8bdd-a8658dde99de",
+ CellID->1396874107],
+Cell[31346, 668, 806, 23, 70, "GuideText",ExpressionUUID->"e3f73e4a-955b-42de-aa4d-53bace64268d",
+ CellID->381551518],
+Cell[32155, 693, 104, 1, 70, "GuideDelimiter",ExpressionUUID->"bbcc9f14-4277-41a2-b07d-1bc102df07f7",
+ CellID->1248037091],
+Cell[32262, 696, 682, 18, 70, "InlineGuideFunctionListing",ExpressionUUID->"b6ec0872-f2cb-4822-b964-846a8c97170b",
+ CellID->1652315288]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[32981, 719, 138, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"a96ff913-9722-4069-83e5-f0131b17e0dd",
+ CellID->1399932576],
+Cell[33122, 722, 758, 21, 70, "GuideText",ExpressionUUID->"70145de1-2466-4642-bf34-92498e3d58d7",
+ CellID->1069194790],
+Cell[33883, 745, 797, 23, 70, "GuideText",ExpressionUUID->"a6714ff8-2611-406e-909c-7a33ccbaf0f8",
+ CellID->212199621],
+Cell[34683, 770, 752, 21, 70, "GuideText",ExpressionUUID->"ab9f7075-4f4b-477b-8191-ecf6b1448cb1",
+ CellID->1629715337],
+Cell[35438, 793, 733, 21, 70, "GuideText",ExpressionUUID->"1c1a0cfa-3d1c-4a81-a8fa-ec3e8bed75be",
+ CellID->448631953],
+Cell[36174, 816, 756, 21, 70, "GuideText",ExpressionUUID->"2e64ea88-66ee-4078-a8fb-e9e1d8e43ecb",
+ CellID->1155673481],
+Cell[36933, 839, 789, 23, 70, "GuideText",ExpressionUUID->"071d428b-53d0-4b79-b1f5-f9f5b320fae1",
+ CellID->1050930201],
+Cell[37725, 864, 777, 21, 70, "GuideText",ExpressionUUID->"a466ec7d-2ffc-45c3-8cef-16a345c60802",
+ CellID->1546267716],
+Cell[38505, 887, 767, 21, 70, "GuideText",ExpressionUUID->"2b67e459-bc1b-47b9-bec9-2a4f25809a72",
+ CellID->1672832400],
+Cell[39275, 910, 760, 21, 70, "GuideText",ExpressionUUID->"60b8fd1d-5d64-4874-9f9d-1bdeac06a237",
+ CellID->488583512],
+Cell[40038, 933, 758, 21, 70, "GuideText",ExpressionUUID->"6ddeedb2-1517-4379-b42e-b0a77e270c13",
+ CellID->1113662129],
+Cell[40799, 956, 749, 21, 70, "GuideText",ExpressionUUID->"7bd513e4-b8e1-4743-bb4a-47e92be5f2c8",
+ CellID->1477032185],
+Cell[41551, 979, 641, 18, 70, "GuideText",ExpressionUUID->"5523d8c0-5a24-4a3b-8312-f4c5ee07dc7f",
+ CellID->503847891]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[42229, 1002, 138, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"f071c52e-9926-4397-a120-bc439b75105a",
+ CellID->1829804897],
+Cell[42370, 1005, 746, 21, 70, "GuideText",ExpressionUUID->"98df8bcc-eddc-4800-9848-4a2df232d22a",
+ CellID->1321120343],
+Cell[43119, 1028, 750, 21, 70, "GuideText",ExpressionUUID->"7753b828-3d92-4054-97c1-e29f50429bfe",
+ CellID->1944417713],
+Cell[43872, 1051, 770, 21, 70, "GuideText",ExpressionUUID->"175b0829-c5d5-4070-9709-1c781f315217",
+ CellID->353248259],
+Cell[44645, 1074, 755, 21, 70, "GuideText",ExpressionUUID->"bcecaa79-e2a8-4b01-89e3-5794dddf115e",
+ CellID->2001476499],
+Cell[45403, 1097, 783, 22, 70, "GuideText",ExpressionUUID->"de24c3ec-9cda-4f2c-ba09-a5e8e8d8932e",
+ CellID->669091370],
+Cell[46189, 1121, 103, 1, 70, "GuideDelimiter",ExpressionUUID->"9ef9544e-5f89-4d7e-8232-1600d9738bc7",
+ CellID->875222923],
+Cell[46295, 1124, 543, 10, 70, "InlineGuideFunctionListing",ExpressionUUID->"82c6eb83-569f-4140-92ed-d4484a1e5b39",
+ CellID->2111704650]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[46887, 1140, 125, 1, 70, "GuideFunctionsSection",ExpressionUUID->"071cb080-6a53-44f0-88d5-0ac2d0010e75",
+ CellID->981863825],
+Cell[CellGroupData[{
+Cell[47037, 1145, 147, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"7d6e22c6-28ec-402d-9d0f-f2d2279704f2",
+ CellID->547730234],
+Cell[47187, 1148, 754, 21, 70, "GuideText",ExpressionUUID->"e0a3ee72-6004-4309-9a6a-8b72a10cba0e",
+ CellID->485530766],
+Cell[47944, 1171, 791, 22, 70, "GuideText",ExpressionUUID->"34effeaa-99c4-4311-9fb7-6b9aa2e20701",
+ CellID->70115292]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[48772, 1198, 137, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"17be2ec4-18fe-4377-9eea-ffbcfdc55c43",
+ CellID->288669869],
+Cell[48912, 1201, 566, 14, 70, "GuideText",ExpressionUUID->"a036423f-431d-46bd-9a4d-71e1307c62a9",
+ CellID->595678337]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[49515, 1220, 142, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"df444621-247e-4249-8cc1-fb79e613ea1e",
+ CellID->538827649],
+Cell[49660, 1223, 514, 14, 70, "GuideText",ExpressionUUID->"87f1bc49-2252-4113-985f-282f18187aa7",
+ CellID->137757344],
+Cell[50177, 1239, 518, 14, 70, "GuideText",ExpressionUUID->"13b8dd5d-e6c9-4b18-80f4-66d7a02dcae2",
+ CellID->1802496941],
+Cell[50698, 1255, 515, 14, 70, "GuideText",ExpressionUUID->"89db749d-80fd-4852-847b-3e0575da3d95",
+ CellID->1015817612],
+Cell[51216, 1271, 351, 8, 70, "GuideText",ExpressionUUID->"b70ec5f4-168e-4583-b2e5-891f9629939e",
+ CellID->14279158],
+Cell[51570, 1281, 539, 14, 70, "GuideText",ExpressionUUID->"d53ecbce-20ba-4e91-9885-39ab96ff985f",
+ CellID->1619123689],
+Cell[52112, 1297, 559, 14, 70, "GuideText",ExpressionUUID->"498f5975-3b96-4065-b58a-e7450dd62f58",
+ CellID->1610758078],
+Cell[52674, 1313, 543, 14, 70, "GuideText",ExpressionUUID->"c57ea27c-9ecb-4aac-9d3f-23549c0ce126",
+ CellID->1693416855],
+Cell[53220, 1329, 519, 14, 70, "GuideText",ExpressionUUID->"1370ef3d-140f-4bf5-95fa-c91c90394257",
+ CellID->330522171],
+Cell[53742, 1345, 512, 14, 70, "GuideText",ExpressionUUID->"a755c5f4-95ee-407d-a3da-b202ac224872",
+ CellID->656308294],
+Cell[54257, 1361, 577, 15, 70, "GuideText",ExpressionUUID->"afb6c2a1-c11b-4ca4-8950-47aaeb711422",
+ CellID->1791446900],
+Cell[54837, 1378, 104, 1, 70, "GuideDelimiter",ExpressionUUID->"da401f59-34c7-4974-9426-96a368f6cd37",
+ CellID->2087747951],
+Cell[54944, 1381, 3784, 95, 70, "InlineGuideFunctionListing",ExpressionUUID->"3013c360-580a-44cd-8c31-1aa5a69b29d3",
+ CellID->1044504124]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[58765, 1481, 144, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"5d3d7d71-7010-4892-ad42-cca781fbfe36",
+ CellID->1508040201],
+Cell[58912, 1484, 780, 22, 70, "GuideText",ExpressionUUID->"8de56ab0-3bc1-46c8-943e-c2e14b3239a7",
+ CellID->662847526],
+Cell[59695, 1508, 819, 22, 70, "GuideText",ExpressionUUID->"5c49dead-e21b-4347-9d3c-b72b1f620008",
+ CellID->1673359001],
+Cell[60517, 1532, 773, 21, 70, "GuideText",ExpressionUUID->"012d637b-893d-4809-bb6f-e681bfab9ee3",
+ CellID->1485711716],
+Cell[61293, 1555, 820, 23, 70, "GuideText",ExpressionUUID->"8156aa59-d08d-4a7a-87d7-06f1d437e34b",
+ CellID->310520178]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[62150, 1583, 134, 1, 70, "GuideFunctionsSubsection",ExpressionUUID->"1342b015-aad4-4916-b3ea-443890b14f02",
+ CellID->1044354302],
+Cell[62287, 1586, 771, 21, 70, "GuideText",ExpressionUUID->"4e936fae-0584-42a1-b08a-fcdf15eccb2f",
+ CellID->546983968],
+Cell[63061, 1609, 777, 21, 70, "GuideText",ExpressionUUID->"443fac38-d111-4eab-b5d7-078a2ff65d2f",
+ CellID->493092523],
+Cell[63841, 1632, 786, 21, 70, "GuideText",ExpressionUUID->"7a8c2dbc-0bbd-4035-a0f4-d9b875fd0ad7",
+ CellID->2106074407],
+Cell[64630, 1655, 823, 24, 70, "GuideText",ExpressionUUID->"5e4dfd48-aa84-4603-aeed-f9881aac577a",
+ CellID->489005761],
+Cell[65456, 1681, 862, 22, 70, "GuideText",ExpressionUUID->"055d6a31-d73c-4848-8de1-58c7f45e6812",
+ CellID->921750252],
+Cell[66321, 1705, 664, 18, 70, "GuideText",ExpressionUUID->"8b3035b4-f1d0-4e86-9bcf-9c031a3e7995",
+ CellID->767224731],
+Cell[66988, 1725, 104, 1, 70, "GuideDelimiter",ExpressionUUID->"869b6893-6f42-45c1-877f-662674d11337",
+ CellID->1346545561],
+Cell[67095, 1728, 3084, 85, 70, "InlineGuideFunctionListing",ExpressionUUID->"2c2b5fb3-d11d-480c-9fac-14e134e00aa1",
+ CellID->107454243]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[70216, 1818, 165, 2, 70, "GuideFunctionsSubsection",ExpressionUUID->"c604b14e-8acc-4354-9b02-8a4cb67668e4",
+ CellID->1327790127],
+Cell[70384, 1822, 768, 21, 70, "GuideText",ExpressionUUID->"5f0cea00-1708-4dbd-9272-22dba60e8192",
+ CellID->1582780902],
+Cell[71155, 1845, 765, 21, 70, "GuideText",ExpressionUUID->"5acec0c4-2f7a-4855-a56e-162634afbb0c",
+ CellID->2057228436],
+Cell[71923, 1868, 548, 14, 70, "GuideText",ExpressionUUID->"cda98740-b8ba-47df-9498-6309872b6b99",
+ CellID->1351607152],
+Cell[72474, 1884, 789, 21, 70, "GuideText",ExpressionUUID->"a525ac17-f199-4fa9-80c8-6089dfc0084c",
+ CellID->379385698],
+Cell[73266, 1907, 547, 14, 70, "GuideText",ExpressionUUID->"3aa9566e-0bbd-4988-aa5e-727dcfe361f0",
+ CellID->456478343],
+Cell[73816, 1923, 548, 14, 70, "GuideText",ExpressionUUID->"10c25b1a-4c57-4201-9e7b-d4a4472ca805",
+ CellID->1219923717],
+Cell[74367, 1939, 548, 14, 70, "GuideText",ExpressionUUID->"960b4e1f-4c07-4171-a1a4-eac39b3e3fae",
+ CellID->1231533710],
+Cell[74918, 1955, 547, 14, 70, "GuideText",ExpressionUUID->"f0d8bb62-286b-41bd-abe3-2c55f17f6d2e",
+ CellID->939674184],
+Cell[75468, 1971, 547, 14, 70, "GuideText",ExpressionUUID->"85651ef6-e4c3-49fa-9da1-8a3313c4e1ac",
+ CellID->509270450],
+Cell[76018, 1987, 548, 14, 70, "GuideText",ExpressionUUID->"52929ffe-ebf7-4385-bf4e-55fe273938f1",
+ CellID->1586119855],
+Cell[76569, 2003, 330, 8, 70, "GuideText",ExpressionUUID->"170d4457-8f9f-4a5b-baf6-3305d78cf1a1",
+ CellID->1205903936]
+}, Open  ]]
+}, Open  ]],
+Cell[76926, 2015, 2369, 56, 70, "GuideTutorialsSection",ExpressionUUID->"ac4672e7-10a1-47ee-a902-950d4a53c5d1"],
+Cell[79298, 2073, 1162, 28, 70, "GuideMoreAboutSection",ExpressionUUID->"81c79aba-7eb3-43fe-b7a3-040c82c3e279"],
+Cell[80463, 2103, 78, 0, 70, "FooterCell",ExpressionUUID->"388cfd74-49e7-4184-8684-de634f3b3988"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

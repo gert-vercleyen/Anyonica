@@ -1,0 +1,207 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 14.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      7733,        197]
+NotebookOptionsPosition[      4819,        128]
+NotebookOutlinePosition[      6942,        183]
+CellTagsIndexPosition[      6899,        180]
+WindowTitle->Dealing With Symmetries
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA TECH NOTE", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "1acb1b5f-03da-4ef1-b411-736e9d7d55f4"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "124db248-7cd5-48e9-b799-7130d9191cd1"],
+        Background->RGBColor[
+         0.3843137254901961, 0.4627450980392157, 0.7019607843137254],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[Cell[BoxData[
+     TagBox[
+      ActionMenuBox[
+       FrameBox[Cell[TextData[{
+         "URL",
+         " ",
+         Cell[BoxData[
+          GraphicsBox[
+           {GrayLevel[0.66667], Thickness[0.13], 
+            LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+           AspectRatio->1,
+           ImageSize->20,
+           PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+          "2aa9009a-6212-4f93-855f-434d01198545"]
+        }],ExpressionUUID->"365c451a-6219-4412-ab36-cb484945646b"],
+        StripOnInput->False],{
+       "\"Anyonica/tutorial/DealingWithSymmetries\"" :> None, 
+        "\"Copy Wolfram Documentation Center URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{Cell["Anyonica/tutorial/DealingWithSymmetries"]}, 
+              Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], Delimiter, 
+        "\"Copy web URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{
+              Cell[BoxData[
+                MakeBoxes[
+                 Hyperlink[
+                  "http://reference.wolfram.com/language/Anyonica/tutorial/\
+DealingWithSymmetries.html"], StandardForm]], "Input", TextClipboardType -> 
+                "PlainText"]}, Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+        "\"Go to web URL\"" :> 
+        FrontEndExecute[{
+          NotebookLocate[{
+            URL[If[TrueQ[False], 
+                "http://reference.wolfram.com/system-modeler/", 
+                "http://reference.wolfram.com/language/"] <> 
+              "Anyonica/tutorial/DealingWithSymmetries" <> ".html"], None}]}]},
+       Appearance->None,
+       MenuAppearance->Automatic,
+       MenuStyle->"URLMenu"],
+      MouseAppearanceTag["LinkHand"]]],
+     LineSpacing->{1.4, 0},ExpressionUUID->
+     "0699f85a-ca2d-4e3c-af7f-9b4b8b847f37"]], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "44b30b7b-bbb8-4572-9955-9e24942a6da8"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"e2f47ed3-8257-49f6-a1af-414405e942f6"],
+
+Cell[CellGroupData[{
+
+Cell["Dealing With Symmetries", "TechNoteTitle",
+ CellID->476852016,ExpressionUUID->"13bbcd59-2e94-42b2-97c1-6d699ef49394"],
+
+Cell["XXXX.", "TechNoteCaption",
+ CellID->405941281,ExpressionUUID->"0e8a9cd8-fc3a-448c-b0ee-b49b2c077ad3"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["XXXX"], "Input",
+ CellLabel->"In[1]:=",
+ CellID->469748123,ExpressionUUID->"7cc54e6c-6af3-4a2b-8c72-4c88ab1a0351"],
+
+Cell[BoxData["XXXX"], "Output",
+ CellLabel->"Out[1]=",
+ CellID->906816889,ExpressionUUID->"0c19dd38-4031-4cbd-a111-1807b7a78516"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",ExpressionUUID->"a25a40e9-c0a9-400e-86b3-348459e470d1"],
+
+Cell[BoxData[""], "Input",ExpressionUUID->"112aaddf-da9f-426d-a6f5-61a9562db0bd"]
+}, Open  ]],
+
+Cell[" ", "FooterCell",ExpressionUUID->"776304f0-9a27-4b1d-b84a-bca88814871f"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"Dealing With Symmetries",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}}, 
+  "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
+  False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2024, 10, 19, 20, 9, 59.084193}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Tech Note", "language" -> "en", "paclet" -> "Anyonica", 
+    "status" -> "None", "summary" -> " ", "synonyms" -> {}, "tabletags" -> {},
+     "title" -> "Dealing With Symmetries", "titlemodifier" -> "", 
+    "metadescription" -> "", "windowtitle" -> "Dealing With Symmetries", 
+    "type" -> "Tech Note", "uri" -> 
+    "Anyonica/tutorial/DealingWithSymmetries"}},
+FrontEndVersion->"14.0 for Mac OS X x86 (64-bit) (October 24, 2023)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> Notebook], 
+   Cell[
+    StyleData["Output"], CellContext -> Notebook], 
+   Cell[
+    StyleData["TutorialMoreAboutSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["RelatedTutorialsSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["TutorialRelatedLinksSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}]}, Visible -> False, 
+  FrontEndVersion -> "14.0 for Mac OS X x86 (64-bit) (October 24, 2023)", 
+  StyleDefinitions -> "Default.nb"],
+ExpressionUUID->"60d78ecb-c686-4ac3-b0ec-587a20841c82"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[595, 21, 3404, 79, 84, "AnchorBarGrid",ExpressionUUID->"e2f47ed3-8257-49f6-a1af-414405e942f6",
+ CellID->1],
+Cell[CellGroupData[{
+Cell[4024, 104, 123, 1, 103, "TechNoteTitle",ExpressionUUID->"13bbcd59-2e94-42b2-97c1-6d699ef49394",
+ CellID->476852016],
+Cell[4150, 107, 107, 1, 47, "TechNoteCaption",ExpressionUUID->"0e8a9cd8-fc3a-448c-b0ee-b49b2c077ad3",
+ CellID->405941281],
+Cell[CellGroupData[{
+Cell[4282, 112, 128, 2, 45, "Input",ExpressionUUID->"7cc54e6c-6af3-4a2b-8c72-4c88ab1a0351",
+ CellID->469748123],
+Cell[4413, 116, 129, 2, 56, "Output",ExpressionUUID->"0c19dd38-4031-4cbd-a111-1807b7a78516",
+ CellID->906816889]
+}, Open  ]],
+Cell[4557, 121, 81, 0, 45, "Input",ExpressionUUID->"a25a40e9-c0a9-400e-86b3-348459e470d1"],
+Cell[4641, 123, 81, 0, 45, "Input",ExpressionUUID->"112aaddf-da9f-426d-a6f5-61a9562db0bd"]
+}, Open  ]],
+Cell[4737, 126, 78, 0, 58, "FooterCell",ExpressionUUID->"776304f0-9a27-4b1d-b84a-bca88814871f"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
