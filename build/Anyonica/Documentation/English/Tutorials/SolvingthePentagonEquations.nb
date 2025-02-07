@@ -1,0 +1,195 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      7107,        185]
+NotebookOptionsPosition[      4328,        118]
+NotebookOutlinePosition[      6495,        173]
+CellTagsIndexPosition[      6452,        170]
+WindowTitle->Solving the Pentagon Equations
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA TECH NOTE", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "75a35920-345b-44fb-b491-c5711d07cf75"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "7064fbdf-57cf-4e44-ba8f-4358fb419ca3"],
+        Background->RGBColor[
+         0.3843137254901961, 0.4627450980392157, 0.7019607843137254],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[Cell[BoxData[
+     TagBox[
+      ActionMenuBox[
+       FrameBox[Cell[TextData[{
+         "URL",
+         " ",
+         Cell[BoxData[
+          GraphicsBox[
+           {GrayLevel[0.66667], Thickness[0.13], 
+            LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+           AspectRatio->1,
+           ImageSize->20,
+           PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+          "50b57d7d-f7f5-4f65-a1ba-25f12154c362"]
+        }],ExpressionUUID->"3a1c57d4-a9e0-424c-8bdb-5fd6e04fc354"],
+        StripOnInput->False],{
+       "\"Anyonica/tutorial/SolvingthePentagonEquations\"" :> None, 
+        "\"Copy Wolfram Documentation Center URL\"" :> 
+        CopyToClipboard["Anyonica/tutorial/SolvingthePentagonEquations"], 
+        Delimiter, "\"Copy web URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{
+              Cell[BoxData[
+                MakeBoxes[
+                 Hyperlink[
+                  "http://reference.wolfram.com/language/Anyonica/tutorial/\
+SolvingthePentagonEquations.html"], StandardForm]], "Input", 
+                TextClipboardType -> "PlainText"]}, Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+        "\"Go to web URL\"" :> 
+        FrontEndExecute[{
+          NotebookLocate[{
+            URL[If[TrueQ[False], 
+                "http://reference.wolfram.com/system-modeler/", 
+                "http://reference.wolfram.com/language/"] <> 
+              "Anyonica/tutorial/SolvingthePentagonEquations" <> ".html"], 
+             None}]}]},
+       Appearance->None,
+       MenuAppearance->Automatic,
+       MenuStyle->"URLMenu"],
+      MouseAppearanceTag["LinkHand"]]],
+     LineSpacing->{1.4, 0},ExpressionUUID->
+     "6efc3ebe-7509-4fe2-9c32-3bb44ae70b6e"]], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "3afd864f-f2f8-4de8-84f0-586cf48cdfad"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"bc073661-3298-45f1-85a2-639598724458"],
+
+Cell[CellGroupData[{
+
+Cell["Solving the Pentagon Equations", "TechNoteTitle",
+ CellID->1544059016,ExpressionUUID->"7cc10cc1-c4b5-465b-bdd3-cbe9ede6af9c"],
+
+Cell["XXXX.", "TechNoteCaption",
+ CellID->585889298,ExpressionUUID->"5e549e23-0c2e-4c0c-8cfa-c7762a894a75"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["XXXX"], "Input",
+ CellLabel->"In[1]:=",
+ CellID->763800648,ExpressionUUID->"89cf8a3e-dddc-4062-a569-0d98ed4cd31a"],
+
+Cell[BoxData["XXXX"], "Output",
+ CellLabel->"Out[1]=",
+ CellID->1687732817,ExpressionUUID->"b0f11883-787b-4031-8fb8-d93286781ec2"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[" ", "FooterCell",ExpressionUUID->"bd61c9d8-65a8-4a25-a601-093036d1463b"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"Solving the Pentagon Equations",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}}, 
+  "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
+  False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 42, 7.734229}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Tech Note", "language" -> "en", "paclet" -> "Anyonica", 
+    "status" -> "None", "summary" -> " ", "synonyms" -> {}, "tabletags" -> {},
+     "title" -> "Solving the Pentagon Equations", "titlemodifier" -> "", 
+    "metadescription" -> "", "windowtitle" -> 
+    "Solving the Pentagon Equations", "type" -> "Tech Note", "uri" -> 
+    "Anyonica/tutorial/SolvingthePentagonEquations"}},
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> Notebook], 
+   Cell[
+    StyleData["Output"], CellContext -> Notebook], 
+   Cell[
+    StyleData["TutorialMoreAboutSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["RelatedTutorialsSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["TutorialRelatedLinksSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}]}, Visible -> False, 
+  FrontEndVersion -> "14.2 for Linux x86 (64-bit) (December 26, 2024)", 
+  StyleDefinitions -> "PrivateStylesheetFormatting.nb"],
+ExpressionUUID->"f1343ed0-817e-46ee-96ba-3e9a2a329d52"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[598, 21, 3069, 73, 87, "AnchorBarGrid",ExpressionUUID->"bc073661-3298-45f1-85a2-639598724458",
+ CellID->1],
+Cell[CellGroupData[{
+Cell[3692, 98, 131, 1, 177, "TechNoteTitle",ExpressionUUID->"7cc10cc1-c4b5-465b-bdd3-cbe9ede6af9c",
+ CellID->1544059016],
+Cell[3826, 101, 107, 1, 45, "TechNoteCaption",ExpressionUUID->"5e549e23-0c2e-4c0c-8cfa-c7762a894a75",
+ CellID->585889298],
+Cell[CellGroupData[{
+Cell[3958, 106, 128, 2, 40, "Input",ExpressionUUID->"89cf8a3e-dddc-4062-a569-0d98ed4cd31a",
+ CellID->763800648],
+Cell[4089, 110, 130, 2, 54, "Output",ExpressionUUID->"b0f11883-787b-4031-8fb8-d93286781ec2",
+ CellID->1687732817]
+}, Open  ]]
+}, Open  ]],
+Cell[4246, 116, 78, 0, 59, "FooterCell",ExpressionUUID->"bd61c9d8-65a8-4a25-a601-093036d1463b"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

@@ -1,0 +1,163 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      6059,        153]
+NotebookOptionsPosition[      4057,        108]
+NotebookOutlinePosition[      5603,        146]
+CellTagsIndexPosition[      5560,        143]
+WindowTitle->Additional Useful Functions
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA GUIDE", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "f806ca50-9156-47bc-9545-c4d143373775"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "879a904f-aea3-4867-a9e6-18155f4688d2"],
+        Background->RGBColor[0.85098, 0.396078, 0],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[Cell[BoxData[
+     TagBox[
+      ActionMenuBox[
+       FrameBox[Cell[TextData[{
+         "URL",
+         " ",
+         Cell[BoxData[
+          GraphicsBox[
+           {GrayLevel[0.66667], Thickness[0.13], 
+            LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+           AspectRatio->1,
+           ImageSize->20,
+           PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+          "ee5629e0-5189-410c-be7b-bc4cca12ba3a"]
+        }],ExpressionUUID->"0043a8ba-0ee5-40e5-925a-770ed4f9ad5d"],
+        StripOnInput->False],{
+       "\"Anyonica/guide/AdditionalUsefulFunctions\"" :> None, 
+        "\"Copy Wolfram Documentation Center URL\"" :> 
+        CopyToClipboard["Anyonica/guide/AdditionalUsefulFunctions"], 
+        Delimiter, "\"Copy web URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{
+              Cell[BoxData[
+                MakeBoxes[
+                 Hyperlink[
+                  "http://reference.wolfram.com/language/Anyonica/guide/\
+AdditionalUsefulFunctions.html"], StandardForm]], "Input", TextClipboardType -> 
+                "PlainText"]}, Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+        "\"Go to web URL\"" :> 
+        FrontEndExecute[{
+          NotebookLocate[{
+            URL[If[TrueQ[False], 
+                "http://reference.wolfram.com/system-modeler/", 
+                "http://reference.wolfram.com/language/"] <> 
+              "Anyonica/guide/AdditionalUsefulFunctions" <> ".html"], 
+             None}]}]},
+       Appearance->None,
+       MenuAppearance->Automatic,
+       MenuStyle->"URLMenu"],
+      MouseAppearanceTag["LinkHand"]]],
+     LineSpacing->{1.4, 0},ExpressionUUID->
+     "9afbdc37-0e86-435e-8ad8-3057757561d5"]], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "87f28c5d-3362-4d0b-bf76-0b5c3941b5af"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"1f79c5d6-bd98-4461-ae84-ed29ffb00365"],
+
+Cell[CellGroupData[{
+
+Cell["Additional Useful Functions", "GuideTitle",
+ CellID->809674057,ExpressionUUID->"8e3ae1b2-8609-4a86-a9e1-44d0ba6a9293"],
+
+Cell["\[NonBreakingSpace]", "GuideAbstract",
+ CellID->1588967825,ExpressionUUID->"5531fbe6-ff28-40c4-bad5-8b5648dad509"],
+
+Cell["\t", "GuideDelimiterSubsection",ExpressionUUID->"c7ce3790-27b6-4c89-8e15-15e0ab5457b0"]
+}, Open  ]],
+
+Cell[" ", "FooterCell",ExpressionUUID->"8734b4d4-8af4-4798-aa49-55bd779713d9"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"Additional Useful Functions",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}}, 
+  "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
+  False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 41, 58.095011}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Guide", "language" -> "en", "paclet" -> "Anyonica", "status" -> 
+    "None", "summary" -> "", "synonyms" -> {}, "tabletags" -> {}, "title" -> 
+    "Additional Useful Functions", "titlemodifier" -> "", "metadescription" -> 
+    "", "windowtitle" -> "Additional Useful Functions", "type" -> "Guide", 
+    "uri" -> "Anyonica/guide/AdditionalUsefulFunctions"}},
+CacheGraphics->False,
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->FrontEnd`FileName[{"Wolfram"}, "Reference.nb", 
+  CharacterEncoding -> "UTF-8"],
+ExpressionUUID->"885e2cc6-beda-4003-a284-aa0d57ff9a6e"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[595, 21, 2997, 72, 70, "AnchorBarGrid",ExpressionUUID->"1f79c5d6-bd98-4461-ae84-ed29ffb00365",
+ CellID->1],
+Cell[CellGroupData[{
+Cell[3617, 97, 124, 1, 70, "GuideTitle",ExpressionUUID->"8e3ae1b2-8609-4a86-a9e1-44d0ba6a9293",
+ CellID->809674057],
+Cell[3744, 100, 120, 1, 70, "GuideAbstract",ExpressionUUID->"5531fbe6-ff28-40c4-bad5-8b5648dad509",
+ CellID->1588967825],
+Cell[3867, 103, 93, 0, 70, "GuideDelimiterSubsection",ExpressionUUID->"c7ce3790-27b6-4c89-8e15-15e0ab5457b0"]
+}, Open  ]],
+Cell[3975, 106, 78, 0, 70, "FooterCell",ExpressionUUID->"8734b4d4-8af4-4798-aa49-55bd779713d9"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

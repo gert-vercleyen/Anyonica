@@ -612,7 +612,7 @@ Union[
     "UseDatabaseOfZeroValues" -> True,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
-    "FindZerosUsingSums" -> False
+    "FindZerosUsingSums" -> True
   },
   Options[FindZeroValues],
   Options[ReduceBinomialSystem]
@@ -654,10 +654,8 @@ Module[
 
     If[ (* Want to substitute solution *)
       subsSol =!= {},
-
       (* THEN *)
-      { sRing, sSol } =
-      subsSol;
+      { sRing, sSol } = subsSol;
 
       (* Function that maps labels in sRing to corresponding labels in ring *)
       inject =
@@ -682,11 +680,9 @@ Module[
       {}
     ];
 
-    allFSymbols =
-      FSymbols[ring];
+    allFSymbols = FSymbols[ring];
 
-    vacuumSymbols =
-      Cases[ allFSymbols, $VacuumFPattern ];
+    vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
 
     fSymbols =
       Complement[
@@ -712,8 +708,7 @@ Module[
           Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
       ];
 
-    gaugeSymmetries =
-      GaugeSymmetries[ allFSymbols, g ];
+    gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
 
     (* Update matrices and gauge symmetries to take account of known F's *)
     printlog[ "PPSI:restricting_gauges", { procID } ];
@@ -741,17 +736,13 @@ Module[
     zeros =
       Dispatch @
       Which[
-        OptionValue["NonSingular"]
+        OptionValue["NonSingular"] || GroupRingQ[ring]
         ,
         {{}}
         ,
         OptionValue["ZeroValues"] =!= None
         ,
         OptionValue["ZeroValues"]
-        ,
-        GroupRingQ[ring]
-        ,
-        {{}}
         ,
         OptionValue["UseDatabaseOfZeroValues"]
         ,
@@ -784,6 +775,9 @@ Module[
           "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
         ]
       ];
+
+    (* TODO: even if "FindZeroValuesUsingSums" -> False then we should also filter out 
+      solutions that are incompatible with the sumequations.*)
 
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 

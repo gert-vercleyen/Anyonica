@@ -112,7 +112,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         reducedVars =
           Union[ Complement[ simpleVars/.Dispatch[properEquivalences], trivialVars ] ];
 
-        If[ (* I think this should be Length[reducedVars == 0 ]*)
+        If[ 
           Length[reducedVars] === 0
           ,
           printlog["FZV:all_vars_trivial", { procID } ];
@@ -120,8 +120,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         ];
 
         reducedEqns =
-          TEL /@
-          ( simpleEqns/.Dispatch[properEquivalences] );
+          TEL /@ ( simpleEqns/.Dispatch[properEquivalences] );
 
         { binEqns, sumEqns } =
           BinomialSplit @
@@ -164,14 +163,14 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         FilterSolutions[ soln_ ] :=
           Select[
             soln,
-              FreeQ[ 
-                sumEqns/.Dispatch[#], 
-                False  | 
-                0 == HoldPattern[Times[__]] | 
-                HoldPattern[Times[__]] == 0 |
-                0 == Power[ a_, b_ ] |
-                Power[ a_, b_ ] == 0
-              ]&
+            FreeQ[ 
+              sumEqns/.Dispatch[#], 
+              False  | 
+              0 == HoldPattern[Times[__]] | 
+              HoldPattern[Times[__]] == 0 |
+              0 == Power[ a_, b_ ] |
+              Power[ a_, b_ ] == 0
+            ]&
           ];
 
         AddExtraInfo[ sol_ ] :=

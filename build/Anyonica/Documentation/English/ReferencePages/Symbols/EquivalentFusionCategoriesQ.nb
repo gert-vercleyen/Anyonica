@@ -1,0 +1,321 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[     12038,        311]
+NotebookOptionsPosition[      9087,        248]
+NotebookOutlinePosition[     11094,        297]
+CellTagsIndexPosition[     11009,        292]
+WindowTitle->EquivalentFusionCategoriesQ
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA SYMBOL", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "153e77e5-5a86-4e39-ad9a-a5e6b84f9d46"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "88dff353-7687-4c07-84e6-6503a3e91969"],
+        Background->RGBColor[0.490196, 0.576471, 0.690196],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[{
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "Related Guides",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "e791018e-fc97-4055-9022-72e53aa0f2f0"]
+         }],ExpressionUUID->"6932706a-4ef2-47fd-a9ae-d303109fd340"],
+         StripOnInput->False],{
+        "\"Anyonica\"" :> 
+         Documentation`HelpLookup["paclet:Anyonica/guide/Anyonica"]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"MoreAbout"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "e163883a-9c1a-4850-8735-1d2ceca25df0"],
+     "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
+\[ThickSpace]",
+     Cell[BoxData[
+      TagBox[
+       ActionMenuBox[
+        FrameBox[Cell[TextData[{
+          "URL",
+          " ",
+          Cell[BoxData[
+           GraphicsBox[
+            {GrayLevel[0.66667], Thickness[0.13], 
+             LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+            AspectRatio->1,
+            ImageSize->20,
+            PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+           "2c695211-02de-47bd-974c-c41dd8376b50"]
+         }],ExpressionUUID->"4214a4ca-3087-44ad-a554-b5fbc81be120"],
+         StripOnInput->False],{
+        "\"Anyonica/ref/EquivalentFusionCategoriesQ\"" :> None, 
+         "\"Copy Wolfram Documentation Center URL\"" :> 
+         CopyToClipboard["Anyonica/ref/EquivalentFusionCategoriesQ"], 
+         Delimiter, "\"Copy web URL\"" :> 
+         Module[{DocumentationSearch`Private`nb$}, 
+           DocumentationSearch`Private`nb$ = 
+            NotebookPut[
+             Notebook[{
+               Cell[BoxData[
+                 MakeBoxes[
+                  Hyperlink[
+                   "http://reference.wolfram.com/language/Anyonica/ref/\
+EquivalentFusionCategoriesQ.html"], StandardForm]], "Input", 
+                 TextClipboardType -> "PlainText"]}, Visible -> False]]; 
+           SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+           FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+           NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+         "\"Go to web URL\"" :> 
+         FrontEndExecute[{
+           NotebookLocate[{
+             URL[If[TrueQ[False], 
+                 "http://reference.wolfram.com/system-modeler/", 
+                 "http://reference.wolfram.com/language/"] <> 
+               "Anyonica/ref/EquivalentFusionCategoriesQ" <> ".html"], 
+              None}]}]},
+        Appearance->None,
+        MenuAppearance->Automatic,
+        MenuStyle->"URLMenu"],
+       MouseAppearanceTag["LinkHand"]]],
+      LineSpacing->{1.4, 0},ExpressionUUID->
+      "f908ebd6-b39c-4883-9b4c-aab0b7b11870"]
+    }], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "e1abc3d2-5db9-4ad0-9545-e9d4cd9fe110"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"152c3f32-56e0-410e-ab6e-51fc86353431"],
+
+Cell["Anyonica`", "ContextNameCell",ExpressionUUID->"3399d39f-8427-4e32-bf7c-0f531a11a101"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[GridBox[{
+   {Cell[TextData[{
+     Cell[
+     "EquivalentFusionCategoriesQ", "ObjectName",ExpressionUUID->
+      "76f97224-d3c7-4bd1-894f-7c6bcb4871d7"],
+     Cell[BoxData[
+      TemplateBox[{8},
+       "Spacer1"]],ExpressionUUID->"8ac2799d-6114-475f-8028-3a24ed4bceb3"],
+     Cell[BoxData[
+     ""], "ObjectNameTranslation",ExpressionUUID->
+      "efd9e340-4e77-4b83-bb0b-d436514fa338"]
+    }],ExpressionUUID->"9bd4bd25-e545-4065-839c-7e3674c79f7a"], 
+    "\[SpanFromLeft]"}
+  }]], "ObjectNameGrid",ExpressionUUID->"f7126757-d54a-4ae1-8429-\
+cc7622102c7c"],
+
+Cell[BoxData[GridBox[{
+   {"", Cell[TextData[{
+     Cell[BoxData[
+      RowBox[{"EquivalentFusionCategoriesQ", "[", 
+       RowBox[{
+        SubscriptBox[
+         StyleBox["cat", "TI"], 
+         StyleBox["1", "TR"]], ",", 
+        SubscriptBox[
+         StyleBox["cat", "TI"], 
+         StyleBox["2", "TR"]]}], "]"}]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "dbcd9054-0df3-473c-907e-9fb674d2a4ef"],
+     " \[LineSeparator]returns true if the fusion categories ",
+     Cell[BoxData[
+      SubscriptBox[
+       StyleBox["cat", "TI"], 
+       StyleBox["1", "TR"]]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "bbbab6a9-62f6-451d-9e9c-65656225bcba"],
+     " and ",
+     Cell[BoxData[
+      SubscriptBox[
+       StyleBox["cat", "TI"], 
+       StyleBox["2", "TR"]]], "InlineFormula",
+      FontFamily->"Source Sans Pro",ExpressionUUID->
+      "e4abe95b-ce98-49c8-9156-20b7dbf0d1e3"],
+     " are related via a combination of a fusion ring automorphism and a \
+gauge transform."
+    }],ExpressionUUID->"08690087-4a83-4917-89a6-05cff553013c"]}
+  }]], "Usage",
+ CellID->226139742,ExpressionUUID->"b31490f3-7838-44cc-98ae-db6ecfe496a8"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ Cell[BoxData[
+  DynamicBox[ToBoxes[
+    If[
+     MatchQ[
+      CurrentValue[
+       EvaluationNotebook[], {
+       TaggingRules, "Openers", "PrimaryExamplesSection"}, Open], 
+      Alternatives[True, Open]], 
+     Style[
+      Graphics[{
+        Thickness[0.18], 
+        RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+        Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+       PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+      0.68 Inherited], 
+     Rotate[
+      Style[
+       Graphics[{
+         Thickness[0.18], 
+         RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+         Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+        PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+       0.68 Inherited], Rational[1, 2] Pi, {-1.65, -1}]]],
+   ImageSizeCache->{20.4, {7.223437499999999, 13.1765625}}]],ExpressionUUID->
+  "ca09466f-4d90-4dfd-98bf-4498e99756d7"],
+ Cell[BoxData[
+  TemplateBox[{1},
+   "Spacer1"]],ExpressionUUID->"230f01c6-9164-40b0-a06b-1fd6182ca1bb"],
+ "Examples",
+ "\[NonBreakingSpace]\[NonBreakingSpace]",
+ Cell["(0)", "ExampleCount",ExpressionUUID->
+  "a7a1084d-458e-4076-9b4a-84827c32963d"]
+}], "PrimaryExamplesSection",
+ WholeCellGroupOpener->True,
+ CacheGraphics->False,
+ CellTags->"PrimaryExamplesSection",
+ CellID->2514541,ExpressionUUID->"f722dc64-d67e-4819-b5de-b343f5a34f68"],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<Anyonica`\>\"", "]"}]], "Input", "ExampleInitialization",
+ CellLabel->"In[1]:=",
+ CellID->1846880660,ExpressionUUID->"e349a484-16b7-449a-b408-9d8c3fb77e8c"]
+}, Dynamic[CurrentValue[
+ EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, 
+  Closed]]]],
+
+Cell[BoxData[GridBox[{
+   {
+    DynamicBox[FEPrivate`ImportImage[
+      FrontEnd`FileName[{"Documentation", "FooterIcons"}, "RelatedGuide.png"]],
+     ImageSizeCache->{75., {39.708984375, 50.291015625}}], GridBox[{
+      {
+       StyleBox[
+        RowBox[{"Related", " ", "Guides"}], "MoreAboutSection"]},
+      {
+       RowBox[{"\[FilledVerySmallSquare]", Cell[BoxData[
+         TemplateBox[{
+           Cell[
+            TextData["Anyonica"]], "paclet:Anyonica/guide/Anyonica"},
+          "RefLinkPlain",
+          BaseStyle->{"MoreAbout"}]], "MoreAbout",ExpressionUUID->
+         "78f75c18-2fa5-4c42-942c-2f3c01ca3c57"]}]}
+     }]}
+  }]], "MoreAboutSection",ExpressionUUID->"7106959d-e34d-4b23-8593-\
+d5b1f84747d1"],
+
+Cell[" ", "FooterCell",ExpressionUUID->"314f88dd-ebe7-496e-997c-3434d17cda10"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"EquivalentFusionCategoriesQ",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}, 
+    "AllOptsTable" -> Closed}, "NewStyles" -> True, 
+  "CitationPopupData" -> $Failed, "ShowCitation" -> False, "HasOptions" -> 
+  True, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 41, 59.361481}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Symbol", "language" -> "en", "paclet" -> "Anyonica", "status" -> 
+    "None", "summary" -> 
+    "EquivalentFusionCategoriesQ[cat1, cat2] returns true if the fusion \
+categories cat1 and cat2 are related via a combination of a fusion ring \
+automorphism and a gauge transform.", "synonyms" -> {}, "tabletags" -> {}, 
+    "title" -> "EquivalentFusionCategoriesQ", "titlemodifier" -> "", 
+    "metadescription" -> "", "windowtitle" -> "EquivalentFusionCategoriesQ", 
+    "type" -> "Symbol", "uri" -> 
+    "Anyonica/ref/EquivalentFusionCategoriesQ"}},
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->FrontEnd`FileName[{"Wolfram"}, "Reference.nb", 
+  CharacterEncoding -> "UTF-8"],
+ExpressionUUID->"8506fded-91f6-4e3a-a5a2-4847088de67a"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{
+ "PrimaryExamplesSection"->{
+  Cell[6554, 179, 1411, 37, 70, "PrimaryExamplesSection",ExpressionUUID->"f722dc64-d67e-4819-b5de-b343f5a34f68",
+   CellTags->"PrimaryExamplesSection",
+   CellID->2514541]}
+ }
+*)
+(*CellTagsIndex
+CellTagsIndex->{
+ {"PrimaryExamplesSection", 10812, 285}
+ }
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[595, 21, 4033, 100, 70, "AnchorBarGrid",ExpressionUUID->"152c3f32-56e0-410e-ab6e-51fc86353431",
+ CellID->1],
+Cell[4631, 123, 91, 0, 70, "ContextNameCell",ExpressionUUID->"3399d39f-8427-4e32-bf7c-0f531a11a101"],
+Cell[CellGroupData[{
+Cell[4747, 127, 570, 14, 70, "ObjectNameGrid",ExpressionUUID->"f7126757-d54a-4ae1-8429-cc7622102c7c"],
+Cell[5320, 143, 1197, 31, 70, "Usage",ExpressionUUID->"b31490f3-7838-44cc-98ae-db6ecfe496a8",
+ CellID->226139742]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6554, 179, 1411, 37, 70, "PrimaryExamplesSection",ExpressionUUID->"f722dc64-d67e-4819-b5de-b343f5a34f68",
+ CellTags->"PrimaryExamplesSection",
+ CellID->2514541],
+Cell[7968, 218, 198, 3, 70, "Input",ExpressionUUID->"e349a484-16b7-449a-b408-9d8c3fb77e8c",
+ CellID->1846880660]
+}, Dynamic[CurrentValue[EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, Closed]]]],
+Cell[8284, 226, 718, 18, 70, "MoreAboutSection",ExpressionUUID->"7106959d-e34d-4b23-8593-d5b1f84747d1"],
+Cell[9005, 246, 78, 0, 70, "FooterCell",ExpressionUUID->"314f88dd-ebe7-496e-997c-3434d17cda10"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

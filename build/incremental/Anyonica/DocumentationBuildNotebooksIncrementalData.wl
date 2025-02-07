@@ -1,7 +1,7 @@
 <|"English/Guides/Anyonica.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
-      "Time" -> Quantity[1.489234, "Seconds"]|>], 
-   "FileHash" -> "60UfN6GLlFiq1xjjkIpDjYgvfbPQEujFoi6O/oSoKRg="|>, 
+      "Time" -> Quantity[0.336618, "Seconds"]|>], 
+   "FileHash" -> "kBpa0FLdQ6nzFzdKupg4DTIkSBPMz8i8KzGXnEaQ/rw="|>, 
  "English/Guides/FusionRings.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.513664, "Seconds"]|>], 
@@ -89,7 +89,7 @@
  "English/ReferencePages/Symbols/FusionRing_Documentation.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", 
      <|"Action" -> "Skip"["MissingEntityType"], 
-      "Time" -> Quantity[0.022439, "Seconds"]|>], 
+      "Time" -> Quantity[0.007802, "Seconds"]|>], 
    "FileHash" -> "3l6+FWdYU5WdMb+sq59UDgoSbMP3WnYOcnyo0+/YrTQ="|>, 
  "English/ReferencePages/Symbols/FusionRingFromGroup.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
@@ -133,8 +133,8 @@
    "FileHash" -> "7ULSc8jrI8qRUCtzWFz+Ok1QsbOoLK3VfLUS9m//4qk="|>, 
  "English/ReferencePages/Symbols/GaugeSymmetries.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
-      "Time" -> Quantity[0.678735, "Seconds"]|>], 
-   "FileHash" -> "QEff3H5eFEUp9lXa5I0khW0hpMa/5x7nN6/j1q836zI="|>, 
+      "Time" -> Quantity[0.681591, "Seconds"]|>], 
+   "FileHash" -> "/B6lgRgfu5Gy+0lZSLBC7cNjytKNaah8xK/kuoowiOc="|>, 
  "English/ReferencePages/Symbols/GaugeSymmetryEquivalentQ.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.707443, "Seconds"]|>], 
@@ -165,16 +165,16 @@
    "FileHash" -> "AjHzHzcaOKWMnR3Rc7n0UvLaRwk9XLxl8j+9IFfJJzo="|>, 
  "English/ReferencePages/Symbols/HGS.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
-      "Time" -> Quantity[0.808342, "Seconds"]|>], 
-   "FileHash" -> "ogHHDjjO1hh94QsGwfwjJGxRTKvIj7WjSRlmMhMVQig="|>, 
+      "Time" -> Quantity[0.229086, "Seconds"]|>], 
+   "FileHash" -> "fWHpKsHKb8b5ZSbhEQM3QCdT0RS/Hwgw3NmywZ+gSeA="|>, 
  "English/ReferencePages/Symbols/MD.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.626077, "Seconds"]|>], 
    "FileHash" -> "6xiKGbhZkb56iBetBl6xvdtmwd4oNzccFE/R5Lpksak="|>, 
  "English/ReferencePages/Symbols/ModularData.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
-      "Time" -> Quantity[0.69564, "Seconds"]|>], 
-   "FileHash" -> "rUU+TBlOWRjRWEi64EJXco8SQVZtoKeMWpla7iv/HzY="|>, 
+      "Time" -> Quantity[0.341381, "Seconds"]|>], 
+   "FileHash" -> "16Z8HvF+wVCaLR8yCw4FyewtMOlOvOh6nq/U9adSNh4="|>, 
  "English/ReferencePages/Symbols/MT.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.639193, "Seconds"]|>], 
@@ -213,8 +213,8 @@
    "FileHash" -> "5/mKat1jDqdxiOeSDOhL2Z+sUaMflkKTuGJjG69usJ8="|>, 
  "English/ReferencePages/Symbols/ReplaceByKnownRing.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
-      "Time" -> Quantity[0.617164, "Seconds"]|>], 
-   "FileHash" -> "zIBpdS9CcCMwAfepJEkzOnewYnXH7FKCrRGeNfgf0Lw="|>, 
+      "Time" -> Quantity[0.180855, "Seconds"]|>], 
+   "FileHash" -> "/Aj7kpZ9acOruhPEXv7wPfKLdiYizVRhTsNeZ8crvhE="|>, 
  "English/ReferencePages/Symbols/SBS.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.68956, "Seconds"]|>], 
@@ -350,4 +350,144 @@
  "English/Tutorials/DealingWithSymmetries.nb" -> 
   <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
       "Time" -> Quantity[0.429478, "Seconds"]|>], 
-   "FileHash" -> "dsYLHOc92Eh74kN+B4MAPI2uM4dDm9WIiES0kHJ8Pag="|>|>
+   "FileHash" -> "dsYLHOc92Eh74kN+B4MAPI2uM4dDm9WIiES0kHJ8Pag="|>, 
+ "English/Guides/AdditionalUsefulFunctions.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.787918, "Seconds"]|>], 
+   "FileHash" -> "JcT3tJXOxVTEt+QgjFUJgt+0xuleJ72xEvLpDUJxsYM="|>, 
+ "English/Guides/PropertiesofFusionRings.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.171613, "Seconds"]|>], 
+   "FileHash" -> "byqumSano+WlTd5ZBmeL9++hZDE4vJnREJW+m6tdsbs="|>, 
+ "English/ReferencePages/Symbols/AllPivotalStructures.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.291854, "Seconds"]|>], 
+   "FileHash" -> "V+yAHalSBSwv9W9UTQWbb/iau1deq7oi++ma2EMVFkc="|>, 
+ "English/ReferencePages/Symbols/BraidedQ.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.194003, "Seconds"]|>], 
+   "FileHash" -> "aBKkEIlrVM7UsvyfqWBXA/3ryn4AZ/pgXgWssGoqcLI="|>, 
+ "English/ReferencePages/Symbols/EquivalentFusionCategoriesQ.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.182068, "Seconds"]|>], 
+   "FileHash" -> "rO0crZneFBF0mm2xbzSChnhi4kd2L6+53wfOPQoq84c="|>, 
+ "English/ReferencePages/Symbols/FCBC.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.234344, "Seconds"]|>], 
+   "FileHash" -> "wN2TdZT7ZBD3WV6ktko2sTdDgMHYrVAtrb2zJrJqhEo="|>, 
+ "English/ReferencePages/Symbols/FCL.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.258319, "Seconds"]|>], 
+   "FileHash" -> "c4cDkpoN36YFEKk20WfVaIDv5Dtv3f8UN5DQwxWYlZo="|>, 
+ "English/ReferencePages/Symbols/FMatrices.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.245079, "Seconds"]|>], 
+   "FileHash" -> "/3ipwzkJiXSDLL/Laa1pdnkU2RHqPIHi7oROb4dWxLA="|>, 
+ "English/ReferencePages/Symbols/FRBC.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.292529, "Seconds"]|>], 
+   "FileHash" -> "RZ4d96EkXthqVplr2155EhU1fsLjsm8EGcQ++3nV6Eg="|>, 
+ "English/ReferencePages/Symbols/Fsymbols.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.223725, "Seconds"]|>], 
+   "FileHash" -> "QudpJjpCWvLy6cQYaDEpLqA/AlGfqsUEjmgkJ+MO5CI="|>, 
+ "English/ReferencePages/Symbols/FusionCategoryByCode.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.244142, "Seconds"]|>], 
+   "FileHash" -> "rQAq0Q1JfQ5DzX3ugsWX8RhVt85XTCRk+VueLsSvbN8="|>, 
+ "English/ReferencePages/Symbols/FusionCategoryList.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.22833, "Seconds"]|>], 
+   "FileHash" -> "1JApL6nOvgI38VM85PevS5TvYvWlUwkP/59BE+zSRe8="|>, 
+ "English/ReferencePages/Symbols/FusionCategory.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.248395, "Seconds"]|>], 
+   "FileHash" -> "1AK9UWkiLBnSMWCK/OJ50mkwO+gUBRHPgyhFH5XJIB0="|>, 
+ "English/ReferencePages/Symbols/FusionRingByCode.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.271422, "Seconds"]|>], 
+   "FileHash" -> "9SuKQ5vjRxh3WTY3egX4fjApUckzIvG3YmMpw41S1OA="|>, 
+ "English/ReferencePages/Symbols/HE.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.254518, "Seconds"]|>], 
+   "FileHash" -> "mGnpbL+iWqfaQZ7sQWPf5jJNLF3pl2m/Ivvv2mhXLOk="|>, 
+ "English/ReferencePages/Symbols/HexagonEquations.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.229927, "Seconds"]|>], 
+   "FileHash" -> "TVQyFMOkvIGeJ0b/j2EevMAMjLtMmWjgLIJ/h91NmwE="|>, 
+ "English/ReferencePages/Symbols/ModularQ.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.198924, "Seconds"]|>], 
+   "FileHash" -> "AIrJ+KRQmfdOk19tOkkTGcpyHCKn1kWlWq+oS5XQRr8="|>, 
+ "English/ReferencePages/Symbols/PE.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.303538, "Seconds"]|>], 
+   "FileHash" -> "dLcZzdWK+Kg8hbVGZsFqmSwLpbpeU6ofKqadnCY9ueQ="|>, 
+ "English/ReferencePages/Symbols/PentagonEquations.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.235487, "Seconds"]|>], 
+   "FileHash" -> "tIkWm73NomMI57Inqs6aeZt+/qGl3sFDhYzsGQEole0="|>, 
+ "English/ReferencePages/Symbols/PivotalStructure.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.278527, "Seconds"]|>], 
+   "FileHash" -> "XyZLbdVRziNjTwPld32L9WB7+pFiZ3DKgfcdNw6guGQ="|>, 
+ "English/ReferencePages/Symbols/QuantumDimensions.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.192373, "Seconds"]|>], 
+   "FileHash" -> "FqVxrz9fQZXznJbKjowufKPNjclgERLnSv01e/9jElw="|>, 
+ "English/ReferencePages/Symbols/RibbonQ.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.294742, "Seconds"]|>], 
+   "FileHash" -> "a009Y0TxKdnXCNn5DZ4ARCVOJxsY8Hjf/jWDynU+4cc="|>, 
+ "English/ReferencePages/Symbols/Rsymbols.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.21749, "Seconds"]|>], 
+   "FileHash" -> "tvhZ+ArMNROwU5CY7MEM4B7EVjhdt2PF/oPZtZzx7Sw="|>, 
+ "English/ReferencePages/Symbols/ScriptCapitalF.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.196343, "Seconds"]|>], 
+   "FileHash" -> "6205ZSFuckAjwE4NvSMBxrl8wFeMG+N8Cstv18d6pP0="|>, 
+ "English/ReferencePages/Symbols/ScriptCapitalR.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.17899, "Seconds"]|>], 
+   "FileHash" -> "GAy4Ul5G/+REKzhtPO5jMsjFqhRw7GB7bhWyMgB4pcU="|>, 
+ "English/ReferencePages/Symbols/ScriptD.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.190068, "Seconds"]|>], 
+   "FileHash" -> "zPoaJIpdYl+VXQF6Lr4XF0JqzhjiA9F57XtfBFVDS2c="|>, 
+ "English/ReferencePages/Symbols/ScriptP.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.292085, "Seconds"]|>], 
+   "FileHash" -> "9YH66X7FMagbX9BUCk2XPxBURtCzFg5vEoiPTxY2OJA="|>, 
+ "English/ReferencePages/Symbols/ScriptT.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.163935, "Seconds"]|>], 
+   "FileHash" -> "i1s6hHkwW2OAi/Dzg3fuyRIndfjRCMxTa3jcfzfSniU="|>, 
+ "English/ReferencePages/Symbols/SMatrix.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.194966, "Seconds"]|>], 
+   "FileHash" -> "ljJ9cjhGhqdWbvI+rPQTPCzDAo180vg3io+RkpnTVYA="|>, 
+ "English/ReferencePages/Symbols/SphericalQ.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.263359, "Seconds"]|>], 
+   "FileHash" -> "ZpMF8sRqsnz/nthYGDkCh+U8R8XfwEcyaoW9kGYtm0U="|>, 
+ "English/ReferencePages/Symbols/Twists.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.213997, "Seconds"]|>], 
+   "FileHash" -> "cFRtdjLkShDcQI7HEgICjUq+sPgnkQ1A0gNmlz5JveA="|>, 
+ "English/Tutorials/FindingFusionRingsWithCertainProperties.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.164065, "Seconds"]|>], 
+   "FileHash" -> "KS4vV4A3R2EHlVtJ8NEyYs3CKKhzRnqC9ub4ycmVYAU="|>, 
+ "English/Tutorials/ReducingSystemsofPolynomialEquations.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.255199, "Seconds"]|>], 
+   "FileHash" -> "sSX6/2dh+pRe/RNfyLZenMgBoRza+QiPAdfjpsETRv0="|>, 
+ "English/Tutorials/SolvingtheHexagonEquations.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.221242, "Seconds"]|>], 
+   "FileHash" -> "KyY4rjw/9X+te5l8OUMOiqFbt4itZ6x664ahtfvDKg8="|>, 
+ "English/Tutorials/SolvingthePentagonEquations.nb" -> 
+  <|"Result" -> Success["ProcessedNotebook", <|"Action" -> "Build", 
+      "Time" -> Quantity[0.130535, "Seconds"]|>], 
+   "FileHash" -> "gLKTKxjOQT/Yyj4JdsGJqsFZZq2tMGuYOjDMlFdG5GA="|>|>

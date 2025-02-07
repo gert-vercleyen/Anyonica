@@ -1,0 +1,251 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      9219,        241]
+NotebookOptionsPosition[      6272,        173]
+NotebookOutlinePosition[      8384,        228]
+CellTagsIndexPosition[      8300,        223]
+WindowTitle->\:F6C1
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA SYMBOL", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "e77f19cd-c8ad-4a56-a939-71c7c9692ec6"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "f7435947-da8e-48b0-823b-e2d6d4950bee"],
+        Background->RGBColor[0.490196, 0.576471, 0.690196],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[Cell[BoxData[
+     TagBox[
+      ActionMenuBox[
+       FrameBox[Cell[TextData[{
+         "URL",
+         " ",
+         Cell[BoxData[
+          GraphicsBox[
+           {GrayLevel[0.66667], Thickness[0.13], 
+            LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+           AspectRatio->1,
+           ImageSize->20,
+           PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+          "44444ba5-b970-4262-a791-dc3a5ff1fcc5"]
+        }],ExpressionUUID->"8382765b-41b7-4f4e-ad94-5b471a84d590"],
+        StripOnInput->False],{
+       "\"Anyonica/ref/\[ScriptP]\"" :> None, 
+        "\"Copy Wolfram Documentation Center URL\"" :> 
+        CopyToClipboard["Anyonica/ref/\[ScriptP]"], Delimiter, 
+        "\"Copy web URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{
+              Cell[BoxData[
+                MakeBoxes[
+                 Hyperlink[
+                  "http://reference.wolfram.com/language/Anyonica/ref/\
+\[ScriptP].html"], StandardForm]], "Input", TextClipboardType -> 
+                "PlainText"]}, Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+        "\"Go to web URL\"" :> 
+        FrontEndExecute[{
+          NotebookLocate[{
+            URL[If[TrueQ[False], 
+                "http://reference.wolfram.com/system-modeler/", 
+                "http://reference.wolfram.com/language/"] <> 
+              "Anyonica/ref/\[ScriptP]" <> ".html"], None}]}]},
+       Appearance->None,
+       MenuAppearance->Automatic,
+       MenuStyle->"URLMenu"],
+      MouseAppearanceTag["LinkHand"]]],
+     LineSpacing->{1.4, 0},ExpressionUUID->
+     "1b3bb9cf-3a8c-428d-8729-283b8bc32078"]], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "1d9869b1-5bfa-44d9-a2f2-20fd2a290d18"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"2cc1c510-1e67-45d2-8754-2cf07b822b7b"],
+
+Cell["Anyonica`", "ContextNameCell",ExpressionUUID->"149b4782-4117-4f32-9169-c6190bd3e0e2"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[GridBox[{
+   {Cell[TextData[{
+     Cell[
+     "\[ScriptP]", "ObjectName",ExpressionUUID->
+      "68dbb90e-e5e0-4a21-b3ef-59d5b9015a69"],
+     Cell[BoxData[
+      TemplateBox[{8},
+       "Spacer1"]],ExpressionUUID->"58972931-26bd-4c18-b7a8-e05a999a663d"],
+     Cell[BoxData[
+     ""], "ObjectNameTranslation",ExpressionUUID->
+      "16c1f2e1-1c76-4276-9b61-a8b9395824c3"]
+    }],ExpressionUUID->"bd7deddb-1c2b-453a-8e66-1a7e080b31ec"], 
+    "\[SpanFromLeft]"}
+  }]], "ObjectNameGrid",ExpressionUUID->"9cbab3ca-dfb6-422b-9d5c-\
+bce6e6fc4744"],
+
+Cell[BoxData[GridBox[{
+   {"", Cell[
+    "Formal symbol that represents a pivotal coefficient.",ExpressionUUID->
+     "b9d9c3ed-c0b7-4321-bd95-a35bd70dc04a"]}
+  }]], "Usage",
+ CellID->225144564,ExpressionUUID->"1a928c75-e446-489c-8494-e0da940f84a6"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ Cell[BoxData[
+  DynamicBox[ToBoxes[
+    If[
+     MatchQ[
+      CurrentValue[
+       EvaluationNotebook[], {
+       TaggingRules, "Openers", "PrimaryExamplesSection"}, Open], 
+      Alternatives[True, Open]], 
+     Style[
+      Graphics[{
+        Thickness[0.18], 
+        RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+        Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+       PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+      0.68 Inherited], 
+     Rotate[
+      Style[
+       Graphics[{
+         Thickness[0.18], 
+         RGBColor[0.8509803921568627, 0.396078431372549, 0], 
+         Line[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]}, AspectRatio -> 1, 
+        PlotRange -> {{-3, 4}, {-1, 1}}, ImageSize -> 20], Magnification -> 
+       0.68 Inherited], Rational[1, 2] Pi, {-1.65, -1}]]],
+   ImageSizeCache->{20.4, {7.223437499999999, 13.1765625}}]],ExpressionUUID->
+  "1f1bc225-32b4-4699-a707-4cd9d343a04f"],
+ Cell[BoxData[
+  TemplateBox[{1},
+   "Spacer1"]],ExpressionUUID->"464dada1-0b5c-4ef7-81fe-1932f7702de7"],
+ "Examples",
+ "\[NonBreakingSpace]\[NonBreakingSpace]",
+ Cell["(0)", "ExampleCount",ExpressionUUID->
+  "9c91af80-22af-46d8-a35d-74342b3fa06c"]
+}], "PrimaryExamplesSection",
+ WholeCellGroupOpener->True,
+ CacheGraphics->False,
+ CellTags->"PrimaryExamplesSection",
+ CellID->1605101265,ExpressionUUID->"fd3487a2-be28-407c-a308-35e78de5bfd1"],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<Anyonica`\>\"", "]"}]], "Input", "ExampleInitialization",
+ CellLabel->"In[1]:=",
+ CellID->63455184,ExpressionUUID->"5292939a-37b5-49ff-870c-b27e9f0c68a8"]
+}, Dynamic[CurrentValue[
+ EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, 
+  Closed]]]],
+
+Cell[" ", "FooterCell",ExpressionUUID->"36728241-c004-49c5-995a-4e41300563cf"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"\[ScriptP]",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}, 
+    "AllOptsTable" -> Closed}, "NewStyles" -> True, 
+  "CitationPopupData" -> $Failed, "ShowCitation" -> False, "RootCaptions" -> 
+  "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 42, 6.107350}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Symbol", "language" -> "en", "paclet" -> "Anyonica", "status" -> 
+    "None", "summary" -> 
+    "Formal symbol that represents a pivotal coefficient.", "synonyms" -> {}, 
+    "tabletags" -> {}, "title" -> "\[ScriptP]", "titlemodifier" -> "", 
+    "metadescription" -> "", "windowtitle" -> "\[ScriptP]", "type" -> 
+    "Symbol", "uri" -> "Anyonica/ref/\[ScriptP]"}},
+CellContext->"Global`",
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> "Global`"], 
+   Cell[
+    StyleData["Output"], CellContext -> "Global`"]}, Visible -> False, 
+  FrontEndVersion -> "14.2 for Linux x86 (64-bit) (December 26, 2024)", 
+  StyleDefinitions -> "PrivateStylesheetFormatting.nb"],
+ExpressionUUID->"b26a31b3-4f1d-47b1-aa70-51be6f84ee76"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{
+ "PrimaryExamplesSection"->{
+  Cell[4459, 124, 1414, 37, 70, "PrimaryExamplesSection",ExpressionUUID->"fd3487a2-be28-407c-a308-35e78de5bfd1",
+   CellTags->"PrimaryExamplesSection",
+   CellID->1605101265]}
+ }
+*)
+(*CellTagsIndex
+CellTagsIndex->{
+ {"PrimaryExamplesSection", 8100, 216}
+ }
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[574, 21, 2924, 71, 70, "AnchorBarGrid",ExpressionUUID->"2cc1c510-1e67-45d2-8754-2cf07b822b7b",
+ CellID->1],
+Cell[3501, 94, 91, 0, 70, "ContextNameCell",ExpressionUUID->"149b4782-4117-4f32-9169-c6190bd3e0e2"],
+Cell[CellGroupData[{
+Cell[3617, 98, 553, 14, 70, "ObjectNameGrid",ExpressionUUID->"9cbab3ca-dfb6-422b-9d5c-bce6e6fc4744"],
+Cell[4173, 114, 249, 5, 70, "Usage",ExpressionUUID->"1a928c75-e446-489c-8494-e0da940f84a6",
+ CellID->225144564]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4459, 124, 1414, 37, 70, "PrimaryExamplesSection",ExpressionUUID->"fd3487a2-be28-407c-a308-35e78de5bfd1",
+ CellTags->"PrimaryExamplesSection",
+ CellID->1605101265],
+Cell[5876, 163, 196, 3, 70, "Input",ExpressionUUID->"5292939a-37b5-49ff-870c-b27e9f0c68a8",
+ CellID->63455184]
+}, Dynamic[CurrentValue[EvaluationNotebook[], {TaggingRules, "Openers", "PrimaryExamplesSection"}, Closed]]]],
+Cell[6190, 171, 78, 0, 70, "FooterCell",ExpressionUUID->"36728241-c004-49c5-995a-4e41300563cf"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

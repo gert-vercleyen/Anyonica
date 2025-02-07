@@ -1069,12 +1069,12 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
     ]
   ];
 
-PackageExport["PowerDot"]
+PackageScope["PowerDot"]
 
 PowerDot[ a_, b_ ] :=
   If[ 
     MatchQ[ a, { 1 .. } ],
-    ConstantArray[ 1, Length @ b ],
+    ConstantArray[1,Length[b]],
     Inner[ Power, a, Transpose @ b, Times ]
   ];
 
@@ -1202,3 +1202,12 @@ EchoIn[ n_Integer, label_, function_][ code_ ] :=
 
 EchoIn[ n_Integer, label_ ][code_] := 
   EchoIn[ n, label, Identity, code ];
+
+PackageExport["EchoPerformance"]
+
+EchoPerformance::usage = 
+"EchoPerformance[expr] prints the absolute number "<>
+"of seconds and memory in bytes used to evaluate expr and returns expr.\n" <>
+"EchoPerformance[expr,label] prepends label to a printed expression."
+
+EchoPerformance := GeneralUtilities`EchoPerformance;

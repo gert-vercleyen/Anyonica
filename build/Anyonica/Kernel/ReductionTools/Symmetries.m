@@ -72,7 +72,7 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
             Missing[],
             MinimalBy[
               fList,
-              Last @* Abs,
+              Abs[ Abs[Last[#]] - 1 ], (* Want power as close to 1 as possible *)
               1
             ][[1,1]]
           ]
@@ -80,8 +80,12 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
 
       FixValue[ a_ -> b_ ] :=
         With[{ var = SimplestVar @ b },
-          Solve[ b == 1, var ][[1]] //
-          ReplaceAll[ HoldPattern[ Times[ _?NumericQ, x__ ] ] :> Times[x] ]
+          Quiet[
+            Solve[ b == 1,var ][[1]] //
+            ReplaceAll[ HoldPattern[ Times[ _?NumericQ, x__ ] ] :> Times[x] ]
+            ,
+            Solve::nongen (* Sometimes throws errors because square roots appear *)
+          ]
         ];
 
       UpdateSystem[ {}, fixedVars_ ] :=
@@ -91,8 +95,8 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
         UpdateSystem[
           (* Substitute new fixed gauge variable, then remove all transforms without gauge variables *)
           transforms //
-          ReplaceAll[ FixValue[ First @ transforms ]] //
-          Cancel //
+          ReplaceAll[ FixValue[ First @ transforms ] ] //
+          PowerExpand //
           DeleteCases[ rule_ /; GetVariables[ rule, g ] === {} ]
           ,
           Append[ transforms[[1,1]] ] @ fixedVars
@@ -399,7 +403,7 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
                 Identity
               ] @
               (values1/values2),
-              mU
+              r
             ];
 
           NonOneCoeff[ l_ ] :=
@@ -713,15 +717,13 @@ PackageScope["MultiplicativeGaugeMatrix"]
 
 MultiplicativeGaugeMatrix[ sym_Association ] :=
   Module[{ t, var, factors, g, newVars },
-    t =
-      sym["Transforms"];
-    var =
-      sym["Symbols"];
+    t = sym["Transforms"];
+    var = sym["Symbols"];
 
     { factors, newVars } =
-      Most @ SimplifyVariables[ t[[;;,2]]/t[[;;,1]], GetVariables[ t, var ], g ];
+      Most @ SimplifyVariables[ Values[t]/Keys[t], GetVariables[ t, var ], g ];
 
-    GaugeMatRow[ #, Length[newVars], g ]& /@ factors
+    GaugeMatRow[ #, Length @ newVars, g ]& /@ factors
   ];
 
 
@@ -731,12 +733,10 @@ GaugeMatRow[ 1, n_, x_ ] :=
 GaugeMatRow[ factor_, n_, x_ ] :=
   Normal @
   SparseArray[
-    Cases[
-      factor,
-      Power[ x[i_], b_. ] :> ( { i } -> b  )
-    ],
+    Flatten[ Rest[FactorList[factor]]/.{ x[i_], j_ }:> { {i} -> j } ]
+    ,
     { n }
-  ];
+	];
 
 (*
 MultiplicativeGaugeMatrix[ sym_Association ] :=
@@ -908,20 +908,24 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
 
     If[ Rank[ring] == 1, Return @ If[ io =!= All, { IdentityMatrix[1], 1 }, { IdentityMatrix[2], 2 } ] ];
 
-    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros },
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros, zeroPos, symbolsWithZeros },
       zeros =
         OptionValue["Zeros"];
 
-      symbols =
-        Complement[
-          Switch[ io,
-            "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
-            "FSymbols", FSymbols @ ring,
-            "RSymbols", RSymbols @ ring,
-            _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
-          ],
-          zeros
+      symbolsWithZeros =
+        Switch[ io,
+          "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
+          "FSymbols", FSymbols @ ring,
+          "RSymbols", RSymbols @ ring,
+          _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
         ];
+
+      zeroPos = 
+        Flatten @ 
+        Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, Heads -> False ];
+
+      symbols =
+        Complement[ symbolsWithZeros, zeros ]; 
 
       sym =
         GaugeSymmetries[ symbols, g ];
@@ -929,22 +933,26 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
       monomial =
         PowerExpand[
           PowerDot[ symbols, Array[ m, Length @ symbols ] ] //
-          ReplaceAll[ sym["Transforms"] ] //
-          ReplaceAll[ Thread[symbols -> 1] ]
+          ReplaceAll[ Dispatch @ sym["Transforms"] ] //
+          ReplaceAll[ Dispatch @ Thread[symbols -> 1] ]
         ];
 
       powers =
         Expand @
         Cases[ monomial, Power[ g[__], p_. ] :> p ];
 
-      { d, v } =
-        Rest @
-        SmithDecomposition[
-          powerToRow[ m, Length @ symbols ] /@ powers
-        ];
+      d = (* It's faster to do a Hermite decomp first and throw away rows of zeros *) 
+				DeleteCases[
+					Last @ 
+					HermiteDecomposition[
+						powerToRow[ m, Length @ symbols ] /@ powers
+					], 
+					{ 0 .. }
+				];
 
-      r =
-        Length @ DeleteCases[0] @ Diagonal[d];
+      { d, v } = Rest @ SmithDecomposition @ d;
+
+      r = Length @ DeleteCases[0] @ Diagonal[d];
 
       (* First sort criterium: number of factors, where powers are counted as multiple factors.
          Second criterium: canonical lexicographic order on the indices (we need Reverse because the greater the row,
@@ -957,15 +965,36 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
         ]&;
 
       {
-        Transpose @ Join[
+        If[ zeroPos === {}, Identity, AddZerosToTransform[ zeroPos ] ] @
+        Transpose @ 
+        Join[
           Sort[ Transpose[v][[r+1;;]], sortf ],
           Sort[ Transpose[v][[;;r]], sortf ]
-        ],
+        ]
+        ,
         Length[v] - r
       }
     ]
   ];
 
+AddZerosToTransform[ {} ][ tMat_ ] :=
+  tMat;
+
+AddZerosToTransform[ zeroPos_List][ tMat_?MatrixQ ] := 
+  Module[ { nZeros, newDim, nonZeroPos, mat, oneAt, zeroMat }, 
+    nZeros = Length @ zeroPos;
+
+    newDim = nZeros + First @ Dimensions @ tMat;
+		
+		nonZeroPos = Complement[ Range @ newDim, zeroPos ]; 
+		
+		mat = ConstantArray[ 0, { newDim, newDim } ];
+		
+		mat[[zeroPos]] = PadRight[ #, newDim ]& /@ IdentityMatrix[nZeros];
+		mat[[nonZeroPos]] = PadLeft[ #, newDim ]& /@ tMat;
+		
+		mat
+  ];
 
 powerToRow[ s_, n_ ][ pow_ ] :=
   Normal @ SparseArray[ Cases[ pow, i_. * s[j_] :> { j } -> i ], {n} ];
@@ -987,20 +1016,15 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       OptionValue["Zeros"];
     io =
       OptionValue["IncludeOnly"];
-    zeros =
-      OptionValue["Zeros"];
 
     { V, n } =
       GaugeSplitTransform[ ring, opts ];
 
     symbols =
-      Complement[
-        Switch[ io,
-          "All", Join[ FSymbols[ring], RSymbols[ring] ],
-          "FSymbols", FSymbols[ring],
-          "RSymbols", RSymbols[ring]
-        ],
-        zeros
+      Switch[ io,
+        "All", Join[ FSymbols[ring], RSymbols[ring] ],
+        "FSymbols", FSymbols[ring],
+        "RSymbols", RSymbols[ring]
       ];
 
     Map[
@@ -1016,14 +1040,15 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
 PackageExport["GaugeInvariants"]
 
 GaugeInvariants::usage =
-  "GaugeInvariants[ ring ] returns a basis of the gauge invariant polynomials in the F-and R-symbols of the ring.";
+  "GaugeInvariants[ ring ] returns a basis of the gauge invariant Laurent polynomials in the F-and R-symbols of the fusion ring ring.\n"<>
+  "GaugeInvariants[ cat ] returns a basis of the gauge invariant Laurent polynomials in the F-and R-symbols with their values of the fusion category cat.";
 
-Options[GaugeInvariants] =
+Options[GaugeInvariants] :=
   Options[GaugeSplitBasis];
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
   With[ { zeros = OptionValue["Zeros"] },
-    Join[ zeros, First @ GaugeSplitBasis[ ring, opts ] ]
+    First @ GaugeSplitBasis[ ring, opts ]
   ];
 
 

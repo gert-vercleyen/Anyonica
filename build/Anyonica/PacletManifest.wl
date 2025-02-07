@@ -50,7 +50,7 @@
             ,
             "Hash"
             ->
-            "a88ccde2cbeed19eda41fa5d006334225b1e98f60632551f4c099b3f64c9afe7"
+            "a18bd67cd9c8b88ad214a32d872edbb5d21b856189ccb08b638bd03944f0755b"
                 
         |>
         ,
@@ -64,7 +64,7 @@
             ,
             "Hash"
             ->
-            "f7d7005e829a0f26df2129c07e9c9c310e71da9cb49fbb723550068a257eef8c"
+            "18ae5fab9052a1e1db62e94c3e346728e17b17f6c730267768d013b8c02f332f"
                 
         |>
         ,
@@ -91,7 +91,7 @@
             ,
             "Hash"
             ->
-            "0c7c3d84b1ea7be7a8efd51d8f9a96ebcc6731d77e6f24f4b8ed521d1afa53d6"
+            "b9566ef16859075a6c6410d70ea41564a7a89935eb86cb72c1bd5843422dce0d"
                 
         |>
         ,
@@ -130,7 +130,7 @@
             ,
             "Hash"
             ->
-            "354bb5a2fd25f1ef66c4889e1dcca83b48608dca874848580002118ef11e2afe"
+            "b5dc2f602b6eb821448b0a2e1720a0b6e2293494b9337860bcf2269b5e7b562f"
                 
         |>
         ,
@@ -195,7 +195,7 @@
             ,
             "Hash"
             ->
-            "9755426df4a706cf25009cfde6c6418c798df70eaafcb5d3cf662369f06a80df"
+            "0a78b021cd7aacaf12147bd348e8b93e717401c9d2bbddfcf87a1822d4dcec59"
                 
         |>
         ,
@@ -221,7 +221,7 @@
             ,
             "Hash"
             ->
-            "019ec9e613c8031c35a4200922454cee0f60df39b9a63f9ed3ab2e3868d26ffe"
+            "afbc89a6b9737b204484fec849e4fa58accad54a17f6114d7748df153518ea5b"
                 
         |>
         ,
@@ -321,6 +321,20 @@
             "File"
             ->
             File[
+                "Kernel/ReductionTools/DatabaseOfHermiteDecompositions.mx"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "b25fb62914d581d8279a083502f5730fc2223caddd2040c51d7c1e0553b613c0"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Kernel/ReductionTools/DatabaseOfHermiteDecompositions.wdx"
                     
             ]
@@ -349,6 +363,20 @@
             "File"
             ->
             File[
+                "Kernel/ReductionTools/DatabaseOfSmithDecompositions.mx"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "a129b7a6e9337fd419418a79f086c3ecf3add105a10277ffd329f8fa5de4ed2d"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Kernel/ReductionTools/DatabaseOfSmithDecompositions.wdx"
                     
             ]
@@ -369,6 +397,19 @@
             "Hash"
             ->
             "8005750e4c2e56b8025e234bd98b74300d1459e14bb4bdb42c7480d3cea39713"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Kernel/ReductionTools/DatabaseOfZeroValues.mx"
+            ]
+            ,
+            "Hash"
+            ->
+            "8fa678750b54a251a54435250bb9cf4a7795d433c4516e9a917990dda326b7ea"
                 
         |>
         ,
@@ -420,7 +461,7 @@
             ,
             "Hash"
             ->
-            "1574169f61a46ac19fd5f4ecfd717ad78072eb43ef6c6c4a8d540480caa72340"
+            "e064f7954352c4c8a7b5b78ae801962f16e416fe646d8b146d55f056faca567b"
                 
         |>
         ,
@@ -433,7 +474,7 @@
             ,
             "Hash"
             ->
-            "b2611e31537ee3a6133d890aa099de0daa9c828590c650425212ac465a7a1a28"
+            "ac983ca72ac3d419c6cab54283549fe3b11227a8b1114d886f2ca17b5f42b9b6"
                 
         |>
         ,
@@ -459,7 +500,7 @@
             ,
             "Hash"
             ->
-            "e23190aa99d08e5a1286402f5c9d241e1ac80327ea929b4c8a607667c256d8af"
+            "43dc2816869859d123fe354b9c90bfabed9ae3a9e09cb71817330a329e745d8d"
                 
         |>
         ,
@@ -472,7 +513,7 @@
             ,
             "Hash"
             ->
-            "c1d8896dcc4087c3fe893cd8618933174fe60536e490e39e1bbec4862045b204"
+            "6ea5837795cc3dc0199fe0ab3f51045a186ab993895619372923c5ca7443b16b"
                 
         |>
         ,
@@ -485,7 +526,7 @@
             ,
             "Hash"
             ->
-            "d71f5c849f94d0cddf0cfaaca8bcd98c4238bcdc03b4fd84d0fff84252e2a820"
+            "38fc342d3b753ba3e9966fc4c7088e750f5470ea66e4fd8986d35f03302fb927"
                 
         |>
         ,
@@ -538,7 +579,7 @@
             ,
             "Hash"
             ->
-            "8d48242e5a4a681dac888f22ad7c13bdc1eb38910fd0312da66c476dba5248cc"
+            "f357180d090dae9fd553d4b94e2b859572a34a9e1ac48786ba72e02ce8233a95"
                 
         |>
         ,
@@ -564,7 +605,7 @@
             ,
             "Hash"
             ->
-            "84a66a861cce4ba98308ec605ad46eeec76d223c274ba1493ce49e4ad8f305a6"
+            "eb670ab8cd65f81f2ea5579fda4900c517407a899dccc8675e926091e915b631"
                 
         |>
         ,
@@ -598,12 +639,26 @@
             "File"
             ->
             File[
+                "Documentation/English/Guides/AdditionalUsefulFunctions.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "0100d9e08dbe399fe1714c62754d57121b750bf43b9d5c2a943e2bff1828306e"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/Guides/Anyonica.nb"
             ]
             ,
             "Hash"
             ->
-            "27cf5c6c0317fbb6022418e03f435e7b1c0895122489ef914e09532d94f9ac1a"
+            "4fc58c8689f5ec0f701a9c2017e643eab98a5bf9b191c7844eeff047316313f7"
                 
         |>
         ,
@@ -617,6 +672,20 @@
             "Hash"
             ->
             "1f2374fa25d2f0513f608e46827d8b990f46d21065dfec339b2b39cc58a807a5"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/Guides/PropertiesofFusionRings.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "9f7a7109b56fcb81af99b894b0797c346c676dd009b5cfcb2d641968b3f4a119"
                 
         |>
         ,
@@ -707,6 +776,20 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/AllPivotalStructures.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "9dbba1c62a18e1cf592bf6d60c8c017abf9907b7e3df233aafbb417918a70fac"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/ApplyGaugeTransform.nb"
                     
             ]
@@ -714,6 +797,20 @@
             "Hash"
             ->
             "1e1d8e69bd1faac6a57a0120afef7769fcf37485a351f3401865bc71bb6dafd8"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/BraidedQ.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "45fac0e0c74e78bcf86a73b2b7a8a84aeda00f7b8254c787994bf4a31504de81"
                 
         |>
         ,
@@ -777,6 +874,20 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/EquivalentFusionCategoriesQ.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "6b8ba4accc8ef6e6dca393360986e6aaa9a0578a0436540fb66c037357e9ad0b"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/EquivalentFusionRingsQ.nb"
                     
             ]
@@ -791,6 +902,34 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/FCBC.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "88114b1268af9dbd6567a2c0e0f638ee57705d7689c539f3492cf9182f7a8dd5"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FCL.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "7b3bcba2e3f97022d0eddfe43ed4ccde59e6b7418dff5b3d2b863103a33e39cb"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/FindZeroValues.nb"
                     
             ]
@@ -798,6 +937,20 @@
             "Hash"
             ->
             "52e3164819d20e09033f337098a131cd33ae93c483c95feed8497a7edf9443ee"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FMatrices.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "34701e74f809756b98598ff02188bda24447373ab89a496493e945dca1dd653d"
                 
         |>
         ,
@@ -826,6 +979,20 @@
             "Hash"
             ->
             "cc9e6f5a9d7479dfbce7186a265214ce48bcd27e916d55748266878c7cda0ded"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FRBC.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "6c0f1cf49cc4ad0933f663e091c1ce51eb2262245df1f9508052f8b2d1f742d7"
                 
         |>
         ,
@@ -875,6 +1042,62 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/Fsymbols.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "0a4f021f77f2f97bb2b0726459b7d6627ba7c9f0eb4e858c6a71dfde7b83a279"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FusionCategoryByCode.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "dc92e4176117a1067b8e2508c5b218a5e167c1feaae1d5f1188964ea619ce21c"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FusionCategoryList.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "69254e08f8f48ed721158ef3d24597ba9346a3099789fa2aad18551c4cfa0e6b"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FusionCategory.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "1b1fdb7136a544f65fee1597f56b1c6c6a8d8e0628185387c378bb2aa6f4cfe3"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/FusionRingAutomorphisms.nb"
                     
             ]
@@ -882,6 +1105,20 @@
             "Hash"
             ->
             "aff9f484ed3e8175a11e700d1a7a8ba1cc5a85207b36ee735e75f1d1020a6ab7"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/FusionRingByCode.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "cb2592850c39b83cad7a744cfaca62c1669e0b2f5da7269302e6acec56e2015c"
                 
         |>
         ,
@@ -1062,7 +1299,7 @@
             ,
             "Hash"
             ->
-            "baf986338a3a5fcc972bc08ed86aa6847ea6210cb284cd571f6a0f63140846fe"
+            "01801fc3dedb77a7a8e2ccc32fe5fb98a885fbb3313833c5c20f71ae4cbe39b8"
                 
         |>
         ,
@@ -1152,6 +1389,33 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/HE.nb"
+            ]
+            ,
+            "Hash"
+            ->
+            "b15b88f59360789b703b2f3cd4a7ee1dc022a52755430282b4ceaadcc507cd3d"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/HexagonEquations.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "131d0a9f28147a8527284fd642d458bd70dc84a19f5da6d9d3fb1d987f62fce1"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/HexagonGroebnerSystems.nb"
                     
             ]
@@ -1172,7 +1436,7 @@
             ,
             "Hash"
             ->
-            "0157bdb4fcb4fe0541936f3813ae15199a41cc80b50ec07729aba1772cbb4684"
+            "53770a6e76ee53f91b0e622031c737e1386efa5bc65cb28c3fc01d2c2255e6a0"
                 
         |>
         ,
@@ -1199,7 +1463,21 @@
             ,
             "Hash"
             ->
-            "a99797b790eb48e1319467cd2de814f8357a99a66175943f7ac823090367c8fd"
+            "5e75486d3ca373548bfe73c42573a60084c9f89f8e1ef38c88b8139250d49fdc"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/ModularQ.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "0fc5065ca0def01251d0ae43f43497da7e22bda413201871e0e0c3f2af7ffc97"
                 
         |>
         ,
@@ -1274,7 +1552,46 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/OriginalReferencePages/HGS.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            $Failed
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/OriginalReferencePages/ModularData.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            $Failed
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/OriginalReferencePages/MultiplicationTable.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            $Failed
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/OriginalReferencePages/ReplaceByKnownRing.nb"
                     
             ]
             ,
@@ -1294,6 +1611,33 @@
             "Hash"
             ->
             $Failed
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/PE.nb"
+            ]
+            ,
+            "Hash"
+            ->
+            "e46856c72fba4d2fff6f226600b848b78c7e7f0d3b37c4646671aab97b7ac32c"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/PentagonEquations.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "c3223158f811ed086a8715ab214a86c9731ba44e439a6d04d8517ac383628f9a"
+                
         |>
         ,
         <|
@@ -1342,12 +1686,40 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/PivotalStructure.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "c4cf11a0e9333b22d942577e7c8b23d3fb5bb1a2d4abedf6044165ee9eb2af61"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/PR.nb"
             ]
             ,
             "Hash"
             ->
             "0ce97e3ba0fef5018085d53333243e3715ed66af78f8fc3e4f72fe461b39aadc"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/QuantumDimensions.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "4d8bb7feb3a33a48f39127c1b4f4e7f25fcd29828486e4d0bc8ef1c97d03e4a0"
                 
         |>
         ,
@@ -1389,7 +1761,35 @@
             ,
             "Hash"
             ->
-            "d3eeb7aeaff7e7e5046682605d201851fa9b5f829b7346a233fa61cf1262ec25"
+            "8d6e81b4614c9f5d334ecdd0f86497d6aa41f204d2b619e33f06ec76fd24906c"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/RibbonQ.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "bd6f2a0b13347811abe2c996dbe05c507422a81058fbf8704fafd011437d323f"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/Rsymbols.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "92a6f7da93131bb7ddccb0d4e5a9dc29d34799e7142c0f5d51d73e1fbfe0d955"
                 
         |>
         ,
@@ -1404,6 +1804,76 @@
             "Hash"
             ->
             "ae84a81cb16455f7cda4ea237ab18a4c8acd04d7896e74a818c8bd6d84f47383"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/ScriptCapitalF.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "53f17800a4d43840125c5e60846e77baf43993c07b68463b036ec8170b9fd2b3"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/ScriptCapitalR.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "4c5c5a42a97e5d738d2017c10479776643d66e0871dbb3e7913c8e91a6d26df4"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/ScriptD.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "adcf893c398327654c49131555130958b8f417906b20cec7ec5b09f6fa16dffa"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/ScriptP.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "96d4e509878c4d518e56e432bfb07e237d4173da2b65e4cbae07b464a16f4365"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/ScriptT.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "8b71742adde99953c7eddf942d03a60a682fe096d1d5cc150e51f595b4a41317"
                 
         |>
         ,
@@ -1460,6 +1930,20 @@
             "Hash"
             ->
             "6a8d41e7f4c19608d5d02c96587f76bb01e8b47128fb60f2c1a8f24408c409a8"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/SMatrix.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "858d2815514bbeeb00ca68dfcb45b3b1319a086885a038f6488732bbd867e117"
                 
         |>
         ,
@@ -1530,6 +2014,20 @@
             "Hash"
             ->
             "1886dd6f51d333578ab9301ae3d4f1b785facf0751d82e253ac3ee0469ae0614"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/SphericalQ.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "637001d6dee4de60b681e339fb0950eab4134c9e75a626928ff9fdfc296f625d"
                 
         |>
         ,
@@ -1682,6 +2180,20 @@
             "Hash"
             ->
             "e80f23bfd2fc4bedfc69d17d86b05227b06ef305067abeeb2cd19856dee0aad7"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/Twists.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "852e2bed6b9fa7d84d724976e4589f7a17d9e6b7c327ada343c0b164cafd7e1c"
                 
         |>
         ,
@@ -1861,6 +2373,62 @@
             "Hash"
             ->
             "5e00b35ffa085cc6b70164e9e0dea081ef6c6916dfcffcc37a6306e04bec549a"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/Tutorials/FindingFusionRingsWithCertainProperties.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "acc8f727421e587d6c874704207c04f207a24984a77e6a4e13e7b036a9ea108a"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/Tutorials/ReducingSystemsofPolynomialEquations.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "08e555ceae5693636cd6a04af4a6f9c51ad1de3dfb4c745a0690e23ca3112f0c"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/Tutorials/SolvingtheHexagonEquations.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "8d95dfc45f2bd8f6767ef8cd543c27e29fd4904a87eaf41fad63ecf840fa2a4c"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/Tutorials/SolvingthePentagonEquations.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "da3a6b2f5df4f11ed927b481564541e969ab44e98dbad44710c2739ab7b79373"
                 
         |>
     }

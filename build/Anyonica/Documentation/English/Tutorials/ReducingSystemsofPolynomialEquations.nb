@@ -1,0 +1,196 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      7213,        186]
+NotebookOptionsPosition[      4395,        119]
+NotebookOutlinePosition[      6601,        174]
+CellTagsIndexPosition[      6558,        171]
+WindowTitle->Reducing Systems of Polynomial Equations
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA TECH NOTE", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "c678e06c-3db6-4f2c-a433-49d7ff9314a2"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "8b0753ab-edbd-46bd-b1f7-5a926cb0b221"],
+        Background->RGBColor[
+         0.3843137254901961, 0.4627450980392157, 0.7019607843137254],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[Cell[BoxData[
+     TagBox[
+      ActionMenuBox[
+       FrameBox[Cell[TextData[{
+         "URL",
+         " ",
+         Cell[BoxData[
+          GraphicsBox[
+           {GrayLevel[0.66667], Thickness[0.13], 
+            LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+           AspectRatio->1,
+           ImageSize->20,
+           PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+          "b1b12828-5a56-4918-94ea-9c6ba0b2a3ef"]
+        }],ExpressionUUID->"6a36813d-ecfe-4e7f-9785-4bef22bacf73"],
+        StripOnInput->False],{
+       "\"Anyonica/tutorial/ReducingSystemsofPolynomialEquations\"" :> None, 
+        "\"Copy Wolfram Documentation Center URL\"" :> 
+        CopyToClipboard[
+         "Anyonica/tutorial/ReducingSystemsofPolynomialEquations"], Delimiter,
+         "\"Copy web URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{
+              Cell[BoxData[
+                MakeBoxes[
+                 Hyperlink[
+                  "http://reference.wolfram.com/language/Anyonica/tutorial/\
+ReducingSystemsofPolynomialEquations.html"], StandardForm]], "Input", 
+                TextClipboardType -> "PlainText"]}, Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+        "\"Go to web URL\"" :> 
+        FrontEndExecute[{
+          NotebookLocate[{
+            URL[If[TrueQ[False], 
+                "http://reference.wolfram.com/system-modeler/", 
+                "http://reference.wolfram.com/language/"] <> 
+              "Anyonica/tutorial/ReducingSystemsofPolynomialEquations" <> 
+              ".html"], None}]}]},
+       Appearance->None,
+       MenuAppearance->Automatic,
+       MenuStyle->"URLMenu"],
+      MouseAppearanceTag["LinkHand"]]],
+     LineSpacing->{1.4, 0},ExpressionUUID->
+     "1dbb8a05-abab-47ba-9836-acb084b746d5"]], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "d6870942-b495-4b55-af6c-6a945705ddaa"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"b3bd590a-7c29-4c5c-a430-72955cc1dc0d"],
+
+Cell[CellGroupData[{
+
+Cell["Reducing Systems of Polynomial Equations", "TechNoteTitle",
+ CellID->1461919487,ExpressionUUID->"ceda143c-08db-4b64-a9fe-9e876bd18de6"],
+
+Cell["XXXX.", "TechNoteCaption",
+ CellID->2142829383,ExpressionUUID->"1e9d6a66-040a-48da-b1e3-e706214f3676"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["XXXX"], "Input",
+ CellLabel->"In[1]:=",
+ CellID->876185428,ExpressionUUID->"70f95377-82a4-4929-ac1a-180eb0ec98f2"],
+
+Cell[BoxData["XXXX"], "Output",
+ CellLabel->"Out[1]=",
+ CellID->753120917,ExpressionUUID->"bb8df940-09c1-46d6-803d-082ced5b996f"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[" ", "FooterCell",ExpressionUUID->"92a1787b-5827-4ab3-a772-7fc2f7d7e24b"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"Reducing Systems of Polynomial Equations",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}}, 
+  "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
+  False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 42, 7.342603}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Tech Note", "language" -> "en", "paclet" -> "Anyonica", 
+    "status" -> "None", "summary" -> " ", "synonyms" -> {}, "tabletags" -> {},
+     "title" -> "Reducing Systems of Polynomial Equations", "titlemodifier" -> 
+    "", "metadescription" -> "", "windowtitle" -> 
+    "Reducing Systems of Polynomial Equations", "type" -> "Tech Note", "uri" -> 
+    "Anyonica/tutorial/ReducingSystemsofPolynomialEquations"}},
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> Notebook], 
+   Cell[
+    StyleData["Output"], CellContext -> Notebook], 
+   Cell[
+    StyleData["TutorialMoreAboutSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["RelatedTutorialsSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["TutorialRelatedLinksSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}]}, Visible -> False, 
+  FrontEndVersion -> "14.2 for Linux x86 (64-bit) (December 26, 2024)", 
+  StyleDefinitions -> "PrivateStylesheetFormatting.nb"],
+ExpressionUUID->"ee895435-beaa-451a-865b-5104db4c4a82"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[608, 21, 3116, 74, 87, "AnchorBarGrid",ExpressionUUID->"b3bd590a-7c29-4c5c-a430-72955cc1dc0d",
+ CellID->1],
+Cell[CellGroupData[{
+Cell[3749, 99, 141, 1, 177, "TechNoteTitle",ExpressionUUID->"ceda143c-08db-4b64-a9fe-9e876bd18de6",
+ CellID->1461919487],
+Cell[3893, 102, 108, 1, 45, "TechNoteCaption",ExpressionUUID->"1e9d6a66-040a-48da-b1e3-e706214f3676",
+ CellID->2142829383],
+Cell[CellGroupData[{
+Cell[4026, 107, 128, 2, 40, "Input",ExpressionUUID->"70f95377-82a4-4929-ac1a-180eb0ec98f2",
+ CellID->876185428],
+Cell[4157, 111, 129, 2, 54, "Output",ExpressionUUID->"bb8df940-09c1-46d6-803d-082ced5b996f",
+ CellID->753120917]
+}, Open  ]]
+}, Open  ]],
+Cell[4313, 117, 78, 0, 59, "FooterCell",ExpressionUUID->"92a1787b-5827-4ab3-a772-7fc2f7d7e24b"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
