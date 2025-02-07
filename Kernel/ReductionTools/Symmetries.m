@@ -72,7 +72,7 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
             Missing[],
             MinimalBy[
               fList,
-              Last @* Abs,
+              Abs[ Abs[Last[#]] - 1 ], (* Want power as close to 1 as possible *)
               1
             ][[1,1]]
           ]
@@ -80,8 +80,12 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
 
       FixValue[ a_ -> b_ ] :=
         With[{ var = SimplestVar @ b },
-          Solve[ b == 1, var ][[1]] //
-          ReplaceAll[ HoldPattern[ Times[ _?NumericQ, x__ ] ] :> Times[x] ]
+          Quiet[
+            Solve[ b == 1,var ][[1]] //
+            ReplaceAll[ HoldPattern[ Times[ _?NumericQ, x__ ] ] :> Times[x] ]
+            ,
+            Solve::nongen (* Sometimes throws errors because square roots appear *)
+          ]
         ];
 
       UpdateSystem[ {}, fixedVars_ ] :=
@@ -91,8 +95,8 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
         UpdateSystem[
           (* Substitute new fixed gauge variable, then remove all transforms without gauge variables *)
           transforms //
-          ReplaceAll[ FixValue[ First @ transforms ]] //
-          Cancel //
+          ReplaceAll[ FixValue[ First @ transforms ] ] //
+          PowerExpand //
           DeleteCases[ rule_ /; GetVariables[ rule, g ] === {} ]
           ,
           Append[ transforms[[1,1]] ] @ fixedVars
