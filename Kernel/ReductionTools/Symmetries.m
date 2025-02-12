@@ -972,7 +972,7 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
           Sort[ Transpose[v][[;;r]], sortf ]
         ]
         ,
-        Length[v] - r
+        Length[v] - r + Length[zeroPos]
       }
     ]
   ];
