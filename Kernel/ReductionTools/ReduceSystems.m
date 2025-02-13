@@ -219,8 +219,8 @@ Options[ReduceBinSysHermite] :=
     }
   ];
 
-ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] := 
-  Module[ { nSubsys, s, procID, nPart, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
+ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] := 
+  Module[ { nSubsys, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
     subMat1, reducedMat1, matSubsys2, mat2, rhs2, reducedMat2, reducedrhs2, rhsFinal, 
     u, h, mat, t, result, trm1, trm2, combinedMat }, 
 
@@ -317,6 +317,13 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
             ] 
           ]
       ];
+
+      (* Check validity solution *)
+
+      If[
+        reducedMat2 === Missing["InconsistentSystem"],
+        Throw @ <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>
+      ];
       
       printlog["RBSVHD:nontoricresults", { procID, trm2, Length @ reducedMat2 } ];
 
@@ -346,6 +353,8 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
     result
   ];
 
+Options[ partitionAndReduce ] = 
+  { "PreEqualCheck" -> Identity };
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   all elements of the RHS equal 1 *)
@@ -413,13 +422,24 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_]
             decomps[[;; , 1]] 
           }
         ];
-
+      
       newSys = 
         DeleteCases[ { 0 .., 1 } ] @
         ReverseSortBy[
           AppendRHS[ newMat, newRHS ],
           Abs
         ];
+      
+      (* Faster to use reverse indices because problems appear at the bottom *)
+      If[ (* There is a zero row with non-one rhs *)
+        MemberQ[ 
+            Reverse @ Range @ Length @ newSys,  
+            i_ /; 
+            MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ PreEqualCheck[x] != 1 ] ]
+        ],
+        printlog["Gen:has_False", { procID, newSys  } ];
+        Throw @ { Missing["InconsistentSystem"], {}  }
+      ];
 
       { newSys[[;; , ;; -2]], newSys[[;; , -1]] }
     ];
