@@ -2157,51 +2157,46 @@ Which[
     },
 
     acc =
-    OptionValue["Accuracy"];
+      OptionValue["Accuracy"];
     numericQ =
-    OptionValue["Numeric"];
+      OptionValue["Numeric"];
     simplify =
-    OptionValue["SimplifyBy"];
+      OptionValue["SimplifyBy"];
     useDataBaseQ =
-    OptionValue["UseDatabaseOfSmithDecompositions"];
+      OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck =
-    OptionValue["PreEqualCheck"];
+      OptionValue["PreEqualCheck"];
     onlyAbsQ =
-    OptionValue["OnlyMatchAbsoluteValues"];
+      OptionValue["OnlyMatchAbsoluteValues"];
     procID =
-    ToString[Unique[]];
+      ToString[Unique[]];
 
     { newSol1, newSol2 } =
-    If[ numericQ,
-      N[ { sol1, sol2 } ],
-      Map[ simplify, { sol1, sol2 }, { 2 } ]
-    ];
+      If[ 
+        numericQ,
+        InfN[ { sol1, sol2 }, acc ],
+        Map[ simplify, { sol1, sol2 }, { 2 } ]
+      ];
 
-    { values1, values2 } =
-    { newSol1, newSol2 }[[ ;;, ;;, 2 ]];
+    { values1, values2 } = Values /@ { newSol1, newSol2 };
 
-    nGaugeVars =
-    NNZSC[ring];
+    nGaugeVars = NNZSC @ ring;
 
     (* printlog["TSG:init", { procID, ring, FSymb, {opts} } ]; *)
 
     { time, result } = Normal @
     AbsoluteTiming[
 
-      nonZeroFs =
-      ( DeleteCases[ _ -> 0 ] @ newSol1 )[[ ;;, 1 ]];
+      nonZeroFs = 
+        Keys @ DeleteCases[ _ -> 0 ] @ newSol1;
 
       gaugeSymmetries =
-      GaugeSymmetries[
-        nonZeroFs,
-        g
-      ];
+        GaugeSymmetries[ nonZeroFs, g ];
 
       transforms =
-      gaugeSymmetries["Transforms"];
+        gaugeSymmetries["Transforms"];
 
       Catch[
-
         If[ (* Solutions are the same *)
           TrivialGaugeSymmetryEquivalentQ[
             "Numeric" -> numericQ,
@@ -2210,74 +2205,72 @@ Which[
           ][ values1, values2 ],
           (* Then *)
           printlog["WGT:same_solution", { procID, sol1, sol2 } ];
-          Throw @
-          Thread[ ( g @@@ NZSC[ring] ) -> 1  ]
+          Throw @ Thread[ ( g @@@ NZSC[ring] ) -> 1  ]
         ];
 
         If[ (* Different zero values for F-symbols *)
-          Unequal @@@
-          Map[
-            Position[0],
-            { values1, values2 }
-          ],
+          Unequal @@
+          Map[ Position[#,0,1]&, { values1, values2 } ],
           (* THEN *)
           printlog["WGT:different_zero_positions", { procID, sol1, sol2 } ];
-          Throw[{}],
-          (* ELSE *)
+          Throw @ {},
+          (* ELSE: remove 0 values and continue *)
           values1 =
-          DeleteCases[0] @ values1;
+            DeleteCases[0] @ values1;
           values2 =
-          DeleteCases[0] @ values2;
+            DeleteCases[0] @ values2;
         ];
 
-        constraints =
-        DeleteCases[True] @
-        Thread[
-          values2 ==
-          ReplaceAll[
-            GaugeTransform[ If[ onlyAbsQ, { g, t }, g ] ][ nonZeroFs ],
-            sol1
-          ]
-        ];
+        constraints = 
+          DeleteCases[True] @
+          Thread[
+            values2 == 
+            ReplaceAll[
+              GaugeTransform[ If[ onlyAbsQ, { g, t }, g ] ][ nonZeroFs ],
+              sol1
+            ]
+          ];
 
         If[
-          constraints === False,
+          MemberQ[False] @ constraints,
           Throw @ { }
         ];
 
         vars =
-        GetVariables[ constraints, { g, t } ];
+          GetVariables[ constraints, { g, t } ];
 
         { newConstraints, newVars, revertVars } =
-        SimplifyVariables[ constraints, vars , u ];
+          SimplifyVariables[ constraints, vars , u ];
 
-        { binomialMat, rhsVec } =
-        AddOptions[opts][BinToSemiLin][
-          newConstraints,
-          newVars,
-          u
-        ];
+        { binomialMat, rhsVec } = 
+          AddOptions[opts][BinToSemiLin][
+            newConstraints,
+            newVars,
+            u,
+            "SimplifyIntermediateResultsBy" -> simplify
+          ];
 
-        { mU, mD, mV } =
-        If[
-          useDataBaseQ,
-          AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
-          SmithDecomposition @ binomialMat
-        ];
+        { mU, mD, mV } = 
+          If[
+            useDataBaseQ,
+            AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
+            SmithDecomposition @ binomialMat
+          ];
 
         printlog["WGT:decomposition",{procID,{mU,mD,mV}}];
 
         rankBinomialMat =
-        Length[
-          diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
-        ];
+          Length[
+            diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
+          ];
 
         expRHS =
-        PowerDot[ rhsVec, mU ];
+          simplify /@
+          PowerDot[ rhsVec, mU ];
 
         listOfOnesQ[ l_ ] :=
-        And @@
-        Thread[ preEqCheck[l] == 1 ];
+          And @@
+          Thread[ preEqCheck[l] == 1 ];
 
         If[
           (* RHS and LHS are incompatible *)
@@ -2290,38 +2283,36 @@ Which[
 
           (* ELSE *)
           ZSpace =
-          mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
+            mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           constVec =
-          PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
+            PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
 
         trivialSpace =
-        With[{
-          ntVars = Length[vars] - NNZSC[ring]
-        },
-          MatrixDirectSum[
-            {
-              TrivialGaugeMatrix @ nonZeroFs,
-              If[
-                onlyAbsQ,
-                ConstantArray[ 0, { ntVars, ntVars } ],
-                {{}}
-              ]
-            }
-          ]
-        ];
+          With[ { ntVars = Length[vars] - NNZSC[ring] },
+            MatrixDirectSum[
+              {
+                TrivialGaugeMatrix @ nonZeroFs,
+                If[
+                  onlyAbsQ,
+                  ConstantArray[ 0, { ntVars, ntVars } ],
+                  {{}}
+                ]
+              }
+            ]
+          ];
 
         CSpace =
-        IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialSpace ];
+          IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialSpace ];
 
         monomials =
-        If[
-          CSpace === {{}},
-          ConstantArray[ 1, Length[constVec] ],
-          With[ { parameters = z /@ Range[ Dimensions[CSpace][[2]] ] },
-            PowerDot[ parameters, CSpace ]
-          ]
-        ];
+          If[
+            CSpace === {{}},
+            ConstantArray[ 1, Length[constVec] ],
+            With[ { parameters = z /@ Range[ Dimensions[CSpace][[2]] ] },
+              PowerDot[ parameters, CSpace ]
+            ]
+          ];
 
         If[ (* Any solution goes *)
           !onlyAbsQ,
@@ -2339,9 +2330,7 @@ Which[
             ],
 
             (* THEN *)
-            Throw[
-              Thread[ newVars -> constVec ][[;;nGaugeVars]]/.revertVars
-            ],
+            Throw[ Thread[ newVars -> constVec ][[;;nGaugeVars]]/.revertVars ],
 
             (* ELSE: add monomials and try to find vals of monomials s.t. extra vars become phases *)
 
@@ -2352,15 +2341,15 @@ Which[
 
             (* Calculate squared norm of extra vars *)
             normSquaredExtraVars =
-            ( ComplexExpand[ Norm /@ constVec ]^2 * ( monomials/. z[i_] :> a[i]^2 + b[i]^2 ) )[[ nGaugeVars + 1 ;; ]];
+              ( ComplexExpand[ Norm /@ constVec ]^2 * ( monomials/. z[i_] :> a[i]^2 + b[i]^2 ) )[[ nGaugeVars + 1 ;; ]];
 
             (* Try to find solution with norm 1 *)
             absSol =
-            FindInstance[
-              Thread[ normSquaredExtraVars == 1 ],
-              GetVariables[ normSquaredExtraVars, { a, b } ],
-              Reals
-            ];
+              FindInstance[
+                Thread[ normSquaredExtraVars == 1 ],
+                GetVariables[ normSquaredExtraVars, { a, b } ],
+                Reals
+              ];
 
             If[
               (* No solution found *)
