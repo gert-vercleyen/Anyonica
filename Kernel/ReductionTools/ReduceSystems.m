@@ -163,7 +163,6 @@ Options[ReduceBinomialSystem] :=
   Join[
     Options[ ReduceBinSysHermite ],
     {
-      "SimplifyIntermediateResultsBy" -> Identity,
       "Method" -> "HermiteDecomposition"
     }
   ];
@@ -215,16 +214,19 @@ Options[ReduceBinSysHermite] :=
   Join[
     Options[ ReduceSemiLinModZ ],
     { 
-      "MaxEquationsPerPartition" -> 1024 
+      "MaxEquationsPerPartition" -> 1024,
+      "SimplifyIntermediateResultsBy" -> Identity 
     }
   ];
 
 ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] := 
   Module[ { nSubsys, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
     subMat1, reducedMat1, matSubsys2, mat2, rhs2, reducedMat2, reducedrhs2, rhsFinal, 
-    u, h, mat, t, result, trm1, trm2, combinedMat }, 
+    u, h, mat, t, result, trm1, trm2, combinedMat, preEqCheck }, 
 
     procID = ToString @ Unique[];
+
+    preEqCheck = OptionValue["PreEqualCheck"];
 
     { t, result } = 
     AbsoluteTiming[
@@ -239,8 +241,19 @@ ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] :=
         so best to do it only once*)
       s = Head @ First @ variables;
 
-      { mat, rhs } =  
+      { mat, rhs } = 
           Catch @ Normal @ AddOptions[opts][BinToSemiLin][ equations, variables, s ];
+
+      If[ 
+        TrueQ[ MemberQ[ 0 ] @ Map[ preEqCheck, rhs ] ], 
+        printlog["Gen:has_False", { procID, { mat, rhs } } ];
+        Return @ 
+        <| 
+          "Polynomials" -> {1}, 
+          "Assumptions" -> False, 
+          "Values" -> {}  
+        |> 
+      ];
       
       If[ Head @ mat === String, Return @ { False } ];
 
@@ -358,7 +371,7 @@ Options[ partitionAndReduce ] =
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   all elements of the RHS equal 1 *)
-partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] := 
+partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_, OptionsPattern[] ] := 
   Module[{ t, result, partitionPos, reduceMat }, 
     (* Check for empty matrix *)
     If[ ByteCount[ mat < 1024 ] && Flatten[mat] === {}, Return @ {{}} ];
@@ -393,7 +406,7 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] :=
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   none of the elements of the RHS equal 1 *)
-partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_] := 
+partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_, OptionsPattern[] ] := 
   Module[{ t, result, partitionPos, decomps, newMat, newRHS, newSys },  
 
     (* Check for empty system *)
@@ -433,9 +446,9 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_]
       (* Faster to use reverse indices because problems appear at the bottom *)
       If[ (* There is a zero row with non-one rhs *)
         MemberQ[ 
-            Reverse @ Range @ Length @ newSys,  
-            i_ /; 
-            MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ PreEqualCheck[x] != 1 ] ]
+          Reverse @ Range @ Length @ newSys,  
+          i_ /; 
+          MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ PreEqualCheck[x] != 1 ] ]
         ],
         printlog["Gen:has_False", { procID, newSys  } ];
         Throw @ { Missing["InconsistentSystem"], {}  }
@@ -479,7 +492,6 @@ EquivToRule[x_][ { eqn_, linvars_, vars_ } ] :=
 
 UpdateEquivalences[x_][ { eqns_, equivs_ }] :=
   With[ { equivRules =  EquivToRule[x] /@ FindEquivalences[ eqns, x ] },
-    EchoIn[ 500, "NewKnowns", Last ] @
     {
       TEL @
       NormalForm @
