@@ -362,8 +362,8 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
         differentAbsQ =
           If[
             numericQ,
-            Abs[ N[ #1, { Infinity, sd } ] ] - Abs[ N[ #2, { Infinity, sd } ] ] != 0&,
-            simplify[ Abs[ #1 ] - Abs[ #2 ] ] != 0&
+            TrueQ[ Abs[ N[ #1, { Infinity, sd } ] ] - Abs[ N[ #2, { Infinity, sd } ] ] != 0 ]&,
+            TrueQ[ simplify[ Abs[ #1 ] - Abs[ #2 ] ] != 0 ]&
           ];
 
         Catch[
@@ -791,6 +791,7 @@ GaugeTransform[ g_Symbol ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
 
 GaugeTransform[ g_Symbol ][ R[ a_, b_, c_ ] ] :=
   ( g[ a, b, c ] / g[ b, a, c ] )* R[a,b,c];
+
 
 
 (* Special gauge transforms with extra parameter *)
@@ -2135,26 +2136,27 @@ Options[WhichGaugeTransform] :=
   "SimplifyBy" -> Identity
 };
 
+checkArgsWhichGaugeTransform[ ring_, sol1_, sol2_ ] := 
+  Which[
+    Mult[ring] != 1
+    ,
+    Message[ WhichGaugeTransform::notmultfree ];
+    Abort[]
+    ,
+    !PPSQ[sol1] || !PPSQ[sol2]
+    ,
+    Message[ WhichGaugeTransform::wrongsolformat, sol1, sol2 ];
+    Abort[]
+  ];
+
 WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
-Which[
-  Mult[ring] != 1
-  ,
-  Message[ WhichGaugeTransform::notmultfree ];
-  Abort[]
-  ,
-  !PPSQ[sol1] || !PPSQ[sol2]
-  ,
-  Message[ WhichGaugeTransform::wrongsolformat, sol1, sol2 ];
-  Abort[]
-  ,
-  True
-  ,
   Module[
     { gaugeSymmetries, transforms, u, constraints, newVars, newConstraints, revertVars,
       acc, numericQ, simplify, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS, listOfOnesQ, newSol1, newSol2,
       diagonalElements, ZSpace, constVec, useDataBaseQ, preEqCheck, nGaugeVars, nonZeroFs,  trivialSpace, CSpace,
       monomials, time, result, procID, onlyAbsQ, values1, values2, vars, t, z, normSquaredExtraVars, absSol, a, b
     },
+    checkArgsWhichGaugeTransform[ ring, sol1, sol2 ];
 
     acc =
       OptionValue["Accuracy"];
@@ -2373,8 +2375,7 @@ Which[
     printlog[ "Gen:results", { procID, result, time }];
 
     result
-  ]
-];
+  ];
 
 PackageExport["WGT"]
 
