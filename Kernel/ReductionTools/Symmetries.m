@@ -323,11 +323,67 @@ Options[GaugeSymmetryEquivalentQ] =
     "GaugeInvariants" -> {}
   };
 
+checkArgsGaugeSymmetryEquivalentQ[ symmetries_ ] := 
+  If[ 
+    !MultiplicativeSymmetriesQ @ symmetries,
+    Message[ GaugeSymmetryEquivalentQ::symnotmultiplicative, symmetries ];
+    Abort[]
+  ];
+
+GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  Module[ { gaugeMatrix, zeroPos1, zeroPos2 },
+    
+    checkArgsGaugeSymmetryEquivalentQ @ symmetries;
+
+    If[ (* Gauges are trivial *)
+      Times @@ Dimensions[ MultiplicativeGaugeMatrix @ symmetries ] === 0,
+      TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
+    ];
+
+    (* Check whether zeros are at same positions *)
+    { zeroPos1, zeroPos2 } =
+      Position[ _ -> 0 ] /@
+      { sol1, sol2 };
+
+    If[ zeroPos1 =!= zeroPos2, Return @ False ];
+
+    gaugeMatrix =
+      MultiplicativeGaugeMatrix @
+      MapAt[
+        Delete[ zeroPos1 ],
+        symmetries,
+        {1}
+      ];
+
+    GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ]
+
+  ];
+
+Options[TrivialGaugeSymmetryEquivalentQ] :=
+  Options[GaugeSymmetryEquivalentQ];
+
+TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  With[{
+    differentQ =
+      If[
+        OptionValue["Numeric"],
+        Not[ TrueQ[ InfN[ #1 - #2, OptionValue["Accuracy"] ] == 0 ] ]&,
+        Not[ TrueQ[ OptionValue["SimplifyBy"][ #1 - #2 ] == 0 ] ]&
+      ]
+    },
+    Catch[ (* Throw False immediately when 2 different values are encountered *)
+      MapThread[
+        If[ differentQ[ #1, #2 ], Throw @ False ]&, 
+        { sol1, sol2 }
+      ];
+      True
+    ]
+  ];
+
 GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ];
 
-
-GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+GaugeSymmetryEquivalentQ[ { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   Module[{
       rank, numericQ, sd, simplify, values1, values2, unitaryGaugeQ, differentAbsQ,
       preEqCheck, expRHS, NonOneCoeff,noc, procID, time, result, invariants
@@ -353,27 +409,31 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
           OptionValue["GaugeInvariants"];
 
         values1  =
-          sol1[[;;,2]] //
-          DeleteCases[0];
+          DeleteCases[0] @ 
+          Values @ 
+          sol1;
         values2  =
-          sol2[[;;,2]] //
-          DeleteCases[0];
+          DeleteCases[0] @ 
+          Values @ 
+          sol2;
 
         differentAbsQ =
           If[
             numericQ,
-            TrueQ[ Abs[ N[ #1, { Infinity, sd } ] ] - Abs[ N[ #2, { Infinity, sd } ] ] != 0 ]&,
+            TrueQ[ Abs[ InfN[ #1, sd ] ] - Abs[ InfN[ #2, sd ] ] != 0 ]&,
             TrueQ[ simplify[ Abs[ #1 ] - Abs[ #2 ] ] != 0 ]&
           ];
 
         Catch[
-          If[
-            invariants =!= {} && N[ invariants/.sol1 , { Infinity, 16 } ] != N[ invariants/.sol2, { Infinity, 16 } ]
+          If[ (* Gauge invariants do not coincide up to 16 digits (Infinite precision) *)
+            invariants =!= {} && 
+            InfN[ invariants/.Dispatch[sol1], 16 ] != 
+            InfN[ invariants/.Dispatch[sol2], 16 ]
             ,
-            Throw[ False ]
+            Throw @ False 
           ];
 
-          If[(* test for Unitary equivalence *)
+          If[ (* test for Unitary equivalence *)
             unitaryGaugeQ,
             (* THEN *)
             MapThread[
@@ -388,30 +448,22 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
 
           rank =
             Length[h] -
-            Count[
-              h,
-              row_ /;
-              MatchQ[ row, { 0 .. } ]
-            ];
+            Count[ h, row_ /; MatchQ[ row, { 0 .. } ] ];
+
+          divRHS = 
+              If[ numericQ, N[ #, { Infinity, sd } ]&, Identity ] @
+              (values1/values2);
 
           expRHS =
             simplify @
-            PowerDot[
-              If[
-                numericQ,
-                N[ #, { Infinity, sd } ]&,
-                Identity
-              ] @
-              (values1/values2),
-              r
-            ];
+            PowerDot[ divRHS, r ];
 
           NonOneCoeff[ l_ ] :=
             FirstCase[ l, x_ /; !TrueQ[ preEqCheck[x] == 1 ] ];
 
           If[
             rank < Length[ expRHS ] &&
-            Head[ noc =  NonOneCoeff @ expRHS[[rank+1;;]] ] =!= Missing,
+            !MissingQ[ noc = NonOneCoeff @ expRHS[[rank+1;;]] ],
             printlog["GSEQ:nonone_coeff", { procID, expRHS, rank, noc } ];
             False,
             True
@@ -425,76 +477,6 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
 
   ];
 
-GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
-  If[
-    !MultiplicativeSymmetriesQ[symmetries]
-    ,
-    Message[ GaugeSymmetryEquivalentQ::symnotmultiplicative, symmetries ];
-    Abort[]
-    ,
-    Module[ { simplify, numericQ, sd, gaugeMatrix, zeroPos1, zeroPos2, differentQ },
-      simplify =
-        OptionValue["SimplifyBy"];
-      numericQ =
-        OptionValue["Numeric"];
-      sd =
-        OptionValue["Accuracy"];
-      differentQ =
-        If[
-          numericQ,
-          TrueQ[ N[ #1 - #2, { Infinity, sd } ] == 0 ]&,
-          TrueQ[ simplify[#1 - #2 ] == 0 ]&
-        ];
-
-      If[ (* Gauges are trivial *)
-        Times @@ Dimensions[ MultiplicativeGaugeMatrix[ symmetries ] ] === 0,
-        TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
-      ];
-
-      (* Check whether zeros are at same positions *)
-      { zeroPos1, zeroPos2 } =
-        Position[ _ -> 0 ] /@
-        { sol1, sol2 };
-
-      If[
-        zeroPos1 =!= zeroPos2,
-        Return[ False ]
-      ];
-
-      gaugeMatrix =
-        MultiplicativeGaugeMatrix[
-          MapAt[
-            Delete[ zeroPos1 ],
-            symmetries,
-            {1}
-          ]
-        ];
-
-      GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ]
-
-    ]
-  ];
-
-Options[TrivialGaugeSymmetryEquivalentQ] :=
-  Options[GaugeSymmetryEquivalentQ];
-
-TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
-  With[{
-    differentQ =
-      If[
-        OptionValue["Numeric"],
-        Not[TrueQ[ InfN[ #1 - #2, OptionValue["Accuracy"] ] == 0 ]]&,
-        Not[TrueQ[ OptionValue["SimplifyBy"][#1 - #2] == 0 ]]&
-      ]
-    },
-    Catch[
-      MapThread[
-        If[ differentQ[ #1, #2 ], Throw[False] ]&,
-        { sol1, sol2 }
-      ];
-      True
-    ]
-  ];
 
 PackageExport["GSEQ"]
 GSEQ::usage =
