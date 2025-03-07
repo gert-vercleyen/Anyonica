@@ -1979,6 +1979,17 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:init", { id_, equations_, vars_, 
     ];
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:results", { id_, results_, time_ } ] :=
+  Module[{fn},
+    fn = dataFileName[ id, dir, "Results" ];
+    safeExport[ fn, results ];
+    AddCell[
+      fileName,
+      nbo,
+      endCell[ id, "Results", fn, time ]
+    ]
+  ];
+
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] :=
   AddCell[
     fileName,
