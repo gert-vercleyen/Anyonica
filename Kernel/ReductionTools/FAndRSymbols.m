@@ -407,14 +407,12 @@ With[{ firstRule = First @ rules, restRules = Rest @ rules },
   ]
 ];
 
-FixLHS[ a_ -> b_ ] :=
-With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
 
 FixRule[ check_ ][ a_ -> b_ ] :=
 Switch[ NumericQ /@ { a, b },
   { True, True }
   ,
-  If[ check[ a - b ] != 0, Throw[ a -> b ], a -> b ]
+  If[ check[ a - b ] =!= 0, Throw[ a -> b ], a -> b ]
   ,
   { True, False }
   ,
@@ -424,6 +422,43 @@ Switch[ NumericQ /@ { a, b },
   ,
   FixLHS[ a -> b ]
 ];
+
+FixLHS[ a_ -> b_ ] :=
+  With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
+
+(*
+Options[equivClass] :=
+  {"PreEqualCheck" -> Identity};
+
+equivClass[ring_, OptionsPattern[]][f_] :=
+  With[{ 
+    equivFs = FixedPoint[ expandOrbit[ring], { f } ] /. {$VacuumFPattern -> 1 }, 
+    check = OptionValue["PreEqualCheck"] 
+    },
+    Which[ 
+      MatchQ[ equivFs, { 1 .. } ],
+        { },
+      True,
+        First @ Solve[ Equal @@ equivFs ]
+      ]
+    ]
+
+expandOrbit[ring_][fs_List] :=
+  Union @ 
+  Flatten @ 
+  Join[ { fs }, Flatten @ Values[ miniorbit[ring] /@ fs ] ];
+
+miniorbit[ring_][a_.*(symb : F[j_, k_, l_, i_, m_, n_]) ] :=
+  With[{d = CC[ring], qd = FPDims[ring][[#]] &},
+    {
+      symb -> a F[k, j, d[i], d[l], m, d[n]],
+      symb -> a F[d[i], l, k, d[j], d[m], n],
+      symb -> a F[d[m], k, d[n], d[i], d[j], d[l]] Sqrt[qd[m] qd[n]/(qd[j] qd[l])]
+    }
+  ]
+
+*)
+
 
 PackageExport["ProjectiveTetrahedralSymmetries"]
 
@@ -626,3 +661,5 @@ SparseArray[
   Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
   Table[ Rank[ring], 3 ]
 ];
+
+
