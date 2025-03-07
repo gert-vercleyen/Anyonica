@@ -396,31 +396,34 @@ SimplifyVariables::varswrongformat =
 SimplifyVariables::exprwrongformat =
   "`1` needs to be a list of expressions";
 
-SimplifyVariables[ exprList_, oldVars_, s_ ] :=
+checkArgsSimplifyVariables[ exprList_, oldVars_, s_ ] :=
   Which[
     !ListQ[exprList]
     ,
-    Message[ SimplifyVariables::exprwrongformat, exprList ];
-    Abort[]
+      Message[ SimplifyVariables::exprwrongformat, exprList ];
+      Abort[]
     ,
     !ListQ[oldVars]
     ,
-    Message[ SimplifyVariables::varswrongformat, oldVars ];
-    Abort[]
-    ,
-    True
-    ,
-      With[
-        { newVars = s /@ Range[ Length[ oldVars ] ] },
-        { r = Thread[ oldVars -> newVars ] },
-        printlog["SV:subs", { ToString[Unique[]], r } ];
-        {
-          exprList/.Dispatch[r],
-          newVars,
-          Dispatch[ Reverse /@ r ]
-        }
-      ]
-  ];
+      Message[ SimplifyVariables::varswrongformat, oldVars ];
+      Abort[]
+  ]
+
+SimplifyVariables[ exprList_, oldVars_, s_ ] :=
+  ( 
+    checkArgsSimplifyVariables[ exprList, oldVars, s ];
+
+    With[
+      { newVars = s /@ Range @ Length @ oldVars },
+      { r = Thread[ oldVars -> newVars ] },
+      printlog["SV:subs", { ToString[Unique[]], r } ];
+      {
+        exprList/.Dispatch[r],
+        newVars,
+        Dispatch[ Reverse /@ r ]
+      }
+    ]
+  );
 
 (* Replace all equivalent variables by a representative of the equivalence class *)
 
@@ -1069,7 +1072,10 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
     ]
   ];
 
-PackageScope["PowerDot"]
+PackageExport["PowerDot"]
+
+PowerDot::usage = 
+  "Powerdot[ l, m ] equals Inner[ Power, l, Transpose @ m, Times ]"
 
 PowerDot[ a_, b_ ] :=
   If[ 
