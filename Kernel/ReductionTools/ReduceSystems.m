@@ -400,7 +400,7 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_, OptionsPattern[] 
         Abs
       ];
 
-    printlog["PAR:reduction",{procID,t, Length @ result}];
+    printlog["PAR:reduction",{procID,t, First @ Dimensions @ result}];
 
     result
   ];
@@ -458,7 +458,7 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_,
       { newSys[[;; , ;; -2]], newSys[[;; , -1]] }
     ];
 
-    printlog["PAR:reduction",{procID,t, Length @ result}];
+    printlog["PAR:reduction",{procID,t, First @ Dimensions @ First @ result}];
 
     result
   ];
