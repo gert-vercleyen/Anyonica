@@ -680,7 +680,7 @@ Module[
       {}
     ];
 
-    allFSymbols = FSymbols[ring];
+    allFSymbols = FSymbols @ ring;
 
     vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
 
@@ -763,7 +763,12 @@ Module[
           ],
           fSymbols,
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
+          "Equivalences" -> 
+            If[ 
+              Echo[CommutativeQ @ ring],
+              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+              {}
+            ]
         ]
         ,
         True
@@ -772,7 +777,12 @@ Module[
           If[ useSumsQ, pentEqns, binEqns ],
           fSymbols,
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
+          "Equivalences" -> 
+            If[ 
+              Echo[CommutativeQ @ ring],
+              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+              {}
+            ]
         ]
       ];
 
