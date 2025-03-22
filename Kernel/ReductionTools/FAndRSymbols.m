@@ -352,8 +352,8 @@ Module[
 
 (* From: https://journals.aps.org/prb/pdf/10.1103/PhysRevB.102.115154 *)
 
-PackageExport["TetrahedralSymmetries"]
-
+(* TODO: this one contains a bug: For HI(Z_3) F-symbols appear that don't 
+exist in the first place!!! *)
 TetrahedralSymmetries::usage =
 "TetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
 "representative that is equal via a tetrahedral symmetry.\n"<>
