@@ -31,36 +31,44 @@ PrintLog::usage =
   "PrintLog[code] exports information of intermediate results to a notebook with clickable hyperlinks.";
 
 PrintLog::tempdir =
-  "No option value for \"Directory\" given. Storing log files in a temporary directory at `1`. Note that files "<>
-  "stored here are not persistent!";
+  "No option value for \"Directory\" given. Storing log files in home directory under `1`";
 
 PrintLog::cantcreatedirectory =
   "Directory `1` could not be found and could not be created.";
 
 Options[PrintLog] =
   {
-    "Directory" -> "Temporary",
+    "Directory" -> "Home",
     "FileName" -> "ISODateTime"
   };
 
 SetAttributes[ PrintLog, HoldAllComplete ];
 
 PrintLog[ code_ , opts:OptionsPattern[] ] :=
-  Module[{ dir = OptionValue["Directory"], dataDir },
+  Module[{ dir, dataDir, dateString },
+    dir = OptionValue["Directory"];
+    dateString = 
+      (StringDrop[#,6]&) @
+      (StringDrop[#,-3]&) @ 
+      StringReplace[":"->"-"] @
+      DateString["ISODateTime"];
     Which[
-      dir == "Temporary"
+      dir == "Home"
       ,
-      dir = CreateDirectory[];
+      dir = CreateDirectory[FileNameJoin[{$HomeDirectory,"LOGFILES_D"<> dateString }]];
       dataDir = FileNameJoin[ { dir, "Data" } ];
       CreateDirectory[dataDir];
       Message[ PrintLog::tempdir, dir ]
       ,
       (* Not temporary directory, not an existing directory and can't create directory *)
-      !DirectoryQ[ Evaluate @ dir ] && (Quiet[ CreateDirectory[dir] ] === $Failed)
+      !DirectoryQ[ Evaluate @ dir ] && 
+      (Quiet[ CreateDirectory[dir] ] === $Failed)
       ,
       Message[ PrintLog::cantcreatedirectory, dir ];
       Abort[]
       ,
+      (* Data dir is not temporary directory, not an existing directory and can't create directory *)
+      !DirectoryQ[ Evaluate @ dir ] &&
       Quiet[ CreateDirectory[ dataDir = FileNameJoin[ { dir, "Data" }] ] ] === $Failed
       ,
       Message[ PrintLog::cantcreatedirectory, dataDir ];
@@ -73,7 +81,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
         If[
           ovfn === "ISODateTime",
           StringReplace[
-            FileNameJoin @ { dir, "WLLOG_" <> DateString["ISODateTime"] <> ".nb" },
+            FileNameJoin @ { dir, "WLLOG_" <> dateString <> ".nb" },
             ":" -> "-"
           ],
           FileNameJoin[ { dir, ovfn } ]
@@ -85,8 +93,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
           TextCell["Log created at " <> DateString[], "Chapter"]
         ];
         
-        nbo =
-          NotebookOpen[fileName];
+        nbo = NotebookOpen[fileName];
 
         SetOptions[ nbo, CellGrouping -> Manual ];
         
