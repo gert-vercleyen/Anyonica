@@ -119,15 +119,19 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
         Message[ FusionCategory::wrongringformat ]; False,
       !MissingQ[ rsymbols ] && !ProperRSymbolRulesQ[ rsymbols ],
         Message[ FusionCategory::wrongrsymbolsformat ]; False,
-      (vc = PentagonValidityConstraints[ ring, fsymbols, preEqualCheck ]) =!= {},
-        Message[ FusionCategory::invalidfsymbols, vc ]; False,
-      !MissingQ[rsymbols] && (vc = HexagonValidityConstraints[ ring, fsymbols, rsymbols, preEqualCheck ] ) =!= {},
-        Message[ FusionCategory::invalidrsymbols, vc ]; False,
+      !TrueQ[(vc = CheckPentagonEquations[ ring, fsymbols, "PreEqualCheck" -> preEqualCheck ])],
+        Message[ FusionCategory::invalidfsymbols, vc[[2]] ]; False,
+      !MissingQ[rsymbols] && 
+      !TrueQ[
+        vc = CheckHexagonEquations[ ring, fsymbols, rsymbols, "PreEqualCheck" -> preEqualCheck ]
+      ],
+        Message[ FusionCategory::invalidrsymbols, vc[[2]] ]; False,
       True,
         True
     ]
   ];
 
+(* Replaced by the much faster CheckPentagonEquations
 PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
   With[{
     pEqns =
@@ -140,6 +144,45 @@ PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
     pEqns //
     DeleteCases[True] //
     DeleteDuplicates
+  ];
+*)
+
+Options[CheckPentagonEquations] = 
+	{
+		"PreEqualCheck" -> Identity
+	};
+
+CheckPentagonEquations[ ring_, fSymbols_, OptionsPattern[]  ] := 
+  Module[ { fInd, p, c, d, e, q, r, a, b, s, n, matches, eqn, simplify,sF },
+    n = Rank @ ring;
+    fInd = List @@@ fSymbols[[;;,1]];
+    sF = SparseArray[ Thread[ fInd -> Values @ fSymbols ], { n, n, n, n, n, n } ];
+    simplify = OptionValue["PreEqualCheck"];
+    Catch[
+      Do[
+        { p, c, d, e, q, r } = label;
+        matches = Cases[ fInd, { a_, b_, r, e, p, s_ } ];
+        Do[
+          { a, b, s } = 
+            label2[[ { 1, 2, 6 } ]];
+
+          eqn = 
+            simplify[ 
+              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
+              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ] 
+            ];
+
+          If[ 
+            !TrueQ[ eqn ], 
+            Throw[ { False, F[p,c,d,e,q,r] F[a,b,r,e,p,s] ==
+            Sum[ F[b,c,d,s,x,r] F[a,b,c,q,p,x] F[a,x,d,e,q,s], {x,n} ] } ]
+          ],
+          { label2, matches }
+        ],
+        { label, fInd }
+      ];
+      True
+    ]
   ];
 
 HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
@@ -154,6 +197,93 @@ HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
     hEqns //
     DeleteCases[True] //
     DeleteDuplicates
+  ];
+
+Options[CheckHexagonEquations] = 
+  {
+    "PreEqualCheck" -> Identity
+  };
+
+CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
+  Module[{ a, b, c, d, e, g, sR, sF, rank, matchingLabels, eqn1, eqn2, fLabels, simplify },
+    simplify = 
+      OptionValue["PreEqualCheck"];
+
+    fLabels =
+      List @@@ Keys[fSymbols];
+    
+    rank =
+      Rank[ring];
+
+    (* construct a sparse array of R symbols *)
+    sR =
+      SparseArray[
+        Thread[ NZSC[ring] -> Values[rSymbols] ],
+        { rank, rank, rank }
+      ];
+
+    sF =
+      SparseArray[
+        Thread[ fLabels -> Values[fSymbols] ],
+        { rank, rank, rank, rank, rank, rank }
+      ];
+
+    matchingLabels[ { a_, c_, b_, d_, e_} ] :=
+      Cases[ fLabels, { c, a, b, d, e, _ } ][[;;,6]];
+
+    Catch[
+      Do[ (* Loop over valid F-symbols and construct equations *)
+        { a, c, b, d, e, g } = fl;
+          
+        eqn1 = 
+          simplify[   
+            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
+            ==
+            Sum[
+              sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          ];
+
+        If[ 
+          !TrueQ[ eqn1 ],
+          Throw @
+          { 
+            False, 
+            R[ c, a, e ] F[a,c,b,d,e,g] R[ c, b, g ] ==
+            Sum[
+              F[ c, a, b, d, e, f ] R[ c, f, d ] F[ a, b, c, d, f, g ],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          }
+        ];
+
+        eqn2 = 
+          simplify[
+            sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1) ==
+            Sum[
+              sF[[ c, a, b, d, e, f ]] sR[[ f, c, d ]]^(-1) sF[[ a, b, c, d, f, g ]],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          ];
+        
+        If[
+          !TrueQ[ eqn2 ],
+          Throw @ 
+          {
+            False,
+            R[ a, c, e ]^(-1) F[a,c,b,d,e,g] R[ b, c, g ]^(-1) ==
+            Sum[
+              F[ c, a, b, d, e, f ] R[ f, c, d ]^(-1) F[ a, b, c, d, f, g ],
+              { f, matchingLabels[ { a, c, b, d, e } ] }
+            ]
+          }
+        ]  
+        ,
+        { fl, fLabels }
+      ];
+      True
+    ]
   ];
 
 
@@ -205,6 +335,7 @@ InheritedFCFunctionsFromFRList =
     NNonSelfDual, NNSD,
     NSelfDualNonSelfDual, NSDNSD,
     ConjugateCharge, CC,
+    FusionRingAutomorphisms, FRA,
     InjectionForm
     (*FusionProduct*)
   };
@@ -234,6 +365,10 @@ PackageExport["FSymbols"]
 FusionCategory /: FSymbols[ FusionCategory[data_] ] :=
   data["FSymbols"];
 
+PackageExport["FMatrices"]
+
+FMatrices[ cat_FusionCategory ] := 
+  ReplaceAll[ FMatrices @ FusionRing @ cat, FSymbols @ cat ];
 
 PackageExport["RSymbols"]
 
@@ -293,7 +428,7 @@ FCBC =
 PackageExport["FusionCategoryList"]
 
 FusionCategoryList::usage =
-	"FusionCategoryList is a list of all saved FusionCategory objects.";
+	"FusionCategoryList is a list of all saved FusionRing objects.";
 
 
 PackageExport["FCL"]
@@ -341,3 +476,5 @@ Format[ cat:FusionCategory[r_Association], StandardForm ] :=
       "FC"[ Sequence @@ FC @ FusionRing[cat], "_" ]
     ]
   ];
+
+

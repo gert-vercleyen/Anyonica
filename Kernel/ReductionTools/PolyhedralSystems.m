@@ -597,6 +597,10 @@ PreparePentagonSolverInput::usage =
 PreparePentagonSolverInput::notsubring =
 "`1` is not isomorphic to any subring of `2`.";
 
+PreparePentagonSolverInput::notyetsupported = 
+  "Only the option \"Method\" -> \"HermiteDecomposition\" is supported for solving pentagon equations.\n"<>
+  "Proceeding with option value equal to \"HermiteDecomposition\"";
+
 Options[PreparePentagonSolverInput] :=
 Union[
   {
@@ -608,7 +612,7 @@ Union[
     "UseDatabaseOfZeroValues" -> True,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
-    "FindZerosUsingSums" -> False
+    "FindZerosUsingSums" -> True
   },
   Options[FindZeroValues],
   Options[ReduceBinomialSystem]
@@ -650,10 +654,8 @@ Module[
 
     If[ (* Want to substitute solution *)
       subsSol =!= {},
-
       (* THEN *)
-      { sRing, sSol } =
-      subsSol;
+      { sRing, sSol } = subsSol;
 
       (* Function that maps labels in sRing to corresponding labels in ring *)
       inject =
@@ -678,11 +680,9 @@ Module[
       {}
     ];
 
-    allFSymbols =
-      FSymbols[ring];
+    allFSymbols = FSymbols @ ring;
 
-    vacuumSymbols =
-      Cases[ allFSymbols, $VacuumFPattern ];
+    vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
 
     fSymbols =
       Complement[
@@ -697,7 +697,7 @@ Module[
     { binEqns, sumEqns } =
       BinSumEquationsFromTower[ tower ];
 
-    pentEqns =
+    pentEqns = 
       Join[ binEqns, sumEqns ];
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
@@ -708,8 +708,7 @@ Module[
           Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
       ];
 
-    gaugeSymmetries =
-      GaugeSymmetries[ allFSymbols, g ];
+    gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
 
     (* Update matrices and gauge symmetries to take account of known F's *)
     printlog[ "PPSI:restricting_gauges", { procID } ];
@@ -737,17 +736,13 @@ Module[
     zeros =
       Dispatch @
       Which[
-        OptionValue["NonSingular"]
+        OptionValue["NonSingular"] || GroupRingQ[ring]
         ,
         {{}}
         ,
         OptionValue["ZeroValues"] =!= None
         ,
         OptionValue["ZeroValues"]
-        ,
-        GroupRingQ[ring]
-        ,
-        {{}}
         ,
         OptionValue["UseDatabaseOfZeroValues"]
         ,
@@ -768,7 +763,12 @@ Module[
           ],
           fSymbols,
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
+          "Equivalences" -> 
+            If[ 
+              Echo[CommutativeQ @ ring],
+              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+              {}
+            ]
         ]
         ,
         True
@@ -777,9 +777,17 @@ Module[
           If[ useSumsQ, pentEqns, binEqns ],
           fSymbols,
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
+          "Equivalences" -> 
+            If[ 
+              Echo[CommutativeQ @ ring],
+              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+              {}
+            ]
         ]
       ];
+
+    (* TODO: even if "FindZeroValuesUsingSums" -> False then we should also filter out 
+      solutions that are incompatible with the sumequations.*)
 
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 
@@ -817,17 +825,14 @@ Module[
     (* Substitute the values of the newly fixed F-symbols in the invertible matrices
        and remove trivial 1D F-matrices. *)
 
-    invMats =
-      WithMinimumDimension[ invMats/.extraFixedFs, 2 ];
+    invMats = WithMinimumDimension[ invMats/.extraFixedFs, 2 ];
 
     (* Substitute the values of the newly fixed F-symbols in the equations,
        remove trivial equations and delete duplicate equations *)
 
-    pentEqns =
-      TEL[ pentEqns/.extraFixedFs ];
+    pentEqns = TEL[ pentEqns/.extraFixedFs ];
 
-    { newBinEqns, newSumEqns } =
-      BinomialSplit[ pentEqns ]; 
+    { newBinEqns, newSumEqns } = BinomialSplit[ pentEqns ]; 
 
     Remove[binEqns,sumEqns];
 
@@ -859,18 +864,29 @@ Module[
       ];
 
     (* Reduce this system of binomial equations and add it to the non-binomial equations *)
-    
+    (* At the moment we only support the HermiteDecomposition because its annoying to 
+       merge deduced values of F-symbols at this point. The HermiteDecomposition does 
+       not create assumptions, nor does it find values of F-symbols *)
+    (* TODO: this should be implemented in the future!!! *)
+
+    If[ 
+      MemberQ[ { opts }, x_ /; Keys @ x == "Method" && Values @ x =!= "HermiteDecomposition" ], 
+      Message[ PrepareHexagonSolverInput::notyetsupported ];
+      { opts } = DeleteCases[ { opts }, "Method" -> _ ];
+    ];
+
     pentEqns = 
       Join[
+        ( # == 0 )& /@
         AddOptions[opts][ReduceBinomialSystem][ 
           neverZeroBinEqns, 
           Complement[ fSymbols, unionZeros ] 
-        ]
+        ]["Polynomials"]
         ,
         newSumEqns
       ];
 
-    Remove[newBinEqns,newSumEqns,neverZeroBinEqns];
+    ClearAll[ newBinEqns, newSumEqns, neverZeroBinEqns ];
 
 
     (* Try to fix extra gauges, if possible, for each of the 0-configurations.
@@ -1104,7 +1120,7 @@ Module[{
     SumBinEqns =
       Reverse @* BinomialSplit;
 
-    solverInput =
+    solverInput = 
       AddOptions[opts][PreparePentagonSolverInput] @ ring;
 
 

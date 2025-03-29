@@ -163,7 +163,6 @@ Options[ReduceBinomialSystem] :=
   Join[
     Options[ ReduceBinSysHermite ],
     {
-      "SimplifyIntermediateResultsBy" -> Identity,
       "Method" -> "HermiteDecomposition"
     }
   ];
@@ -204,7 +203,7 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
         ]
       ];
 
-    printlog[ "Gen:results", { procID, result, t  } ];
+    printlog[ "RBS:results", { procID, result, t  } ];
 
     result
 
@@ -215,74 +214,89 @@ Options[ReduceBinSysHermite] :=
   Join[
     Options[ ReduceSemiLinModZ ],
     { 
-      "NumPartitionsFunction" -> ( Floor[ Length[#1] * Length[#2] / 2^22 ]&)
+      "MaxEquationsPerPartition" -> 4096,
+      "SimplifyIntermediateResultsBy" -> Identity 
     }
   ];
 
-ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] := 
-  Module[ { nSubsys, s, procID, nPart, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
+ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] := 
+  Module[ { nSubsys, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
     subMat1, reducedMat1, matSubsys2, mat2, rhs2, reducedMat2, reducedrhs2, rhsFinal, 
-    u, h, mat, pols, time, result }, 
+    u, h, mat, t, result, trm1, trm2, combinedMat, preEqCheck }, 
 
-    { time, result } = 
+    procID = ToString @ Unique[];
+
+    preEqCheck = OptionValue["PreEqualCheck"];
+
+    { t, result } = 
     AbsoluteTiming[
-      Catch[
-      procID = ToString @ Unique[];
-    
-      nPart = OptionValue["NumPartitionsFunction"];
+      subsysSize = OptionValue["MaxEquationsPerPartition"];
 
       (* Quite arbitrary, this resulted in doable partition sizes on my computer*)
-      nSubsys = Max[ Floor @ nPart[ equations, variables ], 1 ];
+      nSubsys = Quotient[ Length @ equations, subsysSize ] + 1;
+      
+      printlog["RBSVHD:init", { procID, Length @ equations, subsysSize } ];
 
-      subsysSize = Floor[ Length[equations] / nSubsys ];
-
-      printlog[ "RBSVHD:init", { procID, subsysSize, {opts} } ];
-
-      (* Transform the system to a matrix equation. This step is expensive 
+      (*Transform the system to a matrix equation. This step is expensive 
         so best to do it only once*)
       s = Head @ First @ variables;
 
-      { mat, rhs } =  
+      { mat, rhs } =
           Catch @ Normal @ AddOptions[opts][BinToSemiLin][ equations, variables, s ];
-      
-      
-      If[ Head @ mat === String, Throw @ { False } ];
 
-      If[ (* Only 1 subsystem *) 
-        nSubsys === 1
-        ,
-        printlog[ "RBSVHD:onehermite", { prodID } ];
-
-        { u, h } = HermiteDecomposition[ mat ];
-
-        pols = TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ];
-
-        Throw @ 
+      If[ 
+        TrueQ[ MemberQ[ 0 ] @ Map[ preEqCheck, rhs ] ], 
+        printlog["Gen:has_False", { procID, { mat, rhs } } ];
+        Return @ 
         <| 
-          "Polynomials" -> pols,
-          "Assumptions" -> True,
-          "Values" -> Thread[ variables -> variables ]
-        |>;
+          "Polynomials" -> {1}, 
+          "Assumptions" -> False, 
+          "Values" -> {}  
+        |> 
       ];
       
-    
+      (* If creating matrix failed we get a string *)
+      If[ Head @ mat === String, Return @ { False } ];
+
+      If[ 
+        TrueQ[ subsysSize >= Length[equations] ],
+        { u, h } = HermiteDecomposition[ mat ];
+        Return @ 
+        <| 
+          "Polynomials" ->
+            TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ] // TPL,
+          "Assumptions" -> True,
+          "Values" -> Thread[ variables -> variables ]
+        |>
+      ];
+          
       (* ================================================= *)
       (* Reduction of subsystem of eqns who's RHS equals 1 *)
       (* ================================================= *)
 
-      rhs1Pos = Flatten @ Position[ rhs, 1 ];
+      rhs1Pos = Flatten @ Position[ rhs, 1, 1 ];
 
-      (* Sorting rows lexicographically => groups eqns with equal vars together *)
-      subMat1 =  ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
+      (* Sorting rows lexicographically=> groups eqns with equal vars together *)
+      subMat1 = ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
 
-      reducedMat1 = 
-        Catch[
+      printlog["RBSVHD:toric", { procID, First @ Dimensions @ subMat1 }];
+
+      If[ 
+        subMat1 === {{}}
+        ,
+        { trm1, reducedMat1 } = AbsoluteTiming[ {{}} ]
+        ,
+        { trm1, reducedMat1 } =
+          AbsoluteTiming @  
+          Catch @
           FixedPoint[
             partitionAndReduce[ #, subsysSize, procID ] &, 
             subMat1, 
             5 (*Nest at most 5 times*)
           ]
-        ];
+      ];
+
+      printlog["RBSVHD:toricresults", { procID, trm1, First @ Dimensions @ reducedMat1 }];
 
       (* ========================================================= *)
       (* Reduction of subsystem of eqns who's RHS does not equal 1 *)
@@ -297,18 +311,41 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
           Abs
         ];
       
-      mat2 = matSubsys2[[ ;;, ;;-2 ]];
+      printlog["RBSVHD:nontoric", { procID, First @ Dimensions @ matSubsys2 }];
+
+      If[ 
+        matSubsys2 === {{}}
+        ,
+        { trm2, { reducedMat2, reducedrhs2 } } =
+          AbsoluteTiming[ { {}, {} } ]
+        ,
+        { trm2, { reducedMat2, reducedrhs2 } } =
+          AbsoluteTiming[
+            mat2 = matSubsys2[[ ;;, ;;-2 ]];
+            rhs2 = matSubsys2[[ ;;, -1 ]];
+            Catch @
+            FixedPoint[ 
+              partitionAndReduce[ #, subsysSize, procID ]&, 
+              { mat2, rhs2 }, 
+              5 
+            ] 
+          ]
+      ];
+
+      (* Check validity solution *)
+
+      If[
+        reducedMat2 === Missing["InconsistentSystem"],
+        Throw @ <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>
+      ];
       
-      rhs2 = matSubsys2[[ ;;, -1 ]];
-      
-      { reducedMat2, reducedrhs2 } = 
-        Catch[
-          FixedPoint[ partitionAndReduce[ #, subsysSize, procID ]&, { mat2, rhs2 }, 5 ] 
-        ];
-      
+      printlog["RBSVHD:nontoricresults", { procID, trm2, First @ Dimensions @ reducedMat2 } ];
+
+      combinedMat = reducedMat1 ~ Join ~ reducedMat2 ;
+
+      printlog["RBSVHD:intermediatereduction", { procID, combinedMat } ];
       (* Final Hermite Decomposition of combination two reduced systems *)
-      { u, h } = 
-        HermiteDecomposition[ EchoLabel["PreFinalMat"][ reducedMat1 ~ Join ~ reducedMat2 ] ];
+      { u, h } = HermiteDecomposition @ combinedMat;
       
       (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
       rhsFinal = 
@@ -316,28 +353,31 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
           PadLeft[ reducedrhs2, Length[reducedMat1] + Length[reducedMat2], 1 ], 
           u 
         ];
-
-      pols = TPL @ Thread[ PowerDot[ variables, h ] - rhsFinal ];
-
+      
       <| 
-        "Polynomials" -> pols,
+        "Polynomials" ->
+          TPL @ Thread[ PowerDot[ variables, h ] - rhsFinal ],
         "Assumptions" -> True,
         "Values" -> Thread[ variables -> variables ]
       |>
-      ]
     ];
 
-    printlog[ "RBSVHD:reduction", { prodID, time, pols, Length @ equations } ];
+    printlog["RBSVHD:reduction",{procID,t,result}];
 
     result
   ];
 
+Options[ partitionAndReduce ] = 
+  { "PreEqualCheck" -> Identity };
+
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   all elements of the RHS equal 1 *)
-partitionAndReduce[ mat_, subsysSize_Integer, procID_ ] := 
-  Module[{ t, result, partitionPos, reduceMat },
+partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_, OptionsPattern[] ] := 
+  Module[{ t, result, partitionPos, reduceMat }, 
+    (* Check for empty matrix *)
+    If[ ByteCount[ mat < 1024 ] && Flatten[mat] === {}, Return @ {{}} ];
 
-    If[ Length[mat] <=1 && Flatten[mat] === {}, Return @ {} ];
+    printlog["PAR:init", {procID,Length @ mat,subsysSize} ];
 
     partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
 
@@ -360,23 +400,28 @@ partitionAndReduce[ mat_, subsysSize_Integer, procID_ ] :=
         Abs
       ];
 
-    (* printlog["RBSVHD:reduction",{procID,t,result}]; *)
+    printlog["PAR:reduction",{procID,t, First @ Dimensions @ result}];
+
     result
   ];
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   none of the elements of the RHS equal 1 *)
-partitionAndReduce[ { mat_List, rhs_List }, subsysSize_Integer, procID_] := 
+partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_, OptionsPattern[] ] := 
   Module[{ t, result, partitionPos, decomps, newMat, newRHS, newSys },  
-    If[ Length[mat] <=1 && Flatten[mat] === {}, Return @ { {}, {} } ];
 
+    (* Check for empty system *)
+    If[ ByteCount[ rhs < 1024 ] && Flatten[rhs] === {}, Return @ { {{}}, { } } ];
+
+    printlog["PAR:init", {procID,Length @ mat,subsysSize} ];
+  
     {t, result} =
     AbsoluteTiming[
       partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
 
       decomps =  
         Map[ 
-          MemoizedHermiteDecomposition[ # , "StoreHermiteDecompositions" -> True ]&, 
+          MemoizedHermiteDecomposition[ #, "StoreHermiteDecompositions" -> True ] &, 
           Table[ mat[[pos]], { pos, partitionPos } ]
         ];
 
@@ -391,24 +436,39 @@ partitionAndReduce[ { mat_List, rhs_List }, subsysSize_Integer, procID_] :=
             decomps[[;; , 1]] 
           }
         ];
-
+      
       newSys = 
         DeleteCases[ { 0 .., 1 } ] @
         ReverseSortBy[
           AppendRHS[ newMat, newRHS ],
           Abs
         ];
+      
+      (* Faster to use reverse indices because problems appear at the bottom *)
+      If[ (* There is a zero row with non-one rhs *)
+        MemberQ[ 
+          Reverse @ Range @ Length @ newSys,  
+          i_ /; 
+          MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ PreEqualCheck[x] != 1 ] ]
+        ],
+        printlog["Gen:has_False", { procID, newSys  } ];
+        Throw @ { Missing["InconsistentSystem"], {}  }
+      ];
 
       { newSys[[;; , ;; -2]], newSys[[;; , -1]] }
     ];
 
-    (*printlog["RBSVHD:reduction",{procID,t,result}];*)
+    printlog["PAR:reduction",{procID,t, First @ Dimensions @ First @ result}];
 
     result
   ];
 
-AppendRHS[ mat_, rhs_ ] := 
-  ArrayFlatten[ { { mat, Transpose @ { rhs } } } ];
+AppendRHS[ mat_, rhs_ ] := ArrayFlatten[ { { mat, Transpose @ { rhs } } } ];
+
+AppendRHS[ {{}}, _ ] := {{}};
+
+AppendRHS[ _, {} ] := {{}}
+
 
 FindEquivalences[ eqns_, x_ ] :=
   With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
@@ -433,7 +493,6 @@ EquivToRule[x_][ { eqn_, linvars_, vars_ } ] :=
 
 UpdateEquivalences[x_][ { eqns_, equivs_ }] :=
   With[ { equivRules =  EquivToRule[x] /@ FindEquivalences[ eqns, x ] },
-    EchoIn[ 500, "NewKnowns", Last ] @
     {
       TEL @
       NormalForm @
@@ -476,6 +535,7 @@ ReduceByBinomials::notlistofvars =
 Options[ ReduceByBinomials ] :=
   Join[
     Options[ SolveBinomialSystem ],
+    Options[ ReduceBinomialSystem ],
     { "MaxNumberOfBinomialEquations" -> Infinity }
   ];
 
@@ -619,20 +679,20 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
   simplify =
     OptionValue["SimplifyIntermediateResultsBy"];
   simplifySolutions =
-  Function[
-    solutions,
-    If[
-      solutions =!= {},
-      MapAt[ simplify, solutions, { All, All, 2 } ],
-      {}
-    ]
-  ];
+    Function[
+      solutions,
+      If[
+        solutions =!= {},
+        MapAt[ simplify, solutions, { All, All, 2 } ],
+        {}
+      ]
+    ];
   preEqCheck =
-  OptionValue["PreEqualCheck"];
+    OptionValue["PreEqualCheck"];
   solve =
-  If[ OptionValue["NonSingular"], SNSBS, SBS ];
+    If[ OptionValue["NonSingular"], SNSBS, SBS ];
   procID =
-  ToString[ Unique[] ];
+    ToString[ Unique[] ];
 
   printlog[ "SAU:init", {procID, binEqns,sumEqns,vars,s,{opts}} ];
 
@@ -640,31 +700,31 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
   AbsoluteTiming[
     (* Note that we simplify solutions first and then simplify sumEqns again. This is to reduce memory pressure *)
     soln =
-    Map[
-      Dispatch,
-      simplifySolutions @ AddOptions[opts][solve][ binEqns, vars, s ]
-    ];
+      Map[
+        Dispatch,
+        simplifySolutions @ AddOptions[opts][solve][ binEqns, vars, s ]
+      ];
 
     eqnSolConstr =
-    Table[
-      {
-        TEL @ AddOptions[opts][UpdateAndCheck][ sumEqns, sol, Identity ],
-        sol,
-        AddOptions[opts][UpdateConstraints][ constraints, sol ]
-      },
-      { sol, soln }
-    ];
+      Table[
+        {
+          TEL @ AddOptions[opts][UpdateAndCheck][ sumEqns, sol, Identity ],
+          sol,
+          AddOptions[opts][UpdateConstraints][ constraints, sol ]
+        },
+        { sol, soln }
+      ];
 
     printlog["SAU:updated_sys", {procID, eqnSolConstr[[;;,1]], eqnSolConstr[[;;,3]] } ];
 
     notInvalidPos =
-    Flatten @
-    Position[
-      eqnSolConstr,
-      { e_, sl_, c_ } /;
-      NotInvalidNonZeroSolutionQ[e,preEqCheck][sl] && c =!= {False},
-      {1}
-    ];
+      Flatten @
+      Position[
+        eqnSolConstr,
+        { e_, sl_, c_ } /;
+        NotInvalidNonZeroSolutionQ[e,preEqCheck][sl] && c =!= {False},
+        {1}
+      ];
 
     If[
       Length[notInvalidPos] != Length[soln],

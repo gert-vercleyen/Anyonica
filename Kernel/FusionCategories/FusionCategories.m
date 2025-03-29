@@ -247,7 +247,6 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] :=
 
         If[ 
           !TrueQ[ eqn1 ],
-          EchoLabel["eqn1"]@eqn1;
           Throw @
           { 
             False, 
@@ -270,7 +269,6 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] :=
         
         If[
           !TrueQ[ eqn2 ],
-                    EchoLabel["eqn2"]@eqn2;
           Throw @ 
           {
             False,

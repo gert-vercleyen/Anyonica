@@ -119,6 +119,12 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       reducedSystem = 
         ( # == 0 )& /@ (* Convert polynomials to equations *)
         (AddOptions[opts][ReduceBinomialSystem][ newEqns, newVars ])["Polynomials"];
+
+      (* Check whether system is consistent *)
+      If[
+        TrueQ[ MemberQ[False] @ reducedSystem ],
+        Return @ {}
+      ];
       
       (* Check whether inconsistent system *)
       If[

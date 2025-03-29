@@ -1203,3 +1203,52 @@ EchoIn[ n_Integer, label_, function_][ code_ ] :=
 
 EchoIn[ n_Integer, label_ ][code_] := 
   EchoIn[ n, label, Identity, code ];
+
+PackageExport["EchoPerformance"]
+
+EchoPerformance::usage = 
+"EchoPerformance[expr] prints the absolute number "<>
+"of seconds and memory in bytes used to evaluate expr and returns expr.\n" <>
+"EchoPerformance[expr,label] prepends label to a printed expression."
+
+EchoPerformance := GeneralUtilities`EchoPerformance;
+
+PackageExport["FailOnMessage"]
+
+FailOnMessage::usage = 
+"FailOnMessage[code] stops evaluation of code if a message occurs and returns $Failed. Author:Richard Hennigan (Wolfram Research)."
+
+Attributes[FailOnMessage] = {HoldAllComplete}
+ 
+FailOnMessage[eval_] := FailOnMessage[eval, $Failed]
+ 
+FailOnMessage[eval_, default_] := FailOnMessage[eval, default, None]
+ 
+FailOnMessage[eval_, default_, quiet_] := 
+ FailOnMessage[eval, default, quiet, None]
+ 
+FailOnMessage[eval_, default_, quiet_, All] := 
+ FailOnMessage[eval, default, quiet, _]
+ 
+FailOnMessage[eval_, default_, quiet_, {listen___}] := 
+ FailOnMessage[eval, default, quiet, Alternatives[listen]]
+ 
+FailOnMessage[eval_, default_, quiet_, listen_] := 
+ Module[{$tag}, 
+  Catch[If[FreeQ[Internal`Handlers["Message"], _msgThrow], 
+    Internal`HandlerBlock[{"Message", 
+      msgThrow[$tag, default, listen, ##1] & }, Quiet[eval, quiet]], 
+    eval], $tag]]
+ 
+FailOnMessage[___] := $Failed
+
+Attributes[msgThrow] = {HoldAllComplete}
+ 
+msgThrow[tag_, default_, listen_, 
+   Hold[m : Message[msg_, ___], False]] /; 
+  MatchQ[Unevaluated[msg], listen] := ($failedMessage = 
+   HoldComplete[msg]; Throw[Unevaluated[m; default], tag])
+ 
+msgThrow[tag_, default_, _, 
+  Hold[msg_, True]] := ($failedMessage = HoldComplete[msg]; 
+  Throw[default, tag])

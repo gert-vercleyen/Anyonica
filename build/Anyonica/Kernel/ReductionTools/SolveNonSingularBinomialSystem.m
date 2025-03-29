@@ -30,16 +30,20 @@ SolveNonSingularBinomialSystem::novars =
   "\"SimplifyIntermediateResultsBy\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
 
 Options[SolveNonSingularBinomialSystem] :=
-  {
-    "Symmetries" -> None,
-    "InvertibleMatrices" -> {},
-    "PolynomialConstraints" -> {},
-    "PreEqualCheck" -> Identity,
-    "UseDatabaseOfSmithDecompositions" -> False,
-    "StoreDecompositions" -> False,
-    "SimplifyIntermediateResultsBy" -> Identity,
-    "Parallel" -> False
-  };
+  Join[
+    {
+      "Symmetries" -> None,
+      "InvertibleMatrices" -> {},
+      "PolynomialConstraints" -> {},
+      "PreEqualCheck" -> Identity,
+      "UseDatabaseOfSmithDecompositions" -> False,
+      "StoreDecompositions" -> False,
+      "SimplifyIntermediateResultsBy" -> Identity,
+      "Parallel" -> False,
+      "DivideAndConquer" -> True
+    },
+    Options[ReduceBinomialSystem]
+  ];
 
 CheckArgs[ eqns_, vars_ ] :=
   Which[
@@ -114,6 +118,17 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
         Return @ {}
       ];
+
+      (* Simplify the system using a Hermite decomposition *)
+      reducedSystem = 
+        ( # == 0 )& /@ (* Convert polynomials to equations *)
+        (AddOptions[opts][ReduceBinomialSystem][ newEqns, newVars ])["Polynomials"];
+
+      (* Check whether system is consistent *)
+      If[
+        TrueQ[ MemberQ[False] @ reducedSystem ],
+        Return @ {}
+      ];
       
       (* Solve the logarithm of the binomial equations *)
       If[
@@ -123,7 +138,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       ];
 
       semiLinearSystem = 
-        AddOptions[opts][BinToSemiLin][ newEqns, newVars, symbol ];
+        AddOptions[opts][BinToSemiLin][ reducedSystem, newVars, symbol ];
 
       If[ (* system contains a product equal to 0 *)
         MemberQ[0] @ preEqCheck @ semiLinearSystem[[2]], 
@@ -141,7 +156,6 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
           ],
           "Inconsistent"
         ];
-
       
       (* Check for empty solution set *)
       If[

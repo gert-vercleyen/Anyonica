@@ -1,0 +1,195 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      7099,        185]
+NotebookOptionsPosition[      4323,        118]
+NotebookOutlinePosition[      6486,        173]
+CellTagsIndexPosition[      6443,        170]
+WindowTitle->Solving the Hexagon Equations
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[GridBox[{
+   {GridBox[{
+      {
+       ItemBox[Cell[BoxData[
+         RowBox[{
+          TemplateBox[{12},
+           "Spacer1"], Cell["ANYONICA TECH NOTE", "PacletNameCell",
+           TextAlignment->Center,ExpressionUUID->
+           "ff42e25b-99ab-4c4f-9be7-3f5b1a0cda60"], 
+          TemplateBox[{8},
+           "Spacer1"]}]],
+         TextAlignment->Center,ExpressionUUID->
+         "eb1ccee7-1410-407b-ac68-2c18c032c9d0"],
+        Background->RGBColor[
+         0.3843137254901961, 0.4627450980392157, 0.7019607843137254],
+        ItemSize->Full], ""}
+     },
+     GridBoxAlignment->{"Rows" -> {{Center}}},
+     GridBoxItemSize->{"Columns" -> {Full, 
+         Scaled[0.02]}, "Rows" -> {{2.5}}}], Cell[TextData[Cell[BoxData[
+     TagBox[
+      ActionMenuBox[
+       FrameBox[Cell[TextData[{
+         "URL",
+         " ",
+         Cell[BoxData[
+          GraphicsBox[
+           {GrayLevel[0.66667], Thickness[0.13], 
+            LineBox[{{-1.8, 0.5}, {0, 0}, {1.8, 0.5}}]},
+           AspectRatio->1,
+           ImageSize->20,
+           PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
+          "52740bbc-312d-4f76-8252-3afeacee5497"]
+        }],ExpressionUUID->"45f1b1b3-48a0-4e85-afd4-27630a7489ce"],
+        StripOnInput->False],{
+       "\"Anyonica/tutorial/SolvingtheHexagonEquations\"" :> None, 
+        "\"Copy Wolfram Documentation Center URL\"" :> 
+        CopyToClipboard["Anyonica/tutorial/SolvingtheHexagonEquations"], 
+        Delimiter, "\"Copy web URL\"" :> 
+        Module[{DocumentationSearch`Private`nb$}, 
+          DocumentationSearch`Private`nb$ = 
+           NotebookPut[
+            Notebook[{
+              Cell[BoxData[
+                MakeBoxes[
+                 Hyperlink[
+                  "http://reference.wolfram.com/language/Anyonica/tutorial/\
+SolvingtheHexagonEquations.html"], StandardForm]], "Input", TextClipboardType -> 
+                "PlainText"]}, Visible -> False]]; 
+          SelectionMove[DocumentationSearch`Private`nb$, All, Notebook]; 
+          FrontEndTokenExecute[DocumentationSearch`Private`nb$, "Copy"]; 
+          NotebookClose[DocumentationSearch`Private`nb$]; Null], 
+        "\"Go to web URL\"" :> 
+        FrontEndExecute[{
+          NotebookLocate[{
+            URL[If[TrueQ[False], 
+                "http://reference.wolfram.com/system-modeler/", 
+                "http://reference.wolfram.com/language/"] <> 
+              "Anyonica/tutorial/SolvingtheHexagonEquations" <> ".html"], 
+             None}]}]},
+       Appearance->None,
+       MenuAppearance->Automatic,
+       MenuStyle->"URLMenu"],
+      MouseAppearanceTag["LinkHand"]]],
+     LineSpacing->{1.4, 0},ExpressionUUID->
+     "d16dd9e6-0333-4a57-83ea-2997af81c1d7"]], "AnchorBar",
+     CacheGraphics->False,ExpressionUUID->
+     "0c93acdc-a252-4676-8ce4-84d82a78fcb8"]}
+  }]], "AnchorBarGrid",
+ GridBoxOptions->{GridBoxItemSize->{"Columns" -> {
+     Scaled[0.65], {
+      Scaled[0.34]}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+   "RowsIndexed" -> {}}},
+ CellID->1,ExpressionUUID->"fbb2ea85-2172-40c4-a375-717d19700bb0"],
+
+Cell[CellGroupData[{
+
+Cell["Solving the Hexagon Equations", "TechNoteTitle",
+ CellID->1052584519,ExpressionUUID->"0dca2bbf-d78a-4b00-b2f1-77b5e8201863"],
+
+Cell["XXXX.", "TechNoteCaption",
+ CellID->1323921679,ExpressionUUID->"d53b6c7c-93da-4145-86c8-6765029714f2"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["XXXX"], "Input",
+ CellLabel->"In[1]:=",
+ CellID->709629408,ExpressionUUID->"5bd62803-52d4-4dbc-9044-29d3e4c7b386"],
+
+Cell[BoxData["XXXX"], "Output",
+ CellLabel->"Out[1]=",
+ CellID->1764768465,ExpressionUUID->"234290ab-243d-4cd5-98ee-b093f7053376"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[" ", "FooterCell",ExpressionUUID->"87fb6b89-982b-46ad-a68f-bed5f6c7d166"]
+},
+Saveable->False,
+ScreenStyleEnvironment->"Working",
+WindowSize->{900, 830.25},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+WindowTitle->"Solving the Hexagon Equations",
+TaggingRules->{
+ "ModificationHighlight" -> False, "ColorType" -> "", "LinkTrails" -> "", 
+  "ExampleCounter" -> 1, 
+  "Openers" -> {
+   "PrimaryExamplesSection" -> Open, "ExampleSection" -> {"0" -> Open}}, 
+  "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
+  False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
+  "Metadata" -> {
+   "built" -> "{2025, 2, 7, 11, 42, 7.548938}", 
+    "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
+    "keywords" -> {}, "specialkeywords" -> {}, 
+    "tutorialcollectionlinks" -> {}, "index" -> True, "label" -> 
+    "Anyonica Tech Note", "language" -> "en", "paclet" -> "Anyonica", 
+    "status" -> "None", "summary" -> " ", "synonyms" -> {}, "tabletags" -> {},
+     "title" -> "Solving the Hexagon Equations", "titlemodifier" -> "", 
+    "metadescription" -> "", "windowtitle" -> "Solving the Hexagon Equations",
+     "type" -> "Tech Note", "uri" -> 
+    "Anyonica/tutorial/SolvingtheHexagonEquations"}},
+FrontEndVersion->"14.2 for Linux x86 (64-bit) (December 26, 2024)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[
+    StyleDefinitions -> FrontEnd`FileName[{"Wolfram"}, "Reference.nb"]]], 
+   Cell[
+    StyleData["Input"], CellContext -> Notebook], 
+   Cell[
+    StyleData["Output"], CellContext -> Notebook], 
+   Cell[
+    StyleData["TutorialMoreAboutSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["RelatedTutorialsSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}], 
+   Cell[
+    StyleData["TutorialRelatedLinksSection"], 
+    CellGroupingRules -> {"SectionGrouping", 30}]}, Visible -> False, 
+  FrontEndVersion -> "14.2 for Linux x86 (64-bit) (December 26, 2024)", 
+  StyleDefinitions -> "PrivateStylesheetFormatting.nb"],
+ExpressionUUID->"6e2faf13-9b43-44a3-9591-dea5f7f29a06"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[597, 21, 3065, 73, 87, "AnchorBarGrid",ExpressionUUID->"fbb2ea85-2172-40c4-a375-717d19700bb0",
+ CellID->1],
+Cell[CellGroupData[{
+Cell[3687, 98, 130, 1, 177, "TechNoteTitle",ExpressionUUID->"0dca2bbf-d78a-4b00-b2f1-77b5e8201863",
+ CellID->1052584519],
+Cell[3820, 101, 108, 1, 45, "TechNoteCaption",ExpressionUUID->"d53b6c7c-93da-4145-86c8-6765029714f2",
+ CellID->1323921679],
+Cell[CellGroupData[{
+Cell[3953, 106, 128, 2, 40, "Input",ExpressionUUID->"5bd62803-52d4-4dbc-9044-29d3e4c7b386",
+ CellID->709629408],
+Cell[4084, 110, 130, 2, 54, "Output",ExpressionUUID->"234290ab-243d-4cd5-98ee-b093f7053376",
+ CellID->1764768465]
+}, Open  ]]
+}, Open  ]],
+Cell[4241, 116, 78, 0, 59, "FooterCell",ExpressionUUID->"87fb6b89-982b-46ad-a68f-bed5f6c7d166"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

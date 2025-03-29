@@ -468,11 +468,15 @@ ConstMonSplit[ mon_, x_ ] :=
   With[ { const = mon /. x[_] -> 1 }, { const, mon/const } ];
 
 (* normalize gets rid of a possible overall minus sign, and combines the row with RHS so that deleting duplicates becomes much faster *)
+
 NormalizeAndCombine[ { row_, rhs_ } ] :=
-  If[
-    SelectFirst[ ArrayRules[ row ][[ ;; , 2 ]], # != 0 & ] > 0,
-    Append[ rhs ] @ row,
-    Append[ 1/rhs ] @ (-row)
+  With[ 
+    { firstNonZero = SelectFirst[ ArrayRules[ row ][[ ;; , 2 ]], # != 0 & ] },
+    If[
+      TrueQ[ firstNonZero < 0 ],
+      Append[ 1/rhs ] @ (-row),
+      Append[ rhs ] @ row
+    ]
   ];
 
 (*
