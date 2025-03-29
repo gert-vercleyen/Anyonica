@@ -273,7 +273,7 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
       rhs1Pos = Flatten @ Position[ rhs, 1 ];
 
       (* Sorting rows lexicographically => groups eqns with equal vars together *)
-      subMat1 = ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
+      subMat1 =  ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
 
       reducedMat1 = 
         Catch[
@@ -291,7 +291,7 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
       rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
       
       (* Now the RHS matters => need to combine mat with RHS when sorting *) 
-      matSubsys2 =
+      matSubsys2 = 
         ReverseSortBy[
           AppendRHS[ mat[[rhsNon1Pos]], rhs[[rhsNon1Pos]] ],
           Abs
@@ -308,7 +308,7 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
       
       (* Final Hermite Decomposition of combination two reduced systems *)
       { u, h } = 
-        HermiteDecomposition[ reducedMat1 ~ Join ~ reducedMat2 ];
+        HermiteDecomposition[ EchoLabel["PreFinalMat"][ reducedMat1 ~ Join ~ reducedMat2 ] ];
       
       (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
       rhsFinal = 
@@ -334,8 +334,11 @@ ReduceBinSysHermite[equations_, variables_, opts : OptionsPattern[]] :=
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   all elements of the RHS equal 1 *)
-partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] := 
-  Module[{ t, result, partitionPos, reduceMat }, 
+partitionAndReduce[ mat_, subsysSize_Integer, procID_ ] := 
+  Module[{ t, result, partitionPos, reduceMat },
+
+    If[ Length[mat] <=1 && Flatten[mat] === {}, Return @ {} ];
+
     partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
 
     reduceMat[ m_ ] := 
@@ -363,16 +366,17 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_ ] :=
 
 (* Partition matrix, compute hermite decompositions and combine them for case where 
   none of the elements of the RHS equal 1 *)
-partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_] := 
+partitionAndReduce[ { mat_List, rhs_List }, subsysSize_Integer, procID_] := 
   Module[{ t, result, partitionPos, decomps, newMat, newRHS, newSys },  
-  
+    If[ Length[mat] <=1 && Flatten[mat] === {}, Return @ { {}, {} } ];
+
     {t, result} =
     AbsoluteTiming[
       partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
 
       decomps =  
         Map[ 
-          EchoTiming[ MemoizedHermiteDecomposition[EchoLabel["HermiteMatNon1RHS"][ # ], "StoreHermiteDecompositions" -> True ] ]&, 
+          MemoizedHermiteDecomposition[ # , "StoreHermiteDecompositions" -> True ]&, 
           Table[ mat[[pos]], { pos, partitionPos } ]
         ];
 
