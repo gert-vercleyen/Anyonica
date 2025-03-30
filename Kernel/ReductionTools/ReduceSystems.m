@@ -390,7 +390,7 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_, OptionsPattern[] 
       AbsoluteTiming @
       ReverseSortBy[
         DeleteDuplicates @
-        Flatten[ (*This Flatten operation will riffle the lists of equations.*)
+        Flatten[ 
           Map[ 
             reduceMat, 
             Table[ mat[[pos]], { pos, partitionPos } ]
@@ -419,7 +419,7 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_,
     AbsoluteTiming[
       partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
 
-      decomps = 
+      decomps =  
         Map[ 
           MemoizedHermiteDecomposition[ #, "StoreHermiteDecompositions" -> True ] &, 
           Table[ mat[[pos]], { pos, partitionPos } ]

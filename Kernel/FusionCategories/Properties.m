@@ -291,3 +291,196 @@ GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] :=
 
     Thread[ gi -> ( gi/.Dispatch[ Join[ FSymbols @ cat, If[ bq, RSymbols @ cat, {} ] ] ] ) ]
   ];
+
+PackageExport["FusionCategoryAutomorphisms"]
+
+FusionCategoryAutomorphisms::usage =
+  "FusionCategoryAutomorphisms[cat] returns the automorphisms of the fusion category cat.";
+
+Options[FusionCategoryAutomorphisms] :=
+	Join[
+		Options[AutomorphismEquations], 
+    Options[FusionRingAutomorphisms],
+    { "Permutations" -> Missing[] }
+	];
+
+FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
+	Module[
+		{ ring, FRAuth, catAuth, g, eqnsPerPerm, vars, symmetries, solutions, 
+		z, trivialSymbols, structConst, reducedSymmetries, autEqns, fixedSymbols, AddKnowns,
+		reducedSystem }, 
+		ring = FusionRing @ cat; 
+		
+		FRAuth = 
+			If[ 
+				OptionValue["Permutations"] =!= Missing[],
+				OptionValue["Permutations"],
+				AddOptions[opts][FusionRingAutomorphisms][ ring ]
+		];
+		
+		structConst = NZSC @ cat;
+
+		vars = u @@@ structConst;
+		
+		symmetries = 
+			<|
+				"Transforms" -> ( u[##] -> ( g[#1] g[#2] / g[#3] ) u[##] & ) @@@ structConst, 
+				"Symbols" -> {g}
+			|>;
+		
+		trivialSymbols = Thread[ u @@@ Cases[ structConst, { 1, __ } | { _, 1, _ }] -> 1 ];
+		
+		(* Only symmetries that keep the trivial u symbols invariant are allowed *)
+		reducedSymmetries = 
+      RestrictMultiplicativeSymmetries[ symmetries, Keys @ trivialSymbols, g ];
+    
+    (* Break the symmetry *)
+    fixedSymbols = Last @ BreakMultiplicativeSymmetry[ reducedSymmetries ];
+			
+		(* Function that adds trivial data and fixed symbols to solution *)
+		AddKnowns[ sol_ ] := Sort @ Join[ trivialSymbols, fixedSymbols, sol ];
+			
+		solutions = 
+      DeleteDuplicates[ #, GSEQ[ MultiplicativeGaugeMatrix[symmetries] ] ]& @*
+      ReverseSortBy[Count[1] @* Values] /@ (* Prefer solutions with highest number of 1's *)
+			Table[
+				autEqns = 
+          AddOptions[opts][AutomorphismEquations][ cat, perm, u ] //
+          ReplaceAll[ Dispatch @ Join[ trivialSymbols, fixedSymbols ] ] //
+          TEL;
+
+        If[
+          MemberQ[False] @ autEqns,
+          { },
+
+          reducedSystem = 
+            ( # == 0 ) & /@
+            ReduceBinomialSystem[ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
+
+          AddKnowns /@ 
+          SolveBinomialSystem[ reducedSystem, GetVariables[ reducedSystem, u ], z, "NonSingular" -> True ]
+        ]
+        ,	
+				{ perm, FRAuth } 
+			];
+    
+		Flatten[
+			Table[ { FRAuth[[i]], # }& /@ solutions[[i]], { i, Length @ FRAuth }  ], 
+			1
+		]
+	];
+
+PackageExport["FCA"]
+
+FCA::usage =
+  "Shorthand for FusionCategoryAutomorphisms.";
+
+FCA = FusionCategoryAutomorphisms;
+
+	
+Options[AutomorphismEquations] = 
+	{ "Type" -> "Braided" };
+
+AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
+	Module[{ring, permute, transform, symbols, nbq },
+		nbq = !BraidedQ[cat] || OptionValue["Type"] =!= "Braided";
+		
+		ring = FusionRing @ cat;
+		
+		permute = 
+			ReplaceAll[
+				If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
+				{ 
+					g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
+					F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
+				}
+			];
+		
+		transform = 
+			ReplaceAll[ 
+				If[ nbq, Identity, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ] ] @
+				{ 
+					g[i__] :> permute @ g[i], 
+					F[i__] :> permute @ GaugeTransform[g] @ F[i]
+				}
+			];
+			
+		symbols = 
+			Join[
+				FSymbols @ ring,
+				If[ nbq, {}, RSymbols @ ring ]
+			];
+			
+		
+		TrimEquationList[
+			Thread[ symbols == transform @ symbols ]/.
+			Dispatch[ Join[ FSymbols @ cat, If[ nbq, {}, RSymbols @ cat ] ] ]
+		]
+	]
+
+
+
+  cayleyTable[ autData_, u_ ] := 
+	Module[{ groupedData, permMT, g, permute, autProduct, symmetries, prod, equivalentQ },
+		(* Group autos by permutation *)
+		(*
+		groupedData = GroupBy[ autData, First ];
+		
+		permMT = 
+			Transpose @ (* We take the left action as default *)
+			With[ 
+				{ perms = Keys @ groupedData }, 
+				Table[ 
+					First @ 
+					FirstPosition[ perms, PermutationProduct[ p1, p2 ] ],
+					{ p1, perms },
+					{ p2, perms }
+				]
+			];
+			*)
+			
+		permute[p_][ u[a_,b_,c_] ] := u[ p[[a]], p[[b]], p[[c]] ];
+		
+		autProduct[ a1_, a2_ ] :=
+			Module[ { 
+				ip = InversePermutation @ First @ a2,
+				u1 = Last @ a1,
+				u2 = Last @ a2,
+				a, b, c
+				},
+				{
+					PermutationProduct[ First @ a2, First @ a1 ], 
+					Table[
+						{ a, b, c } = labels;
+						u[ a, b, c ] -> ( u[ a, b, c ] /. u1 ) * ( permute[ip][ u[ a, b, c ] ] /. u2 ),
+						{ labels, List @@@ Keys @ u1 }
+					]
+				}
+			];
+		
+		(* Define equivalence between two group elements: 
+			 - permutations must match 
+			 - gauge transforms must only be equivalent 
+		*)
+		symmetries =
+			With[ { lb = List @@@ Keys @ autData[[1,2]] },
+				<|
+					"Transforms" -> ( (u[##] -> u[##] * (g[#1] g[#2]/g[#3]))& @@@ lb ),
+					"Symbols" -> {g}
+				|>
+			];
+		
+		equivalentQ[ a1_, a2_ ] := 
+			First[a1] == First[a2] && 
+			GSEQ[symmetries][ Last @ a1, Last @ a2 ];
+			
+		Table[ 
+			prod = autProduct[ a1, a2 ];
+			First @ 
+			FirstPosition[ autData, el_ /; equivalentQ[ el, prod ], None, {1}, Heads -> False ]
+			,
+			{ a1, autData }, 
+			{ a2, autData }
+		]
+		
+	]

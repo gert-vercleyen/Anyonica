@@ -2013,11 +2013,25 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] 
     ]
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:onehermite", { id_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Subsystem size equals size of system. Performing a single Hermite decomposition."
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, equations_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, pols_, prevLength_ } ] :=
   Module[ { fn1 },
     fn1 = dataFileName[ id, dir, "smallerSystem" ];
-    safeExport[ fn1, equations ];
+    safeExport[ fn1, pols ];
 
     AddCell[
       fileName,

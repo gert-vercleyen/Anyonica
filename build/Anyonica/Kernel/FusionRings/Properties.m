@@ -1167,7 +1167,8 @@ ModularData::usage =
   "ModularData[ring] returns a list of associations <| \"SMatrix\" -> Si, \"TwistFactors\" -> Qi |>, where the "<>
   " Si are the S matrices of the ring and the Qi lists of twist factors for for which the corresponding T-matrix "<>
   "obeys (ST\!\(\*SuperscriptBox[\()\), \(3\)]\) == \!\(\*SuperscriptBox[\(\[Lambda]S\), \(2\)]\) with \[Lambda] a " <>
-  "non-zero complex number. If there are no compatible T-matrices for any S-matrix an empty list is returned.";
+  "non-zero complex number.\n"<>
+  "ModularData[cat] returns the S-matrix and a list of topological twists of the fusion category cat, if they exist.";
 
 SetAttributes[ ModularData, Listable ];
 

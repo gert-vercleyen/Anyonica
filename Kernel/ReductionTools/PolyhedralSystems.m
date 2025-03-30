@@ -1098,11 +1098,11 @@ Module[{
 },
 
   simplify =
-  Composition[
-    If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
-    If[ OptionValue["ReduceRoots"], RootReduce, Identity ],
-    OptionValue["SimplifyIntermediateResultsBy"]
-  ];
+    Composition[
+      If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
+      If[ OptionValue["ReduceRoots"], RootReduce, Identity ],
+      OptionValue["SimplifyIntermediateResultsBy"]
+    ];
 
   procID =
     ToString[Unique[]];
@@ -1177,23 +1177,22 @@ Module[{
       ];
 
     (* Set up polynomial systems *)
-    systems =
-    Flatten[ AddValues /@ sumSystems ];
+    systems = Flatten[ AddValues /@ sumSystems ];
 
 
     (* Reduce the systems using linearity *)
     ReduceSystems[ system_ ] :=
-    With[
-      { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
-      Table[
-        <|
-          "Polynomials" -> simplify /@ nSys["Polynomials"],
-          "Assumptions" -> nSys["Assumptions"],
-          "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
-        |>,
-        { nSys, newSystems }
-      ]
-    ];
+      With[
+        { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
+        Table[
+          <|
+            "Polynomials" -> simplify /@ nSys["Polynomials"],
+            "Assumptions" -> nSys["Assumptions"],
+            "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
+          |>,
+          { nSys, newSystems }
+        ]
+      ];
 
     reducedSystems1 =
       Flatten[ ReduceSystems /@ systems ];
@@ -1564,19 +1563,19 @@ Which[
 ];
 
 SolveHexagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-Block[ {z}, SolveHexagonEquations[ ring, z, opts ] ];
+  Block[ {z}, SolveHexagonEquations[ ring, z, opts ] ];
 
 PackageExport["SHE"]
 
 SHE::usage =
-"Shorthand for SolveHexagonEquations.";
+  "Shorthand for SolveHexagonEquations.";
 
 SHE =
-SolveHexagonEquations;
+  SolveHexagonEquations;
 
 
 Options[SolveMultiplicityFreeHexagonEquations] :=
-Options[SolveHexagonEquations];
+  Options[SolveHexagonEquations];
 
 SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, z_ , opts:OptionsPattern[] ]:=
 Module[{ procID, time, result, bases },

@@ -1032,6 +1032,26 @@ TPL =
   TrimPolynomialList;
 
 
+MembershipList =
+  Compile[
+    {
+      { indices, _Integer, 2 }, (* matrix of elements per subset, padded with 0's *)
+      { nIndices, _Integer, 1 } (* number of elements per subset*)
+    },
+    Module[{ i, j, bg = Internal`Bag[Most[{0}]] }, (* We use Internal`Bag for compiled quick storage *)
+      For[ i = 1, i <= Length[indices], i++,
+        For[ j = 1, j <= nIndices[[i]], j++,
+          Internal`StuffBag[ bg, indices[[i, j]] ];
+          Internal`StuffBag[ bg, i ];
+        ]
+      ];
+      Internal`BagPart[ bg, All ]
+    ]
+    ,
+    { { output, _Integer, 1 } }, (* Hint to compiler about the output form *)
+    CompilationTarget -> "C",
+    RuntimeOptions -> "Speed" (* All elements are small integers so no chance of overflow *)
+  ];
 
 (* Update expressions one by one, throwing { False }, if any do not satisfy testf *)
 
@@ -1093,17 +1113,19 @@ Options[ConsistentQ] :=
 
 ConsistentQ[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
 	Module[ { FirstFailure, firstFail, check, procID, t, problemQ },
-		check =
-			OptionValue["PreEqualCheck"];
-		FirstFailure[ l_ ] :=
-      FirstCase[ l, x_ /; !test[ check @ x ] ];
-    procID =
-      ToString @ Unique[];
+		check = OptionValue["PreEqualCheck"];
+
+		FirstFailure[ l_ ] := FirstCase[ l, x_ /; !test[ check @ x ] ];
+
+    procID = ToString @ Unique[];
       
     printlog["CQ:init", { procID, rhs, r, test, {opts} }];
     
     { t, problemQ } =
-      AbsoluteTiming[ r < Length[ rhs ] &&  !MissingQ[ firstFail = FirstFailure[ rhs[[r+1;;]] ] ] ];
+      AbsoluteTiming[ 
+        r < Length[ rhs ] &&  
+        !MissingQ[ firstFail = FirstFailure[ rhs[[r+1;;]] ] ] 
+      ];
     
     If[ problemQ, printlog["CQ:failed", { procID, rhs, r, test, firstFail }] ];
     
@@ -1114,12 +1136,11 @@ ConsistentQ[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
 
 ConsistentQ[ eqns_, test_, opts:OptionsPattern[] ] :=
   Module[ { FirstFailure, firstFail, check, procID, t, problemQ },
-    check =
-      OptionValue["PreEqualCheck"];
-    FirstFailure[ l_ ] :=
-      FirstCase[ l, x_ /; !test[ check @ x ] ];
-    procID =
-      ToString @ Unique[];
+    check = OptionValue["PreEqualCheck"];
+
+    FirstFailure[ l_ ] := FirstCase[ l, x_ /; !test[ check @ x ] ];
+
+    procID = ToString @ Unique[];
     
     printlog["CQ:init", { procID, eqns, test, {opts} }];
     
@@ -1132,6 +1153,7 @@ ConsistentQ[ eqns_, test_, opts:OptionsPattern[] ] :=
     
     !problemQ
   ];
+
 
 PackageExport["ToRationalPhase"]
 

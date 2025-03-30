@@ -109,11 +109,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       
       (* Check whether inconsistent system *)
       If[
-        MemberQ[
-          Expand @ newEqns,
-          False | HoldPattern[ 0 == expr_ ] | HoldPattern[ expr_ == 0 ] /;
-          MatchQ[ expr, HoldPattern[Times[__]] | HoldPattern[Power[symbol[_],_]] | symbol[_] ]
-        ]
+        !AddOptions[ConsistentQ][opts][ newEqns, ValidEqnQ[symbol] ]
         ,
         printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
         Return @ {}
@@ -130,6 +126,14 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         Return @ {}
       ];
       
+      (* Check whether inconsistent system *)
+      If[
+        !AddOptions[ConsistentQ][opts][ newEqns, ValidEqnQ[symbol] ]
+        ,
+        printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
+        Return @ {}
+      ];
+
       (* Solve the logarithm of the binomial equations *)
       If[
         symmetries === None,
@@ -202,6 +206,13 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
   ]
 );
 
+
+ValidEqnQ[symbol_][ eqn_ ] :=
+  Not @ 
+  MatchQ[ Expand @ eqn,
+    False | HoldPattern[ 0 == expr_ ] | HoldPattern[ expr_ == 0 ] /;
+    MatchQ[ expr, HoldPattern[Times[__]] | HoldPattern[Power[symbol[_],_]] | symbol[_] ]
+  ];
 
 PackageScope["SNSBS"]
 
