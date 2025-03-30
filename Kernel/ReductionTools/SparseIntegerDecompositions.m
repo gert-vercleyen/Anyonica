@@ -158,14 +158,5 @@ SparseIntegerUpperTriangularDecomp[ sparseMat_ ] :=
 	];
 
 
+
 	
-extendedGCD[ a_, b_ ] :=
-	Block[ { x, y, u, v, aa, bb, q, r, m, n },
-		{ x, y, u, v, aa, bb } = { 0, 1, 1, 0, a, b }; 
-		While[ aa != 0,
-			{ q, r } = QuotientRemainder[ bb, aa ];
-			{ m, n } = { x - u q, y - v q };
-			{ bb, aa, x, y, u, v } = { aa, r, u, v, m, n } 
-		];
-		{ bb, x, y }
-	];
