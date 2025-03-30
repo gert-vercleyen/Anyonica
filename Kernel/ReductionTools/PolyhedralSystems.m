@@ -765,7 +765,7 @@ Module[
           "InvertibleMatrices" -> invMats,
           "Equivalences" -> 
             If[ 
-              Echo[CommutativeQ @ ring],
+              CommutativeQ @ ring,
               ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
               {}
             ]
@@ -779,7 +779,7 @@ Module[
           "InvertibleMatrices" -> invMats,
           "Equivalences" -> 
             If[ 
-              Echo[CommutativeQ @ ring],
+              CommutativeQ @ ring,
               ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
               {}
             ]
