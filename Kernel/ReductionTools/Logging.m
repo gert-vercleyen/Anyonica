@@ -474,19 +474,19 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:solutions", { id_, soln_, ___ } ]
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:non_invertible_matrix", { id_, mats_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "FZV:constraint_not_met", { id_, constr_ } ] :=
   Module[{ fn },
-    fn = dataFileName[ id, dir, "InvertibleMatrices"];
-    safeExport[ fn, mats ];
+    fn = dataFileName[ id, dir, "Constraint"];
+    safeExport[ fn, constr ];
 
     AddCell[
       fileName,
       nbo,
       Cell[
         TextData[{
-          inputStyle[ "The list of " ],
-          hyperlinkBox[ "Invertible Matrices", fn ],
-          inputStyle[" contains a non-invertible matrix. Assuming no solutions."]
+          inputStyle[ "The " ],
+          hyperlinkBox[ "constraint", fn ],
+          inputStyle[" is False for the given input. Returning empty list of zero values."]
         }],
         "Text",
         CellTags -> {"Info"}
