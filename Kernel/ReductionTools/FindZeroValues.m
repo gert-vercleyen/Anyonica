@@ -26,7 +26,7 @@ Options[ FindZeroValues ] :=
   Join[
     {
       "FindZerosBy" -> "Logic",
-      "InvertibleMatrices" -> {},
+      "Constraint" -> True,
       "Equivalences" -> {}
     },
     Options[SumEqnsToProp],
@@ -57,14 +57,14 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
   CheckArgs[eqns, vars];
   Module[
     {
-      regMats, simpleEqns, simpleVars, revertVars, simpleMats, b, procID,
+      simpleEqns, simpleVars, revertVars, simpleConstraint, b, procID,
       result, absTime, proposition, knowns, equivs, reducedVars, AddExtraInfo,
       preProp, binEqns, sumEqns, trivialVars, eRules, reducedMats, reducedEqns,
-      simpleERules, remainingVars, FilterSolutions, trivialVarsFromMats, trivialVarsFromEquivalences,
+      simpleERules, remainingVars, FilterSolutions, reducedConstraint, trivialVarsFromEquivalences,
       properEquivalences, allsatSolutions
     },
-    regMats =
-      OptionValue["InvertibleMatrices"];
+    constraints =
+      OptionValue["Constraint"];
 
     eRules =
       OptionValue["Equivalences"];
@@ -77,47 +77,29 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
     { absTime, result } =
       AbsoluteTiming[
       Catch[
-        { { simpleEqns, simpleMats, simpleERules }, simpleVars, revertVars } =
-          SimplifyVariables[
-            { eqns, regMats, eRules },
-            vars,
-            b
-          ];
+        (* Write al variables as b[1], ..., b[n] *)
+        { { simpleEqns, simpleConstraint, simpleERules }, simpleVars, revertVars } =
+          SimplifyVariables[ { eqns, constraint, eRules }, vars, b ];
 
-        (* We can use a reduced set of variables by using tetrahedral equivalences *)
-        (* First we split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
+        (* Apply tetrahedral equivalences *)
+
+        (* First, split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
            zero and (2) rules that express F-symbols in terms of other F-symbols *)
-
         { trivialVarsFromEquivalences, properEquivalences } =
           BinSplit[ simpleERules, #[[2]] === 1& ];
 
-        reducedMats =
-          simpleMats/.Dispatch[simpleERules];
-
-        trivialVars =
-          Join[
-            Cases[ reducedMats, {{a_}} /; a =!= 0 :> a ],
-            Keys[trivialVarsFromEquivalences]
-          ];
-
-        reducedMats =
-          reducedMats ~ WithMinimumDimension ~ 2;
+        (* Use equivalences to update the equations, variables and constraint *)
+        reducedConstraint =
+          simpleConstraint/.Dispatch[simpleERules];
 
         If[
-          MemberQ[False] @ PermanentConditions @ reducedMats,
-          printlog["FZV:non_invertible_matrix", { procID, reducedMats }];
+          reducedConstraint === False,
+          printlog["FZV:constraint_not_met", { procID, reducedMats }];
           Throw @ { }
         ];
 
         reducedVars =
-          Union[ Complement[ simpleVars/.Dispatch[properEquivalences], trivialVars ] ];
-
-        If[ 
-          Length[reducedVars] === 0
-          ,
-          printlog["FZV:all_vars_trivial", { procID } ];
-          Throw @ { { } }
-        ];
+          simpleVars/.Dispatch[properEquivalences];
 
         reducedEqns =
           TEL /@ ( simpleEqns/.Dispatch[properEquivalences] );
@@ -126,17 +108,18 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           BinomialSplit @
           reducedEqns;
 
-        (* Convert the equations to a proposition *)
+        (* Convert the equations to a proposition and replace
+          b[i] by i since it takes less space *)
         preProp =
           And[
-            EqnsToProp[ binEqns ],
+            EqnsToProp @ binEqns ,
             AddOptions[opts][SumEqnsToProp][ sumEqns, b ],
-            MatsToProposition[ reducedMats ]
-          ]/.Thread[trivialVars->True]/.b[i_]:>i;
+            reducedConstraint
+          ]/.b[i_]:>i;
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
-        (* Reduce the proposition using logic *)
+        (* Reduce the proposition using logic and revert vars to b[i] *)
         { proposition, knowns, equivs } =
           ReduceViaLogic[ preProp ]/.i_Integer :> b[i];
 
@@ -159,7 +142,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           ]
         ];
 
-
+        (* Check compatibility of solutions with all other equations *)
         FilterSolutions[ soln_ ] :=
           Select[
             soln,
@@ -168,8 +151,8 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
               False  | 
               0 == HoldPattern[Times[__]] | 
               HoldPattern[Times[__]] == 0 |
-              0 == Power[ a_, b_ ] |
-              Power[ a_, b_ ] == 0
+              0 == Power[ a_, b_. ] |
+              Power[ a_, b_. ] == 0
             ]&
           ];
 
@@ -426,7 +409,7 @@ Options[ReduceViaLogic] =
 
 ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
   Module[
-    { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv,
+    { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4,
       TransferKnowns, FindEquivs, RepeatedUpdateEquivalences, lSymp, combinedSimplification 
     },
 
@@ -436,42 +419,41 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
 
     (* Transfer known values from equivs to knowns *)
     TransferKnowns[ { prop_, knowns_, equivs_ } ] :=
-      Module[ { newKnowns, newEquivs },
+      Block[ { newKnowns, newEquivs },
         { newKnowns, newEquivs } =
           BinSplit[ equivs, BooleanQ @* Last ];
 
         { prop, Join[ knowns, newKnowns ], newEquivs }
       ];
 
-    UpdateKnowns[ { prop_, knowns_, equivs_ } ] :=
-      TransferKnowns @
-      Switch[ Head[prop],
-        And
-        ,
-        With[{
+    UpdateKnowns2[ { prop_And, knowns_, equivs_ } ] :=
+      TransferKnowns @ 
+      With[
+        {
           newKnowns =
-            DeleteDuplicates @
-            ReplaceAll[
-              Cases[ prop, _Integer | Not[_Integer] ],
-              { i_Integer :> ( i -> True ), Not[ i_Integer ] :> ( i -> False ) }
-            ]
-          },
-
-          {
-            prop/.Dispatch[newKnowns],
-            Join[ knowns, newKnowns ],
-            equivs/.Dispatch[newKnowns]
-          }
-        ]
-        ,
-        Or | Symbol
-        ,
-        { prop, knowns, equivs }
-        ,
-        Integer
-        ,
-        { True, Append[ prop -> True ] @ knowns, equivs/.prop -> True }
-      ];
+          DeleteDuplicates @
+          ReplaceAll[ { i_Integer :> (i -> True), Not[i_Integer] :> (i -> False) } ] @
+          Cases[ prop, _Integer | Not[_Integer] ]
+        },
+        {
+          prop /. Dispatch[newKnowns], 
+          Join[ knowns, newKnowns ], 
+          equivs /. Dispatch[newKnowns]
+        }
+      ]; 
+    UpdateKnowns2[ { prop_Symbol, knowns_, equivs_ } ] :=
+      TransferKnowns @ 
+      { prop, knowns, equivs };
+    UpdateKnowns2[ { prop_Or, knowns_, equivs_ } ] :=
+      TransferKnowns @ 
+      { prop, knowns, equivs };  
+    UpdateKnowns2[ { prop_Integer, knowns_, equivs_ } ] := 
+      TransferKnowns @ 
+      { 
+        True, 
+        Append[ prop -> True ] @ knowns, 
+        equivs /. prop -> True
+      };
 
     (* Find disjunct equivalences *)
     FindEquivs[prop_] :=
@@ -485,12 +467,17 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
 
     UpdateEquivalences[ { prop_, knowns_, equivs_ } ] :=
       With[ { newEquivs = FindEquivs @  prop },
-        { prop/.Dispatch[newEquivs], knowns, Join[ equivs/.Dispatch[newEquivs], newEquivs ] }
+        { 
+          prop/.Dispatch[newEquivs], 
+          knowns, 
+          Join[ equivs/.Dispatch[newEquivs], newEquivs ] 
+        }
       ];
 
     RepeatedUpdateEquivalences =
       FixedPoint[ UpdateEquivalences, # ]&;
 
+    (* Get rid of duplicate statements at the first level *)
     SimplifySystem[ { prop_, knowns_, equivs_ } ] :=
       If[
         TrueQ @ prop
@@ -517,24 +504,24 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
       FixedPoint[ SimplifySystem @* UpdateEquivalences @* UpdateKnowns, # ]&;
 
     simplify2 = (* Converting to CNF often gives extra info about variables *)
-        FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
+      FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
 
     simplify3 = (* Converting back to "DNF" can reduce the number of variables as well *)
+      QuietCheck[
+      With[
+        { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
+        { removeRedundantVars = Dispatch[ Thread[ (Intersection @@ (dnfForm/.{ And|Or->List })) -> True ] ] },
+        {
+          dnfForm /. removeRedundantVars,
+          #[[2]],
+          #[[3]] /. removeRedundantVars
+        }
+      ],
+      #
+    ]&;
 
-        QuietCheck[
-        With[
-          { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
-          { removeRedundantVars = Dispatch[ Thread[ (Intersection @@ (dnfForm/.{ And|Or->List })) -> True ] ] },
-          {
-            dnfForm /. removeRedundantVars,
-            #[[2]],
-            #[[3]] /. removeRedundantVars
-          }
-        ],
-        #
-      ]&;
-
-    simplify4 = (* Often some equivalences remain but UpdateEquivalences doesn't work on "DNF"/"CNF" forms so we revert *)
+    (* Often some equivalences remain but UpdateEquivalences doesn't work on "DNF"/"CNF" forms so we revert *)
+    simplify4 = 
       QuietCheck[
         simplify1 @
         {
@@ -561,47 +548,3 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
         { 1 }
       ]
   ];
-
-
-MatsToProposition[ matList_ ] :=
-  With[{ perms = ReduceMonomials @* Permanent /@ matList },
-    And @@ ReplaceAll[ perms, { Times -> And, Plus -> Or } ]
-  ];
-
-
-ReduceMonomials[ expr_ ] :=
-  expr //
-  ReplaceAll[ Power[ a_, b_Integer ] :> a ] //
-  ReplaceAll[ Times[ a_Integer, b__ ] :> Times[b] ];
-
-
-PermanentConditions[ mats_List ] :=
-  Map[
-    ( Expand[Permanent[#]] != 0 )&,
-    mats
-  ];
-
-(*
-PropositionToCNFFile[ prop_, x_ ] :=
-  With[{
-    orProps = List @@ BooleanConvert[ prop, "CNF" ],
-    nVars = CountVariables[ prop, x ]
-    },
-    StringJoin[
-      "p "<>ToString[nVars] <> " " <> ToString[ Length @ orProps ] <>"\n",
-      Sequence @@ Map[ OrToString[x], orProps ]
-    ]
-  ];
-
-
-OrToString[ x_][x[i_]] :=
-  ToString[i] <> " 0";
-
-OrToString[ x_][Not[x[i_]]] :=
-  ToString[-i] <> " 0";
-
-OrToString[ x_ ][ prop_ ] :=
-  StringJoin[ #, " 0\n" ]& @
-  StringRiffle @
-  ReplaceAll[ prop, { Or -> List, x[i_] :> ToString[i], Not[x[i_]] :> ToString[-i] } ];
-*)
