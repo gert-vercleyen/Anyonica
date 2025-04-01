@@ -597,10 +597,6 @@ PreparePentagonSolverInput::usage =
 PreparePentagonSolverInput::notsubring =
 "`1` is not isomorphic to any subring of `2`.";
 
-PreparePentagonSolverInput::notyetsupported = 
-  "Only the option \"Method\" -> \"HermiteDecomposition\" is supported for solving pentagon equations.\n"<>
-  "Proceeding with option value equal to \"HermiteDecomposition\"";
-
 Options[PreparePentagonSolverInput] :=
 Union[
   {
@@ -609,359 +605,328 @@ Union[
     "NonSingular" -> False,
     "PreEqualCheck" -> Identity,
     "UseDatabaseOfSmithDecompositions" -> True,
-    "UseDatabaseOfZeroValues" -> True,
+    "UseDatabaseOfZeroValues" -> False,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
-    "FindZerosUsingSums" -> True
+    "FindZerosUsingSums" -> True 
   },
   Options[FindZeroValues],
   Options[ReduceBinomialSystem]
 ];
 
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-Module[
-  {
-    binEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
-    unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
-    g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
-    subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ, newBinEqns, newSumEqns,
-    neverZeroBinEqns
-  },
-  gaugeDemands =
-    OptionValue["GaugeDemands"];
-  zeroValues =
-    OptionValue["ZeroValues"];
-  nonSingularQ =
-    OptionValue["NonSingular"];
-  useSumsQ =
-    OptionValue["FindZerosUsingSums"];
-  preEqCheck =
-    OptionValue["PreEqualCheck"];
-  useDBQ =
-    OptionValue["UseDatabaseOfSmithDecompositions"];
-  storeDecompQ =
-    OptionValue["StoreDecompositions"];
-  subsSol =
-    OptionValue["InjectSolution"];
+  Module[
+    {
+      binEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
+      unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
+      g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
+      subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ, newBinEqns, newSumEqns,
+      neverZeroBinEqns
+    },
+    gaugeDemands  = OptionValue["GaugeDemands"];
+    zeroValues    = OptionValue["ZeroValues"];
+    nonSingularQ  = OptionValue["NonSingular"];
+    useSumsQ      = OptionValue["FindZerosUsingSums"];
+    preEqCheck    = OptionValue["PreEqualCheck"];
+    useDBQ        = OptionValue["UseDatabaseOfSmithDecompositions"];
+    storeDecompQ  = OptionValue["StoreDecompositions"];
+    subsSol       = OptionValue["InjectSolution"];
 
-  procID =
-    ToString[Unique[]];
+    procID = ToString[Unique[]];
 
-  printlog["PPSI:init", { procID, ring, {opts} } ];
+    printlog["PPSI:init", { procID, ring, {opts} } ];
 
-  { time, solutions } =
-  AbsoluteTiming[
+    { time, solutions } =
+    AbsoluteTiming[
 
-    If[ (* Want to substitute solution *)
-      subsSol =!= {},
-      (* THEN *)
-      { sRing, sSol } = subsSol;
+      If[ (* Don't want to substitute solution to subsystem *)
+        subsSol === {},
+        compatibleSol = {},
+        (* ELSE: want to substitute solution *)
+        { sRing, sSol } = subsSol;
 
-      (* Function that maps labels in sRing to corresponding labels in ring *)
-      inject =
-        InjectionForm[ ring, sRing ];
+        (* Function that maps labels in the subring sRing to corresponding labels in ring *)
+        inject = InjectionForm[ ring, sRing ];
+
+        If[ (* Check whether ring is proper subring *)
+          inject === None,
+          Message[PreparePentagonSolverInput::notsubring, sRing, ring ];
+          Abort[]
+        ];
+
+        (* Rename all labels of the subsolution sSol so they correspond 
+          to the labels of the sub-fusion-ring of ring *)
+        compatibleSol =
+          MapAt[
+            ReplaceAll[ i_Integer  :> inject[i] ],
+            sSol,
+            { All, 1 }
+          ]
+      ];
+
+      allFSymbols = FSymbols @ ring;
+
+      vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
+
+      (* Unknown F-symbols *)
+      fSymbols =
+        Complement[
+          allFSymbols,
+          vacuumSymbols,
+          GetVariables[ compatibleSol, F ]
+        ];
+
+      (* Define pentagon equations, split in lists of those 
+        with 2 terms and 3 or more terms *)
+      tower                 = PentagonTower[ ring, "Knowns" -> compatibleSol ];
+      { binEqns, sumEqns }  = BinSumEquationsFromTower[ tower ];
+      pentEqns              = Join[ binEqns, sumEqns ];
+
+      (* Set up the constraints on the solutions: F-matrices are invertible and 
+        removing zig-zags is an isomorphism *)
+      constraints =
+        And @@
+        Map[
+          Det[#] != 0 &,
+          With[ { d = CC[ring] },
+            Join[
+              FMatrices[ ring ],
+              Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
+          ]/.Dispatch[ Thread[ vacuumSymbols -> 1 ] ] 
+        ];
+
+      gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
+
+      (* Update matrices and gauge symmetries to take account of known F's *)
+      printlog[ "PPSI:restricting_gauges", { procID } ];
+
+      (* Update gauges: vacuum F-symbols and given subsolution need to remain fixed *)
+      gaugeSymmetries =
+        RestrictMultiplicativeSymmetries[
+          gaugeSymmetries,
+          vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
+          g
+        ];
+
+      printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
+
+      printlog[ "PPSI:zero_Fs", { procID } ];
+
+      (* Find Configurations of non-trivial 0-values *)
+      zeros =
+        Which[
+          nonSingularQ || GroupRingQ[ring]
+          ,
+            {{}}
+          ,
+          zeroValues =!= None
+          ,
+            zeroValues
+          ,
+          OptionValue["UseDatabaseOfZeroValues"]
+          ,
+            AddOptions[opts][MemoizedZeroValues][
+              MT @ ring,
+              Which[
+                useSumsQ && OptionValue["SumSubsetParameter"] === 1
+                , (* use all sum eqns so no check needed *)
+                  { pentEqns , {} }
+                , (* don't use all sum eqns so need to check for consistency *)
+                useSumsQ
+                ,
+                  { pentEqns, sumEqns }
+                ,
+                True
+                ,
+                  { binEqns, sumEqns  }
+              ],
+              fSymbols,
+              "InvertibleMatrices" -> invMats,
+              "Equivalences" -> 
+                If[ 
+                  CommutativeQ @ ring,
+                  ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+                  {}
+                ]
+            ]
+          ,
+          True
+          ,
+          Select[ ValidZerosQ[sumEqns] ] @
+          AddOptions[opts][FindZeroValues][
+            If[ useSumsQ, pentEqns, binEqns ],
+            fSymbols,
+            "InvertibleMatrices" -> invMats,
+            "Equivalences" -> 
+              If[ 
+                CommutativeQ @ ring,
+                ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+                {}
+              ]
+          ]
+        ];
+
+      printlog["PPSI:zero_Fs_results", { procID, zeros } ];
 
       If[
-        inject === None,
-        Message[PreparePentagonSolverInput::notsubring, sRing, ring ];
-        Abort[]
+        Length @ zeros === 0
+        ,
+        Return[ { } ]
       ];
 
-      (* Rename all labels of sSol so they correspond to the labels of the sub-fusion-ring of ring *)
-      compatibleSol =
-        MapAt[
-          ReplaceAll[ i_Integer  :> inject[i] ],
-          sSol,
-          { All, 1 }
-        ],
+      printlog["PPSI:fixing_gauge", {procID } ];
+      (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
+        that do not appear in any of the "zeros" from previous step *)
 
-      (* ELSE *)
-      compatibleSol =
-      {}
-    ];
+      (* Get all F-symbols that could be 0 for some configuration in zeros *)
+      unionZeros = Union @@ Keys /@ zeros;
 
-    allFSymbols = FSymbols @ ring;
+      (* Get all F-symbols that can never be 0 *)
+      sharedVars = Complement[ fSymbols, unionZeros ];
 
-    vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
+      (* Fix the gauge for all the F symbols that can never be 0 *)
+      { remainingSym, extraFixedFs } =
+        BreakMultiplicativeSymmetry[
+          gaugeSymmetries,
+          "GaugeDemands" -> gaugeDemands,
+          "ExcludedVariables" -> unionZeros
+        ];
 
-    fSymbols =
-      Complement[
-        allFSymbols,
-        vacuumSymbols,
-        GetVariables[ compatibleSol, F ]
-      ];
+      (* Remove the newly fixed F-symbols from the list of variables *)
+      fSymbols = Complement[ fSymbols, Keys @ extraFixedFs ];
 
-    tower =
-      PentagonTower[ ring, "Knowns" -> compatibleSol ];
+      (* Substitute the values of the newly fixed F-symbols in the constraints *)
+      constraints = constraints/.Dispatch[extraFixedFs];
 
-    { binEqns, sumEqns } =
-      BinSumEquationsFromTower[ tower ];
+      (* Substitute the values of the newly fixed F-symbols in the equations,
+        remove trivial equations and delete duplicate equations *)
 
-    pentEqns = 
-      Join[ binEqns, sumEqns ];
+      pentEqns =
+        TEL[ pentEqns/.Dispatch[extraFixedFs] ];
 
-    (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
-    invMats =
-      With[ { d = CC[ring] },
-        Join[
-          FMatrices[ ring ],
-          Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
-      ];
+      { newBinEqns, newSumEqns } =
+        BinomialSplit[ pentEqns ]; 
 
-    gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
+      ClearAll[binEqns,sumEqns];
 
-    (* Update matrices and gauge symmetries to take account of known F's *)
-    printlog[ "PPSI:restricting_gauges", { procID } ];
+      printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
 
-    (* Update gauges *)
-    gaugeSymmetries =
-      RestrictMultiplicativeSymmetries[
-        gaugeSymmetries,
-        vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
-        g
-      ];
+      (* Set up a common set of binomial equations that don't contain F-symbols that could
+        be zero *)
+      printlog[ "PPSI:reducing_bin_eqns", { procID } ];
 
-    (* Remove trivial and known F-matrices from list of invertible matrices *)
-    invMats =
-      With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
-        invMats //
-        DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern  ]
-      ];
-
-    printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
-
-    printlog[ "PPSI:zero_Fs", { procID } ];
-
-    (* Find Configurations of non-trivial 0-values *)
-    zeros =
-      Dispatch @
-      Which[
-        OptionValue["NonSingular"] || GroupRingQ[ring]
-        ,
-        {{}}
-        ,
-        OptionValue["ZeroValues"] =!= None
-        ,
-        OptionValue["ZeroValues"]
-        ,
-        OptionValue["UseDatabaseOfZeroValues"]
-        ,
-        AddOptions[opts][MemoizedZeroValues][
-          MT[ring],
-          Which[
-            useSumsQ && OptionValue["SumSubsetParameter"] === 1
-            , (* use all sum eqns so no check needed *)
-            { pentEqns , {} }
-            , (* don't use all sum eqns so need to check for consistency *)
-            useSumsQ
-            ,
-            { pentEqns, sumEqns }
-            ,
-            True
-            ,
-            { binEqns, sumEqns  }
-          ],
-          fSymbols,
-          "InvertibleMatrices" -> invMats,
-          "Equivalences" -> 
-            If[ 
-              Echo[CommutativeQ @ ring],
-              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
-              {}
+      neverZeroBinEqns = 
+        With[{ 
+          varsLists = 
+            Join @@@
+            Map[ 
+              GetVariables[ #, F ]&,
+              List @@@ newBinEqns, 
+              {2}
             ]
-        ]
-        ,
-        True
-        ,
-        AddOptions[opts][FindZeroValues][
-          If[ useSumsQ, pentEqns, binEqns ],
-          fSymbols,
-          "InvertibleMatrices" -> invMats,
-          "Equivalences" -> 
-            If[ 
-              Echo[CommutativeQ @ ring],
-              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
-              {}
+          },
+        
+          pentEqns[[
+            DeleteCases[ (* delete indices of equations that contain a possible zero F-symbol *)
+              Range @ Length @ varsLists, 
+              i_/; IntersectingQ[ varsLists[[i]], unionZeros ]
             ]
-        ]
-      ];
+          ]]
+        ];
 
-    (* TODO: even if "FindZeroValuesUsingSums" -> False then we should also filter out 
-      solutions that are incompatible with the sumequations.*)
-
-    printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
-
-    If[
-      Length @ Normal @ zeros === 0
-      ,
-      Return[ { } ]
-    ];
-
-    printlog["PPSI:fixing_gauge", {procID } ];
-    (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
-       that do not appear in any of the "zeros" from previous step *)
-
-    (* Get all F-symbols that could be 0 for some configuration in zeros *)
-    unionZeros =
-      Union @@
-      Normal[zeros][[;;,;;,1]];
-
-    (* Get all F-symbols that can never be 0 *)
-    sharedVars =
-      Complement[ fSymbols, unionZeros ];
-
-    (* Fix the gauge for all the F symbols that can never be 0 *)
-    { remainingSym, extraFixedFs } =
-      BreakMultiplicativeSymmetry[
-        gaugeSymmetries,
-        "GaugeDemands" -> gaugeDemands,
-        "ExcludedVariables" -> unionZeros
-      ];
-
-    (* Remove the newly fixed F-symbols from the list of variables *)
-    fSymbols =
-      Complement[ fSymbols, extraFixedFs[[;;,1]] ];
-
-    (* Substitute the values of the newly fixed F-symbols in the invertible matrices
-       and remove trivial 1D F-matrices. *)
-
-    invMats = WithMinimumDimension[ invMats/.extraFixedFs, 2 ];
-
-    (* Substitute the values of the newly fixed F-symbols in the equations,
-       remove trivial equations and delete duplicate equations *)
-
-    pentEqns = TEL[ pentEqns/.extraFixedFs ];
-
-    { newBinEqns, newSumEqns } = BinomialSplit[ pentEqns ]; 
-
-    Remove[binEqns,sumEqns];
-
-    printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
-
-
-    (* Set up a common set of binomial equations that don't contain F-symbols that could
-       be zero *)
-
-    printlog[ "PPSI:reducing_bin_eqns", { procID } ];
-
-    neverZeroBinEqns = 
-      With[{ 
-        varsLists = 
-          Join @@@
-          Map[ 
-            GetVariables[ #, F ]&,
-            List @@@ newBinEqns, 
-            {2}
-          ]
-        },
+      (* Reduce this system of binomial equations and add it to the non-binomial equations *)
       
-        pentEqns[[
-          DeleteCases[ (* delete indices of equations that contain a possible zero F-symbol *)
-            Range @ Length @ varsLists, 
-            i_/; IntersectingQ[ varsLists[[i]], unionZeros ]
+      pentEqns = 
+        Join[
+          AddOptions[opts][ReduceBinomialSystem][ 
+            neverZeroBinEqns, 
+            Complement[ fSymbols, unionZeros ] 
           ]
-        ]]
-      ];
+          ,
+          newSumEqns
+        ];
 
-    (* Reduce this system of binomial equations and add it to the non-binomial equations *)
-    (* At the moment we only support the HermiteDecomposition because its annoying to 
-       merge deduced values of F-symbols at this point. The HermiteDecomposition does 
-       not create assumptions, nor does it find values of F-symbols *)
-    (* TODO: this should be implemented in the future!!! *)
+      ClearAll[newBinEqns,newSumEqns,neverZeroBinEqns];
 
-    If[ 
-      MemberQ[ { opts }, x_ /; Keys @ x == "Method" && Values @ x =!= "HermiteDecomposition" ], 
-      Message[ PrepareHexagonSolverInput::notyetsupported ];
-      { opts } = DeleteCases[ { opts }, "Method" -> _ ];
-    ];
 
-    pentEqns = 
-      Join[
-        ( # == 0 )& /@
-        AddOptions[opts][ReduceBinomialSystem][ 
-          neverZeroBinEqns, 
-          Complement[ fSymbols, unionZeros ] 
-        ]["Polynomials"]
+      (* Try to fix extra gauges, if possible, for each of the 0-configurations.
+        Also substitute 0 values, and update equations, variables, and matrices *)
+
+      printlog[ "PPSI:fixing_extra_gauges", { procID } ];
+
+      If[ (* All gauges are fixed *)
+        remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]]
         ,
-        newSumEqns
-      ];
+        (* THEN *)
+        printlog[ "PPSI:no_gauge_freedom_left", { procID } ];
 
-    ClearAll[ newBinEqns, newSumEqns, neverZeroBinEqns ];
+        Reap[
+          Do[
+            dz =
+              Dispatch[z];
 
+            Sow[
+              <|
+                "Equations"  -> TEL[ pentEqns/.dz // TEL ],
+                "Variables"  -> Complement[ fSymbols, z[[;;,1]]  ],
+                "Symmetries"   -> AddZerosToSymmetries[ remainingSym, dz ],
+                "InvertibleMatrices"  -> ( invMats/.dz ),
+                "SpecificFs" -> {},
+                "ExtraFixedFs"-> extraFixedFs,
+                "SubSolution" -> compatibleSol,
+                "Zeros" -> z
+              |>
+            ],
+            { z, Normal[zeros] }
+          ]
+        ][[2,1]]
+        ,
+        (* ELSE *)
+        printlog[ "PPSI:gauge_freedom_left", { procID } ];
 
-    (* Try to fix extra gauges, if possible, for each of the 0-configurations.
-      Also substitute 0 values, and update equations, variables, and matrices *)
-
-    printlog[ "PPSI:fixing_extra_gauges", { procID } ];
-
-    If[ (* All gauges are fixed *)
-      remainingSym["Transforms"][[;;,1]] === remainingSym["Transforms"][[;;,2]]
-      ,
-      (* THEN *)
-      printlog[ "PPSI:no_gauge_freedom_left", { procID } ];
-
-      Reap[
-        Do[
-          dz =
+        Reap[
+          Do[
+            dz =
             Dispatch[z];
 
-          Sow[
-            <|
-              "Equations"  -> TEL[ pentEqns/.dz // TEL ],
-              "Variables"  -> Complement[ fSymbols, z[[;;,1]]  ],
-              "Symmetries"   -> AddZerosToSymmetries[ remainingSym, dz ],
-              "InvertibleMatrices"  -> ( invMats/.dz ),
-              "SpecificFs" -> {},
-              "ExtraFixedFs"-> extraFixedFs,
-              "SubSolution" -> compatibleSol,
-              "Zeros" -> z
-            |>
-          ],
-          { z, Normal[zeros] }
-        ]
-      ][[2,1]]
-      ,
-      (* ELSE *)
-      printlog[ "PPSI:gauge_freedom_left", { procID } ];
+            { specificSym, specificFixedFs } =
+              BreakMultiplicativeSymmetry[
+                AddZerosToSymmetries[ remainingSym, z ]
+              ];
 
-      Reap[
-        Do[
-          dz =
-          Dispatch[z];
+            Sow[
+              <|
+                "Equations" -> TEL[ pentEqns/.dz/.specificFixedFs ],
+                "Variables" -> Complement[ fSymbols, specificFixedFs[[;;,1]], z[[;;,1]] ],
+                "Symmetries" -> specificSym,
+                "InvertibleMatrices" -> (invMats/.dz/.specificFixedFs // DeleteCases[ {{n_?NumericQ}} /; n != 0 ]),
+                "SpecificFs" -> specificFixedFs,
+                "ExtraFixedFs" -> extraFixedFs,
+                "SubSolution" -> compatibleSol,
+                "Zeros" -> z
+              |>
+            ],
+            { z, Normal[zeros] }
+          ]
+        ][[2,1]]
+      ]
+    ];
 
-          { specificSym, specificFixedFs } =
-            BreakMultiplicativeSymmetry[
-              AddZerosToSymmetries[ remainingSym, z ]
-            ];
+    printlog["Gen:results", { procID, solutions, time }];
 
-          Sow[
-            <|
-              "Equations" -> TEL[ pentEqns/.dz/.specificFixedFs ],
-              "Variables" -> Complement[ fSymbols, specificFixedFs[[;;,1]], z[[;;,1]] ],
-              "Symmetries" -> specificSym,
-              "InvertibleMatrices" -> (invMats/.dz/.specificFixedFs // DeleteCases[ {{n_?NumericQ}} /; n != 0 ]),
-              "SpecificFs" -> specificFixedFs,
-              "ExtraFixedFs" -> extraFixedFs,
-              "SubSolution" -> compatibleSol,
-              "Zeros" -> z
-            |>
-          ],
-          { z, Normal[zeros] }
-        ]
-      ][[2,1]]
-    ]
+    solutions
   ];
-
-  printlog["Gen:results", { procID, solutions, time }];
-
-  solutions
-];
 
 
 PackageScope["ValidZerosQ"]
 
 ValidZerosQ[ eqns_ ][ zeros_ ] :=
-  FreeQ[ eqns/.Dispatch[zeros], False | 0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 ];
+  FreeQ[ 
+    eqns/.Dispatch[zeros], 
+    False | 
+    0 == HoldPattern[Times[__]] | HoldPattern[Times[__]] == 0 |
+    0 == HoldPattern[Power[_,_.]] | HoldPattern[Power[_,_.]] == 0 
+  ];
 
 
 PackageScope["PrepareHexagonSolverInput"]
@@ -1090,146 +1055,145 @@ Which[
 Options[MultiplicityFreePentagonGroebnerSystems] :=
 Options[PentagonGroebnerSystems];
 
+
+
 MultiplicityFreePentagonGroebnerSystems[ ring_, var_, opts:OptionsPattern[] ] :=
-Module[{
-  procID, result, time, solverInput,
-  sumSystems, SumBinEqns, systems, AddValues, ReduceSystems, reducedSystems1, reducedSystems2, simplify,
-  invertibilityConstraints
-},
+  Module[{
+    procID, result, time, solverInput,
+    sumSystems, SumBinEqns, systems, AddValues, ReduceSystems, reducedSystems1, reducedSystems2, simplify,
+    invertibilityConstraints
+    },
 
-  simplify =
-    Composition[
-      If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
-      If[ OptionValue["ReduceRoots"], RootReduce, Identity ],
-      OptionValue["SimplifyIntermediateResultsBy"]
-    ];
+    simplify =
+      Composition[
+        If[ OptionValue["ReducePowerSums"], PowerSumReduce, Identity ],
+        If[ OptionValue["ReduceRoots"], RootReduce, Identity ],
+        OptionValue["SimplifyIntermediateResultsBy"]
+      ];
 
-  procID =
-    ToString[Unique[]];
+    procID = ToString[Unique[]];
 
-  printlog[ "MFPGS:init", { procID, ring, var, {opts} } ];
+    printlog[ "MFPGS:init", { procID, ring, var, {opts} } ];
 
-  { time, result } =
-  AbsoluteTiming[
+    { time, result } =
+    AbsoluteTiming[
 
-    If[ (* Ring is trivial *)
-      Rank[ring] == 1,
-      Return[ { { { }, { F[1,1,1,1,1,1] -> 1 } } } ]
-    ];
+      If[ (* Ring is trivial *)
+        Rank[ring] == 1,
+        Return[ { { { }, { F[1,1,1,1,1,1] -> 1 } } } ]
+      ];
 
-    SumBinEqns =
-      Reverse @* BinomialSplit;
+      SumBinEqns = Reverse @* BinomialSplit;
 
-    solverInput = 
-      AddOptions[opts][PreparePentagonSolverInput] @ ring;
+      solverInput = AddOptions[opts][PreparePentagonSolverInput] @ ring;
 
 
-    (* TODO: This is very inefficient: we should reduce the system of binomial equations 
-       first for all equations that never contain a 0 F-symbol. Otherwise we're reducing that same set
-       again for each set of zero values. *)
-    sumSystems =
-      DeleteCases[ { _, {} } ] @
-      Table[
+      (* TODO: This is very inefficient: we should reduce the system of binomial equations 
+        first for all equations that never contain a 0 F-symbol. Otherwise we're reducing that same set
+        again for each set of zero values. *)
+      sumSystems =
+        DeleteCases[ { _, {} } ] @
+        Table[
+          {
+            Union[
+              input["Zeros"],
+              input["SpecificFs"],
+              input["ExtraFixedFs"],
+              input["SubSolution"],
+              Thread[ Cases[ FSymbols[ring], $VacuumFPattern ] -> 1 ]
+            ],
+            AddOptions[opts][ReduceByBinomials][
+              Sequence @@ SumBinEqns[ input["Equations"] ],
+              input["Variables"],
+              var,
+              "Symmetries" -> input["Symmetries"],
+              "InvertibleMatrices" -> input["InvertibleMatrices"],
+              "NonSingular" -> True,
+              "SimplifyIntermediateResultsBy" -> simplify
+            ]
+          },
+          { input, solverInput }
+        ];
+
+      If[
+        sumSystems === {},
+        Return @
         {
-          Union[
-            input["Zeros"],
-            input["SpecificFs"],
-            input["ExtraFixedFs"],
-            input["SubSolution"],
-            Thread[ Cases[ FSymbols[ring], $VacuumFPattern ] -> 1 ]
-          ],
-          AddOptions[opts][ReduceByBinomials][
-            Sequence @@ SumBinEqns[ input["Equations"] ],
-            input["Variables"],
-            var,
-            "Symmetries" -> input["Symmetries"],
-            "InvertibleMatrices" -> input["InvertibleMatrices"],
-            "NonSingular" -> True,
-            "SimplifyIntermediateResultsBy" -> simplify
-          ]
-        },
-        { input, solverInput }
+          <|
+            "GroebnerBasis" -> { 1 },
+            "Assumptions" -> None,
+            "Rules" -> { }
+          |>
+        }
       ];
 
-    If[
-      sumSystems === {},
-      Return @
-      {
-        <|
-          "GroebnerBasis" -> { 1 },
-          "Assumptions" -> None,
-          "Rules" -> { }
-        |>
-      }
-    ];
-
-    (* TODO: it would be more optimal to use the invertibilityConstraints
-       as assumptions
-    *)
-    AddValues[ { preKnowns_, systems_ } ] :=
-      Table[
-        <|
-          "Polynomials" -> TPL @ ToReducedPolynomial[ sys[[1]], var , "SimplifyBy" -> simplify ],
-          "Assumptions" -> True,
-          "Rules" -> Union[ preKnowns, sys[[2]] ]
-        |>
-        , { sys, systems }
-      ];
-
-    (* Set up polynomial systems *)
-    systems = Flatten[ AddValues /@ sumSystems ];
-
-
-    (* Reduce the systems using linearity *)
-    ReduceSystems[ system_ ] :=
-      With[
-        { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
+      (* TODO: it would be more optimal to use the invertibilityConstraints
+        as assumptions
+      *)
+      AddValues[ { preKnowns_, systems_ } ] :=
         Table[
           <|
-            "Polynomials" -> simplify /@ nSys["Polynomials"],
-            "Assumptions" -> nSys["Assumptions"],
-            "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
-          |>,
-          { nSys, newSystems }
-        ]
-      ];
+            "Polynomials" -> TPL @ ToReducedPolynomial[ sys[[1]], var , "SimplifyBy" -> simplify ],
+            "Assumptions" -> True,
+            "Rules" -> Union[ preKnowns, sys[[2]] ]
+          |>
+          , { sys, systems }
+        ];
 
-    reducedSystems1 =
-      Flatten[ ReduceSystems /@ systems ];
+      (* Set up polynomial systems *)
+      systems = Flatten[ AddValues /@ sumSystems ];
 
-    invertibilityConstraints[ rules_ ] :=
-      And @@
-      DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
 
-    printlog["MFPGS:systems", { procID, reducedSystems1 } ];
+      (* Reduce the systems using linearity *)
+      ReduceSystems[ system_ ] :=
+        With[
+          { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
+          Table[
+            <|
+              "Polynomials" -> simplify /@ nSys["Polynomials"],
+              "Assumptions" -> nSys["Assumptions"],
+              "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
+            |>,
+            { nSys, newSystems }
+          ]
+        ];
 
-    (* If only 1 variable remains it is often faster to solve the system directly *)
-    reducedSystems2 =
-      Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
+      reducedSystems1 =
+        Flatten[ ReduceSystems /@ systems ];
 
-    printlog["MFPGS:quicksolve", { procID, reducedSystems2 } ];
+      invertibilityConstraints[ rules_ ] :=
+        And @@
+        DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
 
-    Table[
-      <|
-        "GroebnerBasis" ->
-        simplify /@
-        AddOptions[opts][IncrementalGroebnerBasis][
-          sys["Polynomials"],
-          GetVariables[ sys["Polynomials"], var ]
-        ],
-        "Assumptions" -> sys["Assumptions"] && invertibilityConstraints[ sys["Rules"] ],
-        "Rules" -> sys["Rules"]
-      |>,
-      { sys, reducedSystems2 }
-    ]
+      printlog["MFPGS:systems", { procID, reducedSystems1 } ];
+
+      (* If only 1 variable remains it is often faster to solve the system directly *)
+      reducedSystems2 =
+        Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
+
+      printlog["MFPGS:quicksolve", { procID, reducedSystems2 } ];
+
+      Table[
+        <|
+          "GroebnerBasis" ->
+          simplify /@
+          AddOptions[opts][IncrementalGroebnerBasis][
+            sys["Polynomials"],
+            GetVariables[ sys["Polynomials"], var ]
+          ],
+          "Assumptions" -> sys["Assumptions"] && invertibilityConstraints[ sys["Rules"] ],
+          "Rules" -> sys["Rules"]
+        |>,
+        { sys, reducedSystems2 }
+      ]
+
+    ];
+
+    printlog["Gen:results", { procID, result, time }];
+
+    result
 
   ];
-
-  printlog["Gen:results", { procID, result, time }];
-
-  result
-
-];
 
 
 PackageExport["HexagonGroebnerSystems"]
