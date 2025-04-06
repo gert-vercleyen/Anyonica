@@ -662,4 +662,7 @@ SparseArray[
   Table[ Rank[ring], 3 ]
 ];
 
+(* PivotalSymbols *)
+PSymbols[ r_FusionRing ] := 
+  Array[ \[ScriptP], Rank @ ring ];
 

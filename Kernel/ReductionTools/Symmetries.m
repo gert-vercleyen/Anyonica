@@ -878,7 +878,7 @@ GaugeSplitTransform::usage =
   "F-and R-symbols.";
 
 GaugeSplitTransform::invalidoptionincludeonly =
-  "The option for \"IncludeOnly\", `1`, must be either \"All\", \"FSymbols\" or \"RSymbols\".";
+  "The option for \"IncludeOnly\", `1`, must be a list containing at least \"All\", \"FSymbols\" or \"RSymbols\".";
 
 Options[GaugeSplitTransform] :=
   {
@@ -897,7 +897,7 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
 
       symbolsWithZeros =
         Switch[ io,
-          "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
+          "All",      Join[ FSymbols @ ring, RSymbols @ ring, PSymbols @ ring ],
           "FSymbols", FSymbols @ ring,
           "RSymbols", RSymbols @ ring,
           _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
