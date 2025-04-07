@@ -765,7 +765,10 @@ PackageExport["GaugeTransform"]
 
 GaugeTransform::usage =
   "GaugeTransform[g][ s[ ind ] ] applies a gauge transformation with parameters labeled by g to the symbol s" <>
-  " with indices ind.";
+  " with indices ind.\n"<>
+  "GaugeTransform[ring,g][ s[ ind ] ] applies a gauge transformation with parameters labeled by g to the symbol s" <>
+  " with indices ind. This form of the function can also be applied to pivotal symbols.";
+
 (*Possible values of s are: \[ScriptCapitalF], \[ScriptCapitalR] (not implemented yet), etc.";*)
 
 GaugeTransform[ g_Symbol ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
@@ -774,7 +777,16 @@ GaugeTransform[ g_Symbol ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
 GaugeTransform[ g_Symbol ][ R[ a_, b_, c_ ] ] :=
   ( g[ a, b, c ] / g[ b, a, c ] )* R[a,b,c];
 
+GaugeTransform[ ring_, g_Symbol ][ \[ScriptP][ a_ ] ] :=
+  With[ { d = CC[ring] },
+    ( g[ a, d[a], 1 ] g[ 1, a, a ] )/( g[ a, 1, a ] g[ d[a], a, 1 ] ) \[ScriptP][a]
+  ];
 
+GaugeTransform[ ring_, g_Symbol ][ F[i__] ] :=
+  GaugeTransform[ g ] @ F[i];
+
+GaugeTransform[ ring_, g_Symbol ][ R[i__] ] :=
+  GaugeTransform[ g ] @ R[i];
 
 (* Special gauge transforms with extra parameter *)
 GaugeTransform[ { g_Symbol, t_Symbol } ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
@@ -828,7 +840,9 @@ AGT =
 PackageExport["GaugeSymmetries"]
 
 GaugeSymmetries::usage =
-  "GaugeSymmetries[ symbols, s ] returns the gauge transforms of the symbols, with gauge variables labeled by s.";
+  "GaugeSymmetries[ symbols, s ] returns the gauge transforms of the symbols, with gauge variables labeled by s.\n"<>
+  "GaugeSymmetries[ ring, symbols, s ] returns the gauge transforms of the symbols, with gauge variables labeled by s."<>
+  "This version also works for pivotal symbols.";
 
 GaugeSymmetries[ symbols_, g_ ] :=
   <|
@@ -836,14 +850,18 @@ GaugeSymmetries[ symbols_, g_ ] :=
     "Symbols" -> { g }
   |>;
 
+GaugeSymmetries[ ring_, symbols_, g_ ] :=
+  <|
+    "Transforms" -> Table[ s -> GaugeTransform[ring,g][s], { s, symbols } ],
+    "Symbols" -> { g }
+  |>;
 
 PackageExport["GS"]
 
 GS::usage =
   "Shorthand for GaugeSymmetries.";
 
-GS =
-  GaugeSymmetries;
+GS = GaugeSymmetries;
 
 
 PackageScope["TrivialGaugeMatrix"]
@@ -872,46 +890,58 @@ TrivialGaugeMatrix[ symbols_ ] :=
 PackageExport["GaugeSplitTransform"]
 
 GaugeSplitTransform::usage =
-  "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer for which " <> "
-  F'_1 = (F_1)^(V_1) * ... * (F_l)^(V_l) * (R_1)^(V_{l+1}) * ... * (R_k)^(V_{l+k}), ... } is a basis for all polynomials
-  in the F-and R-symbols where the first n elements provides a basis for the gauge independent polynomials in the "<>
-  "F-and R-symbols.";
+  "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer such that"<>
+  "the first n rows of V provide a basis transform to obtain the gauge independent polynomials in the"<>
+  "F-symbols, R-symbols, and P-symbols via the use of the PowerDot function.";
 
 GaugeSplitTransform::invalidoptionincludeonly =
-  "The option for \"IncludeOnly\", `1`, must be a list containing at least \"All\", \"FSymbols\" or \"RSymbols\".";
+  "The option for \"IncludeOnly\", `1`, must be a list containing at least \"FSymbols\", \"RSymbols\", and/or \"PSymbols\".";
 
 Options[GaugeSplitTransform] :=
   {
-    "IncludeOnly" -> "All",
+    "IncludeOnly" -> {"FSymbols","RSymbols","PSymbols"},
     "Zeros" -> {}
   };
 
 GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
   With[{ io = OptionValue["IncludeOnly"] },
 
-    If[ Rank[ring] == 1, Return @ If[ io =!= All, { IdentityMatrix[1], 1 }, { IdentityMatrix[2], 2 } ] ];
+    If[ 
+      Head[io] =!= List || io === {} ||
+      !SubsetQ[ { "FSymbols", "RSymbols", "PSymbols" },  io ]
+      ,
+      Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
+      Abort[]
+    ];
 
-    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros, zeroPos, symbolsWithZeros },
-      zeros =
-        OptionValue["Zeros"];
+    If[ 
+      Rank[ring] === 1, 
+      Return @ 
+      { IdentityMatrix @ Length @ io, Length @ io } 
+    ];
 
-      symbolsWithZeros =
-        Switch[ io,
-          "All",      Join[ FSymbols @ ring, RSymbols @ ring, PSymbols @ ring ],
-          "FSymbols", FSymbols @ ring,
-          "RSymbols", RSymbols @ ring,
-          _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
-        ];
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros, zeroPos, symbolsWithZeros, getSymbols },
+      zeros = OptionValue["Zeros"];
+      If[ MatchQ[ zeros, { _Rule .. } ], zeros = Keys @ zeros ];
+
+      getSymbols = 
+        Comap[ 
+          { 
+            If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+            If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
+            If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+          }
+        ]; 
+
+      symbolsWithZeros =  Join @@ getSymbols @ ring;
 
       zeroPos = 
         Flatten @ 
-        Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, Heads -> False ];
+        Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, 1, Heads -> False ];
 
-      symbols =
-        Complement[ symbolsWithZeros, zeros ]; 
+      symbols = Complement[ symbolsWithZeros, zeros ];
 
-      sym =
-        GaugeSymmetries[ symbols, g ];
+      sym = GaugeSymmetries[ ring, symbols, g ];
 
       monomial =
         PowerExpand[
@@ -960,11 +990,10 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
     ]
   ];
 
-AddZerosToTransform[ {} ][ tMat_ ] :=
-  tMat;
+AddZerosToTransform[ {} ][ tMat_ ] := tMat;
 
 AddZerosToTransform[ zeroPos_List][ tMat_?MatrixQ ] := 
-  Module[ { nZeros, newDim, nonZeroPos, mat, oneAt, zeroMat }, 
+  Module[ { nZeros, newDim, nonZeroPos, mat }, 
     nZeros = Length @ zeroPos;
 
     newDim = nZeros + First @ Dimensions @ tMat;
@@ -995,28 +1024,30 @@ Options[ GaugeSplitBasis ] :=
 
 GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[ { V, n, symbols, io, zeros },
-    zeros =
-      OptionValue["Zeros"];
-    io =
-      OptionValue["IncludeOnly"];
+    zeros = OptionValue["Zeros"];
+    If[ MatchQ[ zeros, { _Rule ..  } ], zeros = Keys @ zeros ];
 
-    { V, n } =
-      GaugeSplitTransform[ ring, opts ];
+    io = OptionValue["IncludeOnly"];
 
-    symbols =
-      Switch[ io,
-        "All", Join[ FSymbols[ring], RSymbols[ring] ],
-        "FSymbols", FSymbols[ring],
-        "RSymbols", RSymbols[ring]
-      ];
+    { V, n } = GaugeSplitTransform[ ring, opts ];
+
+    getSymbols = 
+      Comap[ 
+        { 
+          If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+          If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
+          If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+        }
+      ]; 
+
+    symbols = Join @@ getSymbols @ ring;
 
     Map[
-      Inner[ Power, symbols, #, Times ]&,
+      PowerDot[ symbols, Transpose[#] ]&,
       {
-        Transpose @ V[[;;,;;n]],
-        Transpose @ V[[;;,n+1;;]]
-      },
-      {2}
+        V[[;;,;;n]],
+        V[[;;,n+1;;]]
+      }
     ]
   ];
 
@@ -1030,9 +1061,7 @@ Options[GaugeInvariants] :=
   Options[GaugeSplitBasis];
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
-  With[ { zeros = OptionValue["Zeros"] },
-    First @ GaugeSplitBasis[ ring, opts ]
-  ];
+  First @ GaugeSplitBasis[ ring, opts ];
 
 
 
