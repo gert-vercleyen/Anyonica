@@ -611,9 +611,6 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       neverZeroBinEqns
     },
     gaugeDemands  = OptionValue["GaugeDemands"];
-    zeroValues    = OptionValue["ZeroValues"];
-    nonSingularQ  = OptionValue["NonSingular"];
-    useSumsQ      = OptionValue["FindZerosUsingSums"];
     preEqCheck    = OptionValue["PreEqualCheck"];
     useDBQ        = OptionValue["UseDatabaseOfSmithDecompositions"];
     storeDecompQ  = OptionValue["StoreDecompositions"];
@@ -665,15 +662,11 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
 
       pentEqns = PentagonEquations[ ring, "Knowns" -> compatibleSol ];
 
-    { binEqns, sumEqns } =
-      BinSumEquationsFromTower[ tower ];
-
-    pentEqns = 
-      Join[ binEqns, sumEqns ];
+      { binEqns, sumEqns } = BinomialSplit @ pentEqns;
 
       (* Set up the constraints on the solutions: F-matrices are invertible and 
         removing zig-zags is an isomorphism *)
-      constraints =
+      constraint =
         And @@
         Map[
           Det[#] != 0 &,
@@ -704,7 +697,7 @@ PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ]
       (* Find Configurations of non-trivial 0-values *)
       zeros = 
         AddOptions[opts][PentagonZeroValues][ 
-          ring, fSymbols, pentEqns, sumEqns, binEqns, constraints
+          ring, fSymbols, pentEqns, sumEqns, binEqns, constraint
         ];
 
       printlog["PPSI:zero_Fs_results", { procID, zeros } ];
@@ -863,17 +856,17 @@ Options[PentagonZeroValues] :=
     }
   ];
 
-PentagonZeroValues[ ring_, fs_, pEqns_, sEqns_, bEqns_, constr_, OptionsPattern[] ] :=
+PentagonZeroValues[ r_FusionRing, fs_, pEqns_, sEqns_, bEqns_, constr_, OptionsPattern[] ] :=
   Module[{ equivs, sumsQ, allSumsQ, system },
 
-    If[ GroupRingQ[ring] || OptionValue["NonSingular"], Return @ {{}} ];
+    If[ GroupRingQ[r] || OptionValue["NonSingular"], Return @ {{}} ];
 
     If[ OptionValue["ZeroValues"] =!= None, Return @ OptionValue["ZeroValues"] ];
 
     equivs = 
       If[ 
-        CommutativeQ @ ring, 
-        ProjectiveTetrahedralSymmetries[ring, fSymbols],
+        CommutativeQ @ r, 
+        ProjectiveTetrahedralSymmetries[r, fs],
         {}
       ];
 
@@ -885,24 +878,24 @@ PentagonZeroValues[ ring_, fs_, pEqns_, sEqns_, bEqns_, constr_, OptionsPattern[
       , (* THEN *)
       system = 
         Which[ 
-            allSumsQ, { pentEqns, {} },
-            sumsQ, { pentEqns, sumEqns },
-            True, { binEqns, sumEqns}
+            allSumsQ, { pEqns, {} },
+            sumsQ, { pEqns, sEqns },
+            True, { bEqns, sEqns}
           ];
             
       AddOptions[opts][MemoizedZeroValues][
-        MT @ ring, system, fSymbols,
-        "Constraint" -> constraints, 
+        MT @ r, system, fs,
+        "Constraint" -> constr, 
         "Equivalences" -> equivs
       ]
       , (* ELSE *)
-      system = If[ sumsQ, pentEqns, binEqns ];	
+      system = If[ sumsQ, pEqns, bEqns ];	
 
-      Select[ValidZerosQ[sumEqns]] @
+      Select[ValidZerosQ[sEqns]] @
       AddOptions[opts][FindZeroValues][
         system,
-        fSymbols,
-        "Constraint" -> constraints, 
+        fs,
+        "Constraint" -> constr, 
         "Equivalences" -> equivs
       ]
     ]
