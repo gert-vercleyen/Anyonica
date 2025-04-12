@@ -210,7 +210,7 @@ FullInvariants[c1_]:=
 			GaugeInvariants[
 				FusionRing @ c1,
 				"Zeros" -> zeroFs,
-				"IncludeOnly" -> If[ !BraidedQ[c1], "FSymbols", "All" ]
+				"IncludeOnly" -> If[ !BraidedQ[c1], { "FSymbols" }, { "FSymbols", "RSymbols" } ]
 			];
 
 		(* Invariants from pivotal structure *)
@@ -275,21 +275,30 @@ GaugeInvariants::nonbraidedcat =
 
 GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] := 
   Module[
-    { io, bq, zeros, gi },
+    { io, zeros, gi, getSymbols, values },
     io = OptionValue["IncludeOnly"];
 
     If[ 
-      io === "All" && !BraidedQ[cat], 
+      (MemberQ["RSymbols"] @ io) && !BraidedQ[cat], 
       Message[GaugeInvariants::nonbraidedcat]; Return @ $Failed  
     ];
 
-    bq = BraidedQ[cat] && OptionValue["IncludeOnly"] =!= "FSymbols";
-
-    zeros = Keys @ Select[ FSymbols @ cat,  #[[2]] === 0& ];
+    zeros = Keys @ Select[ FSymbols @ cat, #[[2]] === 0& ];
 
     gi = AddOptions[opts][GaugeInvariants][ FusionRing @ cat, "Zeros" -> zeros ];
 
-    Thread[ gi -> ( gi/.Dispatch[ Join[ FSymbols @ cat, If[ bq, RSymbols @ cat, {} ] ] ] ) ]
+		getSymbols = 
+			Comap[ 
+				{ 
+					If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+					If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
+					If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+				}
+			];  
+
+		values = Dispatch[ Join @@ getSymbols @ cat ];	
+
+    Thread[ gi -> ( gi/.values ) ]
   ];
 
 PackageExport["FusionCategoryAutomorphisms"]
