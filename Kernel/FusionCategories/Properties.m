@@ -307,9 +307,11 @@ FusionCategoryAutomorphisms::usage =
   "FusionCategoryAutomorphisms[cat] returns the automorphisms of the fusion category cat.";
 
 Options[FusionCategoryAutomorphisms] :=
-	Join[
+	Union[
 		Options[AutomorphismEquations], 
     Options[FusionRingAutomorphisms],
+		Options[ReduceBinomialSystem],
+		Options[SolveBinomialSystem],
     { "Permutations" -> Missing[] }
 	];
 
@@ -364,10 +366,19 @@ FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
 
           reducedSystem = 
             ( # == 0 ) & /@
-            ReduceBinomialSystem[ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
-
-          AddKnowns /@ 
-          SolveBinomialSystem[ reducedSystem, GetVariables[ reducedSystem, u ], z, "NonSingular" -> True ]
+            AddOptions[opts][ReduceBinomialSystem][ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
+					
+					If[ 
+						MemberQ[False] @ reducedSystem,
+						{ },
+						AddKnowns /@ 
+						AddOptions[opts][SolveBinomialSystem][ 
+							reducedSystem, 
+							GetVariables[ reducedSystem, u ], 
+							z, 
+							"NonSingular" -> True 
+						]
+					]
         ]
         ,	
 				{ perm, FRAuth } 
@@ -429,7 +440,7 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 
 
 
-  cayleyTable[ autData_, u_ ] := 
+cayleyTable[ autData_, u_ ] := 
 	Module[{ groupedData, permMT, g, permute, autProduct, symmetries, prod, equivalentQ },
 		(* Group autos by permutation *)
 		(*
@@ -452,7 +463,7 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 		
 		autProduct[ a1_, a2_ ] :=
 			Module[ { 
-				ip = InversePermutation @ First @ a2,
+				ip = InversePermutation @ First @ a1,
 				u1 = Last @ a1,
 				u2 = Last @ a2,
 				a, b, c
