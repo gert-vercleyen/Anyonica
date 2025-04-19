@@ -192,6 +192,27 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
     
     { t, result } = 
       AbsoluteTiming[
+        Which[ 
+          binomialEqns === {} && variables === {}, 
+            Return @ <| 
+              "Polynomials" -> {},
+              "Assumptions" -> True,
+              "Values" -> {}
+            |>,
+          binomialEqns === {},
+            Return @ <| 
+              "Polynomials" -> {},
+              "Assumptions" -> True,
+              "Values" -> Thread[ variables -> variables ]
+            |>,
+          variables === { },
+            Return @ <| 
+              "Polynomials" -> ToPolynomial /@ (Subtract @@@ binomialEqns),
+              "Assumptions" -> True,
+              "Values" -> {} 
+            |>
+        ];
+
         { eqns, vars, revertVars } =
           SimplifyVariables[ ToProperBinomialEquation @ binomialEqns, variables, x ];
 
