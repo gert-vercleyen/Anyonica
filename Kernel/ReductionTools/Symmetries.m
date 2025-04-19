@@ -72,11 +72,13 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
             Missing[],
             MinimalBy[
               fList,
-              Abs[ Abs[Last[#]] - 1 ], (* Want power as close to 1 as possible *)
+              Abs[ Abs[Last[#]] - 1 ]&, (* Want power as close to 1 as possible *)
               1
             ][[1,1]]
           ]
         ];
+
+      SimplestVar[ g[i_] ]:= g[i];
 
       FixValue[ a_ -> b_ ] :=
         With[{ var = SimplestVar @ b },
