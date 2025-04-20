@@ -322,12 +322,14 @@ FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
 		reducedSystem }, 
 		ring = FusionRing @ cat; 
 		
+		If[ Rank @ ring === 1, Return @ { {1}, { u[1,1,1] -> 1 } } ];
+
 		FRAuth = 
 			If[ 
 				OptionValue["Permutations"] =!= Missing[],
 				OptionValue["Permutations"],
 				AddOptions[opts][FusionRingAutomorphisms][ ring ]
-		];
+			];
 		
 		structConst = NZSC @ cat;
 
@@ -368,16 +370,19 @@ FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
             ( # == 0 ) & /@
             AddOptions[opts][ReduceBinomialSystem][ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
 					
-					If[ 
+					Which[ 
 						MemberQ[False] @ reducedSystem,
-						{ },
-						AddKnowns /@ 
-						AddOptions[opts][SolveBinomialSystem][ 
-							reducedSystem, 
-							GetVariables[ reducedSystem, u ], 
-							z, 
-							"NonSingular" -> True 
-						]
+							{},
+						reducedSystem === {},
+							AddKnowns /@ { {} },
+						True,
+							AddKnowns /@ 
+							AddOptions[opts][SolveBinomialSystem][ 
+								reducedSystem, 
+								GetVariables[ reducedSystem, u ], 
+								z, 
+								"NonSingular" -> True 
+							]
 					]
         ]
         ,	
@@ -399,21 +404,25 @@ FCA = FusionCategoryAutomorphisms;
 
 	
 Options[AutomorphismEquations] = 
-	{ "Type" -> "Braided" };
+	{ "Type" -> { "Braided", "Pivotal" } };
 
 AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
 	Module[{ring, permute, transform, symbols, nbq },
-		nbq = !BraidedQ[cat] || OptionValue["Type"] =!= "Braided";
+		nbq = !BraidedQ[cat] || FreeQ["Braided"] @ OptionValue["Type"];
 		
 		ring = FusionRing @ cat;
 		
 		permute = 
-			ReplaceAll[
-				If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
-				{ 
-					g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
-					F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
-				}
+			If[
+				perm === Range @ Rank @ cat,
+				Identity,
+				ReplaceAll[
+					If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
+					{ 
+						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
+						F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
+					}
+				]
 			];
 		
 		transform = 
