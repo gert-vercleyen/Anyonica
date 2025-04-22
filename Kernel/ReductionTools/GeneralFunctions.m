@@ -1271,11 +1271,159 @@ FailOnMessage[___] := $Failed
 
 Attributes[msgThrow] = {HoldAllComplete}
  
-msgThrow[tag_, default_, listen_, 
-   Hold[m : Message[msg_, ___], False]] /; 
-  MatchQ[Unevaluated[msg], listen] := ($failedMessage = 
-   HoldComplete[msg]; Throw[Unevaluated[m; default], tag])
+msgThrow[tag_, default_, listen_, Hold[m : Message[msg_, ___], False]] /; MatchQ[Unevaluated[msg], listen] := 
+  (
+    $failedMessage = HoldComplete[msg]; 
+    Throw[Unevaluated[m; default], tag]
+  );
  
-msgThrow[tag_, default_, _, 
-  Hold[msg_, True]] := ($failedMessage = HoldComplete[msg]; 
-  Throw[default, tag])
+msgThrow[tag_, default_, _, Hold[msg_, True]] := 
+  (
+    $failedMessage = HoldComplete[msg]; 
+    Throw[default, tag]
+  );
+
+PackageExport["DynamicMap"]
+
+DynamicMap::usage = 
+  "DynamicMap[f, list] maps function f over the given list, while showing a progress indicator. \n"<>
+  "Source: Wolfram Function Repository. Author: Michael Sollami.";
+
+Needs["GeneralUtilities`"];
+
+Options[DynamicMap] := {"Parallel" -> False};
+
+DynamicMap[func_, list_, OptionsPattern[DynamicMap]] := 
+  Module[{formatInteger, formatSize, formatTime, predictTime, $partials = Internal`Bag[], 
+    finish, ilist, assQ = AssociationQ@list,$xlist, $counts, $stuff, 
+    $kcount = $KernelCount, $pcount = $ProcessorCount, parallelOpt, parallelQ = False, 
+    len, results, begintime = AbsoluteTime[]
+    },
+  
+    parallelOpt = OptionValue["Parallel"];
+    Which[
+      TrueQ @ parallelOpt, 
+        parallelQ = True;
+        If[$kcount < $pcount , LaunchKernels[$pcount - $kcount]], 
+      IntegerQ @ parallelOpt && parallelOpt > 0,
+        parallelQ = True; 
+        If[parallelOpt > $kcount, LaunchKernels[parallelOpt - $kcount]], 
+      True,
+        parallelQ = False
+    ];
+  
+    $kcount = $KernelCount;
+    ilist = If[assQ, Values[list], list];
+    len = Length@list;
+    formatInteger[n_] := 
+    NumberForm[n, DigitBlock -> 3, NumberSeparator -> ","]; 
+    formatSize[size_] := 
+    Quiet[Module[{sz, unit}, 
+      Which[size > 10^21, sz = size/10.^21; unit = "Z", size > 10^18, 
+        sz = size/10.^18; unit = "E", size > 10^15, sz = size/10.^15; 
+        unit = "P", size > 10^12, sz = size/10.^12; unit = "T", 
+        size > 10^9, sz = size/10.^9; unit = "G", size > 10^6, 
+        sz = size/10.^6; unit = "M", size > 10^3, sz = size/10.^3; 
+        unit = "k", True, sz = size; unit = ""]; 
+      StringJoin[ToString[NumberForm[sz, {3, 1}]], unit]]]; 
+    formatTime[seconds_] := 
+    Quiet[Module[{sz, unit, dec = True}, 
+      Which[seconds > 60*60*24, sz = seconds/60./60/24; unit = "d", 
+        seconds > 60*60, sz = seconds/60./60; unit = "h", seconds >= 60, 
+        sz = seconds/60.; unit = "m", 
+        Inequality[60., Greater, seconds, GreaterEqual, 10.], 
+        sz = sz = seconds; unit = "s"; dec = False, 
+        Inequality[10., Greater, seconds, GreaterEqual, 1.], 
+        sz = seconds; unit = "s", 
+        Inequality[1., Greater, seconds, GreaterEqual, 0.001], 
+        sz = seconds*1000; unit = "ms"; dec = False, True, Return["0s"]]; 
+      StringJoin[ToString[If[dec, NumberForm[sz, {2, 1}], Round[sz]]], 
+        unit]]]; predictTime[begin_, fraction_] := 
+    With[{elapsed = AbsoluteTime[] - begin}, 
+      If[fraction == 0 || elapsed < 5, "Unknown", 
+      formatTime[elapsed/fraction - elapsed]]]; 
+  
+    Clear[finish];
+    finish[] := Quiet@(results = Internal`BagPart[$partials, All];
+      If[assQ,
+        results = 
+        AssociationThread[
+          Part[Keys[list], results[[All, 1]]] -> results[[All, 2]]]
+        , If[! parallelQ,
+        results = results[[All, 2]](*non parallel list*),
+        If[Length@results == Length@list,(*parallel completed*)
+          results = results[[All, 2]]]
+        ]
+        ];
+      Return[results, Module]
+      );
+  
+    If[parallelQ,
+    
+    (*Parallel Map*)
+    $counts = ConstantArray[0, $kcount];
+    $stuff[e_] := Internal`StuffBag[$partials, e];
+    SetSharedFunction[$stuff];
+    SetSharedVariable[$counts];
+    SetSharedVariable[$kcount];
+    SetSharedVariable[ilist];
+    DistributeDefinitions[func];
+    
+    CheckAbort[
+      Refresh[
+      PrintTemporary@
+        GeneralUtilities`InformationPanel["Map Progress", 
+        {"Progress" :> 
+          ProgressIndicator[
+            Dynamic[Total@$counts, UpdateInterval -> 0], {0, 
+            Length[ilist]}],
+          "Item" :> 
+          PreemptProtect[
+            Text[StringForm["`` / ``", 
+              Dynamic@formatInteger[ Total@$counts], formatInteger[len]]]],
+          "Kernels" -> $kcount,
+          "Time" :> 
+          Dynamic@Text[predictTime[begintime, Total[$counts]/len]]
+          }]
+      , UpdateInterval -> 0.1
+      ];
+      
+      WaitAll@Table[ParallelSubmit[{i},
+        With[{r = func[ilist[[i]]]},
+          $stuff[i -> r]
+          ];
+        $counts[[Mod[$KernelID, $kcount] + 1]]++;
+        ]
+        , {i, Length@ilist}];
+      , finish[]];
+    finish[]
+    
+    ,(*Serial Map*)
+    DynamicModule[{fullsize = 0, aborted = False, paused = False, 
+        lastresult, n = 1}, 
+      Monitor[CheckAbort[
+        Do[If[TrueQ[aborted], finish[], lastresult = func[ilist[[n]]]; 
+            Internal`StuffBag[$partials, n -> lastresult]; 
+            fullsize += ByteCount[lastresult]; 
+            If[n == len, finish[]]; ], {n, len}]; , finish[]], 
+        Refresh[GeneralUtilities`InformationPanel[
+          "Map Progress", {"Progress" :> 
+            If[aborted, 
+            Pane[ProgressIndicator[Appearance -> "Percolate"], 
+              ImageSize -> 200], ProgressIndicator[n/len]], 
+          "Item" :> PreemptProtect[
+            Text[StringForm["`` / ``", formatInteger[n], 
+              formatInteger[len]]]], 
+          "Size" :> Text[formatSize[fullsize]], 
+          "Time" :> Text[predictTime[begintime, n/len]], 
+          "Actions" :> 
+            Row[{Button["Abort", aborted = True; 
+              Echo[StringForm[
+                "DynamicMap aborted at ``% after ``, only `` of `` items were completed.", 
+                ToString[Round[(n/len)*100., 1]], 
+                formatTime[AbsoluteTime[] - begintime], 
+                formatInteger[n], formatInteger[len]]], 
+              Method -> "Preemptive", Enabled -> Dynamic[ ! aborted]]}]}], 
+        UpdateInterval -> 0.1, TrackedSymbols -> {n}]]][[2]]
+    ]
+  ];

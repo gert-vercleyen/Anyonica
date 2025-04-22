@@ -72,11 +72,13 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
             Missing[],
             MinimalBy[
               fList,
-              Abs[ Abs[Last[#]] - 1 ], (* Want power as close to 1 as possible *)
+              Abs[ Abs[Last[#]] - 1 ]&, (* Want power as close to 1 as possible *)
               1
             ][[1,1]]
           ]
         ];
+
+      SimplestVar[ g[i_] ]:= g[i];
 
       FixValue[ a_ -> b_ ] :=
         With[{ var = SimplestVar @ b },
@@ -603,12 +605,11 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
           Message[ DeleteEquivalentSolutions::wrongrstructure ]; Abort[]
         ];
 
-        invariants =
-          GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> If[ braidedCheck[[1]] == 0, "FSymbols", "All" ] ];
+        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs ];
 
-        (* For each solution we will map its index to the evaluated gauge-invariants over all automorphic solutions *)
-
-        orbits = Sow @
+        (* For each solution we will map its index to the evaluated 
+           gauge-invariants over all automorphic solutions *)
+        orbits = 
           Association @
           Table[
             i -> check[ invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA[ ring ] ] ],
@@ -935,6 +936,11 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
 
       symbolsWithZeros =  Join @@ getSymbols @ ring;
 
+      If[ (* Trivial Ring is always an annoying case *)
+        Rank @ ring === 1, 
+        Return @ { IdentityMatrix @ Length @ symbolsWithZeros, 3 } 
+      ];
+
       zeroPos = 
         Flatten @ 
         Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, 1, Heads -> False ];
@@ -1041,6 +1047,8 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       ]; 
 
     symbols = Join @@ getSymbols @ ring;
+
+    If[ Rank @ ring === 1, Return @ {symbols,{}} ];
 
     Map[
       PowerDot[ symbols, Transpose[#] ]&,

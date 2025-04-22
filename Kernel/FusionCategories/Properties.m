@@ -210,7 +210,7 @@ FullInvariants[c1_]:=
 			GaugeInvariants[
 				FusionRing @ c1,
 				"Zeros" -> zeroFs,
-				"IncludeOnly" -> If[ !BraidedQ[c1], "FSymbols", "All" ]
+				"IncludeOnly" -> If[ !BraidedQ[c1], { "FSymbols" }, { "FSymbols", "RSymbols" } ]
 			];
 
 		(* Invariants from pivotal structure *)
@@ -275,21 +275,30 @@ GaugeInvariants::nonbraidedcat =
 
 GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] := 
   Module[
-    { io, bq, zeros, gi },
+    { io, zeros, gi, getSymbols, values },
     io = OptionValue["IncludeOnly"];
 
     If[ 
-      io === "All" && !BraidedQ[cat], 
+      (MemberQ["RSymbols"] @ io) && !BraidedQ[cat], 
       Message[GaugeInvariants::nonbraidedcat]; Return @ $Failed  
     ];
 
-    bq = BraidedQ[cat] && OptionValue["IncludeOnly"] =!= "FSymbols";
-
-    zeros = Keys @ Select[ FSymbols @ cat,  #[[2]] === 0& ];
+    zeros = Keys @ Select[ FSymbols @ cat, #[[2]] === 0& ];
 
     gi = AddOptions[opts][GaugeInvariants][ FusionRing @ cat, "Zeros" -> zeros ];
 
-    Thread[ gi -> ( gi/.Dispatch[ Join[ FSymbols @ cat, If[ bq, RSymbols @ cat, {} ] ] ] ) ]
+		getSymbols = 
+			Comap[ 
+				{ 
+					If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+					If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
+					If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+				}
+			];  
+
+		values = Dispatch[ Join @@ getSymbols @ cat ];	
+
+    Thread[ gi -> ( gi/.values ) ]
   ];
 
 PackageExport["FusionCategoryAutomorphisms"]
@@ -298,9 +307,11 @@ FusionCategoryAutomorphisms::usage =
   "FusionCategoryAutomorphisms[cat,u] returns the automorphisms of the fusion category cat in the symbol u.";
 
 Options[FusionCategoryAutomorphisms] :=
-	Join[
+	Union[
 		Options[AutomorphismEquations], 
     Options[FusionRingAutomorphisms],
+		Options[ReduceBinomialSystem],
+		Options[SolveBinomialSystem],
     { "Permutations" -> Missing[] }
 	];
 
@@ -311,12 +322,14 @@ FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
 		reducedSystem }, 
 		ring = FusionRing @ cat; 
 		
+		If[ Rank @ ring === 1, Return @ { {1}, { u[1,1,1] -> 1 } } ];
+
 		FRAuth = 
 			If[ 
 				OptionValue["Permutations"] =!= Missing[],
 				OptionValue["Permutations"],
 				AddOptions[opts][FusionRingAutomorphisms][ ring ]
-		];
+			];
 		
 		structConst = NZSC @ cat;
 
@@ -355,10 +368,22 @@ FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
 
           reducedSystem = 
             ( # == 0 ) & /@
-            ReduceBinomialSystem[ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
-
-          AddKnowns /@ 
-          SolveBinomialSystem[ reducedSystem, GetVariables[ reducedSystem, u ], z, "NonSingular" -> True ]
+            AddOptions[opts][ReduceBinomialSystem][ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
+					
+					Which[ 
+						MemberQ[False] @ reducedSystem,
+							{},
+						reducedSystem === {},
+							AddKnowns /@ { {} },
+						True,
+							AddKnowns /@ 
+							AddOptions[opts][SolveBinomialSystem][ 
+								reducedSystem, 
+								GetVariables[ reducedSystem, u ], 
+								z, 
+								"NonSingular" -> True 
+							]
+					]
         ]
         ,	
 				{ perm, FRAuth } 
@@ -379,21 +404,25 @@ FCA = FusionCategoryAutomorphisms;
 
 	
 Options[AutomorphismEquations] = 
-	{ "Type" -> "Braided" };
+	{ "Type" -> { "Braided", "Pivotal" } };
 
 AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
 	Module[{ring, permute, transform, symbols, nbq },
-		nbq = !BraidedQ[cat] || OptionValue["Type"] =!= "Braided";
+		nbq = !BraidedQ[cat] || FreeQ["Braided"] @ OptionValue["Type"];
 		
 		ring = FusionRing @ cat;
 		
 		permute = 
-			ReplaceAll[
-				If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
-				{ 
-					g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
-					F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
-				}
+			If[
+				perm === Range @ Rank @ cat,
+				Identity,
+				ReplaceAll[
+					If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
+					{ 
+						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
+						F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
+					}
+				]
 			];
 		
 		transform = 
@@ -420,7 +449,7 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 
 
 
-  cayleyTable[ autData_, u_ ] := 
+cayleyTable[ autData_, u_ ] := 
 	Module[{ groupedData, permMT, g, permute, autProduct, symmetries, prod, equivalentQ },
 		(* Group autos by permutation *)
 		(*
@@ -443,7 +472,7 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 		
 		autProduct[ a1_, a2_ ] :=
 			Module[ { 
-				ip = InversePermutation @ First @ a2,
+				ip = InversePermutation @ First @ a1,
 				u1 = Last @ a1,
 				u2 = Last @ a2,
 				a, b, c

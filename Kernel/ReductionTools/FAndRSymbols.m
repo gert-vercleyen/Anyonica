@@ -639,28 +639,28 @@ If[
 PackageExport["RTensors"]
 
 RTensors::usage =
-"RTensors[ ring ] returns an association that maps well defined {a,b,c} to the matrix form of R[a,b,c].";
+  "RTensors[ ring ] returns an association that maps well defined {a,b,c} to the matrix form of R[a,b,c].";
 
 RTensors[ ring_ ] :=
-Module[{mt, a, b, c},
-  mt = MT[ring][[##]] &;
-  Association @@
-  Table[
-    { a, b, c } = n;
-    n ->
-    SparseArray[ Array[ R[a, b, c, #1, #2] & , { mt @@ n, mt @@ n } ] ],
-    { n, NZSC[ring] }
-  ]
-];
+  Module[{mt, a, b, c},
+    mt = MT[ring][[##]] &;
+    Association @@
+    Table[
+      { a, b, c } = n;
+      n ->
+      SparseArray[ Array[ R[a, b, c, #1, #2] & , { mt @@ n, mt @@ n } ] ],
+      { n, NZSC[ring] }
+    ]
+  ];
 
 PackageScope["SparseRTensor"]
 
 (* Create a symbolic sparse R tensor *)
 SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
-SparseArray[
-  Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
-  Table[ Rank[ring], 3 ]
-];
+  SparseArray[
+    Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
+    Table[ Rank[ring], 3 ]
+  ];
 
 PackageScope["PSymbols"]
 
@@ -668,3 +668,5 @@ PackageScope["PSymbols"]
 PSymbols[ r_FusionRing ] := 
   Array[ \[ScriptP], Rank @ r ];
 
+PSymbols[ c_FusionCategory ] :=
+  PivotalStructure[ c ];
