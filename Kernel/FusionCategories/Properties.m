@@ -295,7 +295,7 @@ GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] :=
 PackageExport["FusionCategoryAutomorphisms"]
 
 FusionCategoryAutomorphisms::usage =
-  "FusionCategoryAutomorphisms[cat] returns the automorphisms of the fusion category cat.";
+  "FusionCategoryAutomorphisms[cat,u] returns the automorphisms of the fusion category cat in the symbol u.";
 
 Options[FusionCategoryAutomorphisms] :=
 	Join[
