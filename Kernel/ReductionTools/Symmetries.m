@@ -893,14 +893,14 @@ PackageExport["GaugeSplitTransform"]
 GaugeSplitTransform::usage =
   "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer such that"<>
   "the first n rows of V provide a basis transform to obtain the gauge independent polynomials in the"<>
-  "F-symbols, R-symbols, and P-symbols via the use of the PowerDot function.";
+  "F-symbols, P-symbols, and R-symbols (in that order) via the use of the PowerDot function.";
 
 GaugeSplitTransform::invalidoptionincludeonly =
   "The option for \"IncludeOnly\", `1`, must be a list containing at least \"FSymbols\", \"RSymbols\", and/or \"PSymbols\".";
 
 Options[GaugeSplitTransform] :=
   {
-    "IncludeOnly" -> {"FSymbols","RSymbols","PSymbols"},
+    "IncludeOnly" -> {"FSymbols","PSymbols","RSymbols"},
     "Zeros" -> {}
   };
 
@@ -929,8 +929,8 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
         Comap[ 
           { 
             If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
-            If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
-            If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+            If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ],
+            If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ] 
           }
         ]; 
 
