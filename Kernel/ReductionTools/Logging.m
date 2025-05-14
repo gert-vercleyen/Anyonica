@@ -73,6 +73,9 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
       ,
       Message[ PrintLog::cantcreatedirectory, dataDir ];
       Abort[]
+      ,(* All other cases *)
+      True,
+      dataDir = dir
     ];
     
     Block[{ fileName, ovfn = OptionValue["FileName"], result },
