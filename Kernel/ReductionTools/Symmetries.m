@@ -934,7 +934,7 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
           }
         ]; 
 
-      symbolsWithZeros =  Join @@ getSymbols @ ring;
+      symbolsWithZeros = EchoLabel["before"][ Join @@ getSymbols @ ring];
 
       If[ (* Trivial Ring is always an annoying case *)
         Rank @ ring === 1, 
@@ -945,7 +945,7 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
         Flatten @ 
         Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, 1, Heads -> False ];
 
-      symbols = Complement[ symbolsWithZeros, zeros ];
+      symbols = EchoLabel["After"] @  Complement[ symbolsWithZeros, zeros ];
 
       sym = GaugeSymmetries[ ring, symbols, g ];
 
@@ -1041,8 +1041,8 @@ GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
       Comap[ 
         { 
           If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
-          If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
-          If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+          If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ], 
+          If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ] 
         }
       ]; 
 
