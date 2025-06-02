@@ -142,7 +142,7 @@ ApplyCellGrouping[ notebook_Notebook ] :=
   ];
 
 AddCell[ fileName_, nbo_, cell_ ] :=
-  Module[ {},
+  (
     SelectionMove[ nbo, After, Notebook ];
     NotebookWrite[
       nbo,
@@ -151,7 +151,7 @@ AddCell[ fileName_, nbo_, cell_ ] :=
     SelectionMove[ nbo, After, Notebook ];
 
     NotebookSave[ nbo ];
-  ];
+  );
 
 stringID[ id_ ] :=
   StringDrop[ ToString[id], 1 ];
@@ -160,18 +160,14 @@ dataFileName[ id_, dir_, name_ ] :=
   FileNameJoin[{ dir, name <> "_" <> stringID[id]<>".nb"}];
 
 safeExport[ name_, data_ ] :=
-  If[
-    ByteCount[data] < 10^6
-    ,
-    Block[{ Internal`$ContextMarks = False },
+  Block[{ $ContextPath = Append["System`Dump`"] @ $ContextPath },
+    If[
+      ByteCount[data] < 10^6
+      ,
       Export[ name, data ]
+      ,
+      Export[ name, Iconize[dt,"Large amount of data"] ]
     ]
-    ,
-    Block[{ Internal`$ContextMarks = False, cd },
-      cd = Iconize[data];
-      Export[ name, Iconize[data] ]
-    ]
-    
   ];
 
 inputStyle[ string_ ] :=
