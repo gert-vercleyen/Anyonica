@@ -168,8 +168,8 @@ safeExport[ name_, data_ ] :=
     ]
     ,
     Block[{ Internal`$ContextMarks = False, cd },
-      cd = Compress[data];
-      Export[ name, Hold[Uncompress][cd] ]
+      cd = Iconize[data];
+      Export[ name, Iconize[data] ]
     ]
     
   ];
