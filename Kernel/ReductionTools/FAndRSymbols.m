@@ -662,7 +662,7 @@ SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
     Table[ Rank[ring], 3 ]
   ];
 
-PackageScope["PSymbols"]
+PackageExport["PSymbols"]
 
 (* PivotalSymbols *)
 PSymbols[ r_FusionRing ] := 
