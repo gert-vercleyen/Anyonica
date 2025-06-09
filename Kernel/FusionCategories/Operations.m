@@ -86,8 +86,13 @@ PermutedFusionCategory::usage =
   "PermutedFusionCategory[cat,perm] returns a fusion category whose objects are permuted by"<>
   "the permutation vector perm";
 
+Options[PermutedFusionCategory] := 
+  { 
+    "SkipCheck" -> True
+  }
+
 (*TODO: include dims ... *)
-PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
+PermutedFusionCategory[ cat:FusionCategory[data_], perm_, OptionsPattern[] ] :=
   Module[ { pVec, permuteSymbols, permutedRing, sMat },
     pVec =
       Permute[ Range @ Length @ perm, PermutationCycles @ perm ];
@@ -114,6 +119,6 @@ PermutedFusionCategory[ cat:FusionCategory[data_], perm_ ] :=
       "FormalParameters"  -> FormalCode @ cat,
       "Unitary"           -> UnitaryQ @ cat,
       "Modular"           -> ModularQ @ cat,
-      "SkipCheck"         -> True
+      "SkipCheck"         -> OptionValue["SkipCheck"]
     ]
   ];
