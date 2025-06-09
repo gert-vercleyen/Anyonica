@@ -507,13 +507,19 @@ PackageExport["FusionCategories"]
 FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
 
+FusionCategories::badarg = 
+  "`1` should be a list of FusionRing objects.";
+
 FusionCategories[ ring_FusionRing ] :=
   Module[ { fc = FC @ ring },
+    If[ Mult[fc] > 1, Return @ Missing["NoCatsWithMultiplicityInDatabase"] ];
+    If[ Rank[fc] > 7, Return @ Missing["OnlyRingsUpToRank7InDatabase"] ];
     If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
+    If[ MissingQ[fc], Return @ Missing["RingNotInDB"] ];
 
-    FCBC /@
-    Select[ Keys @ FCBCData, #[[;;4]] == fc& ]
+    Lookup[ FCBCData, KeySelect[ FCBCData, #[[;;4]] == fc& ] ]
   ];
+
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
   With[{ CFP = r["FormalParameters"], rn = Names @ FusionRing[cat] },
