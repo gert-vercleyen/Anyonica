@@ -98,6 +98,11 @@ PermutedFusionCategory[ cat:FusionCategory[data_], perm_, OptionsPattern[] ] :=
     pVec =
       Permute[ Range @ Length @ perm, PermutationCycles @ perm ];
 
+    If[ (* Permutation is trivial *) 
+      pVec === Range @ Rank @ cat,
+      Return @ cat
+    ];
+
     permuteSymbols =
       Sort @ MapAt[ ReplaceAll[ i_Integer :> pVec[[i]] ] , #, { All, 1 } ]&;
 
