@@ -49,6 +49,7 @@ Options[ FusionCategory ] =
     "Twists"                  -> Missing[],
     "SMatrix"                 -> Missing[],
     "Modular"                 -> Missing[],
+    "Names"                   -> Missing[],
     "PreEqualCheck"           -> Identity,
     "ReplaceRingByKnownRing"  -> False,
     "SkipCheck"               -> False
@@ -83,7 +84,8 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "Modular" ];
 
     If[
-      !skipCheck && !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, pivStruct, preEqualCheck ],
+      !skipCheck && 
+      !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, pivStruct, preEqualCheck ],
       Message[ FusionCategory::invaliddata ]
     ];
 
@@ -102,11 +104,11 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "Modular"                   -> modular,
       "FormalParameters"          -> OptionValue["FormalParameters"],
       "Unitary"                   -> OptionValue["Unitary"],
-      "Names"                     -> Missing[]
+      "Names"                     -> OptionValue["Names"]
     ]
   ];
 
-ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, psymbols, preEqualCheck_ ] :=
+ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, psymbols_, preEqualCheck_ ] :=
   Module[
     {vc},
     Which[
@@ -248,14 +250,14 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] :=
     matchingLabels[ { a_, c_, b_, d_, e_} ] :=
       Cases[ fLabels, { c, a, b, d, e, _ } ][[;;,6]];
 
+
     Catch[
       Do[ (* Loop over valid F-symbols and construct equations *)
         { a, c, b, d, e, g } = fl;
           
         eqn1 = 
           simplify[   
-            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
-            ==
+            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]] ==
             Sum[
               sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
               { f, matchingLabels[ { a, c, b, d, e } ] }
@@ -333,7 +335,7 @@ CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] :=
       ];
 
     rhs[a_,b_,c_] := sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
-    
+
     Catch[
       Do[
         { a, b, c } = triple; 
