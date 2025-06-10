@@ -507,7 +507,7 @@ PackageExport["FusionCategories"]
 FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
 
-FusionCategories::badarg = 
+FusionCategories::badarg =
   "`1` should be a list of FusionRing objects.";
 
 FusionCategories[ ring_FusionRing ] :=
