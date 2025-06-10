@@ -88,7 +88,8 @@ PermutedFusionCategory::usage =
 
 Options[PermutedFusionCategory] := 
   { 
-    "SkipCheck" -> True
+    "SkipCheck" -> True,
+    "PreEqualCheck" -> Identity
   }
 
 (*TODO: include dims ... *)
@@ -119,6 +120,7 @@ PermutedFusionCategory[ cat:FusionCategory[data_], perm_, OptionsPattern[] ] :=
       "FormalParameters"  -> FormalCode @ cat,
       "Unitary"           -> UnitaryQ @ cat,
       "Modular"           -> ModularQ @ cat,
-      "SkipCheck"         -> OptionValue["SkipCheck"]
+      "SkipCheck"         -> OptionValue["SkipCheck"],
+      "PreEqualCheck"     -> OptionValue["PreEqualCheck"]
     ]
   ];
