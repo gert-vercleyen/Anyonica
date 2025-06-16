@@ -1900,14 +1900,10 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
       NonOneCoeff,noc, diagonalElements,ZSpace,constVec, useDataBaseQ, preEqCheck, CheckSolution,newFSolution,
       time, result, procID, returnTransformQ, gaugeDemands, gauge, vacuumConstraints
     },
-    acc =
-    OptionValue["Accuracy"];
-    numericQ =
-    OptionValue["Numeric"];
-    simplify =
-    OptionValue["SimplifyBy"];
-    useDataBaseQ =
-    OptionValue["UseDatabaseOfSmithDecompositions"];
+    acc = OptionValue["Accuracy"];
+    numericQ = OptionValue["Numeric"];
+    simplify = OptionValue["SimplifyBy"];
+    useDataBaseQ = OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck =
     If[
       numericQ,
