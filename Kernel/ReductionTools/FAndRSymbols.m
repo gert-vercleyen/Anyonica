@@ -662,7 +662,7 @@ SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
     Table[ Rank[ring], 3 ]
   ];
 
-PackageScope["PSymbols"]
+PackageExport["PSymbols"]
 
 (* PivotalSymbols *)
 PSymbols[ r_FusionRing ] := 
@@ -670,3 +670,25 @@ PSymbols[ r_FusionRing ] :=
 
 PSymbols[ c_FusionCategory ] :=
   PivotalStructure[ c ];
+
+
+(* Formatting of symbols *)
+(*
+PackageExport["TypesetSymbols"]
+
+TypesetSymbols::usage = 
+  "TypesetSymbols[] turns on 2D printing notation for the various symbols" <>
+  " used in Anyonica."
+
+Get["Notation`"]
+
+TypesetSymbols[] := 
+  (
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalF]",GridBox[List[List["d_","e_","f_"]]],GridBox[List[List["a_","b_","c_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalF]","[",RowBox[List["a_",",","b_",",","c_",",","d_",",","e_",",","f_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalR]","c_",GridBox[List[List["a_","b_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalR]","[",RowBox[List["a_",",","b_",",","c_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptD]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptD]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptP]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptP]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptT]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptT]","[","a_","]"]]]]];
+  )
+
+*)
