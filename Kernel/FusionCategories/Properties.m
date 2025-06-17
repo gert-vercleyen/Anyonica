@@ -222,12 +222,19 @@ FullInvariants[c1_]:=
 
 PackageExport["EquivalentFusionCategoriesQ"]
 
-Options[EquivalentFusionCategoriesQ] = { "PreEqualCheck" -> Identity };
+Options[EquivalentFusionCategoriesQ] = 
+	{ 
+		"PreEqualCheck" -> Identity,
+		"UseFormalCode" -> True
+	};
 
 EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ] :=
 Catch[
-	Module[{fra, invariants1, invariants2, eqQDims, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test,eqQdims},
-	CheckFormalCode[c1,c2];
+	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test,eqQdims},
+	If[
+		OptionValue["UseFormalCode"],
+		CheckFormalCode[c1,c2];
+	];
 	CheckFusionRing[c1,c2];
 	check = OptionValue["PreEqualCheck"];
 
@@ -252,19 +259,27 @@ Catch[
 		invariants2 = FullInvariants[c2];
 
 
-		fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
-		If[ BraidedQ[c1] && BraidedQ[c2],
-			rSymb1 = RSymbols[c1]; rSymb2 = RSymbols[c2],
-			rSymb1 = rSymb2 = {}
-		];
+	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
+	If[ 
+		BraidedQ[c1] && BraidedQ[c2],
+		rSymb1 = RSymbols[c1]; rSymb2 = RSymbols[c2],
+		rSymb1 = rSymb2 = {}
+	];
 
 		rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
 
-		Do[
-			If[
-			ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ],  True ]
-			, {a,fra}
-		];
+	Do[
+		If[
+			ConsistentQ[ 
+				Thread[ 
+					(invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) 
+				]/.{ False -> {False}, True -> {True} }, 
+				TrueQ @* test 
+			],  
+			Throw @ True 
+		]
+		, { a, fra }
+	];
 
 		Throw @ False
 	]
