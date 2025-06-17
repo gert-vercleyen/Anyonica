@@ -558,7 +558,7 @@ DeleteEquivalentSolutions::wrongrstructure =
 
 DeleteEquivalentSolutions::differentzeros =
   "Some solutions have zeros at different positions. These solutions can never be equivalent.\n"<>
-  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions2 on each set.";
+  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions on each set.";
 
 Options["DeleteEquivalentSolutions"] :=
   Join[
