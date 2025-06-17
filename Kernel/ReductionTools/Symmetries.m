@@ -581,7 +581,7 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     check =
       If[
         OptionValue["Numeric"],
-        N[ #, {Infinity, OptionValue["Accuracy"] } ]&,
+        InfN[OptionValue["Accuracy"]],
         OptionValue["PreEqualCheck"]
       ];
 
@@ -605,7 +605,14 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
           Message[ DeleteEquivalentSolutions::wrongrstructure ]; Abort[]
         ];
 
-        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs ];
+        symbols = 
+          Switch[ { FilterRRules[soln] =!= {}, FilterPRules[soln] =!= {} },
+            { True, True }, { "FSymbols", "RSymbols", "PSymbols" },
+            { True, False }, { "FSymbols", "RSymbols", "PSymbols" },
+            { False, True }, { "FSymbols", "PSymbols" },
+            { False, False }, { "FSymbols" }
+          ];
+        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> symbols ];
 
         (* For each solution we will map its index to the evaluated 
            gauge-invariants over all automorphic solutions *)
