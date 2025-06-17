@@ -671,6 +671,10 @@ PSymbols[ r_FusionRing ] :=
 PSymbols[ c_FusionCategory ] :=
   PivotalStructure[ c ];
 
+PackageExport["FilterPRules"]
+
+FilterPRules[ l_List ] := 
+  Cases[ l, HoldPattern[ \[ScriptP][_] -> _ ] ];
 
 (* Formatting of symbols *)
 (*
