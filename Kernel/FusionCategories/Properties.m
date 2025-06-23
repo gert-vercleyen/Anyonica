@@ -134,7 +134,7 @@ Protect[ \[ScriptD] ];
 PackageExport["QuantumDimensions"]
 
 QuantumDimensions::usage =
-  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
+  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(Tr\), \(L\)]\)(a) of the simple objects "<>
   "of the fusion category cat";
 
 QuantumDimensions[ cat_FusionCategory ] :=
