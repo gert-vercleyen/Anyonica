@@ -352,8 +352,8 @@ Module[
 
 (* From: https://journals.aps.org/prb/pdf/10.1103/PhysRevB.102.115154 *)
 
-PackageExport["TetrahedralSymmetries"]
-
+(* TODO: this one contains a bug: For HI(Z_3) F-symbols appear that don't 
+exist in the first place!!! *)
 TetrahedralSymmetries::usage =
 "TetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
 "representative that is equal via a tetrahedral symmetry.\n"<>
@@ -407,14 +407,12 @@ With[{ firstRule = First @ rules, restRules = Rest @ rules },
   ]
 ];
 
-FixLHS[ a_ -> b_ ] :=
-With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
 
 FixRule[ check_ ][ a_ -> b_ ] :=
 Switch[ NumericQ /@ { a, b },
   { True, True }
   ,
-  If[ check[ a - b ] != 0, Throw[ a -> b ], a -> b ]
+  If[ check[ a - b ] =!= 0, Throw[ a -> b ], a -> b ]
   ,
   { True, False }
   ,
@@ -424,6 +422,43 @@ Switch[ NumericQ /@ { a, b },
   ,
   FixLHS[ a -> b ]
 ];
+
+FixLHS[ a_ -> b_ ] :=
+  With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
+
+(*
+Options[equivClass] :=
+  {"PreEqualCheck" -> Identity};
+
+equivClass[ring_, OptionsPattern[]][f_] :=
+  With[{ 
+    equivFs = FixedPoint[ expandOrbit[ring], { f } ] /. {$VacuumFPattern -> 1 }, 
+    check = OptionValue["PreEqualCheck"] 
+    },
+    Which[ 
+      MatchQ[ equivFs, { 1 .. } ],
+        { },
+      True,
+        First @ Solve[ Equal @@ equivFs ]
+      ]
+    ]
+
+expandOrbit[ring_][fs_List] :=
+  Union @ 
+  Flatten @ 
+  Join[ { fs }, Flatten @ Values[ miniorbit[ring] /@ fs ] ];
+
+miniorbit[ring_][a_.*(symb : F[j_, k_, l_, i_, m_, n_]) ] :=
+  With[{d = CC[ring], qd = FPDims[ring][[#]] &},
+    {
+      symb -> a F[k, j, d[i], d[l], m, d[n]],
+      symb -> a F[d[i], l, k, d[j], d[m], n],
+      symb -> a F[d[m], k, d[n], d[i], d[j], d[l]] Sqrt[qd[m] qd[n]/(qd[j] qd[l])]
+    }
+  ]
+
+*)
+
 
 PackageExport["ProjectiveTetrahedralSymmetries"]
 
@@ -604,25 +639,60 @@ If[
 PackageExport["RTensors"]
 
 RTensors::usage =
-"RTensors[ ring ] returns an association that maps well defined {a,b,c} to the matrix form of R[a,b,c].";
+  "RTensors[ ring ] returns an association that maps well defined {a,b,c} to the matrix form of R[a,b,c].";
 
 RTensors[ ring_ ] :=
-Module[{mt, a, b, c},
-  mt = MT[ring][[##]] &;
-  Association @@
-  Table[
-    { a, b, c } = n;
-    n ->
-    SparseArray[ Array[ R[a, b, c, #1, #2] & , { mt @@ n, mt @@ n } ] ],
-    { n, NZSC[ring] }
-  ]
-];
+  Module[{mt, a, b, c},
+    mt = MT[ring][[##]] &;
+    Association @@
+    Table[
+      { a, b, c } = n;
+      n ->
+      SparseArray[ Array[ R[a, b, c, #1, #2] & , { mt @@ n, mt @@ n } ] ],
+      { n, NZSC[ring] }
+    ]
+  ];
 
 PackageScope["SparseRTensor"]
 
 (* Create a symbolic sparse R tensor *)
 SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
-SparseArray[
-  Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
-  Table[ Rank[ring], 3 ]
-];
+  SparseArray[
+    Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
+    Table[ Rank[ring], 3 ]
+  ];
+
+PackageExport["PSymbols"]
+
+(* PivotalSymbols *)
+PSymbols[ r_FusionRing ] := 
+  Array[ \[ScriptP], Rank @ r ];
+
+PSymbols[ c_FusionCategory ] :=
+  PivotalStructure[ c ];
+
+PackageExport["FilterPRules"]
+
+FilterPRules[ l_List ] := 
+  Cases[ l, HoldPattern[ \[ScriptP][_] -> _ ] ];
+
+(* Formatting of symbols *)
+(*
+PackageExport["TypesetSymbols"]
+
+TypesetSymbols::usage = 
+  "TypesetSymbols[] turns on 2D printing notation for the various symbols" <>
+  " used in Anyonica."
+
+Get["Notation`"]
+
+TypesetSymbols[] := 
+  (
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalF]",GridBox[List[List["d_","e_","f_"]]],GridBox[List[List["a_","b_","c_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalF]","[",RowBox[List["a_",",","b_",",","c_",",","d_",",","e_",",","f_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalR]","c_",GridBox[List[List["a_","b_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalR]","[",RowBox[List["a_",",","b_",",","c_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptD]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptD]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptP]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptP]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptT]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptT]","[","a_","]"]]]]];
+  )
+
+*)
