@@ -188,9 +188,16 @@ SphericalQ[ cat_FusionCategory ] :=
     If[
       MissingQ[ dims ],
       Message[ SphericalQ::nodims ]; $Failed,
-      And @@ Table[ RootReduce[ \[ScriptD][i] == \[ScriptD][i+1] /. dims ], { i, NSD[cat]+1, Rank[cat], 2 } ]
+      And @@ 
+			Table[ 
+				RootReduce[ \[ScriptD][ pair[[1]] ] == \[ScriptD][ pair[[2]] ] /. dims ], 
+				{ pair, conjugatePairs @ cat } 
+			]
     ]
   ];
+
+conjugatePairs[ cat_ ] := 
+	List @@@ Union @ DeleteCases[ Sort /@ Normal @ CC @ FusionRing @ cat, i_ -> i_ ];
 
 CheckFormalCode[c1_,c2_]:=
 	With[{fc1 = FormalCode @ c1, fc2 = FormalCode @ c2 },
