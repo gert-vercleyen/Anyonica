@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       154,          7]
-NotebookDataLength[     94833,       2380]
+NotebookDataLength[     94832,       2380]
 NotebookOptionsPosition[     82425,       2150]
-NotebookOutlinePosition[     84100,       2191]
-CellTagsIndexPosition[     84057,       2188]
+NotebookOutlinePosition[     84099,       2191]
+CellTagsIndexPosition[     84056,       2188]
 WindowTitle->Anyonica
 WindowFrame->Normal*)
 
@@ -27,11 +27,11 @@ Cell[BoxData[GridBox[{
           TemplateBox[{12},
            "Spacer1"], Cell["ANYONICA GUIDE", "PacletNameCell",
            TextAlignment->Center,ExpressionUUID->
-           "d87165f7-fee2-4623-ba3a-0b33247804c7"], 
+           "31fa25e2-738e-47b5-bc8f-901407aa1079"], 
           TemplateBox[{8},
            "Spacer1"]}]],
          TextAlignment->Center,ExpressionUUID->
-         "a8e065b6-0277-409f-b12e-7139c2e36858"],
+         "3a04786e-a18b-4c8f-98ed-518b33aa6bd1"],
         Background->RGBColor[0.85098, 0.396078, 0],
         ItemSize->Full], ""}
      },
@@ -51,8 +51,8 @@ Cell[BoxData[GridBox[{
             AspectRatio->1,
             ImageSize->20,
             PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
-           "5396b6d3-2dcc-40eb-ad03-106956003577"]
-         }],ExpressionUUID->"ca8a1966-b2ce-4bb4-a1d1-5efe2cf4b7f6"],
+           "648ea321-7e21-4b95-b498-14c1d9e33f66"]
+         }],ExpressionUUID->"7547e519-665e-4671-8fe3-b2492af02320"],
          StripOnInput->False],{
         StyleBox[
           "\"AdjointIrreps\"", "SeeAlsoRelated", StripOnInput -> False] :> 
@@ -350,7 +350,7 @@ Cell[BoxData[GridBox[{
         MenuStyle->"GuideFunction"],
        MouseAppearanceTag["LinkHand"]]],
       LineSpacing->{1.4, 0},ExpressionUUID->
-      "8453034a-5027-46d5-8804-1260f934c305"],
+      "ae05a3e3-8019-46b8-9d0f-71fecdd3fcb8"],
      "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
 \[ThickSpace]",
      Cell[BoxData[
@@ -366,8 +366,8 @@ Cell[BoxData[GridBox[{
             AspectRatio->1,
             ImageSize->20,
             PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
-           "92152f9a-b46e-42e9-854c-56484faa3c40"]
-         }],ExpressionUUID->"8f699f31-8bef-42e0-9186-7e37f0f43cc8"],
+           "c3e8c96c-3479-4576-8ffd-c5d46013250b"]
+         }],ExpressionUUID->"f1348a47-0856-4cb2-81e9-0ce341efff9f"],
          StripOnInput->False],{
         "\"Properties of Fusion Rings\"" :> 
          Documentation`HelpLookup[
@@ -380,7 +380,7 @@ Cell[BoxData[GridBox[{
         MenuStyle->"GuideMoreAbout"],
        MouseAppearanceTag["LinkHand"]]],
       LineSpacing->{1.4, 0},ExpressionUUID->
-      "43b3855d-09c3-4da3-96e3-c9c047849afb"],
+      "e28050ea-618c-414a-9743-3572f667798c"],
      "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
 \[ThickSpace]",
      Cell[BoxData[
@@ -396,8 +396,8 @@ Cell[BoxData[GridBox[{
             AspectRatio->1,
             ImageSize->20,
             PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
-           "a1fc4b5b-b9b8-47d8-a9d6-ddd3f37089cc"]
-         }],ExpressionUUID->"15f48d2e-82dc-4772-b862-67c139b81d63"],
+           "844221ca-b8d9-4e0a-8054-81dea1fae951"]
+         }],ExpressionUUID->"47d4063f-0e1c-42ae-bbe3-e895ffc31be4"],
          StripOnInput->False],{
         "\"Finding Fusion Rings With Certain Properties\"" :> 
          Documentation`HelpLookup[
@@ -419,7 +419,7 @@ Cell[BoxData[GridBox[{
         MenuStyle->"GuideTutorial"],
        MouseAppearanceTag["LinkHand"]]],
       LineSpacing->{1.4, 0},ExpressionUUID->
-      "e3bda01a-ad32-496c-a902-bd494b45cf41"],
+      "82b5298c-1e7f-47bd-816c-35d2fc810252"],
      "\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\[ThickSpace]\
 \[ThickSpace]",
      Cell[BoxData[
@@ -435,8 +435,8 @@ Cell[BoxData[GridBox[{
             AspectRatio->1,
             ImageSize->20,
             PlotRange->{{-3, 4}, {-1, 1}}]],ExpressionUUID->
-           "eb86b7a8-c39d-41a0-a83b-0f0abeacdc08"]
-         }],ExpressionUUID->"4f420093-1832-43dd-aba3-d53d6f01b36c"],
+           "4317374f-99ef-402f-b6f4-2ff5216e30b0"]
+         }],ExpressionUUID->"e295d66b-2463-4b37-90aa-81bc0bac01b3"],
          StripOnInput->False],{
         "\"Anyonica/guide/Anyonica\"" :> None, 
          "\"Copy Wolfram Documentation Center URL\"" :> 
@@ -467,12 +467,12 @@ Anyonica.html"], StandardForm]], "Input", TextClipboardType -> "PlainText"]},
         MenuStyle->"URLMenu"],
        MouseAppearanceTag["LinkHand"]]],
       LineSpacing->{1.4, 0},ExpressionUUID->
-      "d344d4d7-26fd-45c0-b439-a7011574cd96"]
+      "ce570edc-440b-4a5c-aa6c-78be2eb3a9e6"]
     }], "AnchorBar",
      CacheGraphics->False,ExpressionUUID->
-     "2e014caa-6ac7-4219-828c-3c3831deed08"]}
+     "7d81f5e5-6127-4221-8477-f89790fc45e4"]}
   }]], "AnchorBarGrid",
- CellID->1,ExpressionUUID->"17bf9011-c0d7-4bce-9cf0-43aafea1075a"],
+ CellID->1,ExpressionUUID->"1e5bd2c2-79b9-4b99-81f5-b9e2246e1ff8"],
 
 Cell[CellGroupData[{
 
@@ -485,7 +485,7 @@ mathematical structures such as fusion categories.\
 \>", "GuideAbstract",
  CellID->126564683,ExpressionUUID->"258f37ca-b23b-41d7-9fe8-8b753662f4e7"],
 
-Cell["\t", "GuideDelimiterSubsection",ExpressionUUID->"2a86fb92-7ec4-46b5-ace4-163390704ce8"]
+Cell["\t", "GuideDelimiterSubsection",ExpressionUUID->"fd3b78a2-da5e-4472-b233-bee6ff6e9091"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -2113,8 +2113,8 @@ Cell[BoxData[GridBox[{
           BaseStyle->{"GuideTutorial"}]], "GuideTutorial",ExpressionUUID->
          "6b65f98a-2809-4bac-b958-c1388fd109cf"]}]}
      }]}
-  }]], "GuideTutorialsSection",ExpressionUUID->"08191c62-115b-42f3-9198-\
-9f5db52753fa"],
+  }]], "GuideTutorialsSection",ExpressionUUID->"8776402b-9da3-4367-9982-\
+1b544a94c362"],
 
 Cell[BoxData[GridBox[{
    {
@@ -2143,10 +2143,10 @@ Cell[BoxData[GridBox[{
           BaseStyle->{"GuideMoreAbout"}]], "GuideMoreAbout",ExpressionUUID->
          "e645570d-89c6-4960-ac52-3b0258d85e14"]}]}
      }]}
-  }]], "GuideMoreAboutSection",ExpressionUUID->"1dcee074-6f11-4832-825b-\
-5c39cd6028cf"],
+  }]], "GuideMoreAboutSection",ExpressionUUID->"aa0ffa76-a6a4-4753-8ed1-\
+a0a546044c05"],
 
-Cell[" ", "FooterCell",ExpressionUUID->"d8be8209-09ef-4660-bc94-3fd8ba3d63e8"]
+Cell[" ", "FooterCell",ExpressionUUID->"124a828d-963d-4189-9753-9e35676d49e6"]
 },
 Saveable->False,
 ScreenStyleEnvironment->"Working",
@@ -2161,7 +2161,7 @@ TaggingRules->{
   "NewStyles" -> True, "CitationPopupData" -> {$Failed, ""}, "ShowCitation" -> 
   False, "RootCaptions" -> "", "HeaderCoreAreaLink" -> {}, 
   "Metadata" -> {
-   "built" -> "{2025, 6, 24, 15, 47, 38.163489}", 
+   "built" -> "{2025, 6, 25, 11, 0, 58.745016}", 
     "history" -> {"XX", "", "", ""}, "context" -> "Anyonica`", 
     "keywords" -> {
      "Anyons Tensor Categories Fusion Fusion Rings Fusion Categories"}, 
@@ -2177,7 +2177,7 @@ CacheGraphics->False,
 FrontEndVersion->"14.2 for Linux x86 (64-bit) (March 16, 2025)",
 StyleDefinitions->FrontEnd`FileName[{"Wolfram"}, "Reference.nb", 
   CharacterEncoding -> "UTF-8"],
-ExpressionUUID->"550e7980-4f39-475a-9aaa-94eea9f37926"
+ExpressionUUID->"70ae41bc-8fee-48db-af6e-1fe3fa43dc96"
 ]
 (* End of Notebook Content *)
 
@@ -2190,14 +2190,14 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[576, 21, 24333, 453, 53, "AnchorBarGrid",ExpressionUUID->"17bf9011-c0d7-4bce-9cf0-43aafea1075a",
+Cell[576, 21, 24333, 453, 53, "AnchorBarGrid",ExpressionUUID->"1e5bd2c2-79b9-4b99-81f5-b9e2246e1ff8",
  CellID->1],
 Cell[CellGroupData[{
 Cell[24934, 478, 105, 1, 66, "GuideTitle",ExpressionUUID->"d39a4752-4146-42f6-a3cb-2a85f8226d43",
  CellID->571056029],
 Cell[25042, 481, 238, 4, 40, "GuideAbstract",ExpressionUUID->"258f37ca-b23b-41d7-9fe8-8b753662f4e7",
  CellID->126564683],
-Cell[25283, 487, 93, 0, 21, "GuideDelimiterSubsection",ExpressionUUID->"2a86fb92-7ec4-46b5-ace4-163390704ce8"]
+Cell[25283, 487, 93, 0, 21, "GuideDelimiterSubsection",ExpressionUUID->"fd3b78a2-da5e-4472-b233-bee6ff6e9091"]
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[25413, 492, 121, 1, 61, "GuideFunctionsSection",ExpressionUUID->"51051fea-5c85-440c-9c5a-45aeefc59e28",
@@ -2379,9 +2379,9 @@ Cell[78449, 2048, 330, 8, 70, "GuideText",ExpressionUUID->"170d4457-8f9f-4a5b-ba
  CellID->1205903936]
 }, Open  ]]
 }, Open  ]],
-Cell[78806, 2060, 2369, 56, 70, "GuideTutorialsSection",ExpressionUUID->"08191c62-115b-42f3-9198-9f5db52753fa"],
-Cell[81178, 2118, 1162, 28, 70, "GuideMoreAboutSection",ExpressionUUID->"1dcee074-6f11-4832-825b-5c39cd6028cf"],
-Cell[82343, 2148, 78, 0, 70, "FooterCell",ExpressionUUID->"d8be8209-09ef-4660-bc94-3fd8ba3d63e8"]
+Cell[78806, 2060, 2369, 56, 70, "GuideTutorialsSection",ExpressionUUID->"8776402b-9da3-4367-9982-1b544a94c362"],
+Cell[81178, 2118, 1162, 28, 70, "GuideMoreAboutSection",ExpressionUUID->"aa0ffa76-a6a4-4753-8ed1-a0a546044c05"],
+Cell[82343, 2148, 78, 0, 70, "FooterCell",ExpressionUUID->"124a828d-963d-4189-9753-9e35676d49e6"]
 }
 ]
 *)
