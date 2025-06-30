@@ -6,7 +6,7 @@
 Package["Anyonica`"]
 
 ChangeProperty::badarg = 
-	"`1` should be a rule or a list of rules".
+	"`1` should be a rule or a list of rules";
 
 ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
@@ -14,9 +14,9 @@ ChangeProperty[ cat_FusionCategory, prop_ ] :=
 			Normal @ First[ List @@ cat ];
 		Which[ 
 			MatchQ[ prop, { _Rule .. } ],
- 				AddOptions[opts][FusionCategory][ Sequence @@ list ],
+ 				AddOptions[opts][FusionCategory][ Sequence @@ prop ],
  			MatchQ[ prop, _Rule ], 
-				AddOptions[opts][FusionCategory][ list ],
+				AddOptions[opts][FusionCategory][ prop ],
 			True, Message[ChangeProperty::badarg,prop]
 		]
   ];
