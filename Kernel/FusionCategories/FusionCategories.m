@@ -539,9 +539,13 @@ Format[ cat:FusionCategory[r_Association], StandardForm ] :=
       !MissingQ[CFP] && rn =!= {}
       ,
       "FC"[
-        "\!\(\*SubsuperscriptBox[\(["<> First @ rn <>"]\),"<>
-        " \("<> ToString[CFP[[-3]]]<>","<>ToString[CFP[[-2]]]<>"\)," <>
-        "\( "<> ToString[CFP[[-1]]]<> " \)"<>"]\)"
+        "\!\(\*SubscriptBox[\(["<> First @ rn <>"]\),"<>
+        " \("<> 
+          ToString[CFP[[-3]]]<>","<>
+          ToString[CFP[[-2]]]<>","<>
+          ToString[CFP[[-1]]]<> 
+        " \)"<>
+        "]\)"
       ]
       ,
       !MissingQ[CFP]
