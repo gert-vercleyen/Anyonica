@@ -5,11 +5,20 @@
 
 Package["Anyonica`"]
 
-ChangeProperty[ ring_FusionCategory, list_ ] :=
+ChangeProperty::badarg = 
+	"`1` should be a rule or a list of rules".
+
+ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
-    opts = (* All defining properties of previous fusion ring *)
-    Normal @ First[ List @@ ring ];
-    AddOptions[opts][FusionCategory][ Sequence @@ list ]
+    opts = (* All defining properties of previous fusion cat *)
+			Normal @ First[ List @@ cat ];
+		Which[ 
+			MatchQ[ prop, { _Rule .. } ],
+ 				AddOptions[opts][FusionCategory][ Sequence @@ list ],
+ 			MatchQ[ prop, _Rule ], 
+				AddOptions[opts][FusionCategory][ list ],
+			True, Message[ChangeProperty::badarg,prop]
+		]
   ];
 
 
