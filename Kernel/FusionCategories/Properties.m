@@ -11,7 +11,7 @@ ChangeProperty::badarg =
 ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
     opts = (* All defining properties of previous fusion cat *)
-			Normal @ First[ List @@ cat ];
+			ReleaseHold @ Normal @ First[ List @@ cat ];
 		Which[ 
 			MatchQ[ prop, { _Rule .. } ],
  				AddOptions[opts][FusionCategory][ Sequence @@ prop ],
