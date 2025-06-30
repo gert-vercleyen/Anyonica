@@ -452,8 +452,11 @@ currentDirectory =
 
 importDirectory =
 	Quiet[
-		Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
-		SetDirectory @ NotebookDirectory[]], SetDirectory::fstr   (* If using notebook interface *)
+		Check[
+      SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
+		  SetDirectory @ NotebookDirectory[]
+    ], 
+    SetDirectory::fstr   (* If using notebook interface *)
 	];
 
 
@@ -504,7 +507,9 @@ FCL =
 SetDirectory @
 	currentDirectory;
 
+
 PackageExport["FusionCategories"]
+
 
 FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
