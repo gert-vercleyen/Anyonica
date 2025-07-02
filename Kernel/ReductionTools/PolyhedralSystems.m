@@ -835,7 +835,7 @@ Module[
       Join[
         ( # == 0 )& /@
         AddOptions[opts][ReduceBinomialSystem][ 
-          Echo @ neverZeroBinEqns, 
+          neverZeroBinEqns, 
           Complement[ fSymbols, unionZeros ] 
         ]["Polynomials"]
         ,
