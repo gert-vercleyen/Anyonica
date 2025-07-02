@@ -650,14 +650,11 @@ Module[
         GetVariables[ compatibleSol, F ]
       ];
 
-    tower =
-      PentagonTower[ ring, "Knowns" -> compatibleSol ];
+    pentEqns = 
+       PentagonEquations[ ring, "Knowns" -> compatibleSol ];
 
     { binEqns, sumEqns } =
-      BinSumEquationsFromTower[ tower ];
-
-    pentEqns = 
-      Join[ binEqns, sumEqns ];
+      BinomialSplit @ pentEqns;
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
@@ -793,7 +790,7 @@ Module[
 
     { newBinEqns, newSumEqns } = BinomialSplit[ pentEqns ]; 
 
-    Remove[binEqns,sumEqns];
+    ClearAll[binEqns,sumEqns];
 
     printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
 
