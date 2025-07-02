@@ -788,7 +788,7 @@ Module[
 
     pentEqns = TEL[ pentEqns/.extraFixedFs ];
 
-    { newBinEqns, newSumEqns } = BinomialSplit[ pentEqns ]; 
+    { newBinEqns, newSumEqns } =  BinomialSplit[ pentEqns ]; 
 
     ClearAll[binEqns,sumEqns];
 
@@ -811,7 +811,7 @@ Module[
           ]
         },
       
-        pentEqns[[
+        newBinEqns[[
           DeleteCases[ (* delete indices of equations that contain a possible zero F-symbol *)
             Range @ Length @ varsLists, 
             i_/; IntersectingQ[ varsLists[[i]], unionZeros ]
@@ -835,7 +835,7 @@ Module[
       Join[
         ( # == 0 )& /@
         AddOptions[opts][ReduceBinomialSystem][ 
-          neverZeroBinEqns, 
+          Echo @ neverZeroBinEqns, 
           Complement[ fSymbols, unionZeros ] 
         ]["Polynomials"]
         ,
