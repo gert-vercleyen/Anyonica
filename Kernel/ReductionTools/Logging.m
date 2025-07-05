@@ -55,7 +55,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
     Which[
       dir == "Home"
       ,
-      dir = CreateDirectory[FileNameJoin[{$HomeDirectory,"LOGFILES_D"<> dateString }]];
+      dir = CreateDirectory @ FileNameJoin[{$HomeDirectory,"LOGFILES_D"<> dateString }];
       dataDir = FileNameJoin[ { dir, "Data" } ];
       CreateDirectory[dataDir];
       Message[ PrintLog::tempdir, dir ]
