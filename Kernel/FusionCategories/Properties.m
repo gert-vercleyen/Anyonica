@@ -5,11 +5,20 @@
 
 Package["Anyonica`"]
 
-ChangeProperty[ ring_FusionCategory, list_ ] :=
+ChangeProperty::badarg = 
+	"`1` should be a rule or a list of rules";
+
+ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
-    opts = (* All defining properties of previous fusion ring *)
-    Normal @ First[ List @@ ring ];
-    AddOptions[opts][FusionCategory][ Sequence @@ list ]
+    opts = (* All defining properties of previous fusion cat *)
+			ReleaseHold @ Normal @ First[ List @@ cat ];
+		Which[ 
+			MatchQ[ prop, { _Rule .. } ],
+ 				AddOptions[opts][FusionCategory][ Sequence @@ prop ],
+ 			MatchQ[ prop, _Rule ], 
+				AddOptions[opts][FusionCategory][ prop ],
+			True, Message[ChangeProperty::badarg,prop]
+		]
   ];
 
 
@@ -134,7 +143,7 @@ Protect[ \[ScriptD] ];
 PackageExport["QuantumDimensions"]
 
 QuantumDimensions::usage =
-  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
+  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(Tr\), \(L\)]\)(a) of the simple objects "<>
   "of the fusion category cat";
 
 QuantumDimensions[ cat_FusionCategory ] :=
@@ -188,9 +197,16 @@ SphericalQ[ cat_FusionCategory ] :=
     If[
       MissingQ[ dims ],
       Message[ SphericalQ::nodims ]; $Failed,
-      And @@ Table[ RootReduce[ \[ScriptD][i] == \[ScriptD][i+1] /. dims ], { i, NSD[cat]+1, Rank[cat], 2 } ]
+      And @@ 
+			Table[ 
+				RootReduce[ \[ScriptD][ pair[[1]] ] == \[ScriptD][ pair[[2]] ] /. dims ], 
+				{ pair, conjugatePairs @ cat } 
+			]
     ]
   ];
+
+conjugatePairs[ cat_ ] := 
+	List @@@ Union @ DeleteCases[ Sort /@ Normal @ CC @ FusionRing @ cat, i_ -> i_ ];
 
 CheckFormalCode[c1_,c2_]:=
 	With[{fc1 = FormalCode @ c1, fc2 = FormalCode @ c2 },
@@ -236,26 +252,27 @@ Catch[
 		CheckFormalCode[c1,c2];
 	];
 	CheckFusionRing[c1,c2];
+	check = OptionValue["PreEqualCheck"];
 
 	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
 
-  If[ PreEqualCheck[ Sort[qDims1] ] != PreEqualCheck[ Sort[ qDims2 ] ], Throw @ False ];
+	If[ check[ Sort[qDims1] ] != check[ Sort[ qDims2 ] ], Throw @ False ];
 
-  fra = FRA @ FusionRing @ c1;
+	fra = FRA @ FusionRing @ c1;
 
-  eqQDims =
-    Catch[
-      Do[
-        If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
-        , { a, fra }
-      ]; Throw @ False
-    ];
+	eqQDims =
+		Catch[
+		Do[
+			If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
+			, { a, fra }
+		]; Throw @ False
+		];
 
-  If[ !eqQDims, Throw @ False ];
+	If[ !eqQDims, Throw @ False ];
 
-  test = OptionValue["PreEqualCheck"];
-	invariants1 = FullInvariants[c1];
-	invariants2 = FullInvariants[c2];
+	test = OptionValue["PreEqualCheck"];
+		invariants1 = FullInvariants[c1];
+		invariants2 = FullInvariants[c2];
 
 
 	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
@@ -265,7 +282,7 @@ Catch[
 		rSymb1 = rSymb2 = {}
 	];
 
-	rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
+		rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
 
 	Do[
 		If[
@@ -280,7 +297,7 @@ Catch[
 		, { a, fra }
 	];
 
-	Throw @ False
+		Throw @ False
 	]
 ];
 

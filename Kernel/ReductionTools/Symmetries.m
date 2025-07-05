@@ -558,7 +558,7 @@ DeleteEquivalentSolutions::wrongrstructure =
 
 DeleteEquivalentSolutions::differentzeros =
   "Some solutions have zeros at different positions. These solutions can never be equivalent.\n"<>
-  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions2 on each set.";
+  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions on each set.";
 
 Options["DeleteEquivalentSolutions"] :=
   Join[
@@ -571,7 +571,8 @@ Options["DeleteEquivalentSolutions"] :=
   ];
 
 DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits },
+  Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits,
+    symbols },
     (*procID =
       ToString @ Unique[];
 
@@ -580,12 +581,11 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     check =
       If[
         OptionValue["Numeric"],
-        N[ #, {Infinity, OptionValue["Accuracy"] } ]&,
+        InfN[OptionValue["Accuracy"]],
         OptionValue["PreEqualCheck"]
       ];
 
-    zeroPositions =
-      Position[ _ -> 0 ] /@ soln;
+    zeroPositions = Position[ _ -> 0 ] /@ soln;
 
     If[ !MatchQ[ zeroPositions, { x_ .. } ], Message[ DeleteEquivalentSolutions::differentzeros ]; Abort[]  ];
 
@@ -593,30 +593,45 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
       AbsoluteTiming[
 
         zeroFs =
-          Cases[ First @ soln, HoldPattern[ f_[i__] -> 0 ] :> f[i] ];
+          Keys @
+          Cases[ First @ soln, HoldPattern[ _ -> 0 ] ];
 
         (*printlog[ "DSES:groups", { procID, groupedSoln } ];*)
 
-        braidedCheck =
-          Length @* FilterRRules /@ soln;
+        braidedCheck = Length @* FilterRRules /@ soln;
 
         If[
           Not[ Equal @@ braidedCheck ],
           Message[ DeleteEquivalentSolutions::wrongrstructure ]; Abort[]
         ];
 
-        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs ];
+        symbols = 
+          Switch[ { FilterRRules[soln] =!= {}, FilterPRules[soln] =!= {} },
+            { True, True }, { "FSymbols", "RSymbols", "PSymbols" },
+            { True, False }, { "FSymbols", "RSymbols", "PSymbols" },
+            { False, True }, { "FSymbols", "PSymbols" },
+            { False, False }, { "FSymbols" }
+          ];
+        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> symbols ];
 
         (* For each solution we will map its index to the evaluated 
            gauge-invariants over all automorphic solutions *)
         orbits = 
           Association @
           Table[
-            i -> check[ invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA[ ring ] ] ],
+            i -> 
+              check[ 
+                invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA @ ring ]
+              ],
             { i, Length @ soln }
           ];
 
-        soln[[ DeleteDuplicates[ Range @ Length @ orbits, intersectingQ[ orbits[#1], orbits[#2] ]& ] ]]
+        soln[[ 
+          DeleteDuplicates[ 
+            Range @ Length @ orbits, 
+            intersectingQ[ orbits[#1], orbits[#2] ]& 
+          ] 
+        ]]
 
       ];
 

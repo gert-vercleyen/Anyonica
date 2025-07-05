@@ -19,7 +19,6 @@ PackageExport["FusionCategory"]
 
 FusionCategory::usage =
   "FusionCategory[ \"GrothendieckRing\" -> r, \"FSymbols\" -> fSymbols, opts ] initializes a fusion category with fusion ring r and F-symbols fSymbols. Extra options include \"RSymbols\"-> rSymbols to initialize a braided fusion category, \"PreEqualCheck\" -> f to apply a function f to both sides of each pentagon equation before checking equality.";
-
 FusionCategory::nofusionring =
   "No fusion ring is provided so no category could be initialized";
 FusionCategory::nofsymbols =
@@ -34,6 +33,8 @@ FusionCategory::invalidfsymbols =
   "The F-symbols are not a valid solution to the pentagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
 FusionCategory::invalidrsymbols =
   "The R-symbols are not a valid solution to the hexagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
+FusionCategory::invalidpsymbols = 
+  "The pivotal structure is not a valid solution to the pivotal equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
 FusionCategory::invaliddata = 
   "The data provided does not correspond to a fusion category."
 
@@ -48,6 +49,7 @@ Options[ FusionCategory ] =
     "Twists"                  -> Missing[],
     "SMatrix"                 -> Missing[],
     "Modular"                 -> Missing[],
+    "Names"                   -> Missing[],
     "PreEqualCheck"           -> Identity,
     "ReplaceRingByKnownRing"  -> False,
     "SkipCheck"               -> False
@@ -82,7 +84,8 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "Modular" ];
 
     If[
-      !skipCheck && !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, preEqualCheck ],
+      !skipCheck && 
+      !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, pivStruct, preEqualCheck ],
       Message[ FusionCategory::invaliddata ]
     ];
 
@@ -101,11 +104,11 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "Modular"                   -> modular,
       "FormalParameters"          -> OptionValue["FormalParameters"],
       "Unitary"                   -> OptionValue["Unitary"],
-      "Names"                     -> Missing[]
+      "Names"                     -> OptionValue["Names"]
     ]
   ];
 
-ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
+ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, psymbols_, preEqualCheck_ ] :=
   Module[
     {vc},
     Which[
@@ -126,6 +129,11 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
         vc = CheckHexagonEquations[ ring, fsymbols, rsymbols, "PreEqualCheck" -> preEqualCheck ]
       ],
         Message[ FusionCategory::invalidrsymbols, vc[[2]] ]; False,
+      !MissingQ[ psymbols ] && 
+      !TrueQ[
+        vc = CheckPivotalEquations[ ring, fsymbols, psymbols, "PreEqualCheck" -> preEqualCheck ]
+      ],
+        Message[ FusionCategory::invalidpsymbols, vc[[2]] ]; False,
       True,
         True
     ]
@@ -147,10 +155,14 @@ PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
   ];
 *)
 
+PackageExport["CheckPentagonEquations"]
+
 Options[CheckPentagonEquations] = 
 	{
 		"PreEqualCheck" -> Identity
 	};
+
+(* TODO: THESE ARE NOT ALL PENTAGON EQUATIONS!!! *)
 
 CheckPentagonEquations[ ring_, fSymbols_, OptionsPattern[]  ] := 
   Module[ { fInd, p, c, d, e, q, r, a, b, s, n, matches, eqn, simplify,sF },
@@ -199,6 +211,13 @@ HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
     DeleteDuplicates
   ];
 
+PackageExport["CheckHexagonEquations"]
+
+CheckHexagonEquations::usage = 
+  "CheckHexagonEquations[r,fSymbols,rSymbols] returns true if fSymbols and"<>
+  " rSymbols satisfy the hexagon equations coresponging to the fusion ring r. It "<>
+  "returns {False, eqn} where eqn is the first problematic equation in case they don't.";
+
 Options[CheckHexagonEquations] = 
   {
     "PreEqualCheck" -> Identity
@@ -231,14 +250,14 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] :=
     matchingLabels[ { a_, c_, b_, d_, e_} ] :=
       Cases[ fLabels, { c, a, b, d, e, _ } ][[;;,6]];
 
+
     Catch[
       Do[ (* Loop over valid F-symbols and construct equations *)
         { a, c, b, d, e, g } = fl;
           
         eqn1 = 
           simplify[   
-            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
-            ==
+            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]] ==
             Sum[
               sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
               { f, matchingLabels[ { a, c, b, d, e } ] }
@@ -295,6 +314,48 @@ ProperLabelRulesQ[ fSymbols_ ] :=
 
 ProperRSymbolRulesQ[ rSymbols_ ] :=
   PHSQ[ rSymbols ];
+
+PackageExport["CheckPivotalEquations"]
+
+Options[CheckPivotalEquations] = 
+  { "PreEqualCheck" -> RootReduce };
+
+CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] := 
+  Module[{ r, p, d, sF, rhs },
+    If[ First @ Values @ pSymbols =!= 1, Return @ False ];
+
+    r = Rank @ ring;
+    d = CC[ring];
+    p = \[ScriptP];
+    check = OptionValue["PreEqualCheck"];
+    sF =
+      SparseArray[
+        MapAt[ List @@ #&, fSymbols, {All,1} ],
+        {r,r,r,r,r,r}
+      ];
+
+    rhs[a_,b_,c_] := sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
+
+    Catch[
+      Do[
+        { a, b, c } = triple; 
+        If[
+          ( rhs @@ triple ) =!= 0 && 
+          ( check[ p[c] / ( p[a] p[b] )/. pSymbols ] =!= check[ rhs[a,b,c] ] ),
+          Throw @
+          { 
+            False, 
+            p[c] / ( p[a] p[b] ) == 
+            F[a,b,d[c],1,c,d[a]] F[b,d[c],a,1,d[a],d[b]] F[d[c],a,b,1,d[b],c]
+          }
+        ],
+        { triple,  Tuples[ Range @ r, 3 ] }
+      ];
+      True
+    ]
+
+  ];
+
 
 (*
 +---------------------------------------------------------------------------+
@@ -448,13 +509,24 @@ PackageExport["FusionCategories"]
 FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
 
-FusionCategories[ ring_FusionRing ] :=
-  Module[ { fc = FC @ ring },
-    If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
+FusionCategories::badarg =
+  "`1` should be a list of FusionRing objects.";
 
-    FCBC /@
-    Select[ Keys @ FCBCData, #[[;;4]] == fc& ]
+FusionCategories[ ring_FusionRing ] :=
+  Module[ { fc = FC @ ring, cats },
+    If[ Mult[fc] > 1, Return @ Missing["NoCatsWithMultiplicityInDatabase"] ];
+    If[ Rank[fc] > 7, Return @ Missing["OnlyRingsUpToRank7InDatabase"] ];
+    If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
+    If[ MissingQ[fc], Return @ Missing["RingNotInDB"] ];
+
+    cats = Lookup[ FCBCData, Keys @ KeySelect[ FCBCData, #[[;;4]] == fc& ] ];
+    If[ 
+      cats === {},
+      Missing["RingNotCategorifiable"],
+      cats
+    ]
   ];
+
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
   With[{ CFP = r["FormalParameters"], rn = Names @ FusionRing[cat] },

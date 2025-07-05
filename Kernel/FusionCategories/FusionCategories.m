@@ -452,8 +452,11 @@ currentDirectory =
 
 importDirectory =
 	Quiet[
-		Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
-		SetDirectory @ NotebookDirectory[]], SetDirectory::fstr   (* If using notebook interface *)
+		Check[
+      SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
+		  SetDirectory @ NotebookDirectory[]
+    ], 
+    SetDirectory::fstr   (* If using notebook interface *)
 	];
 
 
@@ -504,7 +507,9 @@ FCL =
 SetDirectory @
 	currentDirectory;
 
+
 PackageExport["FusionCategories"]
+
 
 FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
@@ -534,9 +539,13 @@ Format[ cat:FusionCategory[r_Association], StandardForm ] :=
       !MissingQ[CFP] && rn =!= {}
       ,
       "FC"[
-        "\!\(\*SubsuperscriptBox[\(["<> First @ rn <>"]\),"<>
-        " \("<> ToString[CFP[[-3]]]<>","<>ToString[CFP[[-2]]]<>"\)," <>
-        "\( "<> ToString[CFP[[-1]]]<> " \)"<>"]\)"
+        "\!\(\*SubscriptBox[\(["<> First @ rn <>"]\),"<>
+        " \("<> 
+          ToString[CFP[[-3]]]<>","<>
+          ToString[CFP[[-2]]]<>","<>
+          ToString[CFP[[-1]]]<> 
+        " \)"<>
+        "]\)"
       ]
       ,
       !MissingQ[CFP]

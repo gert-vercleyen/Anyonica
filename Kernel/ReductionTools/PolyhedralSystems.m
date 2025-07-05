@@ -21,58 +21,46 @@ Package["Anyonica`"]
 PackageExport["PentagonEquations"]
 
 PentagonEquations::usage =
-"PentagonEquations[ ring ] returns the pentagon equations related to ring.;"
+  "PentagonEquations[ ring ] returns the pentagon equations related to ring.;"
 
 (*   "all trivial and duplicate equations have been removed.";*)
 
 Options[ PentagonEquations ] :=
-Options[ PentagonTower ];
+  Options[ PentagonTower ];
 
 PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-If[
-  Mult[ ring ] == 1
-  ,
-  With[{ tower = PentagonTower[ ring, opts ] },
-    Join[
-      tower["Bin"] // Values,
-      tower["Sum"] // Values
-    ] // Flatten
-  ]
-  ,
-  PentagonEquationsWithMultiplicity[ ring, opts ]
-];
+  If[
+    Mult[ ring ] == 1
+    ,
+    PentagonEquationsWithoutMultiplicity[ ring, opts ]
+    ,
+    PentagonEquationsWithMultiplicity[ ring, opts ]
+  ];
 
 PackageExport["PE"]
 
 PE::usage =
-"Shorthand for PentagonEquations.";
+  "Shorthand for PentagonEquations.";
 
 PE =
-PentagonEquations;
+  PentagonEquations;
 
-PackageExport["PentagonTower"]
+Options[PentagonEquationsWithoutMultiplicity] =
+  {
+    "TrivialVacuumSymbols" -> True,
+    "Knowns" -> {}
+  };
 
-PentagonTower::usage=
-"PentagonTower[ring] calculates a tower of pentagon equations based on the dimensions of the F-matrices.";
-
-Options[ PentagonTower ] :=
-{
-  "TrivialVacuumSymbols" -> True,
-  "Knowns" -> {}
-};
-
-PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
-  Module[{ a,b,c,d,e,p,q,r,s,n, matches, eqn, dim, patt, pentEqns, lFInd, sF, dimF, trivVacQ, knowns},
-    trivVacQ =
-      OptionValue["TrivialVacuumSymbols"];
-    knowns =
-      OptionValue["Knowns"];
-    dimF =
-      DimF @ FMatrices[ring];
-    n =
-      Rank[ring];
-    lFInd =
-      List @@@ FSymbols[ring];
+PentagonEquationsWithoutMultiplicity[ ring_, opts:OptionsPattern[] ] := 
+  Block[ { a, b, c, d, e, f, g, l, k, r, rr, lFInd, zsc, nzsc, trivVacQ, knowns, matches1, matches2, matches3, eqn, sF },
+    trivVacQ  = OptionValue["TrivialVacuumSymbols"];
+    knowns    = OptionValue["Knowns"];
+    r         = Rank[ring];
+    If[ r == 1 && ( trivVacQ || knowns === { F[1,1,1,1,1,1] -> 1 } ) , Return @ {} ];
+    rr        = Range @ r;
+    lFInd     = List @@@ FSymbols[ring];
+    nzsc      = NZSC @ ring;
+    zsc       = Complement[ Tuples @ { rr, rr, rr }, nzsc ];
 
     sF =
       SparseArray @
@@ -84,99 +72,70 @@ PentagonTower[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
         If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
       ];
 
-    pentEqns =
       Reap[
         (* Collect equations of the form Non0LHS == RHS *)
         Do[
-          { p, c, d, e, q, r } = label;
-          matches = Cases[ lFInd, { a_, b_, r, e, p, s_ } ];
+          { f, c, d, e, g, l } = label;
+          matches1 = Cases[ lFInd, { a_, b_, l, e, f, k_ } ];
           Do[
-            { a, b, s } = label2[[ { 1, 2, 6 } ]];
+            { a, b, k } = label2[[ { 1, 2, 6 } ]];
 
             eqn =
             (
-              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
-              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ]
+              sF[[f,c,d,e,g,l]] sF[[a,b,l,e,f,k]] ==
+              Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
             );
 
-            If[ (* Equation is not trivial *)
-              !TrueQ[eqn],
-              (* THEN Set dim equal to max size of F-matrix *)
-              dim =
-              Max[
-                dimF /@
-                GetVariables[ eqn, F ]
-              ];
-              If[
-                eqn[[2,0]] === Plus,
-                Sow[ eqn, patt[2][dim]],
-                Sow[ eqn, patt[1][dim]]
-              ]
-            ],
-            { label2, matches }
+            If[ !TrueQ[eqn], Sow @ eqn ]
+            ,
+            { label2, matches1 }
           ],
           { label, lFInd }
-        ],
-        Flatten @
-        Table[ patt[i][j], {i,2}, {j,n} ]
-      ][[2]];
+        ];
 
-    <|
-      "Bin" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i]], {i,n} ],
-      "Sum" -> Association @@ Table[ i -> DeleteDuplicates @ Flatten @ pentEqns[[i+n]], {i,n} ]
-    |>
+        (* Collect equations of the form 0 == RHS. This is done 
+           by constructing the symmetric tree with non-existent  
+           bottom fusion channel N[f,l,e] and matching the other
+           labels *)
+        Do[
+          { f, l, e } = n1;
+          matches2 = Cases[ nzsc, { a_, b_, f } ];
+          matches3 = Cases[ nzsc, { c_, d_, l } ];
+          Do[
+            { a, b } = Most @ n2;
+            { c, d } = Most @ n3;
+            eqn = 
+              (
+                0 == Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+              );
+            If[ !TrueQ[eqn], Sow @ eqn ]
+            ,
+            { k, r },
+            { g, r },
+            { n2, matches2 },
+            { n3, matches3 }
+          ]
+          ,
+          { n1, zsc }
+        ];
+
+      ][[2,1]]
 
   ];
 
-PackageScope["BinomialEquationsFromTower"]
-
-BinomialEquationsFromTower[ tower_Association ] :=
-tower["Bin"] //
-Values //
-Flatten;
-
-
-PackageScope["SumEquationsFromTower"]
-
-SumEquationsFromTower[ tower_Association ] :=
-tower["Sum"] //
-Values //
-Flatten;
-
-
-PackageScope["BinSumEquationsFromTower"]
-
-BinSumEquationsFromTower[ tower_Association ] :=
-Map[
-  Flatten,
-  {
-    tower["Bin"] // Values,
-    tower["Sum"] // Values
-  }
-];
-
-
-PackageScope["PentagonEquationsFromTower"]
-
-PentagonEquationsFromTower::usage =
-"Flattens tower to a set of pentagon equations.";
-
-PentagonEquationsFromTower[ tower_Association ] :=
-Join @@ BinSumEquationsFromTower[ tower ];
-
-
+(* (* Might be useful later*)
 DimF[regMats_] :=
-Module[ { matToRules },
-  matToRules[ mat_ ] :=
-  With[{ n = Length[mat] },
-    Flatten @ Map[ # -> n &, mat, {2} ]
+  Module[ { matToRules },
+    matToRules[ mat_ ] :=
+    With[{ n = Length[mat] },
+      Flatten @ Map[ # -> n &, mat, {2} ]
+    ];
+    Association @@
+    Flatten[
+      matToRules /@ regMats
+    ]
   ];
-  Association @@
-  Flatten[
-    matToRules /@ regMats
-  ]
-];
-
+*)
 
 (*
 +---------------------------------------------------------------------------+
@@ -691,14 +650,11 @@ Module[
         GetVariables[ compatibleSol, F ]
       ];
 
-    tower =
-      PentagonTower[ ring, "Knowns" -> compatibleSol ];
+    pentEqns = 
+       PentagonEquations[ ring, "Knowns" -> compatibleSol ];
 
     { binEqns, sumEqns } =
-      BinSumEquationsFromTower[ tower ];
-
-    pentEqns = 
-      Join[ binEqns, sumEqns ];
+      BinomialSplit @ pentEqns;
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
@@ -832,9 +788,9 @@ Module[
 
     pentEqns = TEL[ pentEqns/.extraFixedFs ];
 
-    { newBinEqns, newSumEqns } = BinomialSplit[ pentEqns ]; 
+    { newBinEqns, newSumEqns } =  BinomialSplit[ pentEqns ]; 
 
-    Remove[binEqns,sumEqns];
+    ClearAll[binEqns,sumEqns];
 
     printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
 
@@ -855,7 +811,7 @@ Module[
           ]
         },
       
-        pentEqns[[
+        newBinEqns[[
           DeleteCases[ (* delete indices of equations that contain a possible zero F-symbol *)
             Range @ Length @ varsLists, 
             i_/; IntersectingQ[ varsLists[[i]], unionZeros ]

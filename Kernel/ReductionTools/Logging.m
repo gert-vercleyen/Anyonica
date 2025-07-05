@@ -166,7 +166,7 @@ safeExport[ name_, data_ ] :=
       ,
       Export[ name, data ]
       ,
-      Export[ name, Iconize[dt,"Large amount of data"] ]
+      Export[ name, Iconize[data,"Large amount of data"] ]
     ]
   ];
 
