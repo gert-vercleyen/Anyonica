@@ -696,3 +696,31 @@ TypesetSymbols[] :=
   )
 
 *)
+
+PackageExport["FusionRingFromFSymbols"]
+
+FusionRingFromFSymbols::usage = 
+  "FusionRingFromFSymbols[symb] returns a fusion ring whose F-symbols equal symb.";
+
+FusionRingFromFSymbols[ fSymb_ ] := 
+  Module[ { r, nzsc }, 
+    nzsc = Cases[ Keys @ fSymb, F[ a_, b_, 1, c_, c_, b_ ] :> { a, b, c } ];
+    r = Max @ Flatten @ nzsc;
+    FusionRing[ 
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+    ]
+  ]
+
+PackageExport["FusionRingFromRSymbols"]
+
+FusionRingFromRSymbols::usage = 
+  "FusionRingFromRSymbols[symb] returns a fusion ring whose R-symbols equal symb.";
+
+FusionRingFromFSymbols[ rSymb_ ] := 
+  Module[ { r, nzsc }, 
+    nzsc = List @@@ rSymb; 
+    r = Max @ Flatten @ nzsc;
+    FusionRing[ 
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+    ]
+  ]
