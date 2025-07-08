@@ -157,12 +157,104 @@ PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
 
 PackageExport["CheckPentagonEquations"]
 
+CheckPentagonEquations::usage =
+  "CheckPentagonEquations[ ring, fSymbols ] returns True if the F-symbols given by"<>
+  "fSymbols satisfy all pentagon equations. Otherwise it returns { False, eqn }" <>
+  "where eqn is the first equation that is not satisfied.";
+
+CheckPentagonEquations::notimplementedyet = 
+  "Checking pentagon equations is not implemented yet for rings with multiplicity";
+
 Options[CheckPentagonEquations] = 
 	{
 		"PreEqualCheck" -> Identity
 	};
 
-(* TODO: THESE ARE NOT ALL PENTAGON EQUATIONS!!! *)
+
+CheckPentagonEquations[ ring_, fSymbols_, opts:OptionsPattern[] ] := 
+  If[ 
+    Mult @ ring === 1, 
+    CheckPentagonEquationsWithoutMultiplicity[ ring, fSymbols, opts ], 
+    Message[ CheckPentagonEquations::notimplementedyet ]; Abort[]
+  ];
+
+CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern[] ] := 
+  Block[ { a, b, c, d, e, f, g, l, k, r, rr, lFInd, zsc, nzsc, trivVacQ, knowns, matches1, matches2, matches3, eqn, sF },
+    check     = OptionValue["PreEqualCheck"];
+    r         = Rank[ring];
+    rr        = Range @ r;
+    lFInd     = List @@@ FSymbols @ ring;
+    nzsc      = NZSC @ ring;
+    zsc       = Complement[ Tuples @ { rr, rr, rr }, nzsc ];
+
+    sF = SparseArray[ fSymbols, { r, r, r, r, r, r } ];
+
+      Catch[
+        (* Collect equations of the form Non0LHS == RHS *)
+        Do[
+          { f, c, d, e, g, l } = label;
+          matches1 = Cases[ lFInd, { a_, b_, l, e, f, k_ } ];
+          Do[
+            { a, b, k } = label2[[ { 1, 2, 6 } ]];
+
+            eqn =
+            (
+              sF[[f,c,d,e,g,l]] sF[[a,b,l,e,f,k]] ==
+              Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+            );
+
+            If[ 
+              !TrueQ[ check @ eqn ], 
+              Throw @ 
+                { 
+                  False, 
+                    F[[f,c,d,e,g,l]] F[[a,b,l,e,f,k]] ==
+                    Sum[ F[[a,b,c,g,f,h]] F[[a,h,d,e,g,k]] F[[b,c,d,k,h,l]], {h,r} ] 
+                } 
+            ]
+            ,
+            { label2, matches1 }
+          ],
+          { label, lFInd }
+        ];
+
+        (* Collect equations of the form 0 == RHS. This is done 
+           by constructing the symmetric tree with non-existent  
+           bottom fusion channel N[f,l,e] and matching the other
+           labels *)
+        Do[
+          { f, l, e } = n1;
+          matches2 = Cases[ nzsc, { a_, b_, f } ];
+          matches3 = Cases[ nzsc, { c_, d_, l } ];
+          Do[
+            { a, b } = Most @ n2;
+            { c, d } = Most @ n3;
+            eqn = 
+              (
+                0 == Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+              );
+            If[ 
+              !TrueQ[eqn], 
+              Throw @ 
+                { 
+                  False, 
+                    F[[f,c,d,e,g,l]] F[[a,b,l,e,f,k]] ==
+                    Sum[ F[[a,b,c,g,f,h]] F[[a,h,d,e,g,k]] F[[b,c,d,k,h,l]], {h,r} ] 
+                } 
+            ]
+            ,
+            { k, r },
+            { g, r },
+            { n2, matches2 },
+            { n3, matches3 }
+          ]
+          ,
+          { n1, zsc }
+        ];
+        True
+      ]
+
+  ];
 
 CheckPentagonEquations[ ring_, fSymbols_, OptionsPattern[]  ] := 
   Module[ { fInd, p, c, d, e, q, r, a, b, s, n, matches, eqn, simplify,sF },
