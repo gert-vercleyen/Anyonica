@@ -289,6 +289,10 @@ CheckPentagonEquations[ ring_, fSymbols_, OptionsPattern[]  ] :=
     ]
   ];
 
+CheckPentagonEquations[ fSymbols, opts:OptionsPattern[] ] :=
+  CheckPentagonEquations[ FusionRingFromFSymbols @ fSymbols, fSymbols, opts ];
+
+
 HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
   With[{
     hEqns =
@@ -309,22 +313,26 @@ CheckHexagonEquations::usage =
   "CheckHexagonEquations[r,fSymbols,rSymbols] returns true if fSymbols and"<>
   " rSymbols satisfy the hexagon equations coresponging to the fusion ring r. It "<>
   "returns {False, eqn} where eqn is the first problematic equation in case they don't.";
+CheckHexagonEquations::notimplementedyet = 
+  "Checking hexagon equations is not implemented yet for rings with multiplicity";
 
 Options[CheckHexagonEquations] = 
   {
     "PreEqualCheck" -> Identity
   };
 
+CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, opts:OptionsPattern[] ] := 
+  If[ 
+    Mult @ ring === 1, 
+    CheckHexagonEquationsWithoutMultiplicity[ ring, fSymbols, rSymbols, opts ],
+    CheckHexagonEquations::notimplementedyet
+  ];
+
 CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
   Module[{ a, b, c, d, e, g, sR, sF, rank, matchingLabels, eqn1, eqn2, fLabels, simplify },
-    simplify = 
-      OptionValue["PreEqualCheck"];
-
-    fLabels =
-      List @@@ Keys[fSymbols];
-    
-    rank =
-      Rank[ring];
+    simplify = OptionValue["PreEqualCheck"];
+    fLabels  = List @@@ Keys[fSymbols];
+    rank     = Rank[ring];
 
     (* construct a sparse array of R symbols *)
     sR =
