@@ -394,7 +394,7 @@ Options[CheckPivotalEquations] =
   { "PreEqualCheck" -> RootReduce };
 
 CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] := 
-  Module[{ r, p, d, sF, rhs },
+  Module[{ r, p, d, sF, rhs, check, a, b, c },
     If[ First @ Values @ pSymbols =!= 1, Return @ False ];
 
     r = Rank @ ring;
@@ -414,11 +414,11 @@ CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] :=
         { a, b, c } = triple; 
         If[
           ( rhs @@ triple ) =!= 0 && 
-          ( check[ p[c] / ( p[a] p[b] )/. pSymbols ] =!= check[ rhs[a,b,c] ] ),
+          !TrueQ[ check[ ( ( p[a] p[b] / p[c] ) /. pSymbols) ==  rhs[a,b,c] ]  ],
           Throw @
           { 
             False, 
-            p[c] / ( p[a] p[b] ) == 
+            ( p[a] p[b] ) / p[c] == 
             F[a,b,d[c],1,c,d[a]] F[b,d[c],a,1,d[a],d[b]] F[d[c],a,b,1,d[b],c]
           }
         ],
