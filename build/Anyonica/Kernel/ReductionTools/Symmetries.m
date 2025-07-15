@@ -1088,6 +1088,8 @@ GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
 
 
 
+
+
 (*
 +---------------------------------------------------------------------------+
 |                            ADJUSTING THE GAUGE                            |
