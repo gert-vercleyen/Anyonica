@@ -795,7 +795,7 @@ GaugeTransform[ g_Symbol ][ R[ a_, b_, c_ ] ] :=
 
 GaugeTransform[ ring_, g_Symbol ][ \[ScriptP][ a_ ] ] :=
   With[ { d = CC[ring] },
-    ( g[ a, d[a], 1 ] g[ 1, a, a ] )/( g[ a, 1, a ] g[ d[a], a, 1 ] ) \[ScriptP][a]
+    ( g[ d[a], a, 1 ] g[ 1, d[a], d[a] ] )/( g[ d[a], 1, d[a] ] g[ a, d[a], 1 ] ) \[ScriptP][a]
   ];
 
 GaugeTransform[ ring_, g_Symbol ][ F[i__] ] :=
