@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it using these metadata.
+title: Anyonica
+abstract: A software package for working with fusion rings and fusion categories.
+authors:
+  - family-names: Vercleyen
+    given-names: Gert 
+    orcid: "https://orcid.org/0000-0002-3255-7175"
+version: 0.9.11.5
+date-released: "2025-06-25"
+identifiers:
+  - description: This is the collection of archived snapshots of all versions of My Research Software
+    type: doi 
+    value: "10.5281/zenodo.10686859"
+license: MIT
+repository-code: "https://github.com/gert-vercleyen/Anyonica/tree/main"
