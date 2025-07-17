@@ -434,22 +434,24 @@ FCA::usage =
 
 FCA = FusionCategoryAutomorphisms;
 
-	
 Options[AutomorphismEquations] = 
 	{ "Type" -> { "Braided", "Pivotal" } };
 
+(* TODO: Add equations for pivotal symbols *)	
 AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
-	Module[{ring, permute, transform, symbols, nbq },
-		nbq = !BraidedQ[cat] || FreeQ["Braided"] @ OptionValue["Type"];
-		
+	Module[{ring, permute, transform, symbols, symbolsValues, bq, pq },
+		bq = BraidedQ[cat] && MemberQ["Braided"] @ OptionValue["Type"];
+		pq = MemberQ["Pivotal"] @ OptionValue["Type"];
+
 		ring = FusionRing @ cat;
 		
 		permute = 
 			If[
 				perm === Range @ Rank @ cat,
 				Identity,
-				ReplaceAll[
-					If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
+				ReplaceAll[ 
+					If[ pq,  Append[ \[ScriptD][a_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
+					If[ bq,  Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
 					{ 
 						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
 						F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
@@ -459,7 +461,8 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 		
 		transform = 
 			ReplaceAll[ 
-				If[ nbq, Identity, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ] ] @
+				If[ pq, Append[ \[ScriptD][i_] :> permute @ \[ScriptD][i] ], Identity ] @
+				If[ bq, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ], Identity ] @
 				{ 
 					g[i__] :> permute @ g[i], 
 					F[i__] :> permute @ GaugeTransform[g] @ F[i]
@@ -469,13 +472,20 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 		symbols = 
 			Join[
 				FSymbols @ ring,
-				If[ nbq, {}, RSymbols @ ring ]
+				If[ bq, RSymbols @ ring, {} ],
+				If[ pq, Array[ \[ScriptD], Rank @ ring ], {} ]
 			];
-			
+
+		symbolsValues = 
+			Dispatch @
+			Join[
+				FSymbols @ cat, 
+				If[ bq, RSymbols @ cat, {} ], 
+				If[ pq, QuantumDimensions @ cat, {} ]
+			];
 		
 		TrimEquationList[
-			Thread[ symbols == transform @ symbols ]/.
-			Dispatch[ Join[ FSymbols @ cat, If[ nbq, {}, RSymbols @ cat ] ] ]
+			Thread[ symbols == transform @ symbols ]/.symbolsValues
 		]
 	]
 
