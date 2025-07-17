@@ -86,14 +86,14 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
     rhs[a_,b_,c_] :=
       sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
 
-    eqns =
+    eqns = 
       TEL @
       OptionValue["SimplifyBy"][
         Cases[
           Tuples[ Range @ r, 3 ],
           { a_, b_, c_ } /;
           rhs[a,b,c] =!= 0 :>
-					p[c] / (p[a] p[b] ) == rhs[a,b,c]
+					(p[a] p[b] )/p[c] == rhs[a,b,c]
         ]/.p[1] -> 1
       ];
 
@@ -149,7 +149,7 @@ QuantumDimensions::usage =
 QuantumDimensions[ cat_FusionCategory ] :=
   With[{ d = CC[cat] },
     Table[
-      \[ScriptD][a] -> \[ScriptP][a] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
+      \[ScriptD][a] -> \[ScriptP][a] / F[d[a],a,d[a],d[a],1,1], { a, Rank @ cat }
     ]/.FSymbols[cat]/.PivotalStructure[cat]
   ];
 
@@ -218,23 +218,7 @@ CheckFusionRing[c1_,c2_] :=
 		If[ !eq, Throw @ False ]
 	];
 
-FullInvariants[c1_]:=
-	Module[ { zeroFs,invariants },
-		zeroFs = Select[ FSymbols[c1], Last[#]===0& ][[;;,1]];
-		(* Invariants of F and R symbols *)
-		invariants =
-			GaugeInvariants[
-				FusionRing @ c1,
-				"Zeros" -> zeroFs,
-				"IncludeOnly" -> If[ !BraidedQ[c1], { "FSymbols" }, { "FSymbols", "RSymbols" } ]
-			];
 
-		(* Invariants from pivotal structure *)
-		Join[
-			invariants,
-			Array[ \[ScriptD], Rank[c1] ]
-		]
-	];
 
 PackageExport["EquivalentFusionCategoriesQ"]
 

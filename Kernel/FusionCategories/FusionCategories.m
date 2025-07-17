@@ -171,23 +171,26 @@ Options[CheckPentagonEquations] =
 	};
 
 
-CheckPentagonEquations[ ring_, fSymbols_, opts:OptionsPattern[] ] := 
+CheckPentagonEquations[ ring_FusionRing, fSymbols_List, opts:OptionsPattern[] ] := 
   If[ 
     Mult @ ring === 1, 
     CheckPentagonEquationsWithoutMultiplicity[ ring, fSymbols, opts ], 
     Message[ CheckPentagonEquations::notimplementedyet ]; Abort[]
   ];
 
+Options[CheckPentagonEquationsWithoutMultiplicity] = 
+  Options[CheckPentagonEquations];
+
 CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern[] ] := 
   Block[ { a, b, c, d, e, f, g, l, k, r, rr, lFInd, zsc, nzsc, trivVacQ, knowns, matches1, matches2, matches3, eqn, sF },
     check     = OptionValue["PreEqualCheck"];
     r         = Rank[ring];
     rr        = Range @ r;
-    lFInd     = List @@@ FSymbols @ ring;
+    lFInd     = List @@@ Keys @ fSymbols;
     nzsc      = NZSC @ ring;
     zsc       = Complement[ Tuples @ { rr, rr, rr }, nzsc ];
 
-    sF = SparseArray[ fSymbols, { r, r, r, r, r, r } ];
+    sF = SparseArray[ Thread[ List @@@ Keys @ fSymbols -> Values @ fSymbols ], { r, r, r, r, r, r } ];
 
       Catch[
         (* Collect equations of the form Non0LHS == RHS *)
@@ -208,8 +211,8 @@ CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern
               Throw @ 
                 { 
                   False, 
-                    F[[f,c,d,e,g,l]] F[[a,b,l,e,f,k]] ==
-                    Sum[ F[[a,b,c,g,f,h]] F[[a,h,d,e,g,k]] F[[b,c,d,k,h,l]], {h,r} ] 
+                    F[f,c,d,e,g,l] F[a,b,l,e,f,k] ==
+                    Sum[ F[a,b,c,g,f,h] F[a,h,d,e,g,k] F[b,c,d,k,h,l], {h,r} ] 
                 } 
             ]
             ,
@@ -234,12 +237,12 @@ CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern
                 0 == Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
               );
             If[ 
-              !TrueQ[eqn], 
+              !TrueQ[check @ eqn], 
               Throw @ 
                 { 
                   False, 
-                    F[[f,c,d,e,g,l]] F[[a,b,l,e,f,k]] ==
-                    Sum[ F[[a,b,c,g,f,h]] F[[a,h,d,e,g,k]] F[[b,c,d,k,h,l]], {h,r} ] 
+                    F[f,c,d,e,g,l] F[a,b,l,e,f,k] ==
+                    Sum[ F[a,b,c,g,f,h] F[a,h,d,e,g,k] F[b,c,d,k,h,l], {h,r} ] 
                 } 
             ]
             ,
@@ -256,40 +259,7 @@ CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern
 
   ];
 
-CheckPentagonEquations[ ring_, fSymbols_, OptionsPattern[]  ] := 
-  Module[ { fInd, p, c, d, e, q, r, a, b, s, n, matches, eqn, simplify,sF },
-    n = Rank @ ring;
-    fInd = List @@@ fSymbols[[;;,1]];
-    sF = SparseArray[ Thread[ fInd -> Values @ fSymbols ], { n, n, n, n, n, n } ];
-    simplify = OptionValue["PreEqualCheck"];
-    Catch[
-      Do[
-        { p, c, d, e, q, r } = label;
-        matches = Cases[ fInd, { a_, b_, r, e, p, s_ } ];
-        Do[
-          { a, b, s } = 
-            label2[[ { 1, 2, 6 } ]];
-
-          eqn = 
-            simplify[ 
-              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
-              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ] 
-            ];
-
-          If[ 
-            !TrueQ[ eqn ], 
-            Throw[ { False, F[p,c,d,e,q,r] F[a,b,r,e,p,s] ==
-            Sum[ F[b,c,d,s,x,r] F[a,b,c,q,p,x] F[a,x,d,e,q,s], {x,n} ] } ]
-          ],
-          { label2, matches }
-        ],
-        { label, fInd }
-      ];
-      True
-    ]
-  ];
-
-CheckPentagonEquations[ fSymbols, opts:OptionsPattern[] ] :=
+CheckPentagonEquations[ fSymbols_List, opts:OptionsPattern[] ] :=
   CheckPentagonEquations[ FusionRingFromFSymbols @ fSymbols, fSymbols, opts ];
 
 
@@ -328,16 +298,19 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, opts:OptionsPattern[] ] :=
     CheckHexagonEquations::notimplementedyet
   ];
 
-CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
+Options[CheckHexagonEquationsWithoutMultiplicity] = 
+  Options[CheckHexagonEquations];
+
+CheckHexagonEquationsWithoutMultiplicity[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
   Module[{ a, b, c, d, e, g, sR, sF, rank, matchingLabels, eqn1, eqn2, fLabels, simplify },
     simplify = OptionValue["PreEqualCheck"];
-    fLabels  = List @@@ Keys[fSymbols];
+    fLabels  = List @@@ Keys @ fSymbols;
     rank     = Rank[ring];
 
     (* construct a sparse array of R symbols *)
     sR =
       SparseArray[
-        Thread[ NZSC[ring] -> Values[rSymbols] ],
+        Thread[ List @@@ Keys @ rSymbols  -> Values @ rSymbols ],
         { rank, rank, rank }
       ];
 
@@ -421,7 +394,7 @@ Options[CheckPivotalEquations] =
   { "PreEqualCheck" -> RootReduce };
 
 CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] := 
-  Module[{ r, p, d, sF, rhs },
+  Module[{ r, p, d, sF, rhs, check, a, b, c },
     If[ First @ Values @ pSymbols =!= 1, Return @ False ];
 
     r = Rank @ ring;
@@ -441,11 +414,11 @@ CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] :=
         { a, b, c } = triple; 
         If[
           ( rhs @@ triple ) =!= 0 && 
-          ( check[ p[c] / ( p[a] p[b] )/. pSymbols ] =!= check[ rhs[a,b,c] ] ),
+          !TrueQ[ check[ ( ( p[a] p[b] / p[c] ) /. pSymbols) ==  rhs[a,b,c] ]  ],
           Throw @
           { 
             False, 
-            p[c] / ( p[a] p[b] ) == 
+            ( p[a] p[b] ) / p[c] == 
             F[a,b,d[c],1,c,d[a]] F[b,d[c],a,1,d[a],d[b]] F[d[c],a,b,1,d[b],c]
           }
         ],
