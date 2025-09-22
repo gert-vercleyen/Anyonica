@@ -431,6 +431,8 @@ partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_, OptionsPattern[] 
 partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_, OptionsPattern[] ] := 
   Module[{ t, result, partitionPos, decomps, newMat, newRHS, newSys },  
 
+    check = OptionValue["PreEqualCheck"];
+
     (* Check for empty system *)
     If[ ByteCount[ rhs < 1024 ] && Flatten[rhs] === {}, Return @ { {{}}, { } } ];
 
@@ -470,7 +472,7 @@ partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_,
         MemberQ[ 
           Reverse @ Range @ Length @ newSys,  
           i_ /; 
-          MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ PreEqualCheck[x] != 1 ] ]
+          MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ check[x] != 1 ] ]
         ],
         printlog["Gen:has_False", { procID, newSys  } ];
         Throw @ { Missing["InconsistentSystem"], {}  }
