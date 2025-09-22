@@ -285,7 +285,7 @@ ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] :=
         Return @ 
         <| 
           "Polynomials" ->
-            TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ] // TPL,
+            TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ],
           "Assumptions" -> True,
           "Values" -> Thread[ variables -> variables ]
         |>
