@@ -1061,6 +1061,7 @@ Options[PentagonGroebnerSystems] :=
       "ReducePowerSums" -> False,
       "SimplifyIntermediateResultsBy" -> Identity
     },
+    Options[ReduceBinomialSystem],
     Options[PreparePentagonSolverInput],
     Options[ReduceByBinomials],
     Options[ReduceByLinearity],
