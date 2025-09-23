@@ -340,7 +340,7 @@ SolveSemiLinModZ[ { mat_?MatrixQ, vec_List }, param_, opts:OptionsPattern[] ] :=
 PackageExport["BinToSemiLin"]
 
 BinToSemiLin::usage =
-  "BinToSemiLin[eqnList,nVars,s] converts the binomial system eqnList with nVars variables labeled by s to " <>
+  "BinToSemiLin[eqnList,vars,s] converts the binomial system eqnList with variables vars labeled by s to " <>
   "the logarithm of eqnList and a vector of factors.";
 
 BinToSemiLin::nonbineqns =
