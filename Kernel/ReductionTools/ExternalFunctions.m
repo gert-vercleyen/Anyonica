@@ -24,20 +24,24 @@ JuliaHNFWithTransform[ sparseMat_SparseArray ] :=
 		result
 	];
 
-JuliaHNFWithTransform[ session_, sparseMat_SparseArray ] := 
+juliaHNFWithTransform[ session_, sparseMat_ ] := 
 	Module[ 
-		{ dims, arg, hnfWithTransform },
+		{ dims, arg, hnfWithTransform, u, h },
 		
 		ExternalEvaluate[ session, "using Oscar"];
 		
-		arg = 
-				Transpose /@
-				Values @
+		dims = Dimensions[ sparseMat ];
+			
+		arg =
+			Transpose /@  
+			Values @
 				GroupBy[
-					ReplaceAll[({i_,j_}->k_):>{i,j,k}] @
-					Most @ 
-					ArrayRules @ 
-					sparseMat,
+					Join[ (* Append Identity to mat *)
+						ReplaceAll[({i_,j_}->k_):>{i,j,k}] @
+						Most[ ArrayRules @ sparseMat ],
+						Table[ { i, i + dims[[2]], 1 }, { i, dims[[1]] } ]
+					]
+					,
 					First -> Rest
 				];
 
@@ -50,13 +54,35 @@ JuliaHNFWithTransform[ session_, sparseMat_SparseArray ] :=
 					for i in 1:first(size(arrayind))
 						push!( sm, sparse_row(ZZ, arrayind[i][1,:], arrayind[i][2,:]) )
 					end
-					map( Matrix, map.( Int, hnf_kb_with_transform( matrix(sm) ) ) )
+
+					hnf!( sm )
+
+					v = []
+					for i in 1:first(size(sm))
+						for j in 1:last(size(sm))
+							if sm[i,j] != 0
+								push!(v,[ i, j, Int(sm[i,j]) ])
+							end
+						end
+					end
+					v
 				end
 				"
 		  ];
 		  
-		SparseArray /@ hnfWithTransform[arg]
-	]
+		{ u, h } = (* Set up array rules *)
+			BinSplit[ 
+				hnfWithTransform[arg], 
+				#[[2]] > dims[[2]]& 
+			];
+
+		SparseArray /@ 
+		{ 
+			u/.{i_,j_,k_}:>({i,j-dims[[2]]}->k),(* shift u to the left *)
+			h/.{i_,j_,k_}:>({i,j}->k) 
+		} 
+		
+	];
 
 PackageExport["JuliaHNF"]
 
@@ -67,7 +93,7 @@ JuliaHNF::usage =
   "compute the Hermite normal form of the sparse array sparseMat by using"<>
   " the OSCAR package for Julia."
 
-JuliaHNF[ sparseMat_ ] := 
+juliaHNF[ sparseMat_ ] := 
 	Module[{ session, result }, 
 		session = StartExternalSession["Julia"];
 		
@@ -78,7 +104,7 @@ JuliaHNF[ sparseMat_ ] :=
 		result
 	];
 
-JuliaHNF[ session_, sparseMat_ ] := 
+juliaHNF[ session_, sparseMat_ ] := 
 	Module[ 
 		{ arg, hnf },
 		
@@ -100,14 +126,26 @@ JuliaHNF[ session_, sparseMat_ ] :=
 				session,
 				"
 				function myhnf(arrayind)
+					
 					sm = sparse_matrix(ZZ)
 					for i in 1:first(size(arrayind))
 						push!( sm, sparse_row(ZZ, arrayind[i][1,:], arrayind[i][2,:]) )
 					end
-					map( Int, Matrix(hnf(sm,truncate=true)) )
+					
+					sm = hnf(sm,truncate=true)
+
+					v = []
+					for i in 1:first(size(sm))
+						for j in 1:last(size(sm))
+							if sm[i,j] != 0
+								push!(v,[ i, j, Int(sm[i,j]) ])
+							end
+						end
+					end
+					v
 				end
 				"
 		  ];
 		  
-		SparseArray @ hnf[arg]
+		SparseArray[ hnf[arg]/.{i_,j_,k_}:>({i,j}->k)]
 	];
