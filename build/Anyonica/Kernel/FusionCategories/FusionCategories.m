@@ -19,7 +19,6 @@ PackageExport["FusionCategory"]
 
 FusionCategory::usage =
   "FusionCategory[ \"GrothendieckRing\" -> r, \"FSymbols\" -> fSymbols, opts ] initializes a fusion category with fusion ring r and F-symbols fSymbols. Extra options include \"RSymbols\"-> rSymbols to initialize a braided fusion category, \"PreEqualCheck\" -> f to apply a function f to both sides of each pentagon equation before checking equality.";
-
 FusionCategory::nofusionring =
   "No fusion ring is provided so no category could be initialized";
 FusionCategory::nofsymbols =
@@ -34,6 +33,8 @@ FusionCategory::invalidfsymbols =
   "The F-symbols are not a valid solution to the pentagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
 FusionCategory::invalidrsymbols =
   "The R-symbols are not a valid solution to the hexagon equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
+FusionCategory::invalidpsymbols = 
+  "The pivotal structure is not a valid solution to the pivotal equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
 FusionCategory::invaliddata = 
   "The data provided does not correspond to a fusion category."
 
@@ -48,6 +49,7 @@ Options[ FusionCategory ] =
     "Twists"                  -> Missing[],
     "SMatrix"                 -> Missing[],
     "Modular"                 -> Missing[],
+    "Names"                   -> Missing[],
     "PreEqualCheck"           -> Identity,
     "ReplaceRingByKnownRing"  -> False,
     "SkipCheck"               -> False
@@ -82,7 +84,8 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       OptionValue[ "Modular" ];
 
     If[
-      !skipCheck && !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, preEqualCheck ],
+      !skipCheck && 
+      !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, pivStruct, preEqualCheck ],
       Message[ FusionCategory::invaliddata ]
     ];
 
@@ -101,11 +104,11 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
       "Modular"                   -> modular,
       "FormalParameters"          -> OptionValue["FormalParameters"],
       "Unitary"                   -> OptionValue["Unitary"],
-      "Names"                     -> Missing[]
+      "Names"                     -> OptionValue["Names"]
     ]
   ];
 
-ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
+ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, psymbols_, preEqualCheck_ ] :=
   Module[
     {vc},
     Which[
@@ -126,6 +129,11 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, preEqualCheck_ ] :=
         vc = CheckHexagonEquations[ ring, fsymbols, rsymbols, "PreEqualCheck" -> preEqualCheck ]
       ],
         Message[ FusionCategory::invalidrsymbols, vc[[2]] ]; False,
+      !MissingQ[ psymbols ] && 
+      !TrueQ[
+        vc = CheckPivotalEquations[ ring, fsymbols, psymbols, "PreEqualCheck" -> preEqualCheck ]
+      ],
+        Message[ FusionCategory::invalidpsymbols, vc[[2]] ]; False,
       True,
         True
     ]
@@ -147,43 +155,113 @@ PentagonValidityConstraints[ ring_, fSymbols_, preEqualCheck_ ] :=
   ];
 *)
 
+PackageExport["CheckPentagonEquations"]
+
+CheckPentagonEquations::usage =
+  "CheckPentagonEquations[ ring, fSymbols ] returns True if the F-symbols given by"<>
+  "fSymbols satisfy all pentagon equations. Otherwise it returns { False, eqn }" <>
+  "where eqn is the first equation that is not satisfied.";
+
+CheckPentagonEquations::notimplementedyet = 
+  "Checking pentagon equations is not implemented yet for rings with multiplicity";
+
 Options[CheckPentagonEquations] = 
 	{
 		"PreEqualCheck" -> Identity
 	};
 
-CheckPentagonEquations[ ring_, fSymbols_, OptionsPattern[]  ] := 
-  Module[ { fInd, p, c, d, e, q, r, a, b, s, n, matches, eqn, simplify,sF },
-    n = Rank @ ring;
-    fInd = List @@@ fSymbols[[;;,1]];
-    sF = SparseArray[ Thread[ fInd -> Values @ fSymbols ], { n, n, n, n, n, n } ];
-    simplify = OptionValue["PreEqualCheck"];
-    Catch[
-      Do[
-        { p, c, d, e, q, r } = label;
-        matches = Cases[ fInd, { a_, b_, r, e, p, s_ } ];
-        Do[
-          { a, b, s } = 
-            label2[[ { 1, 2, 6 } ]];
 
-          eqn = 
-            simplify[ 
-              sF[[p,c,d,e,q,r]] sF[[a,b,r,e,p,s]] ==
-              Sum[ sF[[b,c,d,s,x,r]] sF[[a,b,c,q,p,x]] sF[[a,x,d,e,q,s]], {x,n} ] 
-            ];
-
-          If[ 
-            !TrueQ[ eqn ], 
-            Throw[ { False, F[p,c,d,e,q,r] F[a,b,r,e,p,s] ==
-            Sum[ F[b,c,d,s,x,r] F[a,b,c,q,p,x] F[a,x,d,e,q,s], {x,n} ] } ]
-          ],
-          { label2, matches }
-        ],
-        { label, fInd }
-      ];
-      True
-    ]
+CheckPentagonEquations[ ring_FusionRing, fSymbols_List, opts:OptionsPattern[] ] := 
+  If[ 
+    Mult @ ring === 1, 
+    CheckPentagonEquationsWithoutMultiplicity[ ring, fSymbols, opts ], 
+    Message[ CheckPentagonEquations::notimplementedyet ]; Abort[]
   ];
+
+Options[CheckPentagonEquationsWithoutMultiplicity] = 
+  Options[CheckPentagonEquations];
+
+CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern[] ] := 
+  Block[ { a, b, c, d, e, f, g, l, k, r, rr, lFInd, zsc, nzsc, trivVacQ, knowns, matches1, matches2, matches3, eqn, sF },
+    check     = OptionValue["PreEqualCheck"];
+    r         = Rank[ring];
+    rr        = Range @ r;
+    lFInd     = List @@@ Keys @ fSymbols;
+    nzsc      = NZSC @ ring;
+    zsc       = Complement[ Tuples @ { rr, rr, rr }, nzsc ];
+
+    sF = SparseArray[ Thread[ List @@@ Keys @ fSymbols -> Values @ fSymbols ], { r, r, r, r, r, r } ];
+
+      Catch[
+        (* Collect equations of the form Non0LHS == RHS *)
+        Do[
+          { f, c, d, e, g, l } = label;
+          matches1 = Cases[ lFInd, { a_, b_, l, e, f, k_ } ];
+          Do[
+            { a, b, k } = label2[[ { 1, 2, 6 } ]];
+
+            eqn =
+            (
+              sF[[f,c,d,e,g,l]] sF[[a,b,l,e,f,k]] ==
+              Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+            );
+
+            If[ 
+              !TrueQ[ check @ eqn ], 
+              Throw @ 
+                { 
+                  False, 
+                    F[f,c,d,e,g,l] F[a,b,l,e,f,k] ==
+                    Sum[ F[a,b,c,g,f,h] F[a,h,d,e,g,k] F[b,c,d,k,h,l], {h,r} ] 
+                } 
+            ]
+            ,
+            { label2, matches1 }
+          ],
+          { label, lFInd }
+        ];
+
+        (* Collect equations of the form 0 == RHS. This is done 
+           by constructing the symmetric tree with non-existent  
+           bottom fusion channel N[f,l,e] and matching the other
+           labels *)
+        Do[
+          { f, l, e } = n1;
+          matches2 = Cases[ nzsc, { a_, b_, f } ];
+          matches3 = Cases[ nzsc, { c_, d_, l } ];
+          Do[
+            { a, b } = Most @ n2;
+            { c, d } = Most @ n3;
+            eqn = 
+              (
+                0 == Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+              );
+            If[ 
+              !TrueQ[check @ eqn], 
+              Throw @ 
+                { 
+                  False, 
+                    F[f,c,d,e,g,l] F[a,b,l,e,f,k] ==
+                    Sum[ F[a,b,c,g,f,h] F[a,h,d,e,g,k] F[b,c,d,k,h,l], {h,r} ] 
+                } 
+            ]
+            ,
+            { k, r },
+            { g, r },
+            { n2, matches2 },
+            { n3, matches3 }
+          ]
+          ,
+          { n1, zsc }
+        ];
+        True
+      ]
+
+  ];
+
+CheckPentagonEquations[ fSymbols_List, opts:OptionsPattern[] ] :=
+  CheckPentagonEquations[ FusionRingFromFSymbols @ fSymbols, fSymbols, opts ];
+
 
 HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
   With[{
@@ -199,26 +277,40 @@ HexagonValidityConstraints[ ring_, fSymbols_, rSymbols_, preEqualCheck_ ] :=
     DeleteDuplicates
   ];
 
+PackageExport["CheckHexagonEquations"]
+
+CheckHexagonEquations::usage = 
+  "CheckHexagonEquations[r,fSymbols,rSymbols] returns true if fSymbols and"<>
+  " rSymbols satisfy the hexagon equations coresponging to the fusion ring r. It "<>
+  "returns {False, eqn} where eqn is the first problematic equation in case they don't.";
+CheckHexagonEquations::notimplementedyet = 
+  "Checking hexagon equations is not implemented yet for rings with multiplicity";
+
 Options[CheckHexagonEquations] = 
   {
     "PreEqualCheck" -> Identity
   };
 
-CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
-  Module[{ a, b, c, d, e, g, sR, sF, rank, matchingLabels, eqn1, eqn2, fLabels, simplify },
-    simplify = 
-      OptionValue["PreEqualCheck"];
+CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, opts:OptionsPattern[] ] := 
+  If[ 
+    Mult @ ring === 1, 
+    CheckHexagonEquationsWithoutMultiplicity[ ring, fSymbols, rSymbols, opts ],
+    CheckHexagonEquations::notimplementedyet
+  ];
 
-    fLabels =
-      List @@@ Keys[fSymbols];
-    
-    rank =
-      Rank[ring];
+Options[CheckHexagonEquationsWithoutMultiplicity] = 
+  Options[CheckHexagonEquations];
+
+CheckHexagonEquationsWithoutMultiplicity[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] := 
+  Module[{ a, b, c, d, e, g, sR, sF, rank, matchingLabels, eqn1, eqn2, fLabels, simplify },
+    simplify = OptionValue["PreEqualCheck"];
+    fLabels  = List @@@ Keys @ fSymbols;
+    rank     = Rank[ring];
 
     (* construct a sparse array of R symbols *)
     sR =
       SparseArray[
-        Thread[ NZSC[ring] -> Values[rSymbols] ],
+        Thread[ List @@@ Keys @ rSymbols  -> Values @ rSymbols ],
         { rank, rank, rank }
       ];
 
@@ -231,14 +323,14 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, OptionsPattern[] ] :=
     matchingLabels[ { a_, c_, b_, d_, e_} ] :=
       Cases[ fLabels, { c, a, b, d, e, _ } ][[;;,6]];
 
+
     Catch[
       Do[ (* Loop over valid F-symbols and construct equations *)
         { a, c, b, d, e, g } = fl;
           
         eqn1 = 
           simplify[   
-            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]]
-            ==
+            sR[[ c, a, e ]] sF[[a,c,b,d,e,g]] sR[[ c, b, g ]] ==
             Sum[
               sF[[ c, a, b, d, e, f ]] sR[[ c, f, d ]] sF[[ a, b, c, d, f, g ]],
               { f, matchingLabels[ { a, c, b, d, e } ] }
@@ -295,6 +387,48 @@ ProperLabelRulesQ[ fSymbols_ ] :=
 
 ProperRSymbolRulesQ[ rSymbols_ ] :=
   PHSQ[ rSymbols ];
+
+PackageExport["CheckPivotalEquations"]
+
+Options[CheckPivotalEquations] = 
+  { "PreEqualCheck" -> RootReduce };
+
+CheckPivotalEquations[ ring_, fSymbols_, pSymbols_, opts:OptionsPattern[] ] := 
+  Module[{ r, p, d, sF, rhs, check, a, b, c },
+    If[ First @ Values @ pSymbols =!= 1, Return @ False ];
+
+    r = Rank @ ring;
+    d = CC[ring];
+    p = \[ScriptP];
+    check = OptionValue["PreEqualCheck"];
+    sF =
+      SparseArray[
+        MapAt[ List @@ #&, fSymbols, {All,1} ],
+        {r,r,r,r,r,r}
+      ];
+
+    rhs[a_,b_,c_] := sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
+
+    Catch[
+      Do[
+        { a, b, c } = triple; 
+        If[
+          ( rhs @@ triple ) =!= 0 && 
+          !TrueQ[ check[ ( ( p[a] p[b] / p[c] ) /. pSymbols) ==  rhs[a,b,c] ]  ],
+          Throw @
+          { 
+            False, 
+            ( p[a] p[b] ) / p[c] == 
+            F[a,b,d[c],1,c,d[a]] F[b,d[c],a,1,d[a],d[b]] F[d[c],a,b,1,d[b],c]
+          }
+        ],
+        { triple,  Tuples[ Range @ r, 3 ] }
+      ];
+      True
+    ]
+
+  ];
+
 
 (*
 +---------------------------------------------------------------------------+
@@ -391,8 +525,11 @@ currentDirectory =
 
 importDirectory =
 	Quiet[
-		Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
-		SetDirectory @ NotebookDirectory[]], SetDirectory::fstr   (* If using notebook interface *)
+		Check[
+      SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
+		  SetDirectory @ NotebookDirectory[]
+    ], 
+    SetDirectory::fstr   (* If using notebook interface *)
 	];
 
 
@@ -443,18 +580,31 @@ FCL =
 SetDirectory @
 	currentDirectory;
 
+
 PackageExport["FusionCategories"]
+
 
 FusionCategories::usage =
   "FusionCategories[ring] returns all stored fusion categories with ring as Grothendieck ring.";
 
-FusionCategories[ ring_FusionRing ] :=
-  Module[ { fc = FC @ ring },
-    If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
+FusionCategories::badarg =
+  "`1` should be a list of FusionRing objects.";
 
-    FCBC /@
-    Select[ Keys @ FCBCData, #[[;;4]] == fc& ]
+FusionCategories[ ring_FusionRing ] :=
+  Module[ { fc = FC @ ring, cats },
+    If[ Mult[fc] > 1, Return @ Missing["NoCatsWithMultiplicityInDatabase"] ];
+    If[ Rank[fc] > 7, Return @ Missing["OnlyRingsUpToRank7InDatabase"] ];
+    If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
+    If[ MissingQ[fc], Return @ Missing["RingNotInDB"] ];
+
+    cats = Lookup[ FCBCData, Keys @ KeySelect[ FCBCData, #[[;;4]] == fc& ] ];
+    If[ 
+      cats === {},
+      Missing["RingNotCategorifiable"],
+      cats
+    ]
   ];
+
 
 Format[ cat:FusionCategory[r_Association], StandardForm ] :=
   With[{ CFP = r["FormalParameters"], rn = Names @ FusionRing[cat] },
@@ -462,9 +612,13 @@ Format[ cat:FusionCategory[r_Association], StandardForm ] :=
       !MissingQ[CFP] && rn =!= {}
       ,
       "FC"[
-        "\!\(\*SubsuperscriptBox[\(["<> First @ rn <>"]\),"<>
-        " \("<> ToString[CFP[[-3]]]<>","<>ToString[CFP[[-2]]]<>"\)," <>
-        "\( "<> ToString[CFP[[-1]]]<> " \)"<>"]\)"
+        "\!\(\*SubscriptBox[\(["<> First @ rn <>"]\),"<>
+        " \("<> 
+          ToString[CFP[[-3]]]<>","<>
+          ToString[CFP[[-2]]]<>","<>
+          ToString[CFP[[-1]]]<> 
+        " \)"<>
+        "]\)"
       ]
       ,
       !MissingQ[CFP]

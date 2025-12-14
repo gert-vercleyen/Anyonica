@@ -50,7 +50,7 @@
             ,
             "Hash"
             ->
-            "a4fe962a61d5ca81c0bb1e3dbef440635c07282a14351cbbf3cd26e5c0038547"
+            "c697bb2fbbcbc21bbde0ebe717c4d0e5a956af6d23f2d496c385bbeb6a13570a"
                 
         |>
         ,
@@ -64,7 +64,7 @@
             ,
             "Hash"
             ->
-            "74a0598c0e40fbe722474ef7dbff55c6c4431c4df5ebb47c4e9159dcdb34e83f"
+            "5523121ecb37a806a55e71d09056ee965792fc912111b229a8a73c3cd7c5e83d"
                 
         |>
         ,
@@ -78,7 +78,7 @@
             ,
             "Hash"
             ->
-            "9b848114249782fa4e7dcc587a6c943c7dae62ce2b2862933ed52be5d9279775"
+            "63613f067ac4e2bc2597ca802252ebe8dd2cb4cb437402920b1300c4a24a23ab"
                 
         |>
         ,
@@ -91,7 +91,7 @@
             ,
             "Hash"
             ->
-            "0d5b342227abb9f83cd5ec86f7cb9ecf92eb8b05150dea44a396d852f3f52d3d"
+            "352dbf3e4c55de77290dbb4026f9aa75ec950aa733bb40e1d0589d273c5c9155"
                 
         |>
         ,
@@ -104,7 +104,7 @@
             ,
             "Hash"
             ->
-            "8158a233d5e9c199b960c075229bde2a9e9edb332a2baf040ea540f8ecabfb27"
+            "beaba79273ea28d37418306e7ec9d9492d2ae925c0216ed1d7cbcce85ef457d9"
                 
         |>
         ,
@@ -117,7 +117,7 @@
             ,
             "Hash"
             ->
-            "3ef75ae0da164228f132c6178ca0e35481d65c92ea2121298e62a72662911ed3"
+            "ef41f8d46aa76fb7b99a0cffbd9ed32b78c4c19c799bd3fec17912bba0d0d0d1"
                 
         |>
         ,
@@ -130,7 +130,7 @@
             ,
             "Hash"
             ->
-            "b5dc2f602b6eb821448b0a2e1720a0b6e2293494b9337860bcf2269b5e7b562f"
+            "6e8f662f3694e84c821377b7cd0720d0db5bb876f72b588bf3329be7fc2dfa21"
                 
         |>
         ,
@@ -156,7 +156,7 @@
             ,
             "Hash"
             ->
-            "0c502bf8ee74e862af0522ceb2b364f529ba1920337adcb088b8bcce4661ea1f"
+            "18d9960e1cd881c8951413c1799857fc39eaf4aa8b6f8c322dabaa464c480069"
                 
         |>
         ,
@@ -195,7 +195,7 @@
             ,
             "Hash"
             ->
-            "0a78b021cd7aacaf12147bd348e8b93e717401c9d2bbddfcf87a1822d4dcec59"
+            "d398cccb1f88c565a02ad9ddc4e391d16010157ae594d5d6d2f4017942aa0677"
                 
         |>
         ,
@@ -208,7 +208,7 @@
             ,
             "Hash"
             ->
-            "ab96d5a4fca1afa3f20ea65be052f8c385efd12019d049475f1f9ce65ce51392"
+            "8de81e47000ab8ccd46252e96e6d30244b7390674cd2d40ed34aa5fe92b3b743"
                 
         |>
         ,
@@ -221,7 +221,7 @@
             ,
             "Hash"
             ->
-            "afbc89a6b9737b204484fec849e4fa58accad54a17f6114d7748df153518ea5b"
+            "e32e373fc626b12b4190ab27dcd7c39ab80c7277d13888101a096ede0e519ea7"
                 
         |>
         ,
@@ -234,7 +234,7 @@
             ,
             "Hash"
             ->
-            "e0810da803c53eb35f92b04e994e1e6c30efd4dd624b7ba3213a3fb1ac2af5f5"
+            "7b7f85d749612260d57845d65e3331a37766b337b60ec0e9beb5fe6a414b124b"
                 
         |>
         ,
@@ -260,7 +260,7 @@
             ,
             "Hash"
             ->
-            "9a864145c0a88673dc0826b4007c4b1fcb57f7a8a3afd1ac8436a51ad832a0ef"
+            "dd3b5bbf503f5991bd126343b1efdc4bf1ea0c9a0453e25922077dace83f4b2c"
                 
         |>
         ,
@@ -273,7 +273,7 @@
             ,
             "Hash"
             ->
-            "fc59cb2b6b75c3919e991a27cf0c2570c69ccc5a879f9a4ddfd8d00e5f4bc5bc"
+            "15ab3d97107b54a3a8623dab4b3dae006590949d3f66ac9e1c843c42138a6e99"
                 
         |>
         ,
@@ -299,7 +299,7 @@
             ,
             "Hash"
             ->
-            "eb7fc935f11d4c663df1419bd7200b32211e650aa3ef83719c52f4c0f1f7d90d"
+            "a7f05235c867e3b5adc4afecc66f6601dd064ff139d8197c887f9582953caa18"
                 
         |>
         ,
@@ -327,7 +327,7 @@
             ,
             "Hash"
             ->
-            "619c2afd2ec4899edda1b34595edeaa9253b4415ccce1b4361e85cae270e8524"
+            "471e72b2280b124a087860713421254f424575a103535edb32ec13f389f5ad45"
                 
         |>
         ,
@@ -356,20 +356,6 @@
             "Hash"
             ->
             "9b7aeb0f204a4a3c7237e44a29ca1ccc15070029e9fe9f865ee1154802cc253b"
-                
-        |>
-        ,
-        <|
-            "File"
-            ->
-            File[
-                "Kernel/ReductionTools/DatabaseOfSmithDecompositions.mx"
-                    
-            ]
-            ,
-            "Hash"
-            ->
-            "a129b7a6e9337fd419418a79f086c3ecf3add105a10277ffd329f8fa5de4ed2d"
                 
         |>
         ,
@@ -409,7 +395,7 @@
             ,
             "Hash"
             ->
-            "6b3cb5d15f11519a1b3af2a9677d84a492390d8e4e0477ce4a7038b42c6e6f4b"
+            "31dca47d5fa72d3cef5699c40a1494265c9874a13e64119975a46521e3fa6c6a"
                 
         |>
         ,
@@ -448,7 +434,7 @@
             ,
             "Hash"
             ->
-            "27ad7977c047e7ad2318206125a63133f8290e69126635e9b8910ce51063f036"
+            "dfe0c9363caff52c9c1e8bb44f040c7cb054db57a6c48d24ec1a90b77976b7c5"
                 
         |>
         ,
@@ -461,7 +447,7 @@
             ,
             "Hash"
             ->
-            "e064f7954352c4c8a7b5b78ae801962f16e416fe646d8b146d55f056faca567b"
+            "945d4eac86783b7fd8116a4c8d92066c21138b88a0113f83cc65b9e25b4776df"
                 
         |>
         ,
@@ -474,7 +460,7 @@
             ,
             "Hash"
             ->
-            "84bb6d7b335b1b56f9b127277aaa1daa4f7b6f905c95f2a5a99323fd15296430"
+            "4b8fc7220bf52a0be71cccc3ebb06245cb593dc7d7aea883615e8d9997cf586b"
                 
         |>
         ,
@@ -500,7 +486,7 @@
             ,
             "Hash"
             ->
-            "43dc2816869859d123fe354b9c90bfabed9ae3a9e09cb71817330a329e745d8d"
+            "4d0f1f39ff17c9aa78babad49cdac85f7fd4fa3381da8e7ede2b8d924333b58a"
                 
         |>
         ,
@@ -513,7 +499,7 @@
             ,
             "Hash"
             ->
-            "6ea5837795cc3dc0199fe0ab3f51045a186ab993895619372923c5ca7443b16b"
+            "294ca7ae87156f88ea8fd1bb00f9231ab22c56cce954efb12141e61a7312abea"
                 
         |>
         ,
@@ -526,7 +512,7 @@
             ,
             "Hash"
             ->
-            "446f6b6f394309ab7e22e0a2d4f819f475017cd0cfa38165f3842bca391163f4"
+            "efc58148469dfcc3daece578089d979b562bb395990dfbb553d33411081dbde2"
                 
         |>
         ,
@@ -579,7 +565,7 @@
             ,
             "Hash"
             ->
-            "44f1467b7937e430694746fcef51e45883d9508320efeab5542e92f638cb3ed5"
+            "c8dd8f587555ee55984ce20b1c4673cac6f6b8dc7bf768ceda2c5907160c787b"
                 
         |>
         ,
@@ -605,7 +591,7 @@
             ,
             "Hash"
             ->
-            "ae7d311ddbdcca5b49c90efce8c3739eab7b5a68e270fea5575d37c83c49c24f"
+            "f7d9363e59e13b06094fa716466deea537294d1309b85ea01b6ae6ccbf156068"
                 
         |>
         ,
@@ -658,7 +644,7 @@
             ,
             "Hash"
             ->
-            "4fc58c8689f5ec0f701a9c2017e643eab98a5bf9b191c7844eeff047316313f7"
+            "810b17e4341387453d1a1df5c3857231d7c72e4f13359de6d9a3548010e24d37"
                 
         |>
         ,
@@ -804,6 +790,20 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/BMS.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "fcdd1ac7a4f9eb8f5b7c867b007cdf6a7a558782afe82db4d8b3d1d28d5dd0e2"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/BraidedQ.nb"
                     
             ]
@@ -811,6 +811,20 @@
             "Hash"
             ->
             "45fac0e0c74e78bcf86a73b2b7a8a84aeda00f7b8254c787994bf4a31504de81"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/BreakMultiplicativeSymmetry.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "0e20bf5a81dfb14bc55395a729c122c2cb4a0506109ba5177afe21edc8c03ad5"
                 
         |>
         ,
@@ -852,7 +866,7 @@
             ,
             "Hash"
             ->
-            "dd7e8f7bf218b65ad6bd4ed42a94b380bbd0d140880c06fac90da420d62daef6"
+            "8b7d2f4fa99742d44b95ce08edc1b8b3e4242b2fe591d0eabac764e0c268b358"
                 
         |>
         ,
@@ -1463,7 +1477,7 @@
             ,
             "Hash"
             ->
-            "5e75486d3ca373548bfe73c42573a60084c9f89f8e1ef38c88b8139250d49fdc"
+            "a51a709eadb1910bb6016caf6863dbe24b14b6d8d2cfac47e308b8b755710d3d"
                 
         |>
         ,
@@ -1527,6 +1541,19 @@
             ->
             File[
                 "Documentation/English/ReferencePages/Symbols/OriginalReferencePages/AGT.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            $Failed
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/OriginalReferencePages/DES.nb"
                     
             ]
             ,
@@ -1769,6 +1796,34 @@
             "File"
             ->
             File[
+                "Documentation/English/ReferencePages/Symbols/RestrictMultiplicativeSymmetries.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "7b33a0387b500f3f3be1e5f143ef5c029318fbdb7946e0f0c35ae202f9ee2907"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/RestrictMultiplicativeSymmetry.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "b294f1ad058b746f0d702643c92263957d11c288812e391047c36c9271d99fab"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
                 "Documentation/English/ReferencePages/Symbols/RibbonQ.nb"
                     
             ]
@@ -1776,6 +1831,34 @@
             "Hash"
             ->
             "bd6f2a0b13347811abe2c996dbe05c507422a81058fbf8704fafd011437d323f"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/RMatrices.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "2b4c87e8d8d72bbc68551e4bd447ffbbda6debbf3782099985f2799372d582c0"
+                
+        |>
+        ,
+        <|
+            "File"
+            ->
+            File[
+                "Documentation/English/ReferencePages/Symbols/RMS.nb"
+                    
+            ]
+            ,
+            "Hash"
+            ->
+            "9a0a8a4ee20801ac7d5789165e25b1ebffe98caf2c59af9d923b67721c716f4f"
                 
         |>
         ,

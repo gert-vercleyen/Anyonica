@@ -662,7 +662,7 @@ SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
     Table[ Rank[ring], 3 ]
   ];
 
-PackageScope["PSymbols"]
+PackageExport["PSymbols"]
 
 (* PivotalSymbols *)
 PSymbols[ r_FusionRing ] := 
@@ -670,3 +670,87 @@ PSymbols[ r_FusionRing ] :=
 
 PSymbols[ c_FusionCategory ] :=
   PivotalStructure[ c ];
+
+PackageExport["FilterPRules"]
+
+FilterPRules[ l_List ] := 
+  Cases[ l, HoldPattern[ \[ScriptP][_] -> _ ] ];
+
+(* Formatting of symbols *)
+(*
+PackageExport["TypesetSymbols"]
+
+TypesetSymbols::usage = 
+  "TypesetSymbols[] turns on 2D printing notation for the various symbols" <>
+  " used in Anyonica."
+
+Get["Notation`"]
+
+TypesetSymbols[] := 
+  (
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalF]",GridBox[List[List["d_","e_","f_"]]],GridBox[List[List["a_","b_","c_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalF]","[",RowBox[List["a_",",","b_",",","c_",",","d_",",","e_",",","f_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalR]","c_",GridBox[List[List["a_","b_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalR]","[",RowBox[List["a_",",","b_",",","c_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptD]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptD]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptP]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptP]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptT]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptT]","[","a_","]"]]]]];
+  )
+
+*)
+
+PackageExport["FusionRingFromFSymbols"]
+
+FusionRingFromFSymbols::usage = 
+  "FusionRingFromFSymbols[symb] returns a fusion ring whose F-symbols equal symb.";
+FusionRingFromFSymbols::invalidsymbols = 
+  "The symbols `1` are not a valid list of F-symbols";
+FusionRingFromFSymbols::notimplementedyet = 
+  "This function is not implemented yet for symbols with multiplicity";
+
+FusionRingFromFSymbols[ fSymb_ ] := 
+  Which[
+    !PPSQ[ fSymb ], 
+    Message[ FusionRingFromFSymbols::invalidsymbols, fSymb ]; Abort[],
+    DeleteDuplicates[ Length /@ Keys @ fSymb ] =!= {6}, 
+    Message[ FusionRingFromFSymbols::notimplementedyet ]; Abort[],
+    True, 
+    MultFreeFusionRingFromFSymbols[ fSymb ]
+  ];
+
+MultFreeFusionRingFromFSymbols[ fSymb_ ] := 
+  Module[ { r, nzsc }, 
+    nzsc = Cases[ Keys @ fSymb, F[ a_, b_, 1, c_, c_, b_ ] :> { a, b, c } ];
+    r = Max @ Flatten @ nzsc;
+    FusionRing[ 
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+    ]
+  ];
+
+
+
+PackageExport["FusionRingFromRSymbols"]
+
+FusionRingFromRSymbols::usage = 
+  "FusionRingFromRSymbols[symb] returns a fusion ring whose R-symbols equal symb.";
+FusionRingFromRSymbols::invalidsymbols = 
+  "The symbols `1` are not a valid list of R-symbols";
+FusionRingFromRSymbols::notimplementedyet = 
+  "This function is not implemented yet for symbols with multiplicity";
+
+FusionRingFromRSymbols[ rSymb_ ] := 
+  Which[
+    !PHSQ[ rSymb ], 
+    Message[ FusionRingFromRSymbols::invalidsymbols, rSymb ]; Abort[],
+    DeleteDuplicates[ Length /@ Keys @ rSymb ] =!= {3}, 
+    Message[ FusionRingFromRSymbols::notimplementedyet ]; Abort[],
+    True, 
+    MultFreeFusionRingFromRSymbols[ rSymb ]
+  ];
+
+MultFreeFusionRingFromRSymbols[ rSymb_ ] := 
+  Module[ { r, nzsc }, 
+    nzsc = List @@@ Keys @ rSymb; 
+    r = Max @ Flatten @ nzsc;
+    FusionRing[ 
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+    ]
+  ];

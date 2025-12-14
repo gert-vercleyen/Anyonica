@@ -5,11 +5,20 @@
 
 Package["Anyonica`"]
 
-ChangeProperty[ ring_FusionCategory, list_ ] :=
+ChangeProperty::badarg = 
+	"`1` should be a rule or a list of rules";
+
+ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
-    opts = (* All defining properties of previous fusion ring *)
-    Normal @ First[ List @@ ring ];
-    AddOptions[opts][FusionCategory][ Sequence @@ list ]
+    opts = (* All defining properties of previous fusion cat *)
+			ReleaseHold @ Normal @ First[ List @@ cat ];
+		Which[ 
+			MatchQ[ prop, { _Rule .. } ],
+ 				AddOptions[opts][FusionCategory][ Sequence @@ prop ],
+ 			MatchQ[ prop, _Rule ], 
+				AddOptions[opts][FusionCategory][ prop ],
+			True, Message[ChangeProperty::badarg,prop]
+		]
   ];
 
 
@@ -77,14 +86,14 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
     rhs[a_,b_,c_] :=
       sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
 
-    eqns =
+    eqns = 
       TEL @
       OptionValue["SimplifyBy"][
         Cases[
           Tuples[ Range @ r, 3 ],
           { a_, b_, c_ } /;
           rhs[a,b,c] =!= 0 :>
-					p[c] / (p[a] p[b] ) == rhs[a,b,c]
+					(p[a] p[b] )/p[c] == rhs[a,b,c]
         ]/.p[1] -> 1
       ];
 
@@ -134,13 +143,13 @@ Protect[ \[ScriptD] ];
 PackageExport["QuantumDimensions"]
 
 QuantumDimensions::usage =
-  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
+  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(Tr\), \(L\)]\)(a) of the simple objects "<>
   "of the fusion category cat";
 
 QuantumDimensions[ cat_FusionCategory ] :=
   With[{ d = CC[cat] },
     Table[
-      \[ScriptD][a] -> \[ScriptP][a] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
+      \[ScriptD][a] -> \[ScriptP][a] / F[d[a],a,d[a],d[a],1,1], { a, Rank @ cat }
     ]/.FSymbols[cat]/.PivotalStructure[cat]
   ];
 
@@ -188,9 +197,16 @@ SphericalQ[ cat_FusionCategory ] :=
     If[
       MissingQ[ dims ],
       Message[ SphericalQ::nodims ]; $Failed,
-      And @@ Table[ RootReduce[ \[ScriptD][i] == \[ScriptD][i+1] /. dims ], { i, NSD[cat]+1, Rank[cat], 2 } ]
+      And @@ 
+			Table[ 
+				RootReduce[ \[ScriptD][ pair[[1]] ] == \[ScriptD][ pair[[2]] ] /. dims ], 
+				{ pair, conjugatePairs @ cat } 
+			]
     ]
   ];
+
+conjugatePairs[ cat_ ] := 
+	List @@@ Union @ DeleteCases[ Sort /@ Normal @ CC @ FusionRing @ cat, i_ -> i_ ];
 
 CheckFormalCode[c1_,c2_]:=
 	With[{fc1 = FormalCode @ c1, fc2 = FormalCode @ c2 },
@@ -202,70 +218,70 @@ CheckFusionRing[c1_,c2_] :=
 		If[ !eq, Throw @ False ]
 	];
 
-FullInvariants[c1_]:=
-	Module[ { zeroFs,invariants },
-		zeroFs = Select[ FSymbols[c1], Last[#]===0& ][[;;,1]];
-		(* Invariants of F and R symbols *)
-		invariants =
-			GaugeInvariants[
-				FusionRing @ c1,
-				"Zeros" -> zeroFs,
-				"IncludeOnly" -> If[ !BraidedQ[c1], { "FSymbols" }, { "FSymbols", "RSymbols" } ]
-			];
 
-		(* Invariants from pivotal structure *)
-		Join[
-			invariants,
-			Array[ \[ScriptD], Rank[c1] ]
-		]
-	];
 
 PackageExport["EquivalentFusionCategoriesQ"]
 
-Options[EquivalentFusionCategoriesQ] = { "PreEqualCheck" -> Identity };
+Options[EquivalentFusionCategoriesQ] = 
+	{ 
+		"PreEqualCheck" -> Identity,
+		"UseFormalCode" -> True
+	};
 
 EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ] :=
 Catch[
 	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test,eqQdims},
-	CheckFormalCode[c1,c2];
+	If[
+		OptionValue["UseFormalCode"],
+		CheckFormalCode[c1,c2];
+	];
 	CheckFusionRing[c1,c2];
+	check = OptionValue["PreEqualCheck"];
 
 	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
 
-  If[ PreEqualCheck[ Sort[qDims1] ] != PreEqualCheck[ Sort[ qDims2 ] ], Throw @ False ];
+	If[ check[ Sort[qDims1] ] != check[ Sort[ qDims2 ] ], Throw @ False ];
 
-  fra = FRA @ FusionRing @ c1;
+	fra = FRA @ FusionRing @ c1;
 
-  eqQDims =
-    Catch[
-      Do[
-        If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
-        , { a, fra }
-      ]; Throw @ False
-    ];
+	eqQDims =
+		Catch[
+		Do[
+			If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
+			, { a, fra }
+		]; Throw @ False
+		];
 
-  If[ !eqQDims, Throw @ False ];
+	If[ !eqQDims, Throw @ False ];
 
-  test = OptionValue["PreEqualCheck"];
-	invariants1 = FullInvariants[c1];
-	invariants2 = FullInvariants[c2];
+	test = OptionValue["PreEqualCheck"];
+		invariants1 = FullInvariants[c1];
+		invariants2 = FullInvariants[c2];
 
 
 	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
-	If[ BraidedQ[c1] && BraidedQ[c2],
+	If[ 
+		BraidedQ[c1] && BraidedQ[c2],
 		rSymb1 = RSymbols[c1]; rSymb2 = RSymbols[c2],
 		rSymb1 = rSymb2 = {}
 	];
 
-	rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
+		rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
 
 	Do[
 		If[
-		ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ],  True ]
-		, {a,fra}
+			ConsistentQ[ 
+				Thread[ 
+					(invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) 
+				]/.{ False -> {False}, True -> {True} }, 
+				TrueQ @* test 
+			],  
+			Throw @ True 
+		]
+		, { a, fra }
 	];
 
-	Throw @ False
+		Throw @ False
 	]
 ];
 
@@ -402,22 +418,24 @@ FCA::usage =
 
 FCA = FusionCategoryAutomorphisms;
 
-	
 Options[AutomorphismEquations] = 
 	{ "Type" -> { "Braided", "Pivotal" } };
 
+(* TODO: Add equations for pivotal symbols *)	
 AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
-	Module[{ring, permute, transform, symbols, nbq },
-		nbq = !BraidedQ[cat] || FreeQ["Braided"] @ OptionValue["Type"];
-		
+	Module[{ring, permute, transform, symbols, symbolsValues, bq, pq },
+		bq = BraidedQ[cat] && MemberQ["Braided"] @ OptionValue["Type"];
+		pq = MemberQ["Pivotal"] @ OptionValue["Type"];
+
 		ring = FusionRing @ cat;
 		
 		permute = 
 			If[
 				perm === Range @ Rank @ cat,
 				Identity,
-				ReplaceAll[
-					If[ nbq, Identity, Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ] ] @ 
+				ReplaceAll[ 
+					If[ pq,  Append[ \[ScriptD][a_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
+					If[ bq,  Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
 					{ 
 						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
 						F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
@@ -427,7 +445,8 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 		
 		transform = 
 			ReplaceAll[ 
-				If[ nbq, Identity, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ] ] @
+				If[ pq, Append[ \[ScriptD][i_] :> permute @ \[ScriptD][i] ], Identity ] @
+				If[ bq, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ], Identity ] @
 				{ 
 					g[i__] :> permute @ g[i], 
 					F[i__] :> permute @ GaugeTransform[g] @ F[i]
@@ -437,13 +456,20 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 		symbols = 
 			Join[
 				FSymbols @ ring,
-				If[ nbq, {}, RSymbols @ ring ]
+				If[ bq, RSymbols @ ring, {} ],
+				If[ pq, Array[ \[ScriptD], Rank @ ring ], {} ]
 			];
-			
+
+		symbolsValues = 
+			Dispatch @
+			Join[
+				FSymbols @ cat, 
+				If[ bq, RSymbols @ cat, {} ], 
+				If[ pq, QuantumDimensions @ cat, {} ]
+			];
 		
 		TrimEquationList[
-			Thread[ symbols == transform @ symbols ]/.
-			Dispatch[ Join[ FSymbols @ cat, If[ nbq, {}, RSymbols @ cat ] ] ]
+			Thread[ symbols == transform @ symbols ]/.symbolsValues
 		]
 	]
 

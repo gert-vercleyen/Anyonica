@@ -55,7 +55,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
     Which[
       dir == "Home"
       ,
-      dir = CreateDirectory[FileNameJoin[{$HomeDirectory,"LOGFILES_D"<> dateString }]];
+      dir = CreateDirectory @ FileNameJoin[{$HomeDirectory,"LOGFILES_D"<> dateString }];
       dataDir = FileNameJoin[ { dir, "Data" } ];
       CreateDirectory[dataDir];
       Message[ PrintLog::tempdir, dir ]
@@ -142,7 +142,7 @@ ApplyCellGrouping[ notebook_Notebook ] :=
   ];
 
 AddCell[ fileName_, nbo_, cell_ ] :=
-  Module[ {},
+  (
     SelectionMove[ nbo, After, Notebook ];
     NotebookWrite[
       nbo,
@@ -151,7 +151,7 @@ AddCell[ fileName_, nbo_, cell_ ] :=
     SelectionMove[ nbo, After, Notebook ];
 
     NotebookSave[ nbo ];
-  ];
+  );
 
 stringID[ id_ ] :=
   StringDrop[ ToString[id], 1 ];
@@ -160,18 +160,14 @@ dataFileName[ id_, dir_, name_ ] :=
   FileNameJoin[{ dir, name <> "_" <> stringID[id]<>".nb"}];
 
 safeExport[ name_, data_ ] :=
-  If[
-    ByteCount[data] < 10^6
-    ,
-    Block[{ Internal`$ContextMarks = False },
+  Block[{ $ContextPath = Append["System`Dump`"] @ $ContextPath },
+    If[
+      ByteCount[data] < 10^6
+      ,
       Export[ name, data ]
+      ,
+      Export[ name, Iconize[data,"Large amount of data"] ]
     ]
-    ,
-    Block[{ Internal`$ContextMarks = False, cd },
-      cd = Compress[data];
-      Export[ name, Hold[Uncompress][cd] ]
-    ]
-    
   ];
 
 inputStyle[ string_ ] :=
