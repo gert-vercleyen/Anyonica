@@ -149,8 +149,8 @@ ClashingRulesQ[ l1_, l2_ ] :=
 PackageExport["ReduceBinomialSystem"]
 
 ReduceBinomialSystem::usage =
-"ReduceBinomialSystem[binomials,vars] returns an association containing a reduced set of polynomials, a "<>
-"boolean expression encoding the assumptions on the variables, and assignments of variables in terms of " <>
+"ReduceBinomialSystem[binomials,vars] returns an association containing (1) a reduced set of polynomials under" <>
+"the assumption none of the variables are 0, (2) a boolean expression encoding the assumptions on the variables, and (3) assignments of variables in terms of " <>
 "those that appear in the reduced polynomials.";
 
 ReduceBinomialSystem::wrongvarsformat =
@@ -236,11 +236,161 @@ Options[ReduceBinSysHermite] :=
     Options[ ReduceSemiLinModZ ],
     { 
       "MaxEquationsPerPartition" -> 4096,
-      "SimplifyIntermediateResultsBy" -> Identity 
+      "SimplifyIntermediateResultsBy" -> Identity,
+      "ExternalEvaluation" -> None
     }
   ];
 
-ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] := 
+ReduceBinSysHermite::badopt = 
+  "Option \"ExternalEvaluation\" should be either None or \"Julia\"."
+
+ReduceBinSysHermite[ args__, opts:OptionsPattern[] ] :=
+  Switch[ OptionValue["ExternalEvaluation"],
+    None, AddOptions[opts][ReduceBinSysHermiteLocal][ args],
+    "Julia", AddOptions[opts][ReduceBinSysHermiteJulia][ args ],
+    _, Message[ ReduceBinSysHermite::badopt ]; Abort[]
+  ];
+
+Options[ReduceBinSysHermiteJulia] = 
+  Options[ReduceBinSysHermite];
+
+ReduceBinSysHermiteJulia[ equations_, variables_, opts : OptionsPattern[] ] := 
+  Module[ { session, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
+    subMat1, reducedMat1, matSubsys2, reducedMat2, newRHS, reducedrhs2, rhsFinal, 
+    u, h, mat, t, result, trm1, trm2, combinedMat, check }, 
+
+    procID  = ToString @ Unique[];
+		session = StartExternalSession["Julia"];
+    check   = OptionValue["PreEqualCheck"];
+
+    checkValidity[ h_, rhs_ ] :=
+      With[{ rank = Length @ h },
+        If[ 
+          rank =!= 0 && !MatchQ[ check /@ rhs[[ rank + 1 ;; ]] , { 1 ... } ],
+          printlog["Gen:has_False", { procID, { h, rhs } } ];
+          Throw @ <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>
+        ]
+      ];
+
+    { t, result } = 
+    AbsoluteTiming[
+      Catch[
+
+      printlog["RBSVHDJ:init", { procID, Length @ equations, subsysSize } ];
+
+      (*Transform the system to a matrix equation. This step is expensive 
+        so best to do it only once*)
+      s = Head @ First @ variables;
+
+      { mat, rhs } = 
+        AddOptions[opts][BinToSemiLin][ equations, variables, s ];
+
+      If[ 
+        TrueQ[ MemberQ[ 0 ] @ Map[ check, rhs ] ], 
+        printlog["Gen:has_False", { procID, { mat, rhs } } ];
+        Throw @ 
+        <| 
+          "Polynomials" -> {1}, 
+          "Assumptions" -> False, 
+          "Values" -> {}  
+        |> 
+      ];
+      
+      (* If creating matrix failed we get a string *)
+      If[ Head @ mat === String, Return @ { False } ];
+          
+      (* ================================================= *)
+      (* Reduction of subsystem of eqns who's RHS equals 1 *)
+      (* ================================================= *)
+
+      rhs1Pos = Flatten @ Position[ rhs, 1, 1 ];
+      subMat1 = mat[[rhs1Pos]]; 
+
+      printlog["RBSVHD:toric", { procID, First @ Dimensions @ subMat1 }];
+
+      If[ 
+        subMat1 === {{}}
+        ,
+        { trm1, reducedMat1 } = AbsoluteTiming @ {{}} 
+        ,
+        { trm1, reducedMat1 } =
+          AbsoluteTiming @  
+          JuliaHNF[ session, subMat1 ]
+      ];
+
+      printlog["RBSVHD:toricresults", { procID, trm1, First @ Dimensions @ reducedMat1 }];
+
+      (* ========================================================= *)
+      (* Reduction of subsystem of eqns who's RHS does not equal 1 *)
+      (* ========================================================= *)
+      
+      rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
+      
+      (* Now the RHS matters => need to combine mat with RHS when sorting *) 
+      printlog["RBSVHD:nontoric", { procID, Length @ rhsNon1Pos }];
+
+      { trm2, { reducedMat2, reducedrhs2 } } =
+        AbsoluteTiming @ 
+        If[ 
+          rhsNon1Pos === {}
+          ,
+          { {}, {} }
+          ,
+          subMat2 = mat[[rhsNon1Pos]];
+          non1RHS = rhs[[rhsNon1Pos]];
+          { u, h } =  JuliaHNFWithTransform[ session, subMat2 ]; 
+
+          newRHS = PowerDot[ non1RHS, u ];
+
+          rank  = Length @ h; (* all zero-rows have been deleted from h *)
+
+          checkValidity[ h, newRHS ];
+
+          { h, newRHS[[;; rank ]] }
+        ];
+      
+      printlog["RBSVHD:nontoricresults", { procID, trm2, First @ Dimensions @ reducedMat2 } ];
+
+      combinedMat = 
+        SparseArray @ 
+        Join[ Normal @ reducedMat1, Normal @ reducedMat2 ];
+
+      printlog["RBSVHDJ:intermediatereduction", { procID, First @ Dimensions @ combinedMat } ];
+      (* Final Hermite Decomposition of combination two reduced systems *)
+      { u, h } = 
+        JuliaHNFWithTransform[ session, combinedMat ];
+      
+      (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
+      rhsFinal = 
+        PowerDot[
+          PadLeft[ reducedrhs2, Length[reducedMat1] + Length[reducedMat2], 1 ], 
+          u 
+        ];
+      
+      checkValidity[ h, rhsFinal ];
+      
+      <| 
+        "Polynomials" ->
+          TPL @ ToPolynomial @ TEL @
+          Thread[ PowerDot[ variables, h ] == rhsFinal[[;;Length @ h]] ],
+        "Assumptions" -> And @@ Thread[variables != 0 ],
+        "Values" -> Thread[ variables -> variables ]
+      |>
+    ]
+    ];
+
+    printlog["Gen:results", {procID, result, t }];
+
+    DeleteObject @ session; (* Close julia session *)
+
+    result
+    
+  ];
+
+Options[ReduceBinSysHermiteLocal] = 
+  Options[ReduceBinSysHermite];
+
+ReduceBinSysHermiteLocal[ equations_, variables_, opts : OptionsPattern[] ] := 
   Module[ { nSubsys, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
     subMat1, reducedMat1, matSubsys2, mat2, rhs2, reducedMat2, reducedrhs2, rhsFinal, 
     u, h, mat, t, result, trm1, trm2, combinedMat, preEqCheck }, 
@@ -268,7 +418,7 @@ ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] :=
       If[ 
         TrueQ[ MemberQ[ 0 ] @ Map[ preEqCheck, rhs ] ], 
         printlog["Gen:has_False", { procID, { mat, rhs } } ];
-        Return @ 
+        Throw @ 
         <| 
           "Polynomials" -> {1}, 
           "Assumptions" -> False, 
@@ -285,8 +435,9 @@ ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] :=
         Return @ 
         <| 
           "Polynomials" ->
-            TPL @ Thread[ PowerDot[ variables, h ] - PowerDot[ rhs, u ] ],
-          "Assumptions" -> True,
+            TPL @ ToPolynomial @ TEL @
+            Thread[ PowerDot[ variables, h ] == PowerDot[ rhs, u ] ],
+          "Assumptions" -> And @@ Thread[ variables != 0 ],
           "Values" -> Thread[ variables -> variables ]
         |>
       ];
@@ -377,13 +528,14 @@ ReduceBinSysHermite[ equations_, variables_, opts : OptionsPattern[] ] :=
       
       <| 
         "Polynomials" ->
-          TPL @ Thread[ PowerDot[ variables, h ] - rhsFinal ],
-        "Assumptions" -> True,
+          TPL @ ToPolynomial @ TEL @
+          Thread[ PowerDot[ variables, h ] == rhsFinal ],
+        "Assumptions" -> And @@ Thread[ variables != 0 ],
         "Values" -> Thread[ variables -> variables ]
       |>
     ];
 
-    printlog["RBSVHD:reduction",{procID,t,result}];
+    printlog["Gen:results", {procID, result, t }];
 
     result
   ];
