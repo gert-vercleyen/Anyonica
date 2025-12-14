@@ -601,6 +601,9 @@ PreparePentagonSolverInput::notyetsupported =
   "Only the option \"Method\" -> \"HermiteDecomposition\" is supported for solving pentagon equations.\n"<>
   "Proceeding with option value equal to \"HermiteDecomposition\"";
 
+PreparePentagonSolverInput::badintersection =
+  "It is not possible at the moment to give both a subsolution and a list of known variables whose F-symbols intersect."
+
 Options[PreparePentagonSolverInput] :=
 Union[
   {
@@ -612,7 +615,8 @@ Union[
     "UseDatabaseOfZeroValues" -> True,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
-    "FindZerosUsingSums" -> True
+    "FindZerosUsingSums" -> True,
+    "KnownSymbols" -> {} 
   },
   Options[FindZeroValues],
   Options[ReduceBinomialSystem]
@@ -643,6 +647,8 @@ Module[
     OptionValue["StoreDecompositions"];
   subsSol =
     OptionValue["InjectSolution"];
+  knowns = 
+    OptionValue["KnownSymbols"];
 
   procID =
     ToString[Unique[]];
@@ -680,6 +686,14 @@ Module[
       {}
     ];
 
+    If[ 
+      IntersectingQ[ Keys @ compatibleSol, Keys @ knowns ], 
+      Message[PreparePentagonSolverInput::badintersection];
+      Abort[]
+    ];
+
+    knowns = Union[ compatibleSol, knowns ];
+
     allFSymbols = FSymbols @ ring;
 
     vacuumSymbols = Cases[ allFSymbols, $VacuumFPattern ];
@@ -688,11 +702,11 @@ Module[
       Complement[
         allFSymbols,
         vacuumSymbols,
-        GetVariables[ compatibleSol, F ]
+        Keys @ knowns
       ];
 
     tower =
-      PentagonTower[ ring, "Knowns" -> compatibleSol ];
+      PentagonTower[ ring, "Knowns" -> knowns ];
 
     { binEqns, sumEqns } =
       BinSumEquationsFromTower[ tower ];
@@ -717,7 +731,7 @@ Module[
     gaugeSymmetries =
       RestrictMultiplicativeSymmetries[
         gaugeSymmetries,
-        vacuumSymbols ~ Join ~ compatibleSol[[;;,1]],
+        vacuumSymbols ~ Join ~ Keys @ knowns, 
         g
       ];
 
@@ -880,7 +894,7 @@ Module[
         ( # == 0 )& /@
         AddOptions[opts][ReduceBinomialSystem][ 
           neverZeroBinEqns, 
-          Complement[ fSymbols, unionZeros ] 
+          GetVariables[neverZeroBinEqns, F ]
         ]["Polynomials"]
         ,
         newSumEqns
@@ -913,7 +927,7 @@ Module[
               "InvertibleMatrices"  -> ( invMats/.dz ),
               "SpecificFs" -> {},
               "ExtraFixedFs"-> extraFixedFs,
-              "SubSolution" -> compatibleSol,
+              "SubSolution" -> knowns,
               "Zeros" -> z
             |>
           ],
@@ -942,7 +956,7 @@ Module[
               "InvertibleMatrices" -> (invMats/.dz/.specificFixedFs // DeleteCases[ {{n_?NumericQ}} /; n != 0 ]),
               "SpecificFs" -> specificFixedFs,
               "ExtraFixedFs" -> extraFixedFs,
-              "SubSolution" -> compatibleSol,
+              "SubSolution" -> knowns,
               "Zeros" -> z
             |>
           ],
