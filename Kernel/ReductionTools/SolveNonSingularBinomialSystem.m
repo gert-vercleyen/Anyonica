@@ -123,17 +123,10 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       (* Check whether system is consistent *)
       If[
         TrueQ[ MemberQ[False] @ reducedSystem ],
+        printlog["SNSBS:has_false_or_zero", {procID, Expand[reducedSystem]}];
         Return @ {}
       ];
       
-      (* Check whether inconsistent system *)
-      If[
-        !AddOptions[ConsistentQ][opts][ newEqns, ValidEqnQ[symbol] ]
-        ,
-        printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
-        Return @ {}
-      ];
-
       (* Solve the logarithm of the binomial equations *)
       If[
         symmetries === None,
@@ -150,7 +143,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         Return @ {}
       ];
 
-      preSolutions =
+      preSolutions = EchoLabel["PreSolutions"] @
         Catch[
           Thread[ newVars -> # ]& /@
           AddOptions[opts][SolveSemiLinModZ][
@@ -183,7 +176,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         ];
 
       (* Check solutions against set of constraints and revert the variables for the valid solutions *)
-      invalidPos = (* TODO: check whether parallelization is feasible and useful *)
+      invalidPos = EchoLabel["InvalidPos"] @ (* TODO: check whether parallelization is feasible and useful *)
         Position[
           preSolutions,
           sol_/; Not[ NotInvalidNonZeroSolutionQ[ constraints, preEqCheck ] @ sol ],
@@ -191,7 +184,10 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
           Heads -> False
         ];
       
-      If[ invalidPos != 0, printlog[ "SNSBS:constraints_not_satisfied", { procID, preSolutions, constraints, invalidPos } ] ];
+      If[ 
+        Length @ Flatten @ invalidPos =!= 0, 
+        printlog[ "SNSBS:constraints_not_satisfied", { procID, preSolutions, constraints, invalidPos } ] 
+      ];
       
       Delete[ preSolutions, invalidPos ] /. revertVars /. internalParam -> param
      
@@ -199,8 +195,6 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
 
     printlog["SNSBS:solutions", {procID, result} ];
     printlog["Gen:results", {procID, result, absTime} ];
-
-    Remove[symbol, internalParam];
 
     result
   ]
