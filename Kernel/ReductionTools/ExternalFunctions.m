@@ -1,7 +1,14 @@
+Package["Anyonica`"]
+
 (* Some functions from mathematica are outdated or non-performant 
     Here we define improved versions by relying on Julia and the
     Oscar package
  *)
+
+(* TODO: we need to add columns of 0's at the end of the matrix 
+   since the way we create sparse matrices with OSCAR does 
+	 not take those last columns into account *)
+
 
 PackageExport["JuliaHNFWithTransform"]
 
@@ -17,14 +24,14 @@ JuliaHNFWithTransform[ sparseMat_SparseArray ] :=
 	Module[{ session, result }, 
 		session = StartExternalSession["Julia"];
 		
-		result = juliaHNFWithTransform[ session, sparseMat ];
+		result = JuliaHNFWithTransform[ session, sparseMat ];
 		
 		DeleteObject[session];
 		
 		result
 	];
 
-juliaHNFWithTransform[ session_, sparseMat_ ] := 
+JuliaHNFWithTransform[ session_, sparseMat_ ] := 
 	Module[ 
 		{ dims, arg, hnfWithTransform, u, h },
 		
@@ -76,10 +83,9 @@ juliaHNFWithTransform[ session_, sparseMat_ ] :=
 				#[[2]] > dims[[2]]& 
 			];
 
-		SparseArray /@ 
 		{ 
-			u/.{i_,j_,k_}:>({i,j-dims[[2]]}->k),(* shift u to the left *)
-			h/.{i_,j_,k_}:>({i,j}->k) 
+			SparseArray[ u/.{i_,j_,k_}:>({i,j-dims[[2]]}->k) ],(* shift u to the left *)
+			SparseArray[ h/.{i_,j_,k_}:>({i,j}->k), { Max @ h[[;;,1]], dims[[2]] } ]
 		} 
 		
 	];
@@ -93,33 +99,35 @@ JuliaHNF::usage =
   "compute the Hermite normal form of the sparse array sparseMat by using"<>
   " the OSCAR package for Julia."
 
-juliaHNF[ sparseMat_ ] := 
+JuliaHNF[ sparseMat_SparseArray ] := 
 	Module[{ session, result }, 
 		session = StartExternalSession["Julia"];
 		
-		result = juliaHNF[ session, sparseMat ];
+		result = JuliaHNF[ session, sparseMat ];
 		
 		DeleteObject[session];
 		
 		result
 	];
 
-juliaHNF[ session_, sparseMat_ ] := 
+JuliaHNF[ session_, sparseMat_SparseArray ] := 
 	Module[ 
-		{ arg, hnf },
+		{ dims, arg, hnf, h, m  },
 		
 		ExternalEvaluate[session,"using Oscar"];
 		
 		arg = 
-				Transpose /@
-				Values @
-				GroupBy[
-					ReplaceAll[({i_,j_}->k_):>{i,j,k}] @
-					Most @ 
-					ArrayRules @ 
-					sparseMat,
-					First -> Rest
-				];
+			Transpose /@
+			Values @
+			GroupBy[
+				ReplaceAll[({i_,j_}->k_):>{i,j,k}] @
+				Most @ 
+				ArrayRules @ 
+				sparseMat,
+				First -> Rest
+			];
+
+		dims = Dimensions @ sparseMat;
 
 		hnf  = 
 			ExternalFunction[ 
@@ -146,6 +154,8 @@ juliaHNF[ session_, sparseMat_ ] :=
 				end
 				"
 		  ];
-		  
-		SparseArray[ hnf[arg]/.{i_,j_,k_}:>({i,j}->k)]
+
+		h = hnf[arg];
+		m = Max @ h[[;;,1]];
+		SparseArray[ h/.{i_,j_,k_} :> ({i,j}->k), { m, dims[[2]] } ]
 	];
