@@ -787,7 +787,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:solutions", {id_,solutions_,___
   ];
   
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:constraints_not_satisfied", { id_, preSolutions_, constraints_, invalidPos_ } ] :=
-  Module[{ fn1, fn2, fn3 },
+  Module[{ fn1, fn2 },
     fn1 = dataFileName[ id, dir, "PreSolutions" ];
     safeExport[ fn1, preSolutions ];
     fn2 = dataFileName[ id, dir, "Constraints" ];
@@ -2058,7 +2058,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toric", { id_, length_ } ] :=
     nbo,
     Cell[
       TextData[{
-        inputStyle[ "Started reduction of toric subsystem with "<> ToString[length] <> " equations." ]
+        inputStyle[ "Started reduction of toric subsystem with "<> ToString[length] <> " non-equivalent equations." ]
       }],
       "Text",
       CellTags -> { id, "Info" }
@@ -2087,7 +2087,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:nontoric", { id_, length_ } ] 
     nbo,
     Cell[ 
       TextData[{
-        inputStyle[ "Started reduction of non-toric subsystem with "<> ToString[length] <> " equations." ]
+        inputStyle[ "Started reduction of non-toric subsystem with "<> ToString[length] <> " non-equivalent equations." ]
       }],
       "Text",
       CellTags -> { id, "Info" }
@@ -2128,6 +2128,38 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:intermediatereduction", { id_,
       "Text",
       CellTags -> { id, "Info" }
       ]  
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHDJ:init", { id_, length_, n_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Reducing system of "<>ToString[length] <> 
+          " equations via the hnf function of the julia package OSCAR." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHDJ:intermediatereduction", { id_, nEqns_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Reducing combined system of reduced toric and non-toric systems with "<> 
+          ToString[nEqns] <> " equations via the hnf function of the julia package OSCAR." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
     ]
   ];
 
