@@ -569,7 +569,7 @@ ValidSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
 PackageScope["NotInvalidNonZeroSolutionQ"]
 
 NotInvalidNonZeroSolutionQ::usage =
-  "Checks whether a single solution is correct, given that no variables are allowed to be 0";
+  "Checks whether a single solution is not invalid, given that no variables are allowed to be 0";
 
 NotInvalidNonZeroSolutionQ[ {}, _ ][ _ ] :=
   True;
@@ -582,7 +582,8 @@ NotInvalidNonZeroSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
     },
     FreeQ[
       filledInEqns,
-      False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ]
+      False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ] | 
+      HoldPattern[ Power[__] == 0 ] | HoldPattern[ 0 == Power[__] ]
     ]
   ];
 
