@@ -413,9 +413,9 @@ WeightSpaceDimensions[ type_, rank_, cartanMat_, qfm_, irreps_, roots_ ] :=
 
     dimension[ weights_, hw_, w_ ] :=
       dimension[ weights, hw, w ] =
-      preFactor[ hw_, w_ ] *
+      preFactor[ hw, w ] *
       Sum[
-        innerProd[ jWeight, root ] dimension[ weights, hw_, jWeight ],
+        innerProd[ jWeight, root ] dimension[ weights, hw, jWeight ],
         { root, PositiveRoots[roots] },
         { jWeight, CompatibleWeights[ weights, w, root ] }
       ];
