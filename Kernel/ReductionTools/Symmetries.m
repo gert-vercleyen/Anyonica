@@ -72,11 +72,13 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
             Missing[],
             MinimalBy[
               fList,
-              Abs[ Abs[Last[#]] - 1 ], (* Want power as close to 1 as possible *)
+              Abs[ Abs[Last[#]] - 1 ]&, (* Want power as close to 1 as possible *)
               1
             ][[1,1]]
           ]
         ];
+
+      SimplestVar[ g[i_] ]:= g[i];
 
       FixValue[ a_ -> b_ ] :=
         With[{ var = SimplestVar @ b },
@@ -323,11 +325,67 @@ Options[GaugeSymmetryEquivalentQ] =
     "GaugeInvariants" -> {}
   };
 
+checkArgsGaugeSymmetryEquivalentQ[ symmetries_ ] := 
+  If[ 
+    !MultiplicativeSymmetriesQ @ symmetries,
+    Message[ GaugeSymmetryEquivalentQ::symnotmultiplicative, symmetries ];
+    Abort[]
+  ];
+
+GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  Module[ { gaugeMatrix, zeroPos1, zeroPos2 },
+    
+    checkArgsGaugeSymmetryEquivalentQ @ symmetries;
+
+    If[ (* Gauges are trivial *)
+      Times @@ Dimensions[ MultiplicativeGaugeMatrix @ symmetries ] === 0,
+      TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
+    ];
+
+    (* Check whether zeros are at same positions *)
+    { zeroPos1, zeroPos2 } =
+      Position[ _ -> 0 ] /@
+      { sol1, sol2 };
+
+    If[ zeroPos1 =!= zeroPos2, Return @ False ];
+
+    gaugeMatrix =
+      MultiplicativeGaugeMatrix @
+      MapAt[
+        Delete[ zeroPos1 ],
+        symmetries,
+        {1}
+      ];
+
+    GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ]
+
+  ];
+
+Options[TrivialGaugeSymmetryEquivalentQ] :=
+  Options[GaugeSymmetryEquivalentQ];
+
+TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+  With[{
+    differentQ =
+      If[
+        OptionValue["Numeric"],
+        Not[ TrueQ[ InfN[ #1 - #2, OptionValue["Accuracy"] ] == 0 ] ]&,
+        Not[ TrueQ[ OptionValue["SimplifyBy"][ #1 - #2 ] == 0 ] ]&
+      ]
+    },
+    Catch[ (* Throw False immediately when 2 different values are encountered *)
+      MapThread[
+        If[ differentQ[ #1, #2 ], Throw @ False ]&, 
+        { sol1, sol2 }
+      ];
+      True
+    ]
+  ];
+
 GaugeSymmetryEquivalentQ[ gaugeMatrix_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ];
 
-
-GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
+GaugeSymmetryEquivalentQ[ { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   Module[{
       rank, numericQ, sd, simplify, values1, values2, unitaryGaugeQ, differentAbsQ,
       preEqCheck, expRHS, NonOneCoeff,noc, procID, time, result, invariants
@@ -353,27 +411,31 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
           OptionValue["GaugeInvariants"];
 
         values1  =
-          sol1[[;;,2]] //
-          DeleteCases[0];
+          DeleteCases[0] @ 
+          Values @ 
+          sol1;
         values2  =
-          sol2[[;;,2]] //
-          DeleteCases[0];
+          DeleteCases[0] @ 
+          Values @ 
+          sol2;
 
         differentAbsQ =
           If[
             numericQ,
-            Abs[ N[ #1, { Infinity, sd } ] ] - Abs[ N[ #2, { Infinity, sd } ] ] != 0&,
-            simplify[ Abs[ #1 ] - Abs[ #2 ] ] != 0&
+            TrueQ[ Abs[ InfN[ #1, sd ] ] - Abs[ InfN[ #2, sd ] ] != 0 ]&,
+            TrueQ[ simplify[ Abs[ #1 ] - Abs[ #2 ] ] != 0 ]&
           ];
 
         Catch[
-          If[
-            invariants =!= {} && N[ invariants/.sol1 , { Infinity, 16 } ] != N[ invariants/.sol2, { Infinity, 16 } ]
+          If[ (* Gauge invariants do not coincide up to 16 digits (Infinite precision) *)
+            invariants =!= {} && 
+            InfN[ invariants/.Dispatch[sol1], 16 ] != 
+            InfN[ invariants/.Dispatch[sol2], 16 ]
             ,
-            Throw[ False ]
+            Throw @ False 
           ];
 
-          If[(* test for Unitary equivalence *)
+          If[ (* test for Unitary equivalence *)
             unitaryGaugeQ,
             (* THEN *)
             MapThread[
@@ -388,30 +450,22 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
 
           rank =
             Length[h] -
-            Count[
-              h,
-              row_ /;
-              MatchQ[ row, { 0 .. } ]
-            ];
+            Count[ h, row_ /; MatchQ[ row, { 0 .. } ] ];
+
+          divRHS = 
+              If[ numericQ, N[ #, { Infinity, sd } ]&, Identity ] @
+              (values1/values2);
 
           expRHS =
             simplify @
-            PowerDot[
-              If[
-                numericQ,
-                N[ #, { Infinity, sd } ]&,
-                Identity
-              ] @
-              (values1/values2),
-              r
-            ];
+            PowerDot[ divRHS, r ];
 
           NonOneCoeff[ l_ ] :=
             FirstCase[ l, x_ /; !TrueQ[ preEqCheck[x] == 1 ] ];
 
           If[
             rank < Length[ expRHS ] &&
-            Head[ noc =  NonOneCoeff @ expRHS[[rank+1;;]] ] =!= Missing,
+            !MissingQ[ noc = NonOneCoeff @ expRHS[[rank+1;;]] ],
             printlog["GSEQ:nonone_coeff", { procID, expRHS, rank, noc } ];
             False,
             True
@@ -425,76 +479,6 @@ GaugeSymmetryEquivalentQ[ {r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ so
 
   ];
 
-GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
-  If[
-    !MultiplicativeSymmetriesQ[symmetries]
-    ,
-    Message[ GaugeSymmetryEquivalentQ::symnotmultiplicative, symmetries ];
-    Abort[]
-    ,
-    Module[ { simplify, numericQ, sd, gaugeMatrix, zeroPos1, zeroPos2, differentQ },
-      simplify =
-        OptionValue["SimplifyBy"];
-      numericQ =
-        OptionValue["Numeric"];
-      sd =
-        OptionValue["Accuracy"];
-      differentQ =
-        If[
-          numericQ,
-          TrueQ[ N[ #1 - #2, { Infinity, sd } ] == 0 ]&,
-          TrueQ[ simplify[#1 - #2 ] == 0 ]&
-        ];
-
-      If[ (* Gauges are trivial *)
-        Times @@ Dimensions[ MultiplicativeGaugeMatrix[ symmetries ] ] === 0,
-        TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
-      ];
-
-      (* Check whether zeros are at same positions *)
-      { zeroPos1, zeroPos2 } =
-        Position[ _ -> 0 ] /@
-        { sol1, sol2 };
-
-      If[
-        zeroPos1 =!= zeroPos2,
-        Return[ False ]
-      ];
-
-      gaugeMatrix =
-        MultiplicativeGaugeMatrix[
-          MapAt[
-            Delete[ zeroPos1 ],
-            symmetries,
-            {1}
-          ]
-        ];
-
-      GaugeSymmetryEquivalentQ[ HermiteDecomposition @ gaugeMatrix, opts ][ sol1, sol2 ]
-
-    ]
-  ];
-
-Options[TrivialGaugeSymmetryEquivalentQ] :=
-  Options[GaugeSymmetryEquivalentQ];
-
-TrivialGaugeSymmetryEquivalentQ[ opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
-  With[{
-    differentQ =
-      If[
-        OptionValue["Numeric"],
-        Not[TrueQ[ InfN[ #1 - #2, OptionValue["Accuracy"] ] == 0 ]]&,
-        Not[TrueQ[ OptionValue["SimplifyBy"][#1 - #2] == 0 ]]&
-      ]
-    },
-    Catch[
-      MapThread[
-        If[ differentQ[ #1, #2 ], Throw[False] ]&,
-        { sol1, sol2 }
-      ];
-      True
-    ]
-  ];
 
 PackageExport["GSEQ"]
 GSEQ::usage =
@@ -574,7 +558,7 @@ DeleteEquivalentSolutions::wrongrstructure =
 
 DeleteEquivalentSolutions::differentzeros =
   "Some solutions have zeros at different positions. These solutions can never be equivalent.\n"<>
-  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions2 on each set.";
+  "Gather these solutions via GroupBy, or GatheBy and evaluate DeleteEquivalentSolutions on each set.";
 
 Options["DeleteEquivalentSolutions"] :=
   Join[
@@ -587,7 +571,8 @@ Options["DeleteEquivalentSolutions"] :=
   ];
 
 DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits },
+  Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits,
+    symbols },
     (*procID =
       ToString @ Unique[];
 
@@ -596,12 +581,11 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     check =
       If[
         OptionValue["Numeric"],
-        N[ #, {Infinity, OptionValue["Accuracy"] } ]&,
+        InfN[OptionValue["Accuracy"]],
         OptionValue["PreEqualCheck"]
       ];
 
-    zeroPositions =
-      Position[ _ -> 0 ] /@ soln;
+    zeroPositions = Position[ _ -> 0 ] /@ soln;
 
     If[ !MatchQ[ zeroPositions, { x_ .. } ], Message[ DeleteEquivalentSolutions::differentzeros ]; Abort[]  ];
 
@@ -609,31 +593,45 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
       AbsoluteTiming[
 
         zeroFs =
-          Cases[ First @ soln, HoldPattern[ f_[i__] -> 0 ] :> f[i] ];
+          Keys @
+          Cases[ First @ soln, HoldPattern[ _ -> 0 ] ];
 
         (*printlog[ "DSES:groups", { procID, groupedSoln } ];*)
 
-        braidedCheck =
-          Length @* FilterRRules /@ soln;
+        braidedCheck = Length @* FilterRRules /@ soln;
 
         If[
           Not[ Equal @@ braidedCheck ],
           Message[ DeleteEquivalentSolutions::wrongrstructure ]; Abort[]
         ];
 
-        invariants =
-          GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> If[ braidedCheck[[1]] == 0, "FSymbols", "All" ] ];
+        symbols = 
+          Switch[ { FilterRRules[soln] =!= {}, FilterPRules[soln] =!= {} },
+            { True, True }, { "FSymbols", "RSymbols", "PSymbols" },
+            { True, False }, { "FSymbols", "RSymbols", "PSymbols" },
+            { False, True }, { "FSymbols", "PSymbols" },
+            { False, False }, { "FSymbols" }
+          ];
+        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> symbols ];
 
-        (* For each solution we will map its index to the evaluated gauge-invariants over all automorphic solutions *)
-
-        orbits = Sow @
+        (* For each solution we will map its index to the evaluated 
+           gauge-invariants over all automorphic solutions *)
+        orbits = 
           Association @
           Table[
-            i -> check[ invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA[ ring ] ] ],
+            i -> 
+              check[ 
+                invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA @ ring ]
+              ],
             { i, Length @ soln }
           ];
 
-        soln[[ DeleteDuplicates[ Range @ Length @ orbits, intersectingQ[ orbits[#1], orbits[#2] ]& ] ]]
+        soln[[ 
+          DeleteDuplicates[ 
+            Range @ Length @ orbits, 
+            intersectingQ[ orbits[#1], orbits[#2] ]& 
+          ] 
+        ]]
 
       ];
 
@@ -783,7 +781,10 @@ PackageExport["GaugeTransform"]
 
 GaugeTransform::usage =
   "GaugeTransform[g][ s[ ind ] ] applies a gauge transformation with parameters labeled by g to the symbol s" <>
-  " with indices ind.";
+  " with indices ind.\n"<>
+  "GaugeTransform[ring,g][ s[ ind ] ] applies a gauge transformation with parameters labeled by g to the symbol s" <>
+  " with indices ind. This form of the function can also be applied to pivotal symbols.";
+
 (*Possible values of s are: \[ScriptCapitalF], \[ScriptCapitalR] (not implemented yet), etc.";*)
 
 GaugeTransform[ g_Symbol ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
@@ -792,6 +793,16 @@ GaugeTransform[ g_Symbol ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
 GaugeTransform[ g_Symbol ][ R[ a_, b_, c_ ] ] :=
   ( g[ a, b, c ] / g[ b, a, c ] )* R[a,b,c];
 
+GaugeTransform[ ring_, g_Symbol ][ \[ScriptP][ a_ ] ] :=
+  With[ { d = CC[ring] },
+    ( g[ d[a], a, 1 ] g[ 1, d[a], d[a] ] )/( g[ d[a], 1, d[a] ] g[ a, d[a], 1 ] ) \[ScriptP][a]
+  ];
+
+GaugeTransform[ ring_, g_Symbol ][ F[i__] ] :=
+  GaugeTransform[ g ] @ F[i];
+
+GaugeTransform[ ring_, g_Symbol ][ R[i__] ] :=
+  GaugeTransform[ g ] @ R[i];
 
 (* Special gauge transforms with extra parameter *)
 GaugeTransform[ { g_Symbol, t_Symbol } ][ F[ a_, b_, c_, d_, e_, f_ ] ] :=
@@ -845,7 +856,9 @@ AGT =
 PackageExport["GaugeSymmetries"]
 
 GaugeSymmetries::usage =
-  "GaugeSymmetries[ symbols, s ] returns the gauge transforms of the symbols, with gauge variables labeled by s.";
+  "GaugeSymmetries[ symbols, s ] returns the gauge transforms of the symbols, with gauge variables labeled by s.\n"<>
+  "GaugeSymmetries[ ring, symbols, s ] returns the gauge transforms of the symbols, with gauge variables labeled by s."<>
+  "This version also works for pivotal symbols.";
 
 GaugeSymmetries[ symbols_, g_ ] :=
   <|
@@ -853,14 +866,18 @@ GaugeSymmetries[ symbols_, g_ ] :=
     "Symbols" -> { g }
   |>;
 
+GaugeSymmetries[ ring_, symbols_, g_ ] :=
+  <|
+    "Transforms" -> Table[ s -> GaugeTransform[ring,g][s], { s, symbols } ],
+    "Symbols" -> { g }
+  |>;
 
 PackageExport["GS"]
 
 GS::usage =
   "Shorthand for GaugeSymmetries.";
 
-GS =
-  GaugeSymmetries;
+GS = GaugeSymmetries;
 
 
 PackageScope["TrivialGaugeMatrix"]
@@ -889,46 +906,63 @@ TrivialGaugeMatrix[ symbols_ ] :=
 PackageExport["GaugeSplitTransform"]
 
 GaugeSplitTransform::usage =
-  "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer for which " <> "
-  F'_1 = (F_1)^(V_1) * ... * (F_l)^(V_l) * (R_1)^(V_{l+1}) * ... * (R_k)^(V_{l+k}), ... } is a basis for all polynomials
-  in the F-and R-symbols where the first n elements provides a basis for the gauge independent polynomials in the "<>
-  "F-and R-symbols.";
+  "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer such that"<>
+  "the first n rows of V provide a basis transform to obtain the gauge independent polynomials in the"<>
+  "F-symbols, P-symbols, and R-symbols (in that order) via the use of the PowerDot function.";
 
 GaugeSplitTransform::invalidoptionincludeonly =
-  "The option for \"IncludeOnly\", `1`, must be either \"All\", \"FSymbols\" or \"RSymbols\".";
+  "The option for \"IncludeOnly\", `1`, must be a list containing at least \"FSymbols\", \"RSymbols\", and/or \"PSymbols\".";
 
 Options[GaugeSplitTransform] :=
   {
-    "IncludeOnly" -> "All",
+    "IncludeOnly" -> {"FSymbols","PSymbols","RSymbols"},
     "Zeros" -> {}
   };
 
 GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
   With[{ io = OptionValue["IncludeOnly"] },
 
-    If[ Rank[ring] == 1, Return @ If[ io =!= All, { IdentityMatrix[1], 1 }, { IdentityMatrix[2], 2 } ] ];
+    If[ 
+      Head[io] =!= List || io === {} ||
+      !SubsetQ[ { "FSymbols", "RSymbols", "PSymbols" },  io ]
+      ,
+      Message[ GaugeSplitTransform::invalidoptionincludeonly, io ];
+      Abort[]
+    ];
 
-    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros, zeroPos, symbolsWithZeros },
-      zeros =
-        OptionValue["Zeros"];
+    If[ 
+      Rank[ring] === 1, 
+      Return @ 
+      { IdentityMatrix @ Length @ io, Length @ io } 
+    ];
 
-      symbolsWithZeros =
-        Switch[ io,
-          "All",      Join[ FSymbols @ ring, RSymbols @ ring ],
-          "FSymbols", FSymbols @ ring,
-          "RSymbols", RSymbols @ ring,
-          _,          Message[ GaugeSplitTransform::invalidoptionincludeonly, io ]; Abort[]
-        ];
+    Module[{ symbols, g, sym, m, monomial, powers, d, v, r, sortf, zeros, zeroPos, symbolsWithZeros, getSymbols },
+      zeros = OptionValue["Zeros"];
+      If[ MatchQ[ zeros, { _Rule .. } ], zeros = Keys @ zeros ];
+
+      getSymbols = 
+        Comap[ 
+          { 
+            If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+            If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ],
+            If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ] 
+          }
+        ]; 
+
+      symbolsWithZeros =  Join @@ getSymbols @ ring;
+
+      If[ (* Trivial Ring is always an annoying case *)
+        Rank @ ring === 1, 
+        Return @ { IdentityMatrix @ Length @ symbolsWithZeros, 3 } 
+      ];
 
       zeroPos = 
         Flatten @ 
-        Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, Heads -> False ];
+        Position[ symbolsWithZeros, x_ /; MemberQ[x] @ zeros, 1, Heads -> False ];
 
-      symbols =
-        Complement[ symbolsWithZeros, zeros ]; 
+      symbols = Complement[ symbolsWithZeros, zeros ];
 
-      sym =
-        GaugeSymmetries[ symbols, g ];
+      sym = GaugeSymmetries[ ring, symbols, g ];
 
       monomial =
         PowerExpand[
@@ -972,16 +1006,15 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
           Sort[ Transpose[v][[;;r]], sortf ]
         ]
         ,
-        Length[v] - r
+        Length[v] - r + Length[zeroPos]
       }
     ]
   ];
 
-AddZerosToTransform[ {} ][ tMat_ ] :=
-  tMat;
+AddZerosToTransform[ {} ][ tMat_ ] := tMat;
 
 AddZerosToTransform[ zeroPos_List][ tMat_?MatrixQ ] := 
-  Module[ { nZeros, newDim, nonZeroPos, mat, oneAt, zeroMat }, 
+  Module[ { nZeros, newDim, nonZeroPos, mat }, 
     nZeros = Length @ zeroPos;
 
     newDim = nZeros + First @ Dimensions @ tMat;
@@ -1012,28 +1045,32 @@ Options[ GaugeSplitBasis ] :=
 
 GaugeSplitBasis[ ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[ { V, n, symbols, io, zeros },
-    zeros =
-      OptionValue["Zeros"];
-    io =
-      OptionValue["IncludeOnly"];
+    zeros = OptionValue["Zeros"];
+    If[ MatchQ[ zeros, { _Rule ..  } ], zeros = Keys @ zeros ];
 
-    { V, n } =
-      GaugeSplitTransform[ ring, opts ];
+    io = OptionValue["IncludeOnly"];
 
-    symbols =
-      Switch[ io,
-        "All", Join[ FSymbols[ring], RSymbols[ring] ],
-        "FSymbols", FSymbols[ring],
-        "RSymbols", RSymbols[ring]
-      ];
+    { V, n } = GaugeSplitTransform[ ring, opts ];
+
+    getSymbols = 
+      Comap[ 
+        { 
+          If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+          If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ], 
+          If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ] 
+        }
+      ]; 
+
+    symbols = Join @@ getSymbols @ ring;
+
+    If[ Rank @ ring === 1, Return @ {symbols,{}} ];
 
     Map[
-      Inner[ Power, symbols, #, Times ]&,
+      PowerDot[ symbols, Transpose[#] ]&,
       {
-        Transpose @ V[[;;,;;n]],
-        Transpose @ V[[;;,n+1;;]]
-      },
-      {2}
+        V[[;;,;;n]],
+        V[[;;,n+1;;]]
+      }
     ]
   ];
 
@@ -1047,9 +1084,9 @@ Options[GaugeInvariants] :=
   Options[GaugeSplitBasis];
 
 GaugeInvariants[ ring_, opts:OptionsPattern[] ] :=
-  With[ { zeros = OptionValue["Zeros"] },
-    First @ GaugeSplitBasis[ ring, opts ]
-  ];
+  First @ GaugeSplitBasis[ ring, opts ];
+
+
 
 
 
@@ -1880,14 +1917,10 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
       NonOneCoeff,noc, diagonalElements,ZSpace,constVec, useDataBaseQ, preEqCheck, CheckSolution,newFSolution,
       time, result, procID, returnTransformQ, gaugeDemands, gauge, vacuumConstraints
     },
-    acc =
-    OptionValue["Accuracy"];
-    numericQ =
-    OptionValue["Numeric"];
-    simplify =
-    OptionValue["SimplifyBy"];
-    useDataBaseQ =
-    OptionValue["UseDatabaseOfSmithDecompositions"];
+    acc = OptionValue["Accuracy"];
+    numericQ = OptionValue["Numeric"];
+    simplify = OptionValue["SimplifyBy"];
+    useDataBaseQ = OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck =
     If[
       numericQ,
@@ -2135,73 +2168,69 @@ Options[WhichGaugeTransform] :=
   "SimplifyBy" -> Identity
 };
 
+checkArgsWhichGaugeTransform[ ring_, sol1_, sol2_ ] := 
+  Which[
+    Mult[ring] != 1
+    ,
+    Message[ WhichGaugeTransform::notmultfree ];
+    Abort[]
+    ,
+    !PPSQ[sol1] || !PPSQ[sol2]
+    ,
+    Message[ WhichGaugeTransform::wrongsolformat, sol1, sol2 ];
+    Abort[]
+  ];
+
 WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
-Which[
-  Mult[ring] != 1
-  ,
-  Message[ WhichGaugeTransform::notmultfree ];
-  Abort[]
-  ,
-  !PPSQ[sol1] || !PPSQ[sol2]
-  ,
-  Message[ WhichGaugeTransform::wrongsolformat, sol1, sol2 ];
-  Abort[]
-  ,
-  True
-  ,
   Module[
     { gaugeSymmetries, transforms, u, constraints, newVars, newConstraints, revertVars,
       acc, numericQ, simplify, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS, listOfOnesQ, newSol1, newSol2,
       diagonalElements, ZSpace, constVec, useDataBaseQ, preEqCheck, nGaugeVars, nonZeroFs,  trivialSpace, CSpace,
       monomials, time, result, procID, onlyAbsQ, values1, values2, vars, t, z, normSquaredExtraVars, absSol, a, b
     },
+    checkArgsWhichGaugeTransform[ ring, sol1, sol2 ];
 
     acc =
-    OptionValue["Accuracy"];
+      OptionValue["Accuracy"];
     numericQ =
-    OptionValue["Numeric"];
+      OptionValue["Numeric"];
     simplify =
-    OptionValue["SimplifyBy"];
+      OptionValue["SimplifyBy"];
     useDataBaseQ =
-    OptionValue["UseDatabaseOfSmithDecompositions"];
+      OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck =
-    OptionValue["PreEqualCheck"];
+      OptionValue["PreEqualCheck"];
     onlyAbsQ =
-    OptionValue["OnlyMatchAbsoluteValues"];
+      OptionValue["OnlyMatchAbsoluteValues"];
     procID =
-    ToString[Unique[]];
+      ToString[Unique[]];
 
     { newSol1, newSol2 } =
-    If[ numericQ,
-      N[ { sol1, sol2 } ],
-      Map[ simplify, { sol1, sol2 }, { 2 } ]
-    ];
+      If[ 
+        numericQ,
+        InfN[ { sol1, sol2 }, acc ],
+        Map[ simplify, { sol1, sol2 }, { 2 } ]
+      ];
 
-    { values1, values2 } =
-    { newSol1, newSol2 }[[ ;;, ;;, 2 ]];
+    { values1, values2 } = Values /@ { newSol1, newSol2 };
 
-    nGaugeVars =
-    NNZSC[ring];
+    nGaugeVars = NNZSC @ ring;
 
     (* printlog["TSG:init", { procID, ring, FSymb, {opts} } ]; *)
 
     { time, result } = Normal @
     AbsoluteTiming[
 
-      nonZeroFs =
-      ( DeleteCases[ _ -> 0 ] @ newSol1 )[[ ;;, 1 ]];
+      nonZeroFs = 
+        Keys @ DeleteCases[ _ -> 0 ] @ newSol1;
 
       gaugeSymmetries =
-      GaugeSymmetries[
-        nonZeroFs,
-        g
-      ];
+        GaugeSymmetries[ nonZeroFs, g ];
 
       transforms =
-      gaugeSymmetries["Transforms"];
+        gaugeSymmetries["Transforms"];
 
       Catch[
-
         If[ (* Solutions are the same *)
           TrivialGaugeSymmetryEquivalentQ[
             "Numeric" -> numericQ,
@@ -2210,74 +2239,72 @@ Which[
           ][ values1, values2 ],
           (* Then *)
           printlog["WGT:same_solution", { procID, sol1, sol2 } ];
-          Throw @
-          Thread[ ( g @@@ NZSC[ring] ) -> 1  ]
+          Throw @ Thread[ ( g @@@ NZSC[ring] ) -> 1  ]
         ];
 
         If[ (* Different zero values for F-symbols *)
-          Unequal @@@
-          Map[
-            Position[0],
-            { values1, values2 }
-          ],
+          Unequal @@
+          Map[ Position[#,0,1]&, { values1, values2 } ],
           (* THEN *)
           printlog["WGT:different_zero_positions", { procID, sol1, sol2 } ];
-          Throw[{}],
-          (* ELSE *)
+          Throw @ {},
+          (* ELSE: remove 0 values and continue *)
           values1 =
-          DeleteCases[0] @ values1;
+            DeleteCases[0] @ values1;
           values2 =
-          DeleteCases[0] @ values2;
+            DeleteCases[0] @ values2;
         ];
 
-        constraints =
-        DeleteCases[True] @
-        Thread[
-          values2 ==
-          ReplaceAll[
-            GaugeTransform[ If[ onlyAbsQ, { g, t }, g ] ][ nonZeroFs ],
-            sol1
-          ]
-        ];
+        constraints = 
+          DeleteCases[True] @
+          Thread[
+            values2 == 
+            ReplaceAll[
+              GaugeTransform[ If[ onlyAbsQ, { g, t }, g ] ][ nonZeroFs ],
+              sol1
+            ]
+          ];
 
         If[
-          constraints === False,
+          MemberQ[False] @ constraints,
           Throw @ { }
         ];
 
         vars =
-        GetVariables[ constraints, { g, t } ];
+          GetVariables[ constraints, { g, t } ];
 
         { newConstraints, newVars, revertVars } =
-        SimplifyVariables[ constraints, vars , u ];
+          SimplifyVariables[ constraints, vars , u ];
 
-        { binomialMat, rhsVec } =
-        AddOptions[opts][BinToSemiLin][
-          newConstraints,
-          newVars,
-          u
-        ];
+        { binomialMat, rhsVec } = 
+          AddOptions[opts][BinToSemiLin][
+            newConstraints,
+            newVars,
+            u,
+            "SimplifyIntermediateResultsBy" -> simplify
+          ];
 
-        { mU, mD, mV } =
-        If[
-          useDataBaseQ,
-          AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
-          SmithDecomposition @ binomialMat
-        ];
+        { mU, mD, mV } = 
+          If[
+            useDataBaseQ,
+            AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
+            SmithDecomposition @ binomialMat
+          ];
 
         printlog["WGT:decomposition",{procID,{mU,mD,mV}}];
 
         rankBinomialMat =
-        Length[
-          diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
-        ];
+          Length[
+            diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
+          ];
 
         expRHS =
-        PowerDot[ rhsVec, mU ];
+          simplify /@
+          PowerDot[ rhsVec, mU ];
 
         listOfOnesQ[ l_ ] :=
-        And @@
-        Thread[ preEqCheck[l] == 1 ];
+          And @@
+          Thread[ preEqCheck[l] == 1 ];
 
         If[
           (* RHS and LHS are incompatible *)
@@ -2290,38 +2317,36 @@ Which[
 
           (* ELSE *)
           ZSpace =
-          mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
+            mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           constVec =
-          PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
+            PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
 
         trivialSpace =
-        With[{
-          ntVars = Length[vars] - NNZSC[ring]
-        },
-          MatrixDirectSum[
-            {
-              TrivialGaugeMatrix @ nonZeroFs,
-              If[
-                onlyAbsQ,
-                ConstantArray[ 0, { ntVars, ntVars } ],
-                {{}}
-              ]
-            }
-          ]
-        ];
+          With[ { ntVars = Length[vars] - NNZSC[ring] },
+            MatrixDirectSum[
+              {
+                TrivialGaugeMatrix @ nonZeroFs,
+                If[
+                  onlyAbsQ,
+                  ConstantArray[ 0, { ntVars, ntVars } ],
+                  {{}}
+                ]
+              }
+            ]
+          ];
 
         CSpace =
-        IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialSpace ];
+          IntegerOrthogonalSpace[ mV[[ ;;, rankBinomialMat+1;; ]], trivialSpace ];
 
         monomials =
-        If[
-          CSpace === {{}},
-          ConstantArray[ 1, Length[constVec] ],
-          With[ { parameters = z /@ Range[ Dimensions[CSpace][[2]] ] },
-            PowerDot[ parameters, CSpace ]
-          ]
-        ];
+          If[
+            CSpace === {{}},
+            ConstantArray[ 1, Length[constVec] ],
+            With[ { parameters = z /@ Range[ Dimensions[CSpace][[2]] ] },
+              PowerDot[ parameters, CSpace ]
+            ]
+          ];
 
         If[ (* Any solution goes *)
           !onlyAbsQ,
@@ -2339,9 +2364,7 @@ Which[
             ],
 
             (* THEN *)
-            Throw[
-              Thread[ newVars -> constVec ][[;;nGaugeVars]]/.revertVars
-            ],
+            Throw[ Thread[ newVars -> constVec ][[;;nGaugeVars]]/.revertVars ],
 
             (* ELSE: add monomials and try to find vals of monomials s.t. extra vars become phases *)
 
@@ -2352,15 +2375,15 @@ Which[
 
             (* Calculate squared norm of extra vars *)
             normSquaredExtraVars =
-            ( ComplexExpand[ Norm /@ constVec ]^2 * ( monomials/. z[i_] :> a[i]^2 + b[i]^2 ) )[[ nGaugeVars + 1 ;; ]];
+              ( ComplexExpand[ Norm /@ constVec ]^2 * ( monomials/. z[i_] :> a[i]^2 + b[i]^2 ) )[[ nGaugeVars + 1 ;; ]];
 
             (* Try to find solution with norm 1 *)
             absSol =
-            FindInstance[
-              Thread[ normSquaredExtraVars == 1 ],
-              GetVariables[ normSquaredExtraVars, { a, b } ],
-              Reals
-            ];
+              FindInstance[
+                Thread[ normSquaredExtraVars == 1 ],
+                GetVariables[ normSquaredExtraVars, { a, b } ],
+                Reals
+              ];
 
             If[
               (* No solution found *)
@@ -2384,8 +2407,7 @@ Which[
     printlog[ "Gen:results", { procID, result, time }];
 
     result
-  ]
-];
+  ];
 
 PackageExport["WGT"]
 

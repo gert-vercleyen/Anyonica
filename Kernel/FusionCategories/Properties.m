@@ -5,11 +5,20 @@
 
 Package["Anyonica`"]
 
-ChangeProperty[ ring_FusionCategory, list_ ] :=
+ChangeProperty::badarg = 
+	"`1` should be a rule or a list of rules";
+
+ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
-    opts = (* All defining properties of previous fusion ring *)
-    Normal @ First[ List @@ ring ];
-    AddOptions[opts][FusionCategory][ Sequence @@ list ]
+    opts = (* All defining properties of previous fusion cat *)
+			ReleaseHold @ Normal @ First[ List @@ cat ];
+		Which[ 
+			MatchQ[ prop, { _Rule .. } ],
+ 				AddOptions[opts][FusionCategory][ Sequence @@ prop ],
+ 			MatchQ[ prop, _Rule ], 
+				AddOptions[opts][FusionCategory][ prop ],
+			True, Message[ChangeProperty::badarg,prop]
+		]
   ];
 
 
@@ -77,14 +86,14 @@ AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
     rhs[a_,b_,c_] :=
       sF[[a,b,d[c],1,c,d[a]]] sF[[b,d[c],a,1,d[a],d[b]]] sF[[d[c],a,b,1,d[b],c]];
 
-    eqns =
+    eqns = 
       TEL @
       OptionValue["SimplifyBy"][
         Cases[
           Tuples[ Range @ r, 3 ],
           { a_, b_, c_ } /;
           rhs[a,b,c] =!= 0 :>
-					p[c] / (p[a] p[b] ) == rhs[a,b,c]
+					(p[a] p[b] )/p[c] == rhs[a,b,c]
         ]/.p[1] -> 1
       ];
 
@@ -134,13 +143,13 @@ Protect[ \[ScriptD] ];
 PackageExport["QuantumDimensions"]
 
 QuantumDimensions::usage =
-  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(T\), \(L\)]\)(a) of the simple objects "<>
+  "QuantumDimensions[cat] returns a list of dimensions \!\(\*SuperscriptBox[\(Tr\), \(L\)]\)(a) of the simple objects "<>
   "of the fusion category cat";
 
 QuantumDimensions[ cat_FusionCategory ] :=
   With[{ d = CC[cat] },
     Table[
-      \[ScriptD][a] -> \[ScriptP][a] / F[a,d[a],a,a,1,1], { a, Rank @ cat }
+      \[ScriptD][a] -> \[ScriptP][a] / F[d[a],a,d[a],d[a],1,1], { a, Rank @ cat }
     ]/.FSymbols[cat]/.PivotalStructure[cat]
   ];
 
@@ -188,9 +197,16 @@ SphericalQ[ cat_FusionCategory ] :=
     If[
       MissingQ[ dims ],
       Message[ SphericalQ::nodims ]; $Failed,
-      And @@ Table[ RootReduce[ \[ScriptD][i] == \[ScriptD][i+1] /. dims ], { i, NSD[cat]+1, Rank[cat], 2 } ]
+      And @@ 
+			Table[ 
+				RootReduce[ \[ScriptD][ pair[[1]] ] == \[ScriptD][ pair[[2]] ] /. dims ], 
+				{ pair, conjugatePairs @ cat } 
+			]
     ]
   ];
+
+conjugatePairs[ cat_ ] := 
+	List @@@ Union @ DeleteCases[ Sort /@ Normal @ CC @ FusionRing @ cat, i_ -> i_ ];
 
 CheckFormalCode[c1_,c2_]:=
 	With[{fc1 = FormalCode @ c1, fc2 = FormalCode @ c2 },
@@ -202,70 +218,70 @@ CheckFusionRing[c1_,c2_] :=
 		If[ !eq, Throw @ False ]
 	];
 
-FullInvariants[c1_]:=
-	Module[ { zeroFs,invariants },
-		zeroFs = Select[ FSymbols[c1], Last[#]===0& ][[;;,1]];
-		(* Invariants of F and R symbols *)
-		invariants =
-			GaugeInvariants[
-				FusionRing @ c1,
-				"Zeros" -> zeroFs,
-				"IncludeOnly" -> If[ !BraidedQ[c1], "FSymbols", "All" ]
-			];
 
-		(* Invariants from pivotal structure *)
-		Join[
-			invariants,
-			Array[ \[ScriptD], Rank[c1] ]
-		]
-	];
 
 PackageExport["EquivalentFusionCategoriesQ"]
 
-Options[EquivalentFusionCategoriesQ] = { "PreEqualCheck" -> Identity };
+Options[EquivalentFusionCategoriesQ] = 
+	{ 
+		"PreEqualCheck" -> Identity,
+		"UseFormalCode" -> True
+	};
 
 EquivalentFusionCategoriesQ[ c1_FusionCategory, c2_FusionCategory, OptionsPattern[] ] :=
 Catch[
 	Module[{fra, invariants1, invariants2, qDims1, qDims2,fSymb1,fSymb2,rSymb1,rSymb2,rules1,rules2,test,eqQdims},
-	CheckFormalCode[c1,c2];
+	If[
+		OptionValue["UseFormalCode"],
+		CheckFormalCode[c1,c2];
+	];
 	CheckFusionRing[c1,c2];
+	check = OptionValue["PreEqualCheck"];
 
 	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
 
-  If[ PreEqualCheck[ Sort[qDims1] ] != PreEqualCheck[ Sort[ qDims2 ] ], Throw @ False ];
+	If[ check[ Sort[qDims1] ] != check[ Sort[ qDims2 ] ], Throw @ False ];
 
-  fra = FRA @ FusionRing @ c1;
+	fra = FRA @ FusionRing @ c1;
 
-  eqQDims =
-    Catch[
-      Do[
-        If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
-        , { a, fra }
-      ]; Throw @ False
-    ];
+	eqQDims =
+		Catch[
+		Do[
+			If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
+			, { a, fra }
+		]; Throw @ False
+		];
 
-  If[ !eqQDims, Throw @ False ];
+	If[ !eqQDims, Throw @ False ];
 
-  test = OptionValue["PreEqualCheck"];
-	invariants1 = FullInvariants[c1];
-	invariants2 = FullInvariants[c2];
+	test = OptionValue["PreEqualCheck"];
+		invariants1 = FullInvariants[c1];
+		invariants2 = FullInvariants[c2];
 
 
 	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
-	If[ BraidedQ[c1] && BraidedQ[c2],
+	If[ 
+		BraidedQ[c1] && BraidedQ[c2],
 		rSymb1 = RSymbols[c1]; rSymb2 = RSymbols[c2],
 		rSymb1 = rSymb2 = {}
 	];
 
-	rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
+		rules1 = Join[ fSymb1, rSymb1, qDims1 ]; rules2 = Dispatch[ Join[ fSymb2, rSymb2, qDims2 ] ];
 
 	Do[
 		If[
-		ConsistentQ[ Thread[ (invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) ]/.{False->{False},True->{True}}, TrueQ @* test ],  True ]
-		, {a,fra}
+			ConsistentQ[ 
+				Thread[ 
+					(invariants1/.Dispatch[PermuteSymbols[rules1,a]]) == (invariants2/.rules2) 
+				]/.{ False -> {False}, True -> {True} }, 
+				TrueQ @* test 
+			],  
+			Throw @ True 
+		]
+		, { a, fra }
 	];
 
-	Throw @ False
+		Throw @ False
 	]
 ];
 
@@ -275,19 +291,251 @@ GaugeInvariants::nonbraidedcat =
 
 GaugeInvariants[ cat_FusionCategory, opts:OptionsPattern[] ] := 
   Module[
-    { io, bq, zeros, gi },
+    { io, zeros, gi, getSymbols, values },
     io = OptionValue["IncludeOnly"];
 
     If[ 
-      io === "All" && !BraidedQ[cat], 
+      (MemberQ["RSymbols"] @ io) && !BraidedQ[cat], 
       Message[GaugeInvariants::nonbraidedcat]; Return @ $Failed  
     ];
 
-    bq = BraidedQ[cat] && OptionValue["IncludeOnly"] =!= "FSymbols";
-
-    zeros = Keys @ Select[ FSymbols @ cat,  #[[2]] === 0& ];
+    zeros = Keys @ Select[ FSymbols @ cat, #[[2]] === 0& ];
 
     gi = AddOptions[opts][GaugeInvariants][ FusionRing @ cat, "Zeros" -> zeros ];
 
-    Thread[ gi -> ( gi/.Dispatch[ Join[ FSymbols @ cat, If[ bq, RSymbols @ cat, {} ] ] ] ) ]
+		getSymbols = 
+			Comap[ 
+				{ 
+					If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+					If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ], 
+					If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ] 
+				}
+			];  
+
+		values = Dispatch[ Join @@ getSymbols @ cat ];	
+
+    Thread[ gi -> ( gi/.values ) ]
   ];
+
+PackageExport["FusionCategoryAutomorphisms"]
+
+FusionCategoryAutomorphisms::usage =
+  "FusionCategoryAutomorphisms[cat,u] returns the automorphisms of the fusion category cat in the symbol u.";
+
+Options[FusionCategoryAutomorphisms] :=
+	Union[
+		Options[AutomorphismEquations], 
+    Options[FusionRingAutomorphisms],
+		Options[ReduceBinomialSystem],
+		Options[SolveBinomialSystem],
+    { "Permutations" -> Missing[] }
+	];
+
+FusionCategoryAutomorphisms[ cat_FusionCategory, u_, opts:OptionsPattern[] ] :=
+	Module[
+		{ ring, FRAuth, catAuth, g, eqnsPerPerm, vars, symmetries, solutions, 
+		z, trivialSymbols, structConst, reducedSymmetries, autEqns, fixedSymbols, AddKnowns,
+		reducedSystem }, 
+		ring = FusionRing @ cat; 
+		
+		If[ Rank @ ring === 1, Return @ { {1}, { u[1,1,1] -> 1 } } ];
+
+		FRAuth = 
+			If[ 
+				OptionValue["Permutations"] =!= Missing[],
+				OptionValue["Permutations"],
+				AddOptions[opts][FusionRingAutomorphisms][ ring ]
+			];
+		
+		structConst = NZSC @ cat;
+
+		vars = u @@@ structConst;
+		
+		symmetries = 
+			<|
+				"Transforms" -> ( u[##] -> ( g[#1] g[#2] / g[#3] ) u[##] & ) @@@ structConst, 
+				"Symbols" -> {g}
+			|>;
+		
+		trivialSymbols = Thread[ u @@@ Cases[ structConst, { 1, __ } | { _, 1, _ }] -> 1 ];
+		
+		(* Only symmetries that keep the trivial u symbols invariant are allowed *)
+		reducedSymmetries = 
+      RestrictMultiplicativeSymmetries[ symmetries, Keys @ trivialSymbols, g ];
+    
+    (* Break the symmetry *)
+    fixedSymbols = Last @ BreakMultiplicativeSymmetry[ reducedSymmetries ];
+			
+		(* Function that adds trivial data and fixed symbols to solution *)
+		AddKnowns[ sol_ ] := Sort @ Join[ trivialSymbols, fixedSymbols, sol ];
+			
+		solutions = 
+      DeleteDuplicates[ #, GSEQ[ MultiplicativeGaugeMatrix[symmetries] ] ]& @*
+      ReverseSortBy[Count[1] @* Values] /@ (* Prefer solutions with highest number of 1's *)
+			Table[
+				autEqns = 
+          AddOptions[opts][AutomorphismEquations][ cat, perm, u ] //
+          ReplaceAll[ Dispatch @ Join[ trivialSymbols, fixedSymbols ] ] //
+          TEL;
+
+        If[
+          MemberQ[False] @ autEqns,
+          { },
+
+          reducedSystem = 
+            ( # == 0 ) & /@
+            AddOptions[opts][ReduceBinomialSystem][ autEqns, GetVariables[ autEqns, u ] ]["Polynomials"];
+					
+					Which[ 
+						MemberQ[False] @ reducedSystem,
+							{},
+						reducedSystem === {},
+							AddKnowns /@ { {} },
+						True,
+							AddKnowns /@ 
+							AddOptions[opts][SolveBinomialSystem][ 
+								reducedSystem, 
+								GetVariables[ reducedSystem, u ], 
+								z, 
+								"NonSingular" -> True 
+							]
+					]
+        ]
+        ,	
+				{ perm, FRAuth } 
+			];
+    
+		Flatten[
+			Table[ { FRAuth[[i]], # }& /@ solutions[[i]], { i, Length @ FRAuth }  ], 
+			1
+		]
+	];
+
+PackageExport["FCA"]
+
+FCA::usage =
+  "Shorthand for FusionCategoryAutomorphisms.";
+
+FCA = FusionCategoryAutomorphisms;
+
+Options[AutomorphismEquations] = 
+	{ "Type" -> { "Braided", "Pivotal" } };
+
+(* TODO: Add equations for pivotal symbols *)	
+AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] := 
+	Module[{ring, permute, transform, symbols, symbolsValues, bq, pq },
+		bq = BraidedQ[cat] && MemberQ["Braided"] @ OptionValue["Type"];
+		pq = MemberQ["Pivotal"] @ OptionValue["Type"];
+
+		ring = FusionRing @ cat;
+		
+		permute = 
+			If[
+				perm === Range @ Rank @ cat,
+				Identity,
+				ReplaceAll[ 
+					If[ pq,  Append[ \[ScriptD][a_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
+					If[ bq,  Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
+					{ 
+						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
+						F[a_,b_,c_,d_,e_,f_] :> F[ perm[[a]], perm[[b]], perm[[c]], perm[[d]], perm[[e]], perm[[f]] ]
+					}
+				]
+			];
+		
+		transform = 
+			ReplaceAll[ 
+				If[ pq, Append[ \[ScriptD][i_] :> permute @ \[ScriptD][i] ], Identity ] @
+				If[ bq, Append[ R[i__] :> permute @  GaugeTransform[g] @ R[i] ], Identity ] @
+				{ 
+					g[i__] :> permute @ g[i], 
+					F[i__] :> permute @ GaugeTransform[g] @ F[i]
+				}
+			];
+			
+		symbols = 
+			Join[
+				FSymbols @ ring,
+				If[ bq, RSymbols @ ring, {} ],
+				If[ pq, Array[ \[ScriptD], Rank @ ring ], {} ]
+			];
+
+		symbolsValues = 
+			Dispatch @
+			Join[
+				FSymbols @ cat, 
+				If[ bq, RSymbols @ cat, {} ], 
+				If[ pq, QuantumDimensions @ cat, {} ]
+			];
+		
+		TrimEquationList[
+			Thread[ symbols == transform @ symbols ]/.symbolsValues
+		]
+	]
+
+
+
+cayleyTable[ autData_, u_ ] := 
+	Module[{ groupedData, permMT, g, permute, autProduct, symmetries, prod, equivalentQ },
+		(* Group autos by permutation *)
+		(*
+		groupedData = GroupBy[ autData, First ];
+		
+		permMT = 
+			Transpose @ (* We take the left action as default *)
+			With[ 
+				{ perms = Keys @ groupedData }, 
+				Table[ 
+					First @ 
+					FirstPosition[ perms, PermutationProduct[ p1, p2 ] ],
+					{ p1, perms },
+					{ p2, perms }
+				]
+			];
+			*)
+			
+		permute[p_][ u[a_,b_,c_] ] := u[ p[[a]], p[[b]], p[[c]] ];
+		
+		autProduct[ a1_, a2_ ] :=
+			Module[ { 
+				ip = InversePermutation @ First @ a1,
+				u1 = Last @ a1,
+				u2 = Last @ a2,
+				a, b, c
+				},
+				{
+					PermutationProduct[ First @ a2, First @ a1 ], 
+					Table[
+						{ a, b, c } = labels;
+						u[ a, b, c ] -> ( u[ a, b, c ] /. u1 ) * ( permute[ip][ u[ a, b, c ] ] /. u2 ),
+						{ labels, List @@@ Keys @ u1 }
+					]
+				}
+			];
+		
+		(* Define equivalence between two group elements: 
+			 - permutations must match 
+			 - gauge transforms must only be equivalent 
+		*)
+		symmetries =
+			With[ { lb = List @@@ Keys @ autData[[1,2]] },
+				<|
+					"Transforms" -> ( (u[##] -> u[##] * (g[#1] g[#2]/g[#3]))& @@@ lb ),
+					"Symbols" -> {g}
+				|>
+			];
+		
+		equivalentQ[ a1_, a2_ ] := 
+			First[a1] == First[a2] && 
+			GSEQ[symmetries][ Last @ a1, Last @ a2 ];
+			
+		Table[ 
+			prod = autProduct[ a1, a2 ];
+			First @ 
+			FirstPosition[ autData, el_ /; equivalentQ[ el, prod ], None, {1}, Heads -> False ]
+			,
+			{ a1, autData }, 
+			{ a2, autData }
+		]
+		
+	]
