@@ -718,12 +718,7 @@ Module[
           ],
           fSymbols,
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> 
-            If[ 
-              CommutativeQ @ ring,
-              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
-              {}
-            ]
+          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
         ]
         ,
         True
@@ -733,12 +728,7 @@ Module[
           fSymbols,
           "SumSubsetParameter" -> If[ useSumsQ, 1, OptionValue["SumSubsetParameter"] ]
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> 
-            If[ 
-              CommutativeQ @ ring,
-              ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
-              {}
-            ]
+          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
         ]
       ];
 
