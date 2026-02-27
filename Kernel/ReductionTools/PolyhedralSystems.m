@@ -592,24 +592,15 @@ Module[
     subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ, newBinEqns, newSumEqns,
     neverZeroBinEqns
   },
-  gaugeDemands =
-    OptionValue["GaugeDemands"];
-  zeroValues =
-    OptionValue["ZeroValues"];
-  nonSingularQ =
-    OptionValue["NonSingular"];
-  useSumsQ =
-    OptionValue["FindZerosUsingSums"];
-  preEqCheck =
-    OptionValue["PreEqualCheck"];
-  useDBQ =
-    OptionValue["UseDatabaseOfSmithDecompositions"];
-  storeDecompQ =
-    OptionValue["StoreDecompositions"];
-  subsSol =
-    OptionValue["InjectSolution"];
-  knowns = 
-    OptionValue["KnownSymbols"];
+  gaugeDemands = OptionValue["GaugeDemands"];
+  zeroValues   = OptionValue["ZeroValues"];
+  nonSingularQ = OptionValue["NonSingular"];
+  useSumsQ     = OptionValue["FindZerosUsingSums"];
+  preEqCheck   = OptionValue["PreEqualCheck"];
+  useDBQ       = OptionValue["UseDatabaseOfSmithDecompositions"];
+  storeDecompQ = OptionValue["StoreDecompositions"];
+  subsSol      = OptionValue["InjectSolution"];
+  knowns       = OptionValue["KnownSymbols"];
 
   procID =
     ToString[Unique[]];
