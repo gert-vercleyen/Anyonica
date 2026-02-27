@@ -529,17 +529,6 @@ TetrahedralEquivalenceClasses[ r_FusionRing ] :=
     DeleteCases[ ToEquivClass /@ FSymbols[r], l_ /; Length[l] == 1 || MatchQ[ l, {1 ..}] ]
   ];
 
-expandSymmetries[ str_, dd_ ] := 
-  Module[{ generators, ToEquivClass, expanEquivalences }
-    generators = 
-      If[ 
-        str == "commutative",
-
-
-      ]  
-
-  ]
-
 ClassToRules[ {} ] = 
   {};
 ClassToRules[ l_List ] := 
