@@ -110,7 +110,11 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         ];
 
         reducedVars =
-          Union[ Complement[ simpleVars/.Dispatch[properEquivalences], trivialVars ] ];
+          Union@ 
+          Complement[ 
+            simpleVars/.Dispatch[properEquivalences], 
+            trivialVars 
+          ];
 
         If[ 
           Length[reducedVars] === 0
@@ -122,9 +126,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         reducedEqns =
           TEL /@ ( simpleEqns/.Dispatch[properEquivalences] );
 
-        { binEqns, sumEqns } =
-          BinomialSplit @
-          reducedEqns;
+        { binEqns, sumEqns } = BinomialSplit @ reducedEqns;
 
         (* Convert the equations to a proposition *)
         preProp =
@@ -159,6 +161,16 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           ]
         ];
 
+        (* Check whether following code works *)
+        (* FilterSolutions[ soln_ ] :=
+          Select[
+            soln,
+            FreeQ[ 
+              sumEqns/.Dispatch[#], 
+              False  | 
+              0 == _?MonomialPolynomialQ | 
+              _?MonomialPolynomialQ == 0             ]&
+          ]; *)
 
         FilterSolutions[ soln_ ] :=
           Select[
