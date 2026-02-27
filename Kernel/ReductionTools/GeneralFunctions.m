@@ -47,6 +47,8 @@ MonomialQ[ pol_ ] :=
     Length[ MonomialList[ newPol ] ] === 1
   ];
 
+MonomialPolynomialQ[ p_ ] := Length @ MonomialList[p] === 1; 
+
 PackageExport["BEQ"]
 
 BEQ::usage =
