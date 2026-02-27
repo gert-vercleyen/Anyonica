@@ -654,8 +654,9 @@ Module[
         Keys @ knowns
       ];
 
-    { binEqns, sumEqns } =
-      BinomialSplit @ PentagonEquations[ ring, "Knowns" -> knowns ];
+    pentEqns = PentagonEquations[ ring, "Knowns" -> knowns ];
+
+    { binEqns, sumEqns } = BinomialSplit @ pentEqns;
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
@@ -729,8 +730,9 @@ Module[
         True
         ,
         AddOptions[opts][FindZeroValues][
-          If[ useSumsQ, pentEqns, binEqns ],
+          pentEqns,
           fSymbols,
+          "SumSubsetParameter" -> If[ useSumsQ, 1, OptionValue["SumSubsetParameter"] ]
           "InvertibleMatrices" -> invMats,
           "Equivalences" -> 
             If[ 
@@ -740,9 +742,6 @@ Module[
             ]
         ]
       ];
-
-    (* TODO: even if "FindZeroValuesUsingSums" -> False then we should also filter out 
-      solutions that are incompatible with the sumequations.*)
 
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 
