@@ -377,14 +377,10 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     If[ OptionValue["Parallel"], Quiet[ LaunchKernels[] ]; map = ParallelMap, map = Map ];
     
-    simplify =
-      OptionValue["SimplifyIntermediateResultsBy"];
-    numeric =
-      OptionValue["Numeric"];
-    accuracy =
-      OptionValue["Accuracy"];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
+    simplify   = OptionValue["SimplifyIntermediateResultsBy"];
+    numeric    = OptionValue["Numeric"];
+    accuracy   = OptionValue["Accuracy"];
+    preEqCheck = OptionValue["PreEqualCheck"];
     
     If[
       simplify =!= Identity
@@ -421,7 +417,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     If[
       numeric,
-      { sa[[;; , ;; -2]], N[ Normal @ sa[[;; , -1]], { Infinity, accuracy } ] },
+      { sa[[;; , ;; -2]], InfN[ Normal @ sa[[;; , -1]], accuracy ] },
       { sa[[;; , ;; -2]], Normal @ sa[[;; , -1]] }
     ]
   ]
