@@ -726,7 +726,7 @@ Module[
         AddOptions[opts][FindZeroValues][
           pentEqns,
           fSymbols,
-          "SumSubsetParameter" -> If[ useSumsQ, 1, OptionValue["SumSubsetParameter"] ]
+          "SumSubsetParameter" -> If[ !useSumsQ, 0, OptionValue["SumSubsetParameter"] ],
           "InvertibleMatrices" -> invMats,
           "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
         ]
