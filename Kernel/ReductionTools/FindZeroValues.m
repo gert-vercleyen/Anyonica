@@ -63,14 +63,10 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       simpleERules, remainingVars, FilterSolutions, trivialVarsFromMats, trivialVarsFromEquivalences,
       properEquivalences, allsatSolutions
     },
-    regMats =
-      OptionValue["InvertibleMatrices"];
+    regMats = OptionValue["InvertibleMatrices"];
+    eRules = OptionValue["Equivalences"];
 
-    eRules =
-      OptionValue["Equivalences"];
-
-    procID =
-      ToString[Unique[]];
+    procID = ToString[Unique[]];
 
     printlog["FZV:init", {procID, eqns, vars, {opts}}];
 
