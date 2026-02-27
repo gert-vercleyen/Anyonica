@@ -42,8 +42,7 @@ PackageExport["PE"]
 PE::usage =
   "Shorthand for PentagonEquations.";
 
-PE =
-  PentagonEquations;
+PE = PentagonEquations;
 
 Options[PentagonEquationsWithoutMultiplicity] =
   {
