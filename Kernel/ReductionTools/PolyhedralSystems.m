@@ -660,7 +660,7 @@ Module[
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
       With[ { 
-        d = CC[ring] 
+        d = CC[ring], 
         trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern )
         },
         DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern ] @
@@ -718,7 +718,7 @@ Module[
           ],
           fSymbols,
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
         ]
         ,
         True
@@ -728,30 +728,23 @@ Module[
           fSymbols,
           "SumSubsetParameter" -> If[ useSumsQ, 1, OptionValue["SumSubsetParameter"] ]
           "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ],
+          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
         ]
       ];
 
     printlog["PPSI:zero_Fs_results", { procID, Normal @ zeros } ];
 
-    If[
-      Length @ Normal @ zeros === 0
-      ,
-      Return[ { } ]
-    ];
+    If[ Length @ Normal @ zeros === 0, Return @ {} ];
 
     printlog["PPSI:fixing_gauge", {procID } ];
     (* Break Gauge Symmetry: first for all variables that are never 0, i.e.
        that do not appear in any of the "zeros" from previous step *)
 
     (* Get all F-symbols that could be 0 for some configuration in zeros *)
-    unionZeros =
-      Union @@
-      Normal[zeros][[;;,;;,1]];
+    unionZeros = Union @@ Normal[zeros][[;;,;;,1]];
 
     (* Get all F-symbols that can never be 0 *)
-    sharedVars =
-      Complement[ fSymbols, unionZeros ];
+    sharedVars = Complement[ fSymbols, unionZeros ];
 
     (* Fix the gauge for all the F symbols that can never be 0 *)
     { remainingSym, extraFixedFs } =
@@ -762,8 +755,7 @@ Module[
       ];
 
     (* Remove the newly fixed F-symbols from the list of variables *)
-    fSymbols =
-      Complement[ fSymbols, extraFixedFs[[;;,1]] ];
+    fSymbols = Complement[ fSymbols, extraFixedFs[[;;,1]] ];
 
     (* Substitute the values of the newly fixed F-symbols in the invertible matrices
        and remove trivial 1D F-matrices. *)
@@ -772,7 +764,6 @@ Module[
 
     (* Substitute the values of the newly fixed F-symbols in the equations,
        remove trivial equations and delete duplicate equations *)
-
     pentEqns = TEL[ pentEqns/.extraFixedFs ];
 
     { newBinEqns, newSumEqns } =  BinomialSplit[ pentEqns ]; 
@@ -845,8 +836,7 @@ Module[
 
       Reap[
         Do[
-          dz =
-            Dispatch[z];
+          dz = Dispatch[z];
 
           Sow[
             <|
