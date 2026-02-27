@@ -602,8 +602,7 @@ Module[
   subsSol      = OptionValue["InjectSolution"];
   knowns       = OptionValue["KnownSymbols"];
 
-  procID =
-    ToString[Unique[]];
+  procID = ToString[Unique[]];
 
   printlog["PPSI:init", { procID, ring, {opts} } ];
 
@@ -616,8 +615,7 @@ Module[
       { sRing, sSol } = subsSol;
 
       (* Function that maps labels in sRing to corresponding labels in ring *)
-      inject =
-        InjectionForm[ ring, sRing ];
+      inject = InjectionForm[ ring, sRing ];
 
       If[
         inject === None,
@@ -634,8 +632,7 @@ Module[
         ],
 
       (* ELSE *)
-      compatibleSol =
-      {}
+      compatibleSol = {}
     ];
 
     If[ 
@@ -657,16 +654,20 @@ Module[
         Keys @ knowns
       ];
 
-
     { binEqns, sumEqns } =
       BinomialSplit @ PentagonEquations[ ring, "Knowns" -> knowns ];
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
-      With[ { d = CC[ring] },
+      With[ { 
+        d = CC[ring] 
+        trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern )
+        },
+        DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern ] @
         Join[
           FMatrices[ ring ],
-          Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] ]
+          Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] 
+        ] 
       ];
 
     gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
@@ -680,13 +681,6 @@ Module[
         gaugeSymmetries,
         vacuumSymbols ~ Join ~ Keys @ knowns, 
         g
-      ];
-
-    (* Remove trivial and known F-matrices from list of invertible matrices *)
-    invMats =
-      With[{ trivialMatrixPattern = ( {{#}}& /@ $VacuumFPattern ) },
-        invMats //
-        DeleteCases[ {{ _?NumericQ }} | trivialMatrixPattern  ]
       ];
 
     printlog[ "PPSI:original_system", { procID, pentEqns, fSymbols } ];
