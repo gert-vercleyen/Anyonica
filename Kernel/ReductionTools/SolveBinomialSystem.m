@@ -310,7 +310,7 @@ Options[SolveNonSingularBinomialSystem] :=
     Options[ReduceBinomialSystem]
   ];
 
-CheckArgs[ eqns_, vars_ ] :=
+CheckArgsNonSingularSys[ eqns_, vars_ ][ code_ ] :=
   Which[
     !BinomialSystemQ[ eqns ]
     ,
@@ -324,8 +324,7 @@ CheckArgs[ eqns_, vars_ ] :=
   ];
 
 SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
-(
-  CheckArgs[ eqns, vars ];
+  CheckArgsNonSingularSys[ eqns, vars] @
   Module[
     {
       newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
@@ -462,8 +461,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
     printlog["Gen:results", {procID, result, absTime} ];
 
     result
-  ]
-);
+  ];
 
 
 ValidEqnQ[symbol_][ eqn_ ] :=
