@@ -432,7 +432,7 @@ ReduceBinSysHermiteLocal[ equations_, variables_, opts : OptionsPattern[] ] :=
       If[ 
         TrueQ[ subsysSize >= Length[equations] ],
         { u, h } = HermiteDecomposition[ mat ];
-TEL @
+
         newEqns = Thread[ PowerDot[ variables, h ] == PowerDot[ rhs, u ] ];
 
         If[
@@ -448,7 +448,7 @@ TEL @
         Return @ 
         <| 
           "Polynomials" ->
-            TPL @ ToPolynomial @ ,
+            TPL @ ToPolynomial @ newEqns,
           "Assumptions" -> And @@ Thread[ variables != 0 ],
           "Values" -> Thread[ variables -> variables ]
         |>
