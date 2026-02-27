@@ -26,7 +26,7 @@ PentagonEquations::usage =
 (*   "all trivial and duplicate equations have been removed.";*)
 
 Options[ PentagonEquations ] :=
-  Options[ PentagonTower ];
+  Options[ PentagonEquationsWithoutMultiplicity ];
 
 PentagonEquations[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
   If[
@@ -56,7 +56,9 @@ PentagonEquationsWithoutMultiplicity[ ring_, opts:OptionsPattern[] ] :=
     trivVacQ  = OptionValue["TrivialVacuumSymbols"];
     knowns    = OptionValue["Knowns"];
     r         = Rank[ring];
+
     If[ r == 1 && ( trivVacQ || knowns === { F[1,1,1,1,1,1] -> 1 } ) , Return @ {} ];
+    
     rr        = Range @ r;
     lFInd     = List @@@ FSymbols[ring];
     nzsc      = NZSC @ ring;
@@ -72,54 +74,54 @@ PentagonEquationsWithoutMultiplicity[ ring_, opts:OptionsPattern[] ] :=
         If[ trivVacQ, Thread[ Cases[ FSymbols @ ring, $VacuumFPattern ] -> 1 ], {} ]
       ];
 
-      Reap[
-        (* Collect equations of the form Non0LHS == RHS *)
+    Reap[
+      (* Collect equations of the form Non0LHS == RHS *)
+      Do[
+        { f, c, d, e, g, l } = label;
+        matches1 = Cases[ lFInd, { a_, b_, l, e, f, k_ } ];
         Do[
-          { f, c, d, e, g, l } = label;
-          matches1 = Cases[ lFInd, { a_, b_, l, e, f, k_ } ];
-          Do[
-            { a, b, k } = label2[[ { 1, 2, 6 } ]];
+          { a, b, k } = label2[[ { 1, 2, 6 } ]];
 
-            eqn =
-            (
-              sF[[f,c,d,e,g,l]] sF[[a,b,l,e,f,k]] ==
-              Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
-            );
+          eqn =
+          (
+            sF[[f,c,d,e,g,l]] sF[[a,b,l,e,f,k]] ==
+            Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+          );
 
-            If[ !TrueQ[eqn], Sow @ eqn ]
-            ,
-            { label2, matches1 }
-          ],
-          { label, lFInd }
-        ];
-
-        (* Collect equations of the form 0 == RHS. This is done 
-           by constructing the symmetric tree with non-existent  
-           bottom fusion channel N[f,l,e] and matching the other
-           labels *)
-        Do[
-          { f, l, e } = n1;
-          matches2 = Cases[ nzsc, { a_, b_, f } ];
-          matches3 = Cases[ nzsc, { c_, d_, l } ];
-          Do[
-            { a, b } = Most @ n2;
-            { c, d } = Most @ n3;
-            eqn = 
-              (
-                0 == Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
-              );
-            If[ !TrueQ[eqn], Sow @ eqn ]
-            ,
-            { k, r },
-            { g, r },
-            { n2, matches2 },
-            { n3, matches3 }
-          ]
+          If[ !TrueQ[eqn], Sow @ eqn ]
           ,
-          { n1, zsc }
-        ];
+          { label2, matches1 }
+        ],
+        { label, lFInd }
+      ];
 
-      ][[2,1]]
+      (* Collect equations of the form 0 == RHS. This is done 
+          by constructing the symmetric tree with non-existent  
+          bottom fusion channel N[f,l,e] and matching the other
+          labels *)
+      Do[
+        { f, l, e } = n1;
+        matches2 = Cases[ nzsc, { a_, b_, f } ];
+        matches3 = Cases[ nzsc, { c_, d_, l } ];
+        Do[
+          { a, b } = Most @ n2;
+          { c, d } = Most @ n3;
+          eqn = 
+            (
+              0 == Sum[ sF[[a,b,c,g,f,h]] sF[[a,h,d,e,g,k]] sF[[b,c,d,k,h,l]], {h,r} ]
+            );
+          If[ !TrueQ[eqn], Sow @ eqn ]
+          ,
+          { k, r },
+          { g, r },
+          { n2, matches2 },
+          { n3, matches3 }
+        ]
+        ,
+        { n1, zsc }
+      ];
+
+    ][[2,1]]
 
   ];
 
@@ -664,11 +666,9 @@ Module[
         Keys @ knowns
       ];
 
-    tower =
-      PentagonTower[ ring, "Knowns" -> knowns ];
 
     { binEqns, sumEqns } =
-      BinomialSplit @ pentEqns;
+      BinomialSplit @ PentagonEquations[ ring, "Knowns" -> knowns ];
 
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
