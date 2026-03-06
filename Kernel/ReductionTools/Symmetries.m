@@ -551,7 +551,7 @@ PackageExport["DeleteEquivalentSolutions"]
 DeleteEquivalentSolutions::usage =
   "DeleteEquivalentSolutions[ soln, ring ] returns a list of representatives of " <>
   "equivalence classes of the solutions to the pentagon equations (possibly combined"<>
-  " with those of the hexagon equations).";
+  " with those of the hexagon and/or pivotal equations).";
 
 DeleteEquivalentSolutions::wrongrstructure =
   "Either all solutions should be braided or none should be braided.";
@@ -592,9 +592,7 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     { time, result } =
       AbsoluteTiming[
 
-        zeroFs =
-          Keys @
-          Cases[ First @ soln, HoldPattern[ _ -> 0 ] ];
+        zeroFs = Keys @ Cases[ First @ soln, HoldPattern[ _ -> 0 ] ];
 
         (*printlog[ "DSES:groups", { procID, groupedSoln } ];*)
 
@@ -612,6 +610,7 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
             { False, True }, { "FSymbols", "PSymbols" },
             { False, False }, { "FSymbols" }
           ];
+
         invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> symbols ];
 
         (* For each solution we will map its index to the evaluated 
@@ -629,7 +628,7 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
         soln[[ 
           DeleteDuplicates[ 
             Range @ Length @ orbits, 
-            intersectingQ[ orbits[#1], orbits[#2] ]& 
+            intersectingQ[ orbits[#1], orbits[#2], check ]& 
           ] 
         ]]
 
@@ -639,10 +638,10 @@ DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
     result
   ];
 
-intersectingQ[ l1_List, l2_List ] :=
+intersectingQ[ l1_List, l2_List, check_ ] :=
   Catch[
     Do[
-      If[ TrueQ[ l1[[i]] == l2[[j]] ], Throw @ True ],
+      If[ TrueQ[ check[l1[[i]]] == check[l2[[j]]] ], Throw @ True ],
       { i, Length @ l1 }, { j, Length @ l2 }
     ]; False
   ];
