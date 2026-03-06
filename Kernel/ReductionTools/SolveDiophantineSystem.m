@@ -61,11 +61,12 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
 (
   CheckArgs[ eqnsList, vars, ranges ];
   Module[{
-    fileNames = OptionValue["FileNames"],
-    w = OptionValue["WeighedBy"],
-    eqns, newEqns, newVars, revertVars, CString, tower, sortedVars, freeVariables, freeSolutions,
-    newRanges, absTime, result, x, procID = ToString[Unique[]]
-  },
+    w, fileNames, eqns, newEqns, newVars, revertVars, CString, tower, sortedVars, freeVariables, freeSolutions,
+    newRanges, absTime, result, x, procID
+    },
+    w         = OptionValue["WeighedBy"];
+    fileNames = OptionValue["FileNames"];
+    procID    = ToString @ Unique[];
 
     printlog["SDE:init", {procID, eqnsList, vars, ranges, {opts}}];
 
@@ -78,9 +79,7 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
         Return[{}]
       ];
 
-      eqns =
-      DeleteCases[True] @
-      eqnsList;
+      eqns = TEL @ eqnsList;
 
       If[
         MemberQ[False] @ eqns,
@@ -90,14 +89,13 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
       ];
 
       { { newEqns, newRanges }, newVars, revertVars } =
-      SimplifyVariables[ { eqns, ranges } , vars, x  ];
+        SimplifyVariables[ { eqns, ranges } , vars, x  ];
 
-      freeVariables =
-      Complement[ newVars, GetVariables[ newEqns, x ] ];
+      freeVariables = Complement[ newVars, GetVariables[ newEqns, x ] ];
 
       freeSolutions =
-      Thread[ freeVariables -> #  ]& /@
-      Tuples[ freeVariables /. newRanges ];
+        Thread[ freeVariables -> #  ]& /@
+        Tuples[ freeVariables /. newRanges ];
 
       If[
         newEqns === {},
@@ -107,16 +105,15 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
       ];
 
       tower =
-      If[
-        w =!= Null,
-        (* THEN *)
-        TowerOfExpressions[ newEqns, x, "WeighedBy" -> w ],
-        (* ELSE *)
-        TowerOfExpressions[ newEqns, x, "WeighedBy" -> SearchSpaceSize[newRanges] ]
-      ];
+        If[
+          w =!= Null,
+          (* THEN *)
+          TowerOfExpressions[ newEqns, x, "WeighedBy" -> w ],
+          (* ELSE *)
+          TowerOfExpressions[ newEqns, x, "WeighedBy" -> SearchSpaceSize[newRanges] ]
+        ];
 
-      CString =
-      BacktrackCCode[ tower, x, newRanges ];
+      CString = BacktrackCCode[ tower, x, newRanges ];
 
       If[
         fileNames === {},
@@ -128,9 +125,7 @@ SolveDiophantineSystem[ eqnsList_, vars_, ranges_, opts:OptionsPattern[] ] :=
         ]
       ];
 
-      sortedVars =
-      Flatten @
-      tower[[;;, 1]];
+      sortedVars = Flatten @ tower[[;;, 1]];
 
       If[
         OptionValue["OnlyCCode"],
@@ -303,12 +298,9 @@ PolToString[ pol_, s_ ] :=
     Flatten
 );
 
-ReplacePlus[ expr_ ] :=
-  expr/.Plus[a_,b__]  :> Riffle[{a,b}, " + "];
-ReplaceTimes[ expr_ ] :=
-  expr/.Times[a_,b__] :> Riffle[{a,b}, " * "];
-ReplacePower[ expr_ ] :=
-  expr/.Power[a_,b__] :> Riffle[ConstantArray[a,b], " * " ];
+ReplacePlus[ expr_ ]  := expr/.Plus[a_,b__]  :> Riffle[{a,b}, " + "];
+ReplaceTimes[ expr_ ] := expr/.Times[a_,b__] :> Riffle[{a,b}, " * "];
+ReplacePower[ expr_ ] := expr/.Power[a_,b__] :> Riffle[ConstantArray[a,b], " * " ];
 
 (*
 +---------------------------------------------------------------------------+
