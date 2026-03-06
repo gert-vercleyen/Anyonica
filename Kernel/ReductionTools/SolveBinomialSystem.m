@@ -58,45 +58,28 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     InsertZeros, UpdateMultiplicativeSymmetries, updateNonSharedVars, solutions, sharedSymmetries,
     nonSingularQ, zeroValues, newVars, result, absTime
     },
-    symmetries =
-      OptionValue["Symmetries"];
-    nonSingularQ =
-      OptionValue["NonSingular"];
-    invertibleMats =
-      OptionValue["InvertibleMatrices"];
-    polConstraints =
-      OptionValue["PolynomialConstraints"];
-    zeroValues =
-      OptionValue["ZeroValues"];
-    useDataBase =
-      OptionValue["UseDatabaseOfSmithDecompositions"];
-    storeDecomps =
-      OptionValue["StoreDecompositions"];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
+    symmetries     = OptionValue["Symmetries"];
+    nonSingularQ   = OptionValue["NonSingular"];
+    invertibleMats = OptionValue["InvertibleMatrices"];
+    polConstraints = OptionValue["PolynomialConstraints"];
+    zeroValues     = OptionValue["ZeroValues"];
+    useDataBase    = OptionValue["UseDatabaseOfSmithDecompositions"];
+    storeDecomps   = OptionValue["StoreDecompositions"];
+    preEqCheck     = OptionValue["PreEqualCheck"];
     
-    filteredEqns =
-      TEL @ eqnList;
-    s1 =
-      Unique["x"];
-    gs =
-      Unique["g"];
-    procID =
-      ToString[Unique[]];
+    filteredEqns = TEL @ eqnList;
+    s1           = Unique["x"];
+    gs           = Unique["g"];
+    procID       = ToString[Unique[]];
+
     
     InsertZeros[zeros_][solution_] :=
-      SortBy[
-        Join[
-          solution,
-          Normal[zeros]
-        ],
-        First
-      ];
+      SortBy[First] @ Join[ solution, Normal @ zeros ];
 
     printlog["SMS:init", {procID,eqnList,vars,param,{opts}}];
     
     { absTime, result } =
-    AbsoluteTiming[
+    AbsoluteTiming[ Catch[ 
       (* Check for trivial system *)
       If[
         filteredEqns === {},
@@ -107,27 +90,25 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
       (* Check for inconsistent system *)
       If[
         MemberQ[False] @ filteredEqns,
-        printlog["Gen:has_False"];
-        Return[ {} ]
+        printlog["Gen:has_False"]; Return @ {} 
       ];
 
       (* Find out which variables could be 0 *)
 
       If[ (* No vars are 0 by assumption *)
         nonSingularQ,
-        Return @
+        Throw @
         AddOptions[opts][SolveNonSingularBinomialSystem][
           eqnList,
           vars,
           param
-        ]
+        ] 
       ];
 
       If[ (* Zeros are given as data *)
         zeroValues =!= None,
         (* THEN *)
-        zeros =
-          Dispatch /@ zeroValues,
+        zeros = Dispatch /@ zeroValues,
         (* ELSE *)
         zeros =
           ( Dispatch @* DeleteCases[ _ -> x_ /; x =!= 0 ] ) /@
@@ -142,11 +123,9 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
       ];
 
       (* Solve binomial equations containing none of the vars that are 0 in any of the configurations *)
-      unionZeros =
-        Union @@ Normal[zeros][[;;,;;,1]];
+      unionZeros = Union @@ Normal[zeros][[;;,;;,1]];
 
-      sharedVars =
-        Complement[ vars, unionZeros ];
+      sharedVars = Complement[ vars, unionZeros ];
 
       { sharedBinomialSystem, remainingEquations } =
         BinSplit[
@@ -177,7 +156,7 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
 
       If[
         sharedSolutions === {},
-        Return[{}]
+        Return @ {}
       ];
 
       (* We need to fix the gauges for the shared variables, substitute the unshared variables with new parameters and
@@ -246,7 +225,8 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
             { ss, sharedSolutions }
           ]
         ]
-      ][[2]] // If[ # != {}, #[[1]], {} ]&
+      ][[2]] // (If[ # != {}, #[[1]], {} ]&)
+    ]
     ];
 
     Remove[s1,gs];
@@ -262,8 +242,7 @@ PackageExport["SBS"]
 SBS::usage =
   "Shorthand for SolveBinomialSystem.";
 
-SBS =
-  SolveBinomialSystem;
+SBS = SolveBinomialSystem;
 
 
 
@@ -321,6 +300,10 @@ CheckArgsNonSingularSys[ eqns_, vars_ ][ code_ ] :=
     ,
     Message[ SolveNonSingularBinomialSystem::novars, eqns ];
     Abort[]
+    ,
+    True
+    ,
+    code
   ];
 
 SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
@@ -407,7 +390,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         Return @ {}
       ];
 
-      preSolutions = EchoLabel["PreSolutions"] @
+      preSolutions = 
         Catch[
           Thread[ newVars -> # ]& /@
           AddOptions[opts][SolveSemiLinModZ][
@@ -440,7 +423,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
         ];
 
       (* Check solutions against set of constraints and revert the variables for the valid solutions *)
-      invalidPos = EchoLabel["InvalidPos"] @ (* TODO: check whether parallelization is feasible and useful *)
+      invalidPos =  (* TODO: check whether parallelization is feasible and useful *)
         Position[
           preSolutions,
           sol_/; Not[ NotInvalidNonZeroSolutionQ[ constraints, preEqCheck ] @ sol ],
