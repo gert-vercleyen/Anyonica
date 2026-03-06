@@ -1996,15 +1996,34 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:results", { id_, results_, time_ 
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_ } ] :=
   AddCell[
     fileName,
     nbo,
     Cell[
       TextData[{
         inputStyle[ 
-          "Reducing system of "<>ToString[length] <> " equations via HermiteDecomposition on subsystems with at most " <> 
-          ToString[n] <> " equations.\nThis procedure will be applied at most 5 times." 
+          "Reducing system of "<>ToString[length] <> " equations via HermiteDecomposition"  
+          ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:hermitestart", { id_, var_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Started computing HermiteDecomposition using "<>
+          If[ 
+            var === None, 
+            "Mathematica's built-in method.",
+            "external Julia session with OSCAR."
+           ] 
         ]
       }],
       "Text",
@@ -2012,34 +2031,19 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] 
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:onehermite", { id_ } ] :=
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      TextData[{
-        inputStyle[ 
-          "Subsystem size equals size of system. Performing a single Hermite decomposition."
-        ]
-      }],
-      "Text",
-      CellTags -> { id, "Info" }
-    ]
-  ];
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, pols_, prevLength_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:hermitefinish", { id_, time_, decomp_ } ] :=
   Module[ { fn1 },
-    fn1 = dataFileName[ id, dir, "smallerSystem" ];
-    safeExport[ fn1, pols ];
+    fn1 = dataFileName[ id, dir, "hermitedecomp" ];
+    safeExport[ fn1, decomp ];
 
     AddCell[
       fileName,
       nbo,
       Cell[
         TextData[{
-          inputStyle[ "A reduced " ],
-          hyperlinkBox[ "system", fn1 ],
-          inputStyle[ " of "<> ToString[Length@equations]<> " equations was obtained after "<> ToString[time] <> " seconds."]
+          inputStyle[ "Computed " ],
+          hyperlinkBox[ "Hermite decomposition", fn1 ],
+          inputStyle[ " in "<>ToString[time]<>" seconds."]
         }],
         "Text",
         CellTags -> { id, "Info" }
@@ -2048,13 +2052,13 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, pols
   ];
 
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toric", { id_, length_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, n_ } ] :=
   AddCell[
     fileName,
     nbo,
     Cell[
       TextData[{
-        inputStyle[ "Started reduction of toric subsystem with "<> ToString[length] <> " non-equivalent equations." ]
+        inputStyle[ "Reduced system to one of "<> ToString[n] <> " equations." ]
       }],
       "Text",
       CellTags -> { id, "Info" }
