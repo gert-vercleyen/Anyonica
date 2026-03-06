@@ -390,43 +390,27 @@ SimplifyVariables::usage =
   "SimplifyVariables[eqns,oldVars,s] replaces all variables, oldVars, in eqns " <>
   "by a single indexed variable labeled by s and and returns a " <>
   "triple of new eqns, new variables, and replacement rules to revert to old " <>
+  "variables.\n" <> 
+  "SimplifyVariables[eqns,olds,s] replaces all variables with head olds, in eqns " <>
+  "by a single indexed variable labeled by s and and returns a " <>
+  "triple of new eqns, new variables, and replacement rules to revert to old " <>
   "variables.";
 
-SimplifyVariables::varswrongformat =
-  "`1` needs to be a list of variables.";
 
-SimplifyVariables::exprwrongformat =
-  "`1` needs to be a list of expressions";
+SimplifyVariables[ exprList_, oldVars_List, s_ ] :=
+  With[
+    { newVars = s /@ Range @ Length @ oldVars },
+    { r = Thread[ oldVars -> newVars ] },
+    printlog["SV:subs", { ToString @ Unique[], r } ];
+    {
+      exprList/.Dispatch[r],
+      newVars,
+      Dispatch[ Reverse /@ r ]
+    }
+  ];
 
-checkArgsSimplifyVariables[ exprList_, oldVars_, s_ ] :=
-  Which[
-    !ListQ[exprList]
-    ,
-      Message[ SimplifyVariables::exprwrongformat, exprList ];
-      Abort[]
-    ,
-    !ListQ[oldVars]
-    ,
-      Message[ SimplifyVariables::varswrongformat, oldVars ];
-      Abort[]
-  ]
-
-SimplifyVariables[ exprList_, oldVars_, s_ ] :=
-  ( 
-    checkArgsSimplifyVariables[ exprList, oldVars, s ];
-
-    With[
-      { newVars = s /@ Range @ Length @ oldVars },
-      { r = Thread[ oldVars -> newVars ] },
-      printlog["SV:subs", { ToString[Unique[]], r } ];
-      {
-        exprList/.Dispatch[r],
-        newVars,
-        Dispatch[ Reverse /@ r ]
-      }
-    ]
-  );
-
+SimplifyVariables[ exprList_, olds_Symbol, s_ ] :=
+  SimplifyVariables[ exprList, GetVariables[ exprList, olds ], s ];
 (* Replace all equivalent variables by a representative of the equivalence class *)
 
 PackageExport["ReplaceByRepresentatives"]
@@ -1066,8 +1050,7 @@ Options[UpdateAndCheck] :=
     "PreEqualCheck" -> Identity
   };
 
-UpdateAndCheck[ {}, __ ] =
-  { };
+UpdateAndCheck[ {}, __ ] = { };
 
 UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
   Module[ { newExpr, preEqCheck, simplify },
