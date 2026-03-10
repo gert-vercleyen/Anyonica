@@ -297,16 +297,13 @@ FTensors[ ring_FusionRing ] :=
 Module[
   { gTrees, a, b, c, d, mt, eLabels, fLabels, non0Ns, r, m1, m2, m3, m4 },
   gTrees =
-  GroupBy[
-    LeftOrderedFusionTrees[ ring, 2 ],
-    #[[{1, 2, 3, 5}]] &
-  ];
-  mt =
-  MT[ring];
-  non0Ns =
-  NZSC[ring];
-  r =
-  Rank[ring];
+    GroupBy[
+      LeftOrderedFusionTrees[ ring, 2 ],
+      #[[{1, 2, 3, 5}]] &
+    ];
+  mt     = MT[ring];
+  non0Ns = NZSC[ring];
+  r      = Rank[ring];
   Association @@
   Reap[
     Do[
