@@ -1504,8 +1504,7 @@ PackageExport["SHE"]
 SHE::usage =
   "Shorthand for SolveHexagonEquations.";
 
-SHE =
-  SolveHexagonEquations;
+SHE = SolveHexagonEquations;
 
 
 Options[SolveMultiplicityFreeHexagonEquations] :=
