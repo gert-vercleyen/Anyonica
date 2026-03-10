@@ -123,16 +123,13 @@ DNCriterion[ ring_FusionRing?CommutativeQ ] :=
 
     DNumberQ[ x_ ] :=
       Module[{ p, a, y },
-        If[ !AlgebraicIntegerQ[x], Return[ True ] ];
+        If[ !AlgebraicIntegerQ[x], Return @ True ];
 
-        p =
-          MinimalPolynomial[x][y];
+        p = MinimalPolynomial[x][y];
 
-        a =
-          ( Rest @ MonomialList[p] /. y -> 1 );
+        a = ( Rest @ MonomialList[p] /. y -> 1 );
 
-        n =
-          Exponent[ p, y ];
+        n = Exponent[ p, y ];
 
         And @@
         Table[
