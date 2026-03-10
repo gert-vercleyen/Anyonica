@@ -305,7 +305,7 @@ If[
 *)
 
 Options[HexagonEquationsWithoutMultiplicity] :=
-Options[HexagonEquations];
+  Options[HexagonEquations];
 
 HexagonEquationsWithoutMultiplicity[ ring_, OptionsPattern[] ] :=
 Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabels },
@@ -391,7 +391,7 @@ Module[{ a, b, c, d, e, g, sR, sF, rank, knowns, rSymbols,fSymbols, matchingLabe
 *)
 
 Options[ HexagonEquationsWithMultiplicity ] :=
-Options[HexagonEquations];
+  Options[HexagonEquations];
 HexagonEquationsWithMultiplicity[ ring_, OptionsPattern[] ] :=
 Module[ {
   fGroupedLabels, replaceKnowns, matchingLabels, Rt, Ft,
@@ -1512,31 +1512,29 @@ Options[SolveMultiplicityFreeHexagonEquations] :=
   Options[SolveHexagonEquations];
 
 SolveMultiplicityFreeHexagonEquations[ ring_FusionRing, z_ , opts:OptionsPattern[] ]:=
-Module[{ procID, time, result, bases },
-  procID =
-  ToString @ Unique[];
+  Module[{ procID, time, result, bases },
+    procID = ToString @ Unique[];
 
-  printlog["SMFHE:init", { procID, ring, { opts } } ];
+    printlog["SMFHE:init", { procID, ring, { opts } } ];
 
-  { time, result } =
-  AbsoluteTiming[
-    If[
-      Rank[ring] == 1,
-      Return[ { { F[ 1, 1, 1, 1, 1, 1 ] -> 1, R[ 1, 1, 1 ] -> 1 } } ]
+    { time, result } =
+    AbsoluteTiming[
+      If[
+        Rank[ring] == 1,
+        Return[ { { F[ 1, 1, 1, 1, 1, 1 ] -> 1, R[ 1, 1, 1 ] -> 1 } } ]
+      ];
+
+      bases = AddOptions[opts][HexagonGroebnerSystems][ ring, z ];
+
+      Flatten[
+        AddOptions[opts][SolveGroebnerSystem][#,z]& /@
+        bases,
+        1
+      ]
     ];
 
-    bases =
-    AddOptions[opts][HexagonGroebnerSystems][ ring, z ];
+    printlog["Gen:results", { procID, result, time } ];
 
-    Flatten[
-      AddOptions[opts][SolveGroebnerSystem][#,z]& /@
-      bases,
-      1
-    ]
+    result
+
   ];
-
-  printlog["Gen:results", { procID, result, time } ];
-
-  result
-
-];
