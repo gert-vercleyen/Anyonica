@@ -572,7 +572,7 @@ Union[
     "NonSingular" -> False,
     "PreEqualCheck" -> Identity,
     "UseDatabaseOfSmithDecompositions" -> True,
-    "UseDatabaseOfZeroValues" -> True,
+    "UseDatabaseOfZeroValues" -> False,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
     "FindZerosUsingSums" -> True,
