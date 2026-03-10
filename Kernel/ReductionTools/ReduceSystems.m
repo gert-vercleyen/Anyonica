@@ -751,6 +751,7 @@ AppendRHS[ {{}}, _ ] := {{}};
 
 AppendRHS[ _, {} ] := {{}}
 
+*)
 
 FindEquivalences[ eqns_, x_ ] :=
   With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
@@ -878,7 +879,7 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
 
           Do[
             SolveRepeatedly[
-              BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ] // MoveEquations[maxNBin],
+              BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ],
               GetVariables[ Normal @ sys["Equations"], s[i] ] ,
               s[i+1],
               Normal @ prevSols /. sys["Solution"],
@@ -889,15 +890,11 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
           ]
         ];
 
-      (* Possibly only use a maximum number of the binomial Equations per reduction step *)
 
-      { newBinEqns, newNonBinEqns } = 
-        MoveEquations[maxNBin][ { binomialEqns, sumEqns } ];
-
-      firstSystems =
+      firstSystems = EchoLabel["FirstSystems"] @ 
         AddOptions[opts][SolveAndUpdate][
-          newBinEqns,
-          newNonBinEqns,
+          binomialEqns,
+          sumEqns,
           { polynomialConstraints, invertibleMatrices },
           vars,
           s[1]
@@ -908,7 +905,7 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
       Reap[
         Do[
           SolveRepeatedly[
-            BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ] // MoveEquations[maxNBin],
+            BinSplit[ sys["Equations"], BinomialEquationQ @* preEqCheck ],
             GetVariables[ Normal @ sys["Solution"], s[1] ],
             s[2],
             Normal @ sys["Solution"],
@@ -927,12 +924,6 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
   ]
 );
 
-(* Move n eqns from l1 to l2 *)
-MoveEquations[n_][ { l1_, l2_ } ] := 
-  With[
-    { split = TakeDrop[ l1, Min[ n, Length @ l1 ] ] },
-    { First @ split, Join[ Last @ split, l2 ] }
-  ];
 
 PackageExport["RBB"]
 
@@ -1664,6 +1655,7 @@ With[{
 
 MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][ { knownVars_List, mapToReps_List, {} } ] :=
   { knownVars, mapToReps, {} };
+  
 MoldEquationsViaTrivialities[ s_Symbol, simplify_ ][
   { knownVars_List, mapToReps_, eqnsList_?ListOfEquationsQ }
 ] :=
