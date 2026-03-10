@@ -403,15 +403,23 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     probPos =
       FirstPosition[ properEqns, n_Equal /; preEqCheck[n] == 0, Missing[], 1 ];
     
-    If[ ! MissingQ[probPos], Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
+    If[ 
+      ! MissingQ[probPos], 
+      Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
+    ];
     
     probPos =
       FirstPosition[ properEqns, False, Missing[], 1 ];
     
-    If[ ! MissingQ[probPos], Throw[ { "False", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
+    If[ 
+      ! MissingQ[probPos], 
+      Throw[ { "False", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
+    ];
     
     sa =
-      DeleteSparseDuplicates @ SparseArray @ map[ betr, DeleteCases[True] @  properEqns ] ;
+      DeleteSparseDuplicates @ 
+      SparseArray @ 
+      map[ betr, DeleteCases[True] @  properEqns ];
     
     If[ OptionValue["Parallel"], CloseKernels[] ];
     
