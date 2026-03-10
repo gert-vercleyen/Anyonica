@@ -846,18 +846,11 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
     SolveRepeatedly, firstSystems, constraints, invertibleMatrices, polynomialConstraints, simplify,
     preEqCheck, procID, absTime, result, maxNBin, newBinEqns, newNonBinEqns
     },
-    invertibleMatrices =
-      OptionValue["InvertibleMatrices"];
-    polynomialConstraints =
-      OptionValue["PolynomialConstraints"];
-    simplify =
-      OptionValue["SimplifyIntermediateResultsBy"];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
-    maxNBin = 
-      Min[ Length[binomialEqns], OptionValue["MaxNumberOfBinomialEquations"] ];
-    procID =
-      ToString[Unique[]];
+    invertibleMatrices    = OptionValue["InvertibleMatrices"];
+    polynomialConstraints = OptionValue["PolynomialConstraints"];
+    simplify              = OptionValue["SimplifyIntermediateResultsBy"];
+    preEqCheck            = OptionValue["PreEqualCheck"];
+    procID                = ToString[Unique[]];
 
     printlog["RBM:init", {procID, sumEqns, binomialEqns, vars, s, {opts}}];
 
@@ -946,20 +939,21 @@ PackageExport["RBB"]
 RBB::usage =
   "Shorthand for ReduceByBinomials.";
 
-RBB =
-  ReduceByBinomials;
+RBB = ReduceByBinomials;
 
 
-Options[SolveAndUpdate] :=
-  Options[ReduceByBinomials];
+Options[SolveAndUpdate] := Options[ReduceByBinomials];
 
 (* Solves binEqns, updates sumEqns and constraints and checks for validity.
   A list of triples { sumEqns_i, sol_i, constr_i } is returned
 *)
 SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern[] ] :=
 Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, result, eqnSolConstr, notInvalidPos },
-  simplify =
-    OptionValue["SimplifyIntermediateResultsBy"];
+  simplify   = OptionValue["SimplifyIntermediateResultsBy"];
+  preEqCheck = OptionValue["PreEqualCheck"];
+  solve      = If[ OptionValue["NonSingular"], SNSBS, SBS ];
+  procID     = ToString[ Unique[] ];
+
   simplifySolutions =
     Function[
       solutions,
@@ -969,22 +963,19 @@ Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, 
         {}
       ]
     ];
-  preEqCheck =
-    OptionValue["PreEqualCheck"];
-  solve =
-    If[ OptionValue["NonSingular"], SNSBS, SBS ];
-  procID =
-    ToString[ Unique[] ];
+
 
   printlog[ "SAU:init", {procID, binEqns,sumEqns,vars,s,{opts}} ];
 
   { absTime, result } =
   AbsoluteTiming[
-    (* Note that we simplify solutions first and then simplify sumEqns again. This is to reduce memory pressure *)
+    (* Note that we simplify solutions first and then simplify sumEqns again. 
+       This is to reduce memory pressure *)
     soln =
       Map[
         Dispatch,
-        simplifySolutions @ AddOptions[opts][solve][ binEqns, vars, s ]
+        simplifySolutions @ 
+        AddOptions[opts][solve][ binEqns, vars, s ]
       ];
 
     eqnSolConstr =
@@ -1039,18 +1030,16 @@ Options[UpdateConstraints] =
 
 UpdateConstraints[ { polConstr_, invertibleMatrices_ }, solution_, opts:OptionsPattern[] ] :=
 Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
-  simplify =
-  OptionValue["SimplifyIntermediateResultsBy"];
-  preEqCheck =
-  OptionValue["PreEqualCheck"];
+  simplify   = OptionValue["SimplifyIntermediateResultsBy"];
+  preEqCheck = OptionValue["PreEqualCheck"];
 
   newPolConstr =
-  AddOptions[opts][UpdateAndCheck][ polConstr, solution, Identity ];
+    AddOptions[opts][UpdateAndCheck][ polConstr, solution, Identity ];
 
   If[ newPolConstr === { False }, Return @ { False } ];
 
   newInvMats =
-  AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] =!= 0& ];
+    AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] =!= 0& ];
 
   If[ newInvMats === { False }, Return @ { False } ];
 
@@ -1139,20 +1128,14 @@ Module[
     ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
     ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, parallelQ, map, maxMemFactor
   },
-  maxMemFactor =
-  OptionValue["ReduceByLinearityMaxMemoryFactor"];
-  simplify =
-  OptionValue["SimplifyIntermediateResultsBy"];
-  parallelQ =
-  OptionValue["Parallel"];
-  procID =
-  ToString @ Unique[];
-  id :=
-  ToString @ Unique[];
-  vars =
-  GetVariables[ polList, s ];
-  RCF =
-  RemoveCommonFactors[ #, s ]&;
+  maxMemFactor = OptionValue["ReduceByLinearityMaxMemoryFactor"];
+  simplify     = OptionValue["SimplifyIntermediateResultsBy"];
+  parallelQ    = OptionValue["Parallel"];
+  
+  procID = ToString @ Unique[];
+  id    := ToString @ Unique[];
+  vars   = GetVariables[ polList, s ];
+  RCF    = RemoveCommonFactors[ #, s ]&;
 
   If[
     parallelQ
@@ -1161,98 +1144,95 @@ Module[
     map =
     ParallelMap
     ,
-    map =
-    Map
+    map = Map
   ];
 
   rootReduce = (* TODO: might want to give user the option to turn this off *)
-  If[
-    MemberQ[ polList, _Root, Infinity ],
-    SafeRootReduce,
-    Identity
-  ];
+    If[
+      MemberQ[ polList, _Root, Infinity ],
+      SafeRootReduce,
+      Identity
+    ];
 
   (* We need to store the numerator and denominator of rational functions separately because
      because Mathematica automatically cancels common factors.
      RatRule converts the target of the linear rule to an actual rational function. *)
+  RatRule[ Missing[] ] := Missing[];
+
   RatRule[ a_ -> b_Association ] :=
-  a -> Cancel[ b["Numerator"] / b["Denominator"] ];
-  RatRule[ Missing[] ] :=
-  Missing[];
+    a -> Cancel[ b["Numerator"] / b["Denominator"] ];
 
   ToPol =
-  RCF @* rootReduce @* simplify @* Expand @* Numerator @* Cancel @* Together;
+    RCF @* rootReduce @* simplify @* Expand @* Numerator @* Cancel @* Together;
 
   MonQ[ pol_ ] :=
-  Length[ MonomialList[ pol ] ] === 1;
+    Length[ MonomialList[ pol ] ] === 1;
 
   PolRest[ pol_, ps_ ] :=
-  RCF @ PolynomialReduce[ pol, ps, vars ][[2]];
+    RCF @ PolynomialReduce[ pol, ps, vars ][[2]];
 
   (* Make sure all Kernels know the definitions of the functions to be mapped *)
   If[ parallelQ, DistributeDefinitions[ RCF, simplify, ToPol, PolRest, GetVariables ] ];
 
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, rules_  ] :=
-  With[
-    {
-      polProblem = (* note that all zeros are assumed to be removed from pols *)
-      FirstCase[ pols, p_ /;  MonQ[p] || MemberQ[p] @ nonZeroPols ],
-      nonZeroPolProblem =
-      MemberQ[0] @ nonZeroPols,
-      ruleProblem =
-      MemberQ[0] @ rules[[;;, 2]]
-    },
-    Which[
-      !MissingQ[ polProblem ]
-      ,
-      printlog["RBL:pol_problem", { id , polProblem, pols } ];
-      True
-      ,
-      nonZeroPolProblem
-      ,
-      printlog["RBL:non_zero_pol_problem"];
-      True
-      ,
-      ruleProblem
-      ,
-      printlog["RBL:rule_problem", { id, rules } ];
-      True
-      ,
-      (* ELSE: no problem *)
-      True
-      ,
-      False
-    ]
-  ];
+    With[
+      {
+        polProblem = (* note that all zeros are assumed to be removed from pols *)
+          FirstCase[ pols, p_ /;  MonQ[p] || MemberQ[p] @ nonZeroPols ],
+        nonZeroPolProblem = MemberQ[0] @ nonZeroPols,
+        ruleProblem = MemberQ[0] @ rules[[;;, 2]]
+      },
+      Which[
+        !MissingQ[ polProblem ]
+        ,
+        printlog["RBL:pol_problem", { id , polProblem, pols } ];
+        True
+        ,
+        nonZeroPolProblem
+        ,
+        printlog["RBL:non_zero_pol_problem"];
+        True
+        ,
+        ruleProblem
+        ,
+        printlog["RBL:rule_problem", { id, rules } ];
+        True
+        ,
+        (* ELSE: no problem *)
+        True
+        ,
+        False
+      ]
+    ];
 
   UpdateSystem[ pols_, nonZeroPols_, knownRules_, rule_ ] :=
-  MemoryConstrained[
-    {
-      TrimPolynomialList @ map[ ToPol, pols /. rule ],
-      nonZeroPols /. rule,
-      Append[rule] @ Expand[ knownRules/.rule ]
-    }
-    ,
-    Floor[ MemoryAvailable[] * maxMemFactor ]
-    ,
-    Sow[ { pols, nonZeroPols, knownRules } ];
-    $Aborted
-  ];
+    MemoryConstrained[
+      {
+        TrimPolynomialList @ map[ ToPol, pols /. rule ],
+        nonZeroPols /. rule,
+        Append[rule] @ Expand[ knownRules/.rule ]
+      }
+      ,
+      Floor[ MemoryAvailable[] * maxMemFactor ]
+      ,
+      Sow[ { pols, nonZeroPols, knownRules } ];
+      $Aborted
+    ];
 
   ReduceSystem[ pols_, nonZeroPols_, rules_, pol_ ] :=
-  MemoryConstrained[
-    {
-      TrimPolynomialList @ map[ RCF[PolRest[ #, pol ]]&, pols ],
-      nonZeroPols,
-      rules
-    }
-    ,
-    Floor[ MemoryAvailable[] * maxMemFactor ]
-    ,
-    Sow[ { pols, nonZeroPols, rules } ];
-    $Aborted
-  ];
+    MemoryConstrained[
+      {
+        TrimPolynomialList @ map[ RCF[PolRest[ #, pol ]]&, pols ],
+        nonZeroPols,
+        rules
+      }
+      ,
+      Floor[ MemoryAvailable[] * maxMemFactor ]
+      ,
+      Sow[ { pols, nonZeroPols, rules } ];
+      $Aborted
+    ];
 
   (* Add denominators appearing in the rules to the set of nonzero pols *)
   AddNonZeroPols[ pols_, nonZeroPols_, rules_ ] :=
