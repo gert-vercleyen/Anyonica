@@ -85,14 +85,21 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         reducedMats = simpleMats/.Dispatch[simpleERules];
 
-        trivialVars =
+        trivialVars = EchoLabel["TrivialVars"] @ 
+          Union @ 
           Join[
-            Cases[ reducedMats, {{a_}} /; a =!= 0 :> a ],
-            Keys[trivialVarsFromEquivalences]
+            Cases[ reducedMats, {{a_}} /; a =!= 1 :> a ],
+            Keys @ trivialVarsFromEquivalences
           ];
 
-        reducedMats =
-          reducedMats ~ WithMinimumDimension ~ 2;
+        replaceTrivialVars = ReplaceAll[ Dispatch @ Thread[ trivialVars -> 1 ] ];
+
+        reducedMats = EchoLabel["redmats"][
+          WithMinimumDimension[ reducedMats, 2 ] // 
+          replaceTrivialVars // 
+          DeleteCases[ x_/; MatrixOfOnesQ @ x ]];
+
+        reducedERules = MapAt[ replaceTrivialVars, simpleERules, {All,2} ];
 
         If[
           MemberQ[False] @ PermanentConditions @ reducedMats,
@@ -100,12 +107,8 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           Throw @ { }
         ];
 
-        reducedVars =
-          Union@ 
-          Complement[ 
-            simpleVars/.Dispatch[properEquivalences], 
-            trivialVars 
-          ];
+        reducedVars = EchoLabel["reducedvars"] @ 
+          DeleteCases[1] @ Union @ Values @ reducedERules;
 
         If[ 
           Length[reducedVars] === 0
@@ -114,54 +117,63 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           Throw @ { { } }
         ];
 
-        reducedEqns =
-          TEL /@ ( simpleEqns/.Dispatch[properEquivalences] );
+        If[ 
+          OptionValue["FindZerosBy"] == "JuliaPicoSAT"
+          ,
+          Print["Not implemented yet."]; Abort[];
+        ];
 
-        { binEqns, sumEqns } = BinomialSplit @ reducedEqns;
+        { binEqns, sumEqns } =  BinomialSplit @ simpleEqns;
 
         (* Convert the equations to a proposition *)
-        preProp =
-          And[
-            EqnsToProp[ binEqns ],
-            AddOptions[opts][SumEqnsToProp][ sumEqns, b ],
-            MatsToProposition[ reducedMats ]
-          ]/.Thread[trivialVars->True]/.b[i_]:>i;
+        preProp =  
+          DeleteDuplicates@
+          replaceTrivialVars[
+            And[
+              EqnsToProp[ binEqns ],
+              AddOptions[opts][SumEqnsToProp][ sumEqns, b ],
+              EchoLabel["matprop"] @ MatsToProposition[b] @ reducedMats
+            ]/.Dispatch[properEquivalences]
+          ]/.b[i_]:>i;
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
         (* Reduce the proposition using logic *)
-        { proposition, knowns, equivs } =
-          ReduceViaLogic[ preProp ]/.i_Integer :> b[i];
+        { proposition, knowns, equivs } = EchoLabel["prop"] @
+          AddOptions[opts][ReduceViaLogic][ preProp ]/.i_Integer :> b[i];
 
         remainingVars =
           Complement[ reducedVars, First /@ knowns, First /@ equivs ];
 
         printlog[ "FZV:reduced_system", { procID, proposition, knowns, equivs, remainingVars } ];
 
+        AddExtraInfo[ sol_ ] :=
+          SortBy[First] @
+          With[
+            { rules = 
+              Dispatch @ 
+                Join[ 
+                  sol,
+                  knowns,
+                  MapAt[ ReplaceAll[Dispatch @ sol], equivs, { All, 2 } ]  
+                ]
+            }, 
+            Select[ Not @* Last ] @ 
+            MapAt[ 
+              ReplaceAll[rules], 
+              Join[ 
+                knowns,
+                properEquivalences
+              ], 
+              { All, 2 } 
+            ]
+          ]/.False -> 0;
+
         If[ (* If all variables are known *)
           Length[ remainingVars ] === 0
-          , (* THEN: select all vars that point to False, replace False by 0 and return solution *)
-          Throw[
-            {
-              SortBy[First] @
-              ReplaceAll[
-                Select[ Join[ knowns, simpleERules/.knowns ], Not @* Last ],
-                revertVars
-              ]/.False -> 0
-            }
-          ]
+          , (* THEN: solution is trivial *) 
+          Throw @ AddExtraInfo[{}]
         ];
-
-        (* Check whether following code works *)
-        (* FilterSolutions[ soln_ ] :=
-          Select[
-            soln,
-            FreeQ[ 
-              sumEqns/.Dispatch[#], 
-              False  | 
-              0 == _?MonomialPolynomialQ | 
-              _?MonomialPolynomialQ == 0             ]&
-          ]; *)
 
         FilterSolutions[ soln_ ] :=
           Select[
@@ -175,18 +187,6 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
               Power[ a_, b_ ] == 0
             ]&
           ];
-
-        AddExtraInfo[ sol_ ] :=
-          SortBy[First] @
-          Select[ Last[#] == 0 & ] @
-          (
-            Join[
-              sol,
-              knowns,
-              properEquivalences/.Dispatch[Join[knowns,equivs]]/.Dispatch[sol],
-              equivs/.Dispatch[sol]
-            ]/.False -> 0
-          );
 
 
         allsatSolutions = 
@@ -213,9 +213,11 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
       printlog["Gen:results", {procID, result, absTime}];
 
-      result
+      EchoLabel["zerovalsresult"] @ result
   ]
 );
+
+MatrixOfOnesQ[ m_ ] := MatchQ[ m, { { 1 .. } .. } ];
 
 PackageExport["FZV"]
 
@@ -322,19 +324,22 @@ EqnsToProp[ eqns_ ] :=
 SetAttributes[EqnToProp,Listable];
 
 EqnToProp[eqn_] :=
-  If[
-    MemberQ[ HoldPattern[ Plus[__] ] ] @ eqn
-    ,
-    NotOnlyOne @@
-    Map[
-      IntToBool,
-      ( List @@ eqn )/.Plus -> Sequence/.Times -> And
-    ]
-    ,
-    Map[
-      IntToBool,
-      Equivalent[ First @ eqn, Last @ eqn ]/.Times -> And
-    ]
+  BooleanConvert[
+    If[
+      MemberQ[ HoldPattern[ Plus[__] ] ] @ eqn
+      ,
+      NotOnlyOne @@
+      Map[
+        IntToBool,
+        ( List @@ eqn )/.Plus -> Sequence/.Times -> And
+      ]
+      ,
+      Map[
+        IntToBool,
+        Equivalent[ First @ eqn, Last @ eqn ]/.Times -> And
+      ]
+    ],
+    "CNF"
   ];
 
 (* Returns True if exactly one of the arguments is True *)
@@ -401,7 +406,7 @@ CCodeZeroValues[ prop_, reducedVars_ ] :=
 
 Options[ReduceViaLogic] = 
   {
-    "LevelOfSimplification" -> 1
+    "LevelOfSimplification" -> 2
   };
 
 ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
@@ -542,9 +547,16 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
   ];
 
 
-MatsToProposition[ matList_ ] :=
-  With[{ perms = ReduceMonomials @* Permanent /@ matList },
-    And @@ ReplaceAll[ perms, { Times -> And, Plus -> Or } ]
+MatsToProposition[b_][ matList_ ] :=
+  And @@ ( MatProp[b] /@ matList );
+
+MatProp[ b_ ][ mat_ ] :=
+  With[ { p = Permanent @ mat }, 
+    If[ 
+      TrueQ[ (p /.b[_] -> 0 ) > 0 ],
+      True,
+      BooleanConvert[ ReduceMonomials @ p /. { Times -> And, Plus -> Or } , "CNF" ] 
+    ]
   ];
 
 
@@ -559,6 +571,72 @@ PermanentConditions[ mats_List ] :=
     ( Expand[Permanent[#]] != 0 )&,
     mats
   ];
+
+PicoSATSolutions[ prop_ ] := 
+  Module[ 
+    { currentdir, scriptdir, dir }, 
+    currentdir = Directory[];
+
+    scriptdir =
+      Quiet[
+        Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
+        SetDirectory @ NotebookDirectory[]],SetDirectory::fstr   (* If using notebook interface *)
+      ];
+    scriptfn = FileNameJoin @ { scriptdir, "JuilaPicoSAT.jl" };
+
+    dir    = CreateDirectory[]; 
+    datafn = FileNameJoin @ { dir, "proposition.csv" };
+    solfn  = FileNameJoin @ { dir, "solutions.csv" };
+    (* Export Proposition *) 
+    PicoSATExportProp[ datafn , prop ];
+
+    Run @ StringJoin[ "julia -e \"include(\\\"", scriptfn, "\\\") -- ", datafn ];
+
+    soln = Transpose @ Import @ solfn;
+
+  ];
+
+
+PicoSATExportProp[ fn_, prop_ ] :=
+	Module[
+		{ cscmat },
+		cscmat =
+			SparsetoCSC @
+			ListPropToSparse @ 
+			( Flatten /@ ( List/@( List @@ prop )/.{ Or -> List, Not -> (-1 * #&) } ) );
+			
+		Export[ fn, cscmat, "CSV" ]
+	];
+
+
+PicoSATExportScript[ dir_ ] :=
+	Module[
+		{ cscmat },
+		cscmat =
+			SparsetoCSC @
+			ListPropToSparse @ 
+			( Flatten /@ ( List/@( List @@ prop )/.{ Or -> List, Not -> (-1 * #&) } ) );
+			
+		Export[ fn, cscmat, "CSV" ]
+	];
+
+
+(* Convert list of lists to sparsearray *)
+ListPropToSparse[ lp_List ] := 
+  Reap[ 
+    Do[
+      Sow[ { i, j } -> lp[[i,j]] ]
+      ,
+      { i, Length @ lp },
+      { j, Length @ lp[[i]] }
+    ]
+  ][[2,1]];
+
+(* Convert sparse array to CSC format *)
+SparsetoCSC[ m_SparseArray ] := 
+	With[{ rules = Most @ ArrayRules @ m },
+		Transpose[ Flatten /@ (List @@@ rules) ]
+	];
 
 (*
 PropositionToCNFFile[ prop_, x_ ] :=
