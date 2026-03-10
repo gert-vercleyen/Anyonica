@@ -235,23 +235,118 @@ Options[ReduceBinSysHermite] :=
   Join[
     Options[ ReduceSemiLinModZ ],
     { 
-      "MaxEquationsPerPartition" -> 4096,
       "SimplifyIntermediateResultsBy" -> Identity,
-      "ExternalEvaluation" -> None
+      "ExternalEvaluation" -> None,
+      "Session" -> None
     }
   ];
 
 ReduceBinSysHermite::badopt = 
   "Option \"ExternalEvaluation\" should be either None or \"Julia\"."
 
-ReduceBinSysHermite[ args__, opts:OptionsPattern[] ] :=
-  Switch[ OptionValue["ExternalEvaluation"],
-    None, AddOptions[opts][ReduceBinSysHermiteLocal][ args],
-    "Julia", AddOptions[opts][ReduceBinSysHermiteJulia][ args ],
-    _, Message[ ReduceBinSysHermite::badopt ]; Abort[]
+ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] := 
+  Module[ { session, invalidSys, semilinsys, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, th,
+    subMat1, reducedMat1, matSubsys2, reducedMat2, newRHS, reducedrhs2, rhsFinal, 
+    u, h, mat, t, result, trm1, trm2, combinedMat, check, x }, 
+
+    procID  = ToString @ Unique[];
+    check   = OptionValue["PreEqualCheck"];
+    sess    = OptionValue["Session"];
+    ext     = OptionValue["ExternalEvaluation"];
+
+    { t, result } = 
+    AbsoluteTiming[
+
+      printlog["RBSVHD:init", { procID, Length @ eqns } ]; 
+
+      Catch[
+
+      If[ 
+        !MatchQ[ext, None | "Julia"], 
+        Message[ ReduceBinSysHermite::badopt ]; Abort[]
+      ];
+
+      session = 
+        If[ sess == None, StartExternalSession["Julia"], sess ];
+
+      invalidSys = <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>;
+
+      checkValidity[ h_, rhs_ ] :=
+        With[{ rank = First @ Dimensions @ h },
+          If[ 
+            rank =!= 0 && !MatchQ[ check /@ rhs[[ rank + 1 ;; ]] , { 1 ... } ],
+            printlog["Gen:has_False", { procID, { h, rhs } } ];
+            Throw @ invalidSys
+          ]
+        ];
+
+      (* printlog["RBSVHDJ:init", { procID, Length @ equations, subsysSize } ];*)
+
+      { neweqns, newvars, revertvars } =
+        SimplifyVariables[ eqns, vars, x ];
+
+      (*Transform the system to a matrix equation. This step is expensive 
+        so best to do it only once*)
+      semilinsys = 
+        Catch[
+          AddOptions[opts][BinToSemiLin][ neweqns, newvars, x ]
+        ];
+      
+      If[ (* If system is inconsistent BinToSemiLin throws list with String as first arg *)
+        TrueQ @ StringQ @ First @ semilinsys, 
+        printlog["Gen:has_False", { procID, semilinsys } ];
+        Throw @ invalidSys 
+      ];
+      
+      { mat, rhs } = semilinsys;
+
+      If[ 
+        TrueQ[ MemberQ[ 0 ] @ Map[ check, rhs ] ], 
+        printlog["Gen:has_False", { procID, { mat, rhs } } ];
+        Throw @ invalidSys 
+      ];
+      
+      hnf = 
+        If[ 
+          ext === "Julia", 
+          JuliaHNFWithTransform[ session, # ]&, 
+          SparseArray /@ ( HermiteDecomposition[#] )&
+        ];
+
+      printlog[ "RBSVHD:hermitestart", { procID, ext } ];
+
+     { th, { u, h } }=  AbsoluteTiming @ hnf @ mat; 
+
+      printlog[ "RBSVHD:hermitefinish", { procID, th, {u,h} } ];
+
+      newRHS = PowerDot[ rhs, u ];
+
+      rank  = First @ Dimensions @ h; (* all zero-rows have been deleted from h *)
+
+      checkValidity[ h, newRHS ];
+
+      printlog[ "RBSVHD:reduction", { procID, rank } ];
+      
+      <| 
+        "Polynomials" ->
+          TPL @ ToPolynomial @ TEL @
+          Thread[ PowerDot[ newvars, h ] == newRHS[[;;rank]] ]/.revertvars,
+        "Assumptions" -> And @@ Thread[newvars != 0 ]/.revertvars,
+        "Values" -> Thread[ newvars -> newvars ]/.revertvars
+      |>
+    ]
+    ];
+
+    printlog["Gen:results", {procID, result, t }];
+
+    If[ sess == None, DeleteObject @ session ]; 
+
+    result
+    
   ];
 
-Options[ReduceBinSysHermiteJulia] = 
+(*
+Options[ReduceBinSysHermiteJulia] := 
   Options[ReduceBinSysHermite];
 
 ReduceBinSysHermiteJulia[ equations_, variables_, opts : OptionsPattern[] ] := 
