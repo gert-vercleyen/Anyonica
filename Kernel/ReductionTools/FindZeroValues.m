@@ -64,9 +64,9 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       properEquivalences, allsatSolutions
     },
     regMats = OptionValue["InvertibleMatrices"];
-    eRules = OptionValue["Equivalences"];
+    eRules  = OptionValue["Equivalences"];
 
-    procID = ToString[Unique[]];
+    procID = ToString @ Unique[];
 
     printlog["FZV:init", {procID, eqns, vars, {opts}}];
 
@@ -74,21 +74,16 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       AbsoluteTiming[
       Catch[
         { { simpleEqns, simpleMats, simpleERules }, simpleVars, revertVars } =
-          SimplifyVariables[
-            { eqns, regMats, eRules },
-            vars,
-            b
-          ];
+          SimplifyVariables[ { eqns, regMats, eRules }, vars, b ];
 
         (* We can use a reduced set of variables by using (tetrahedral) equivalences *)
         (* First we split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
            zero and (2) rules that express F-symbols in terms of other F-symbols *)
 
-        { trivialVarsFromEquivalences, properEquivalences } =
-          BinSplit[ simpleERules, #[[2]] === 1& ];
+        { trivialVarsFromEquivalences, properEquivalences } = 
+          BinSplit[ simpleERules, Last[#] === 1& ];
 
-        reducedMats =
-          simpleMats/.Dispatch[simpleERules];
+        reducedMats = simpleMats/.Dispatch[simpleERules];
 
         trivialVars =
           Join[
@@ -227,8 +222,7 @@ PackageExport["FZV"]
 FZV::usage =
   "Shorthand for FindZeroValues.";
 
-FZV =
-  FindZeroValues;
+FZV = FindZeroValues;
 
 Options[SumEqnsToProp] =
   {
@@ -311,25 +305,9 @@ PropToEqns[ prop_Or ] :=
     { BooleanConvert[ prop, "CNF" ] } /. HoldPattern[Or[x__]] :> ( Plus[x] >= 1 ) /. Not[a_] :> (1 - a)/.Equivalent->Equal
   ];
 
-PropToEqns[ True ] :=
-  { True };
+PropToEqns[ True ] := { True };
 
-PropToEqns[ False ] :=
-  { False };
-(*
-PackageExport["BinEqnsToProposition"]
-
-BinEqnsToProposition[ eqns_ ] :=
-  And @@ (
-    Equivalent @@@
-    Map[
-      IntToBool,
-      Join @@@ MonomialList[ List @@@ DeleteCases[True] @ ReduceMonomials @ eqns ] /.
-      Times -> And,
-      {2}
-    ]
-  );
-*)
+PropToEqns[ False ] := { False };
 
 PackageScope["EqnsToProp"]
 
@@ -366,17 +344,11 @@ OnlyOne[ args__ ] :=
   	And @@ MapAt[ Not, Not /@ { args }, { i } ], { i, Length @ {args} }
   ];
 
-NotOnlyOne[ args__ ] :=
-  BooleanMinimize @ Not @ OnlyOne[args] ;
+NotOnlyOne[ args__ ] := BooleanMinimize @ Not @ OnlyOne[args] ;
 
-IntToBool[1] :=
-  True;
-
-IntToBool[0] :=
-  False;
-
-IntToBool[x_] :=
-  x;
+IntToBool[1]  := True;
+IntToBool[0]  := False;
+IntToBool[x_] := x;
 
 PackageScope["BooleanZeroValues"]
 
@@ -525,10 +497,9 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
       FixedPoint[ SimplifySystem @* UpdateEquivalences @* UpdateKnowns, # ]&;
 
     simplify2 = (* Converting to CNF often gives extra info about variables *)
-        FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
+      FixedPoint[ UpdateKnowns, { BooleanConvert[ #[[1]], "CNF" ], #[[2]], #[[3]] } ]&;
 
     simplify3 = (* Converting back to "DNF" can reduce the number of variables as well *)
-
         QuietCheck[
         With[
           { dnfForm = BooleanConvert[ #[[1]], "DNF" ] },
