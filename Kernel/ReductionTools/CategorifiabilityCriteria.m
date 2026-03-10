@@ -111,15 +111,16 @@ PUDCC[ ring_FusionRing?CommutativeQ ] :=
 (*========================================================================
     D-NUMBER CRITERION
   ========================================================================
-  The function returns true if the fusion ring cannot be categorified.
+  The function returns True if the fusion ring cannot be categorified due to
+   the D-number criterion.
 *)
 
 PackageExport["DNCriterion"]
 
 DNCriterion[ ring_FusionRing?CommutativeQ ] :=
   Module[{ chars, c, DNumberQ, n },
-    chars = FusionRingCharacters[ring];
-    c = RootReduce[ #.ConjugateTranspose[#]& /@ chars ];
+    chars = FusionRingCharacters @ ring;
+    c     = RootReduce[ #.ConjugateTranspose[#]& /@ chars ];
 
     DNumberQ[ x_ ] :=
       Module[{ p, a, y },
@@ -197,7 +198,8 @@ ImportResultsSAGECode[ vars_, dir_String, file_String ] :=
 (*========================================================================
     LAGRANGE CRITERION
   ========================================================================
-  The function returns False if the fusion ring cannot be categorified.
+  The function returns if the fusion ring cannot be categorified due to 
+  the Lagrange criterion.
 
 *)
 
@@ -206,11 +208,14 @@ PackageExport["LCriterion"]
 LCriterion[ ring_FusionRing ] :=
   Module[{ subringDims },
     subringDims =
-      FPDim /@
-      DeleteDuplicates @
-      SubFusionRings[ ring ][[;;,2]];
+      Join[
+        {1},
+        FPDim /@
+        DeleteDuplicates @
+        SubFusionRings[ ring ][[;;,2]]
+      ];
 
-    Not[And @@ AlgebraicIntegerQ @ RootReduce[ FPDim[ring]/subringDims ]]
+    Not[ And @@ AlgebraicIntegerQ @ RootReduce[ FPDim[ring]/subringDims ] ]
 
   ];
 
