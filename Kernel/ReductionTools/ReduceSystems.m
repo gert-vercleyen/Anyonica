@@ -482,7 +482,7 @@ ReduceBinSysHermiteJulia[ equations_, variables_, opts : OptionsPattern[] ] :=
     
   ];
 
-Options[ReduceBinSysHermiteLocal] = 
+Options[ReduceBinSysHermiteLocal] := 
   Options[ReduceBinSysHermite];
 
 ReduceBinSysHermiteLocal[ equations_, variables_, opts : OptionsPattern[] ] := 
