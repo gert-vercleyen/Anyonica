@@ -1056,24 +1056,21 @@ Options[UpdateAndCheck] :=
 UpdateAndCheck[ {}, __ ] = { };
 
 UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
-  Module[ { newExpr, preEqCheck, simplify },
+  Module[ { newExpr, preEqCheck, simplify, testedExpr },
+
     If[ exprList === {}, Return @ {} ];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
-    simplify =
-      OptionValue["SimplifyIntermediateResultsBy"];
+
+    preEqCheck = OptionValue["PreEqualCheck"];
+    simplify   = OptionValue["SimplifyIntermediateResultsBy"];
 
     Catch[
       Reap[
         Do[
-          newExpr =
-            simplify /@ ReplaceAll[ e, sol ];
+          newExpr = simplify /@ ReplaceAll[ e, Dispatch @ sol ];
 
-          If[
-            testf[ preEqCheck @ newExpr ] === False,
-            Throw[ { False } ],
-            Sow[ newExpr ]
-          ]
+          testedExpr = testf[ preEqCheck @ newExpr ];
+          If[ testedExpr === False, Throw @  { False } ];
+          If[ !TrueQ[ testedExpr ], Sow @ newExpr ]
           ,
           { e, exprList }
         ]
