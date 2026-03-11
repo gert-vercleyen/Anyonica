@@ -989,26 +989,29 @@ PackageExport["TrimEquationList"]
 TrimEquationList::usage =
   "Same as DeleteDuplicates @* DeleteCases[True].";
 
-TrimEquationList =
-  DeleteDuplicates @*
-  DeleteCases[True];
+TrimEquationList[True]  = True;
+TrimEquationList[False] = False;
+  
+TrimEquationList[eqns_] :=
+  DeleteDuplicates @
+  DeleteCases[True] @
+  eqns ;
 
 PackageExport["TEL"]
 
 TEL::usage =
   "Shorthand for TrimEquationList";
 
-TEL =
-  TrimEquationList;
+TEL = TrimEquationList;
 
 PackageExport["TrimPolynomialList"]
 
 TrimPolynomialList::usage =
   "Same as DeleteDuplicates @* DeleteCases[0].";
 
-TrimPolynomialList =
-  DeleteDuplicates @*
-  DeleteCases[0];
+TrimPolynomialList[pols_List] :=
+  DeleteDuplicates @
+  DeleteCases[0] @ pols;
 
 PackageExport["TPL"]
 
