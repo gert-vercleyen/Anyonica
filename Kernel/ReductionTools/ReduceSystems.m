@@ -310,7 +310,7 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
         If[ 
           ext === "Julia", 
           JuliaHNFWithTransform[ session, # ]&, 
-          SparseArray /@ ( HermiteDecomposition[#] )&
+          (SparseArray @* DeleteCases[ { 0 .. } ] /@ HermiteDecomposition[#] )&
         ];
 
       printlog[ "RBSVHD:hermitestart", { procID, ext } ];
@@ -891,7 +891,7 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
         ];
 
 
-      firstSystems = EchoLabel["FirstSystems"] @ 
+      firstSystems = 
         AddOptions[opts][SolveAndUpdate][
           binomialEqns,
           sumEqns,
