@@ -571,8 +571,7 @@ Union[
     "ZeroValues" -> None,
     "NonSingular" -> False,
     "PreEqualCheck" -> Identity,
-    "UseDatabaseOfSmithDecompositions" -> True,
-    "UseDatabaseOfZeroValues" -> False,
+    "UseDatabaseOfSmithDecompositions" -> False,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
     "FindZerosUsingSums" -> True,
@@ -698,28 +697,6 @@ Module[
         OptionValue["ZeroValues"] =!= None
         ,
         OptionValue["ZeroValues"]
-        ,
-        OptionValue["UseDatabaseOfZeroValues"]
-        ,
-        AddOptions[opts][MemoizedZeroValues][
-          MT[ring],
-          Which[
-            useSumsQ && OptionValue["SumSubsetParameter"] === 1
-            , (* use all sum eqns so no check needed *)
-            { pentEqns , {} }
-            , (* don't use all sum eqns so need to check for consistency *)
-            useSumsQ
-            ,
-            { pentEqns, sumEqns }
-            ,
-            True
-            ,
-            { binEqns, sumEqns  }
-          ],
-          fSymbols,
-          "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
-        ]
         ,
         True
         ,

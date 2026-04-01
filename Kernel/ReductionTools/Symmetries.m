@@ -1887,7 +1887,7 @@ Options[ToSymmetricGauge] =
   "Accuracy" -> 64,
   "SimplifyBy" -> Identity,
   "ReturnGaugeTransform" -> False,
-  "UseDatabaseOfSmithDecompositions" -> True,
+  "UseDatabaseOfSmithDecompositions" -> False,
   "PreEqualCheck" -> Identity,
   "UnitaryGaugeTransform" -> False,
   "GaugeDemands" -> {},
@@ -2162,7 +2162,7 @@ Options[WhichGaugeTransform] :=
   "OnlyMatchAbsoluteValues" -> False,
   "Numeric" -> False,
   "Accuracy" -> 64,
-  "UseDatabaseOfSmithDecompositions" -> True,
+  "UseDatabaseOfSmithDecompositions" -> False,
   "PreEqualCheck" -> Identity,
   "SimplifyBy" -> Identity
 };
