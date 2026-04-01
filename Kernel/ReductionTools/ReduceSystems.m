@@ -330,7 +330,7 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
       <| 
         "Polynomials" ->
           TPL @ ToPolynomial @ TEL @
-          Thread[ PowerDot[ newvars, h ] == newRHS[[;;rank]] ]/.revertvars,
+          ( Thread[ PowerDot[ newvars, h ] == newRHS[[;;rank]] ]/.revertvars),
         "Assumptions" -> And @@ Thread[newvars != 0 ]/.revertvars,
         "Values" -> Thread[ newvars -> newvars ]/.revertvars
       |>
@@ -939,78 +939,77 @@ Options[SolveAndUpdate] := Options[ReduceByBinomials];
   A list of triples { sumEqns_i, sol_i, constr_i } is returned
 *)
 SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern[] ] :=
-Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, result, eqnSolConstr, notInvalidPos },
-  simplify   = OptionValue["SimplifyIntermediateResultsBy"];
-  preEqCheck = OptionValue["PreEqualCheck"];
-  solve      = If[ OptionValue["NonSingular"], SNSBS, SBS ];
-  procID     = ToString[ Unique[] ];
+  Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, result, eqnSolConstr, notInvalidPos },
+    simplify   = OptionValue["SimplifyIntermediateResultsBy"];
+    preEqCheck = OptionValue["PreEqualCheck"];
+    solve      = If[ OptionValue["NonSingular"], SNSBS, SBS ];
+    procID     = ToString[ Unique[] ];
 
-  simplifySolutions =
-    Function[
-      solutions,
+    simplifySolutions =
+      Function[
+        solutions,
+        If[
+          solutions =!= {},
+          MapAt[ simplify, solutions, { All, All, 2 } ],
+          {}
+        ]
+      ];
+
+    printlog[ "SAU:init", {procID, binEqns,sumEqns,vars,s,{opts}} ];
+
+    { absTime, result } =
+    AbsoluteTiming[
+      (* Note that we simplify solutions first and then simplify sumEqns again. 
+        This is to reduce memory pressure *)
+      soln =
+        Map[
+          Dispatch,
+          simplifySolutions @ 
+          AddOptions[opts][solve][ binEqns, vars, s ]
+        ];
+
+      eqnSolConstr =
+        Table[
+          {
+            TEL @ AddOptions[opts][UpdateAndCheck][ sumEqns, sol, Identity ],
+            sol,
+            AddOptions[opts][UpdateConstraints][ constraints, sol ]
+          },
+          { sol, soln }
+        ];
+
+      printlog["SAU:updated_sys", {procID, eqnSolConstr[[;;,1]], eqnSolConstr[[;;,3]] } ];
+
+      notInvalidPos =
+        Flatten @
+        Position[
+          eqnSolConstr,
+          { e_, sl_, c_ } /;
+          NotInvalidNonZeroSolutionQ[e,preEqCheck][sl] && c =!= {False},
+          {1}
+        ];
+
       If[
-        solutions =!= {},
-        MapAt[ simplify, solutions, { All, All, 2 } ],
-        {}
-      ]
-    ];
-
-
-  printlog[ "SAU:init", {procID, binEqns,sumEqns,vars,s,{opts}} ];
-
-  { absTime, result } =
-  AbsoluteTiming[
-    (* Note that we simplify solutions first and then simplify sumEqns again. 
-       This is to reduce memory pressure *)
-    soln =
-      Map[
-        Dispatch,
-        simplifySolutions @ 
-        AddOptions[opts][solve][ binEqns, vars, s ]
+        Length[notInvalidPos] != Length[soln],
+        printlog["SAU:invalid_positions", {procID, Complement[ Range @ Length @ soln, notInvalidPos ] } ]
       ];
 
-    eqnSolConstr =
       Table[
-        {
-          TEL @ AddOptions[opts][UpdateAndCheck][ sumEqns, sol, Identity ],
-          sol,
-          AddOptions[opts][UpdateConstraints][ constraints, sol ]
-        },
-        { sol, soln }
-      ];
+        <|
+          "Equations"   -> eqnSolConstr[[i,1]],
+          "Solution"    -> eqnSolConstr[[i,2]],
+          "Constraints" -> eqnSolConstr[[i,3]]
+        |>,
+        { i, notInvalidPos }
+      ]
 
-    printlog["SAU:updated_sys", {procID, eqnSolConstr[[;;,1]], eqnSolConstr[[;;,3]] } ];
-
-    notInvalidPos =
-      Flatten @
-      Position[
-        eqnSolConstr,
-        { e_, sl_, c_ } /;
-        NotInvalidNonZeroSolutionQ[e,preEqCheck][sl] && c =!= {False},
-        {1}
-      ];
-
-    If[
-      Length[notInvalidPos] != Length[soln],
-      printlog["SAU:invalid_positions", {procID, Complement[ Range @ Length @ soln, notInvalidPos ] } ]
     ];
 
-    Table[
-      <|
-        "Equations"   -> eqnSolConstr[[i,1]],
-        "Solution"    -> eqnSolConstr[[i,2]],
-        "Constraints" -> eqnSolConstr[[i,3]]
-      |>,
-      { i, notInvalidPos }
-    ]
+    printlog["SAU:remainingsol", {procID,soln,result}];
+    printlog["Gen:results", {procID,result,absTime}];
 
+    result
   ];
-
-  printlog["SAU:remainingsol", {procID,soln,result}];
-  printlog["Gen:results", {procID,result,absTime}];
-
-  result
-];
 
 
 Options[UpdateConstraints] =
