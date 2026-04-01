@@ -126,7 +126,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         dEquiv = Dispatch @ properEquivalences;
         (* Convert the equations to a proposition *)
-        preProp = EchoFunction["PreProp length", Length] @  
+        preProp = 
           And[
             EqnsToProp[ ReplaceTrivialVars[ binEqns/.dEquiv] ],
             AddOptions[opts][SumEqnsToProp][ sumEqns, properEquivalences, trivialVars, b ],
@@ -171,7 +171,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         If[ (* If all variables are known *)
           Length[ remainingVars ] === 0
           , (* THEN: solution is trivial *) 
-          Throw @ AddExtraInfo[{}]
+          Throw @ { AddExtraInfo @ {} }
         ];
 
         FilterSolutions[ soln_ ] :=
@@ -212,7 +212,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
       printlog["Gen:results", {procID, result, absTime}];
 
-      EchoLabel["zerovalsresult"] @ result
+      result
   ]
 );
 

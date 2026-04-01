@@ -571,8 +571,7 @@ Union[
     "ZeroValues" -> None,
     "NonSingular" -> False,
     "PreEqualCheck" -> Identity,
-    "UseDatabaseOfSmithDecompositions" -> True,
-    "UseDatabaseOfZeroValues" -> False,
+    "UseDatabaseOfSmithDecompositions" -> False,
     "StoreDecompositions" -> True,
     "InjectSolution" -> {},
     "FindZerosUsingSums" -> True,
@@ -698,28 +697,6 @@ Module[
         OptionValue["ZeroValues"] =!= None
         ,
         OptionValue["ZeroValues"]
-        ,
-        OptionValue["UseDatabaseOfZeroValues"]
-        ,
-        AddOptions[opts][MemoizedZeroValues][
-          MT[ring],
-          Which[
-            useSumsQ && OptionValue["SumSubsetParameter"] === 1
-            , (* use all sum eqns so no check needed *)
-            { pentEqns , {} }
-            , (* don't use all sum eqns so need to check for consistency *)
-            useSumsQ
-            ,
-            { pentEqns, sumEqns }
-            ,
-            True
-            ,
-            { binEqns, sumEqns  }
-          ],
-          fSymbols,
-          "InvertibleMatrices" -> invMats,
-          "Equivalences" -> ProjectiveTetrahedralSymmetries[ ring, fSymbols ]
-        ]
         ,
         True
         ,
@@ -1174,14 +1151,14 @@ HexagonGroebnerSystems::usage =
 (*Options include all options for solving the hexagon equations and all options for finding groebner bases.";*)
 
 Options[HexagonGroebnerSystems] :=
-Join[
-  { "ReducePowerSums" -> True },
-  { "ReduceRoots" -> True },
-  Options[PrepareHexagonSolverInput],
-  Options[ReduceByBinomials],
-  Options[ReduceByLinearity],
-  Options[IncrementalGroebnerBasis]
-];
+  Union[
+    { "ReducePowerSums" -> False },
+    { "ReduceRoots" -> False },
+    Options[PrepareHexagonSolverInput],
+    Options[ReduceByBinomials],
+    Options[ReduceByLinearity],
+    Options[IncrementalGroebnerBasis]
+  ];
 
 HexagonGroebnerSystems[ ring_FusionRing?FusionRingQ, var_, opts:OptionsPattern[] ] :=
 Which[
@@ -1192,29 +1169,32 @@ Which[
 ];
 
 Options[MultiplicityFreeHexagonGroebnerSystems] :=
-Options[HexagonGroebnerSystems];
+  Options[HexagonGroebnerSystems];
 
 MultiplicityFreeHexagonGroebnerSystems[ ring_FusionRing, var_, opts:OptionsPattern[] ] :=
 Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
   opt, systems, AddKnowns, ReduceSystems,  procID, result, time, reducedSystems, simplify },
-  procID =
-  ToString @ Unique[];
+  procID = ToString @ Unique[];
 
   simplify =
-  Composition[
-    OptionValue["SimplifyIntermediateResultsBy"],
-    If[
-      OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
-      SafeRootReduce,
-      Identity
-    ],
-    If[
-      OptionValue["ReducePowerSums"],
-      PowerSumReduce,
-      Identity
-    ]
-  ];
+    Composition[
+      OptionValue["SimplifyIntermediateResultsBy"],
+      If[
+        OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
+        SafeRootReduce,
+        Identity
+      ],
+      If[
+        OptionValue["ReducePowerSums"],
+        PowerSumReduce,
+        Identity
+      ]
+    ];
 
+  If[ 
+    !SubsetQ[ Keys[ OptionValue["Knowns"] ], FSymbols @ ring ], 
+    Print["Solving Hexagon equations without providing a solution to the pentagon equations can result in incorrect results. Use at your own risk!"]
+  ];
 
   printlog["MFHGS:init", { procID, ring, var, { opts } } ];
 
@@ -1225,8 +1205,7 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
       Return[ { { { }, { F[1,1,1,1,1,1] -> 1, R[1,1,1] -> 1 }  } } ]
     ];
 
-    SumBinEqns =
-      Reverse @* BinomialSplit;
+    SumBinEqns = Reverse @* BinomialSplit;
 
     { equations, variables, symmetries, knowns } =
       AddOptions[opts][PrepareHexagonSolverInput][ring] /@
@@ -1272,38 +1251,35 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
     ];
 
     AddKnowns[ { sumEqns_, rules_ } ] :=
-    <| "Polynomials" -> ToPolynomial @ sumEqns, "Rules" -> Union[ knowns, rules ] |>;
+      <| "Polynomials" -> ToPolynomial @ sumEqns, "Rules" -> Union[ knowns, rules ] |>;
 
     (* Set up polynomial systems *)
-    systems =
-    AddKnowns /@
-    sumSystems;
+    systems = AddKnowns /@ sumSystems;
 
     (* Reduce the systems using linearity *)
     ReduceSystems[ system_ ] :=
-    With[
-      { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
-      Table[
-        <|
-          "Polynomials" -> simplify /@ nSys["Polynomials"],
-          "Assumptions" -> nSys["Assumptions"],
-          "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
-        |>,
-        { nSys, newSystems }
-      ]
-    ];
+      With[
+        { newSystems = AddOptions[opts][ReduceByLinearity][ system["Polynomials"], var ] },
+        Table[
+          <|
+            "Polynomials" -> simplify /@ nSys["Polynomials"],
+            "Assumptions" -> nSys["Assumptions"],
+            "Rules"       -> MapAt[ simplify, system["Rules"]/.nSys["Rules"], { All, 2 } ]
+          |>,
+          { nSys, newSystems }
+        ]
+      ];
 
-    reducedSystems[1] =
-    Flatten[ ReduceSystems /@ systems ];
+    reducedSystems[1] = Flatten[ ReduceSystems /@ systems ];
 
     printlog["MFHGS:systems", { procID, reducedSystems[1] } ];
 
     (* If only 1 variable remains it is often faster to solve the system directly *)
     reducedSystems[2] =
-    Flatten[
-      QuickSolve[ #, var, "SimplifyBy" -> simplify ]& /@
-      reducedSystems[1]
-    ];
+      Flatten[
+        QuickSolve[ #, var, "SimplifyBy" -> simplify ]& /@
+        reducedSystems[1]
+      ];
 
     printlog["MFHGS:quicksolve", { procID, reducedSystems[2] } ];
 
@@ -1483,10 +1459,10 @@ SolveHexagonEquations::usage =
 (*"The option \"Knowns\" can be set to a list of rules of variables that are already known, e.g. a solution to the pentagon equations.";*)
 
 Options[SolveHexagonEquations] :=
-Join[
-  Options[SolveGroebnerSystem],
-  Options[HexagonGroebnerSystems]
-];
+  Union[
+    Options[SolveGroebnerSystem],
+    Options[HexagonGroebnerSystems]
+  ];
 
 SolveHexagonEquations[ ring_FusionRing?FusionRingQ, z_Symbol, opts:OptionsPattern[] ] :=
 Which[

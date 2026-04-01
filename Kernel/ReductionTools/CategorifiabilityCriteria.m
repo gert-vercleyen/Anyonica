@@ -39,19 +39,18 @@ CSPCValue[acc_][ring_FusionRing] :=
     If[ !CommutativeQ[ring], Message[ CSPCValue::noncommutativering ]; Abort[] ];
 
     Module[{ chars, r, s },
-      chars =
-        N[ FusionRingCharacters[ring], { Infinity, acc } ];
-      r =
-        Rank[ring];
+      chars = FusionRingCharacters[ring];
+      r     = Rank[ring];
 
       Catch[
         Do[
           If[
-            Re @
+            Re[ Echo @
               N[
                 s = Sum[ chars[[ j1, i ]] chars[[ j2, i ]] chars[[ j3, i ]] / chars[[ 1, i ]], { i, r } ] ,
                 { Infinity, acc }
-              ] < 0,
+              ]
+            ] < 0,
 
             (* THEN *)
             If[ Im[s] == 0, Throw[s] ];
