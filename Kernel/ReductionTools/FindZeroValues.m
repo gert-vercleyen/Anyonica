@@ -85,7 +85,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         reducedMats = simpleMats/.Dispatch[simpleERules];
 
-        trivialVars = EchoLabel["TrivialVars"] @ 
+        trivialVars = 
           Union @ 
           Join[
             Cases[ reducedMats, {{a_}} /; a =!= 1 :> a ],
@@ -94,10 +94,9 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         replaceTrivialVars = ReplaceAll[ Dispatch @ Thread[ trivialVars -> 1 ] ];
 
-        reducedMats = EchoLabel["redmats"][
+        reducedMats = 
           WithMinimumDimension[ reducedMats, 2 ] // 
-          replaceTrivialVars // 
-          DeleteCases[ x_/; MatrixOfOnesQ @ x ]];
+          replaceTrivialVars;
 
         reducedERules = MapAt[ replaceTrivialVars, simpleERules, {All,2} ];
 
@@ -107,7 +106,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           Throw @ { }
         ];
 
-        reducedVars = EchoLabel["reducedvars"] @ 
+        reducedVars = 
           DeleteCases[1] @ Union @ Values @ reducedERules;
 
         If[ 
@@ -125,21 +124,21 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         { binEqns, sumEqns } =  BinomialSplit @ simpleEqns;
 
+        dEquiv = Dispatch @ properEquivalences;
         (* Convert the equations to a proposition *)
-        preProp =  
-          DeleteDuplicates@
-          replaceTrivialVars[
-            And[
-              EqnsToProp[ binEqns ],
-              AddOptions[opts][SumEqnsToProp][ sumEqns, b ],
-              EchoLabel["matprop"] @ MatsToProposition[b] @ reducedMats
-            ]/.Dispatch[properEquivalences]
+        preProp = EchoFunction["PreProp length", Length] @  
+          And[
+            EqnsToProp[ ReplaceTrivialVars[ binEqns/.dEquiv] ],
+            AddOptions[opts][SumEqnsToProp][ sumEqns, properEquivalences, trivialVars, b ],
+            MatsToProposition[b] @ reducedMats/.dEquiv
           ]/.b[i_]:>i;
+
+        If[ preProp =!= True, preProp = DeleteDuplicates[preProp] ];
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
         (* Reduce the proposition using logic *)
-        { proposition, knowns, equivs } = EchoLabel["prop"] @
+        { proposition, knowns, equivs } = 
           AddOptions[opts][ReduceViaLogic][ preProp ]/.i_Integer :> b[i];
 
         remainingVars =
@@ -232,29 +231,32 @@ Options[SumEqnsToProp] =
     "SumSubsetParameter" -> "Default"
   };
 
-SumEqnsToProp[ { }, x_, opts:OptionsPattern ] :=
-  True;
+SumEqnsToProp[ { }, equivs_, trivVars_,  x_, opts:OptionsPattern ] := True;
 
-SumEqnsToProp[ eqns_, x_, opts:OptionsPattern[] ] :=
+SumEqnsToProp[ eqns_, equivs_, trivVars_, x_, opts:OptionsPattern[] ] :=
   With[
     {
       func = OptionValue["SumSubsetFunction"],
-      par = OptionValue["SumSubsetParameter"],
-      reducedEqns = DeleteCases[True] @ ReduceMonomials @ eqns
+      par  = OptionValue["SumSubsetParameter"],
+      simplifications = 
+        Dispatch[ Join[ Thread[ trivVars -> True ], equivs/. Thread[ trivVars -> True ] ] ],
+      reducedEqns  = DeleteCases[True] @ ReduceMonomials @ eqns
     },
-    EqnsToProp @
-    Switch[ func,
-      "LeafCount"
-      ,
-      LeafCountEqns[ reducedEqns, par ]
-      ,
-      "SolutionCount"
-      ,
-      SolutionCountEqns[ reducedEqns, x, par ]
-      ,
-      "TermCount"
-      ,
-      TermCountEqns[ reducedEqns, par ]
+    EqnsToProp[
+      Switch[ func,
+        "LeafCount"
+        ,
+        LeafCountEqns[ reducedEqns, par ]
+        ,
+        "SolutionCount"
+        ,
+        SolutionCountEqns[ reducedEqns, x, par ]
+        ,
+        "TermCount"
+        ,
+        TermCountEqns[ reducedEqns, par ]
+      ],
+      simplifications
     ]
   ];
 
@@ -320,6 +322,15 @@ EqnsToProp[ eqns_ ] :=
     ReduceMonomials @
     eqns
   ];
+
+
+EqnsToProp[ eqns_, simplifications_ ] :=
+  And @@
+  EqnToProp[
+    DeleteCases[True] @
+    ReduceMonomials @
+    eqns
+  ]/.simplifications;
 
 SetAttributes[EqnToProp,Listable];
 
