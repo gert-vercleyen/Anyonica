@@ -359,7 +359,7 @@ TetrahedralSymmetries::usage =
 
 Options[TetrahedralSymmetries] :=
 {
-  "PreEqualCheck" -> RootReduce
+  "PreEqualCheck" -> Identity
 };
 
 TetrahedralSymmetries[ r_FusionRing, opts:OptionsPattern[] ] :=
