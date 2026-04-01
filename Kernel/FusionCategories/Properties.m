@@ -5,13 +5,14 @@
 
 Package["Anyonica`"]
 
+
 ChangeProperty::badarg = 
 	"`1` should be a rule or a list of rules";
 
 ChangeProperty[ cat_FusionCategory, prop_ ] :=
   Module[ {opts},
     opts = (* All defining properties of previous fusion cat *)
-			ReleaseHold @ Normal @ First[ List @@ cat ];
+		ReleaseHold @ Normal @ First[ List @@ cat ];
 		Which[ 
 			MatchQ[ prop, { _Rule .. } ],
  				AddOptions[opts][FusionCategory][ Sequence @@ prop ],
@@ -71,12 +72,9 @@ Options[AllPivotalStructures] :=
 
 AllPivotalStructures[ cat_FusionCategory, opts:OptionsPattern[] ] :=
   Module[{ r, p, d, sF, eqns, rhs },
-    r =
-      Rank @ cat;
-    d =
-      CC[cat];
-    p = 
-      \[ScriptP];
+    r = Rank @ cat;
+    d = CC[cat];
+    p = \[ScriptP];
     sF =
       SparseArray[
         MapAt[ List @@ #&, FSymbols[cat], {All,1} ],
