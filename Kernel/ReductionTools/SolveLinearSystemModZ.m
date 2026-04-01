@@ -434,19 +434,23 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
 PackageScope["BinEqnToRow"]
 
 BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
-  With[ {
-    rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
-    rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
-    },
-    MapAt[
-      simplify,
-      NormalizeAndCombine @
-      {
-        SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
-        SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
-        rhsMons2[[1]]/rhsMons1[[1]]
+  If[ 
+    TrueQ @ simplify[eqn], 
+    Return @ Join[ ConstantArray[ 0, Length @ vars ], { 1 } ],
+    With[ {
+      rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
+      rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
       },
-      {-1}
+      MapAt[
+        simplify,
+        NormalizeAndCombine @
+        {
+          SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
+          SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
+          rhsMons2[[1]]/rhsMons1[[1]]
+        },
+        {-1}
+      ]
     ]
   ];
 
