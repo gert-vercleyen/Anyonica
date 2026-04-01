@@ -906,8 +906,8 @@ PackageExport["GaugeSplitTransform"]
 
 GaugeSplitTransform::usage =
   "GaugeSplitTransform[ ring ] returns { V, n } where V is a matrix and n an integer such that"<>
-  "the first n rows of V provide a basis transform to obtain the gauge independent polynomials in the"<>
-  "F-symbols, P-symbols, and R-symbols (in that order) via the use of the PowerDot function.";
+  " the first n rows of V provide a basis transform to obtain the gauge independent polynomials in the"<>
+  " F-symbols, P-symbols, and R-symbols (in that order) via the use of the PowerDot function.";
 
 GaugeSplitTransform::invalidoptionincludeonly =
   "The option for \"IncludeOnly\", `1`, must be a list containing at least \"FSymbols\", \"RSymbols\", and/or \"PSymbols\".";

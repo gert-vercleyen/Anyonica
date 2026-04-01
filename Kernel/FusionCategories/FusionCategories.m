@@ -355,7 +355,7 @@ CheckHexagonEquationsWithoutMultiplicity[ ring_, fSymbols_, rSymbols_, OptionsPa
             sR[[ a, c, e ]]^(-1) sF[[a,c,b,d,e,g]] sR[[ b, c, g ]]^(-1) ==
             Sum[
               sF[[ c, a, b, d, e, f ]] sR[[ f, c, d ]]^(-1) sF[[ a, b, c, d, f, g ]],
-              { f, matchingLabels[ { a, c, b, d, e } ] }
+              { f,  matchingLabels[ { a, c, b, d, e } ] }
             ]
           ];
         
