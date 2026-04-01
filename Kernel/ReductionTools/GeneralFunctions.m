@@ -563,8 +563,7 @@ NotInvalidNonZeroSolutionQ[ {}, _ ][ _ ] :=
 NotInvalidNonZeroSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
   With[
     {
-      filledInEqns =
-        Expand[ Map[ preEqCheck, eqns/.Dispatch[soln], {2} ] ]
+      filledInEqns = Expand[ Map[ preEqCheck, eqns/.Dispatch[soln], {2} ] ]
     },
     FreeQ[
       filledInEqns,
@@ -1018,8 +1017,7 @@ PackageExport["TPL"]
 TPL::usage =
   "Shorthand for TrimPolynomialList";
 
-TPL =
-  TrimPolynomialList;
+TPL = TrimPolynomialList;
 
 
 MembershipList =
@@ -1074,7 +1072,7 @@ UpdateAndCheck[ exprList_List, sol_, testf_, OptionsPattern[] ] :=
           ,
           { e, exprList }
         ]
-      ][[2,1]]
+      ][[2]]/.{{x__}}:>{x}
     ]
   ];
 
