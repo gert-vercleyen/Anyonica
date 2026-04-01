@@ -340,14 +340,14 @@ FusionRingFromGroup::usage =
   "FusionRingFromGroup[g],  returns a fusion ring whose multiplication matches that of the group g. \n"<>
   "FusionRingFromGroup[multTab] returns a fusion ring whose multiplication table matches the group multiplication"<>
   " table multTab.";
-FusionRingFromGroup::notgroupmulttab = 
+FusionRingFromGroup::notgroupmulttab =
   "The multiplication table `1` does not correspond to that of a group."
 
 (*Its name will be set to that of the group if the group is a PermutationGroup, SymmetricGroup, AlternatingGroup, CyclicGroup, DihedralGroup or AbelianGroup, or will be the value given by the option \"Names\".*)
 FusionRingFromGroup[ table_?MatrixQ, opts:OptionsPattern[] ] := With[ {
   n = Length[ table ]},
   If[ !GroupTableQ[table], Message[ FusionRingFromGroup::notgroupmulttab, table ]; Return @ $$Failed ];
-  AddOptions[opts][FusionRing][ 
+  AddOptions[opts][FusionRing][
       "MultiplicationTable" ->
       Table[
         If[ k == table[[i,j]], 1 , 0]
@@ -449,12 +449,12 @@ FusionRingRepG[ g_/; ListQ[g] || StringQ[g] ] :=
   Module[{ ct, rank, n },
     ct =
       FiniteGroupData[ g , "CharacterTable" ];
-    
+
     If[ MissingQ[ct], Return[ct] ];
-    
+
     rank =
       Length @ ct;
-    
+
     FusionRing[
       "MultiplicationTable" ->
       Table[
@@ -645,13 +645,17 @@ FusionRingSON2::notimplemented =
 
 (* TODO: implement modular data for metaplectic categories *)
 FusionRingSON2[ m_ ] :=
-(*If[
-    m < 4,
-    Message[ FusionRingSON2::notimplemented ],*)
-    FusionRing[
-      "MultiplicationTable" -> Which[ Mod[ m, 4 ] == 0, rulesdiv4[m/2], Mod[ m, 2 ] == 0, rulesdiv2[m/2], True, rulesodd[m] ],
+  FusionRing[
+      "MultiplicationTable" -> 
+        Which[ 
+          Mod[ m, 4 ] == 0, 
+            rulesdiv4[m/2], 
+          Mod[ m, 2 ] == 0, 
+            rulesdiv2[m/2], 
+          True, 
+            rulesodd[m] 
+        ],
       "Names" -> {"SO(" <> ToString[m] <> "\!\(\*SubscriptBox[\()\), \(2\)]\)", "Metaplectic(" <> ToString[m] <> ")"}
-      (*]*)
   ];
 
 rulesodd[m_] :=

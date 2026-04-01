@@ -340,7 +340,7 @@ SolveSemiLinModZ[ { mat_?MatrixQ, vec_List }, param_, opts:OptionsPattern[] ] :=
 PackageExport["BinToSemiLin"]
 
 BinToSemiLin::usage =
-  "BinToSemiLin[eqnList,nVars,s] converts the binomial system eqnList with nVars variables labeled by s to " <>
+  "BinToSemiLin[eqnList,vars,s] converts the binomial system eqnList with variables vars labeled by s to " <>
   "the logarithm of eqnList and a vector of factors.";
 
 BinToSemiLin::nonbineqns =
@@ -377,14 +377,10 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     If[ OptionValue["Parallel"], Quiet[ LaunchKernels[] ]; map = ParallelMap, map = Map ];
     
-    simplify =
-      OptionValue["SimplifyIntermediateResultsBy"];
-    numeric =
-      OptionValue["Numeric"];
-    accuracy =
-      OptionValue["Accuracy"];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
+    simplify   = OptionValue["SimplifyIntermediateResultsBy"];
+    numeric    = OptionValue["Numeric"];
+    accuracy   = OptionValue["Accuracy"];
+    preEqCheck = OptionValue["PreEqualCheck"];
     
     If[
       simplify =!= Identity
@@ -407,21 +403,29 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     probPos =
       FirstPosition[ properEqns, n_Equal /; preEqCheck[n] == 0, Missing[], 1 ];
     
-    If[ ! MissingQ[probPos], Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
+    If[ 
+      ! MissingQ[probPos], 
+      Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
+    ];
     
     probPos =
       FirstPosition[ properEqns, False, Missing[], 1 ];
     
-    If[ ! MissingQ[probPos], Throw[ { "False", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] ];
+    If[ 
+      ! MissingQ[probPos], 
+      Throw[ { "False", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
+    ];
     
     sa =
-      DeleteSparseDuplicates @ SparseArray @ map[ betr, DeleteCases[True] @  properEqns ] ;
+      DeleteSparseDuplicates @ 
+      SparseArray @ 
+      map[ betr, DeleteCases[True] @  properEqns ];
     
     If[ OptionValue["Parallel"], CloseKernels[] ];
     
     If[
       numeric,
-      { sa[[;; , ;; -2]], N[ Normal @ sa[[;; , -1]], { Infinity, accuracy } ] },
+      { sa[[;; , ;; -2]], InfN[ Normal @ sa[[;; , -1]], accuracy ] },
       { sa[[;; , ;; -2]], Normal @ sa[[;; , -1]] }
     ]
   ]
@@ -430,19 +434,23 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
 PackageScope["BinEqnToRow"]
 
 BinEqnToRow[ eqn_, vars_, x_, simplify_ ] :=
-  With[ {
-    rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
-    rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
-    },
-    MapAt[
-      simplify,
-      NormalizeAndCombine @
-      {
-        SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
-        SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
-        rhsMons2[[1]]/rhsMons1[[1]]
+  If[ 
+    TrueQ @ simplify[eqn], 
+    Return @ Join[ ConstantArray[ 0, Length @ vars ], { 1 } ],
+    With[ {
+      rhsMons1 = ConstMonSplit[ eqn[[1]], x ],
+      rhsMons2 = ConstMonSplit[ eqn[[2]], x ]
       },
-      {-1}
+      MapAt[
+        simplify,
+        NormalizeAndCombine @
+        {
+          SparseArray[ CoefficientRules[ rhsMons1[[2]], vars ][[1, 1]] ] -
+          SparseArray[ CoefficientRules[ rhsMons2[[2]], vars ][[1, 1]] ],
+          rhsMons2[[1]]/rhsMons1[[1]]
+        },
+        {-1}
+      ]
     ]
   ];
 
@@ -468,11 +476,15 @@ ConstMonSplit[ mon_, x_ ] :=
   With[ { const = mon /. x[_] -> 1 }, { const, mon/const } ];
 
 (* normalize gets rid of a possible overall minus sign, and combines the row with RHS so that deleting duplicates becomes much faster *)
+
 NormalizeAndCombine[ { row_, rhs_ } ] :=
-  If[
-    SelectFirst[ ArrayRules[ row ][[ ;; , 2 ]], # != 0 & ] > 0,
-    Append[ rhs ] @ row,
-    Append[ 1/rhs ] @ (-row)
+  With[ 
+    { firstNonZero = SelectFirst[ ArrayRules[ row ][[ ;; , 2 ]], # != 0 & ] },
+    If[
+      TrueQ[ firstNonZero < 0 ],
+      Append[ 1/rhs ] @ (-row),
+      Append[ rhs ] @ row
+    ]
   ];
 
 (*

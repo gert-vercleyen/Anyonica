@@ -422,7 +422,6 @@ Barcode::usage =
 
 SetAttributes[ Barcode, Listable ];
 
-(*TODO: reset to old definition after recomputation of all codes *)
 FusionRing /: Barcode[ r_FusionRing?FusionRingQ ] :=
   Which[
     r["Barcode"] =!= Missing[]

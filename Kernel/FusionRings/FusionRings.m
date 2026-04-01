@@ -24,8 +24,7 @@ OptimizedImport[ fileName_String, importDirectory_String ] :=
 	];
 
 (* Import the FusionRingList *)
-currentDirectory =
-	Directory[];
+currentDirectory = Directory[];
 
 importDirectory =
 	Quiet[
@@ -50,8 +49,7 @@ FRBC::usage =
 
 PackageScope["FRBCData"]
 
-FRBCData =
-		OptimizedImport[ "FusionRingAssociation", importDirectory ];
+FRBCData = OptimizedImport[ "FusionRingAssociation", importDirectory ];
 
 FusionRingByCode[ tuple_List ] := 
 		Switch[ Length @ tuple, 
@@ -60,8 +58,7 @@ FusionRingByCode[ tuple_List ] :=
 			_, Message[ FusionRingByCode::notthreeorfourtuple, tuple ]
 		];
 
-FRBC = 
-	FusionRingByCode;
+FRBC = FusionRingByCode;
 
 PackageExport["FusionRingList"]
 
@@ -78,8 +75,7 @@ FRL =
 	FusionRingList =
 		OptimizedImport[ "FusionRingList", importDirectory ];
 	
-SetDirectory @
-	currentDirectory;
+SetDirectory @ currentDirectory;
 
 
 PackageExport["AllFusionRingsQ"]
@@ -104,8 +100,7 @@ PackageExport["AFRQ"]
 AFRQ::usage =
 "Shorthand for AllFusionRingsQ.";
 
-AFRQ[ r_, m_ ] :=
-	AllFusionRingsQ[ r, m ];
+AFRQ = AllFusionRingsQ;
 
 (* Formatting *)
 

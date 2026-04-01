@@ -84,7 +84,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
             b
           ];
 
-        (* We can use a reduced set of variables by using tetrahedral equivalences *)
+        (* We can use a reduced set of variables by using (tetrahedral) equivalences *)
         (* First we split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
            zero and (2) rules that express F-symbols in terms of other F-symbols *)
 

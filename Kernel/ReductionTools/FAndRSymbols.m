@@ -297,16 +297,13 @@ FTensors[ ring_FusionRing ] :=
 Module[
   { gTrees, a, b, c, d, mt, eLabels, fLabels, non0Ns, r, m1, m2, m3, m4 },
   gTrees =
-  GroupBy[
-    LeftOrderedFusionTrees[ ring, 2 ],
-    #[[{1, 2, 3, 5}]] &
-  ];
-  mt =
-  MT[ring];
-  non0Ns =
-  NZSC[ring];
-  r =
-  Rank[ring];
+    GroupBy[
+      LeftOrderedFusionTrees[ ring, 2 ],
+      #[[{1, 2, 3, 5}]] &
+    ];
+  mt     = MT[ring];
+  non0Ns = NZSC[ring];
+  r      = Rank[ring];
   Association @@
   Reap[
     Do[
@@ -352,8 +349,8 @@ Module[
 
 (* From: https://journals.aps.org/prb/pdf/10.1103/PhysRevB.102.115154 *)
 
-PackageExport["TetrahedralSymmetries"]
-
+(* TODO: this one contains a bug: For HI(Z_3) F-symbols appear that don't 
+exist in the first place!!! *)
 TetrahedralSymmetries::usage =
 "TetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
 "representative that is equal via a tetrahedral symmetry.\n"<>
@@ -407,14 +404,12 @@ With[{ firstRule = First @ rules, restRules = Rest @ rules },
   ]
 ];
 
-FixLHS[ a_ -> b_ ] :=
-With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
 
 FixRule[ check_ ][ a_ -> b_ ] :=
 Switch[ NumericQ /@ { a, b },
   { True, True }
   ,
-  If[ check[ a - b ] != 0, Throw[ a -> b ], a -> b ]
+  If[ check[ a - b ] =!= 0, Throw[ a -> b ], a -> b ]
   ,
   { True, False }
   ,
@@ -425,6 +420,43 @@ Switch[ NumericQ /@ { a, b },
   FixLHS[ a -> b ]
 ];
 
+FixLHS[ a_ -> b_ ] :=
+  With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
+
+(*
+Options[equivClass] :=
+  {"PreEqualCheck" -> Identity};
+
+equivClass[ring_, OptionsPattern[]][f_] :=
+  With[{ 
+    equivFs = FixedPoint[ expandOrbit[ring], { f } ] /. {$VacuumFPattern -> 1 }, 
+    check = OptionValue["PreEqualCheck"] 
+    },
+    Which[ 
+      MatchQ[ equivFs, { 1 .. } ],
+        { },
+      True,
+        First @ Solve[ Equal @@ equivFs ]
+      ]
+    ]
+
+expandOrbit[ring_][fs_List] :=
+  Union @ 
+  Flatten @ 
+  Join[ { fs }, Flatten @ Values[ miniorbit[ring] /@ fs ] ];
+
+miniorbit[ring_][a_.*(symb : F[j_, k_, l_, i_, m_, n_]) ] :=
+  With[{d = CC[ring], qd = FPDims[ring][[#]] &},
+    {
+      symb -> a F[k, j, d[i], d[l], m, d[n]],
+      symb -> a F[d[i], l, k, d[j], d[m], n],
+      symb -> a F[d[m], k, d[n], d[i], d[j], d[l]] Sqrt[qd[m] qd[n]/(qd[j] qd[l])]
+    }
+  ]
+
+*)
+
+
 PackageExport["ProjectiveTetrahedralSymmetries"]
 
 ProjectiveTetrahedralSymmetries::usage =
@@ -433,51 +465,89 @@ ProjectiveTetrahedralSymmetries::usage =
 "ProjectiveTetrahedralSymmetries[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
 "representative that is equal via a tetrahedral symmetry.";
 
-ProjectiveTetrahedralSymmetries[ r_FusionRing ] := 
+Options[ProjectiveTetrahedralSymmetries] := 
+  Options[TetrahedralEquivalenceClasses];
+
+ProjectiveTetrahedralSymmetries[ r_FusionRing, opts:OptionsPattern[] ] := 
   Flatten[ 
-    ClassToRules /@
-    TetrahedralEquivalenceClasses[r]
+    ClassToRules @* SortClass /@
+    TetrahedralEquivalenceClasses[r,opts]
   ];
 
-ProjectiveTetrahedralSymmetries[ r_FusionRing, fSymbols_ ] :=
-  Flatten[ 
-    ClassToRules @* (Intersection[ Prepend[1] @ fSymbols, # ]&) /@
-    TetrahedralEquivalenceClasses[r]
+ProjectiveTetrahedralSymmetries[ r_FusionRing, fSymbols_, opts:OptionsPattern[] ] :=
+  With[ { prep = If[ OptionValue["TrivialVacuumSymbols"], Join[ {1}, # ]&, Identity ] },
+    Flatten[ 
+      ClassToRules @* SortClass @* (Intersection[ prep @ fSymbols, # ]&) /@  
+      TetrahedralEquivalenceClasses[r,opts]
+    ]
   ];
 
-TetrahedralEquivalenceClasses[ r_FusionRing ] :=
-  Module[{ dd, ToEquivClass },
-    dd = 
-      CC[r];
+Options[TetrahedralEquivalenceClasses] = 
+  { "TrivialVacuumSymbols" -> True };
 
-    ToEquivClass[ F[a_, b_, c_, d_, e_, f_] ] :=
-      Union[
-        {
-          F[a, b, c, d, e, f], F[a, dd[e], dd[c], dd[f], dd[b], dd[d]], 
-          F[b, a, dd[d], dd[c], e, dd[f]], F[b, dd[e], d, f, dd[a], c], 
-          F[c, e, dd[a], f, d, b], F[c, dd[d], a, dd[b], dd[e], dd[f]], 
-          F[d, dd[a], dd[b], c, f, dd[e]], F[d, dd[f], b, e, a, dd[c]], 
-          F[e, c, dd[f], a, d, dd[b]], F[e, dd[d], f, b, dd[c], dd[a]], 
-          F[f, dd[b], e, d, c, a], F[f, dd[c], dd[e], dd[a], b, dd[d]], 
-          F[dd[a], d, dd[c], b, f, e], F[dd[a], dd[f], c, dd[e], dd[d], dd[b]],
-          F[dd[b], f, dd[d], dd[e], c, dd[a]], F[dd[b], dd[c], d, a, dd[f], e], 
-          F[dd[c], f, a, e, b, d], F[dd[c], dd[b], dd[a], dd[d], dd[f], dd[e]], 
-          F[dd[d], c, b, dd[a], dd[e], f], F[dd[d], e, dd[b], dd[f], dd[c], a],
-          F[dd[e], a, f, c, dd[b], d], F[dd[e], b, dd[f], dd[d], dd[a], dd[c]], 
-          F[dd[f], d, dd[e], dd[b], a, c], F[dd[f], dd[a], e, dd[c], dd[d], b]
-        }
-         /. $VacuumFPattern -> 1
-      ]; 
+TetrahedralEquivalenceClasses[ r_FusionRing, opts:OptionsPattern[] ] :=
+  Module[{ dd, ToEquivClass, replaceVacuumSymbols },
+    dd = CC @ r;
+    replaceVacuumSymbols = 
+      If[ 
+        TrueQ @ OptionValue["TrivialVacuumSymbols"], 
+        ReplaceAll[$VacuumFPattern -> 1], 
+        Identity
+      ];
+
+    (* Symmetries for com ring are generated by 
+      { 
+        F[e, c, dd[f], a, d, dd[b]], 
+        F[b,dd[e],d,f,dd[a],c],
+        F[f,dd[b],e,d,c,a]
+      }
+      Last element comes from reflection so not allowed for
+      non-commutative fusion rings (and not proven yet that its allowed 
+      for commutative ones either so use at own risk)
+    *)
+    (*If[ 
+      CommutativeQ @ r,
+      (* THEN: can use reflection of tetrahedron *)
+      ToEquivClass[ F[a_, b_, c_, d_, e_, f_] ] :=
+        Union[
+          {
+            F[a, b, c, d, e, f], F[a, dd[e], dd[c], dd[f], dd[b], dd[d]], 
+            F[b, a, dd[d], dd[c], e, dd[f]], F[b, dd[e], d, f, dd[a], c], 
+            F[c, e, dd[a], f, d, b], F[c, dd[d], a, dd[b], dd[e], dd[f]], 
+            F[d, dd[a], dd[b], c, f, dd[e]], F[d, dd[f], b, e, a, dd[c]], 
+            F[e, c, dd[f], a, d, dd[b]], F[e, dd[d], f, b, dd[c], dd[a]], 
+            F[f, dd[b], e, d, c, a], F[f, dd[c], dd[e], dd[a], b, dd[d]], 
+            F[dd[a], d, dd[c], b, f, e], F[dd[a], dd[f], c, dd[e], dd[d], dd[b]],
+            F[dd[b], f, dd[d], dd[e], c, dd[a]], F[dd[b], dd[c], d, a, dd[f], e], 
+            F[dd[c], f, a, e, b, d], F[dd[c], dd[b], dd[a], dd[d], dd[f], dd[e]], 
+            F[dd[d], c, b, dd[a], dd[e], f], F[dd[d], e, dd[b], dd[f], dd[c], a],
+            F[dd[e], a, f, c, dd[b], d], F[dd[e], b, dd[f], dd[d], dd[a], dd[c]], 
+            F[dd[f], d, dd[e], dd[b], a, c], F[dd[f], dd[a], e, dd[c], dd[d], b]
+          } // replaceVacuumSymbols
+        ]
+      ,(* ELSE: only rotations allowed *)*)
+      ToEquivClass[ F[a_, b_, c_, d_, e_, f_] ] :=
+        Union[
+          {
+            F[a,b,c,d,e,f], F[b,dd[e],d,f,dd[a],c], F[c,dd[d],a,dd[b],dd[e],dd[f]],
+            F[d,dd[f],b,e,a,dd[c]], F[e,c,dd[f],a,d,dd[b]], F[f,dd[c],dd[e],dd[a],b,dd[d]],
+            F[dd[a],d,dd[c],b,f,e], F[dd[b],f,dd[d],dd[e],c,dd[a]], F[dd[c],dd[b],dd[a],dd[d],dd[f],dd[e]],
+            F[dd[d],e,dd[b],dd[f],dd[c],a], F[dd[e],a,f,c,dd[b],d], F[dd[f],dd[a],e,dd[c],dd[d],b]
+          } // replaceVacuumSymbols
+        ];
+    (*];*) 
 
     DeleteDuplicates @ 
-    DeleteCases[ ToEquivClass /@ FSymbols[r], l_ /; Length[l] == 1 || MatchQ[ l, {1 ..}] ]
+    DeleteCases[ ToEquivClass /@ FSymbols @ r, { 1 } ]
   ];
 
-ClassToRules[ {} ] = 
-  {};
-ClassToRules[ l_List ] := 
-  Thread[ Rest[l] -> First[l]];
+(* Prefer representations in terms of vacuum symbols *)
+SortClass = SortBy[ { # == 1 , ! MatchQ[#, $VacuumFPattern ] } &];
 
+ClassToRules[ {} ] = {};
+ClassToRules[ l_List ] := 
+  DeleteCases[HoldPattern[1->1]] @ 
+  Thread[ l -> First @ l ];
 
 
 
@@ -604,25 +674,118 @@ If[
 PackageExport["RTensors"]
 
 RTensors::usage =
-"RTensors[ ring ] returns an association that maps well defined {a,b,c} to the matrix form of R[a,b,c].";
+  "RTensors[ ring ] returns an association that maps well defined {a,b,c} to the matrix form of R[a,b,c].";
 
 RTensors[ ring_ ] :=
-Module[{mt, a, b, c},
-  mt = MT[ring][[##]] &;
-  Association @@
-  Table[
-    { a, b, c } = n;
-    n ->
-    SparseArray[ Array[ R[a, b, c, #1, #2] & , { mt @@ n, mt @@ n } ] ],
-    { n, NZSC[ring] }
-  ]
-];
+  Module[{mt, a, b, c},
+    mt = MT[ring][[##]] &;
+    Association @@
+    Table[
+      { a, b, c } = n;
+      n ->
+      SparseArray[ Array[ R[a, b, c, #1, #2] & , { mt @@ n, mt @@ n } ] ],
+      { n, NZSC[ring] }
+    ]
+  ];
 
 PackageScope["SparseRTensor"]
 
 (* Create a symbolic sparse R tensor *)
 SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
-SparseArray[
-  Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
-  Table[ Rank[ring], 3 ]
-];
+  SparseArray[
+    Map[ ( List @@ # ) -> # &, RSymbols @ ring ],
+    Table[ Rank[ring], 3 ]
+  ];
+
+PackageExport["PSymbols"]
+
+(* PivotalSymbols *)
+PSymbols[ r_FusionRing ] := 
+  Array[ \[ScriptP], Rank @ r ];
+
+PSymbols[ c_FusionCategory ] :=
+  PivotalStructure[ c ];
+
+PackageExport["FilterPRules"]
+
+FilterPRules[ l_List ] := 
+  Cases[ l, HoldPattern[ \[ScriptP][_] -> _ ] ];
+
+(* Formatting of symbols *)
+(*
+PackageExport["TypesetSymbols"]
+
+TypesetSymbols::usage = 
+  "TypesetSymbols[] turns on 2D printing notation for the various symbols" <>
+  " used in Anyonica."
+
+Get["Notation`"]
+
+TypesetSymbols[] := 
+  (
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalF]",GridBox[List[List["d_","e_","f_"]]],GridBox[List[List["a_","b_","c_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalF]","[",RowBox[List["a_",",","b_",",","c_",",","d_",",","e_",",","f_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubsuperscriptBox["\[ScriptCapitalR]","c_",GridBox[List[List["a_","b_"]]]]],ParsedBoxWrapper[RowBox[List["\[ScriptCapitalR]","[",RowBox[List["a_",",","b_",",","c_"]],"]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptD]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptD]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptP]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptP]","[","a_","]"]]]]];
+    Notation[DoubleLongLeftRightArrow[ParsedBoxWrapper[SubscriptBox["\[ScriptT]","a_"]],ParsedBoxWrapper[RowBox[List["\[ScriptT]","[","a_","]"]]]]];
+  )
+
+*)
+
+PackageExport["FusionRingFromFSymbols"]
+
+FusionRingFromFSymbols::usage = 
+  "FusionRingFromFSymbols[symb] returns a fusion ring whose F-symbols equal symb.";
+FusionRingFromFSymbols::invalidsymbols = 
+  "The symbols `1` are not a valid list of F-symbols";
+FusionRingFromFSymbols::notimplementedyet = 
+  "This function is not implemented yet for symbols with multiplicity";
+
+FusionRingFromFSymbols[ fSymb_ ] := 
+  Which[
+    !PPSQ[ fSymb ], 
+    Message[ FusionRingFromFSymbols::invalidsymbols, fSymb ]; Abort[],
+    DeleteDuplicates[ Length /@ Keys @ fSymb ] =!= {6}, 
+    Message[ FusionRingFromFSymbols::notimplementedyet ]; Abort[],
+    True, 
+    MultFreeFusionRingFromFSymbols[ fSymb ]
+  ];
+
+MultFreeFusionRingFromFSymbols[ fSymb_ ] := 
+  Module[ { r, nzsc }, 
+    nzsc = Cases[ Keys @ fSymb, F[ a_, b_, 1, c_, c_, b_ ] :> { a, b, c } ];
+    r = Max @ Flatten @ nzsc;
+    FusionRing[ 
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+    ]
+  ];
+
+
+
+PackageExport["FusionRingFromRSymbols"]
+
+FusionRingFromRSymbols::usage = 
+  "FusionRingFromRSymbols[symb] returns a fusion ring whose R-symbols equal symb.";
+FusionRingFromRSymbols::invalidsymbols = 
+  "The symbols `1` are not a valid list of R-symbols";
+FusionRingFromRSymbols::notimplementedyet = 
+  "This function is not implemented yet for symbols with multiplicity";
+
+FusionRingFromRSymbols[ rSymb_ ] := 
+  Which[
+    !PHSQ[ rSymb ], 
+    Message[ FusionRingFromRSymbols::invalidsymbols, rSymb ]; Abort[],
+    DeleteDuplicates[ Length /@ Keys @ rSymb ] =!= {3}, 
+    Message[ FusionRingFromRSymbols::notimplementedyet ]; Abort[],
+    True, 
+    MultFreeFusionRingFromRSymbols[ rSymb ]
+  ];
+
+MultFreeFusionRingFromRSymbols[ rSymb_ ] := 
+  Module[ { r, nzsc }, 
+    nzsc = List @@@ Keys @ rSymb; 
+    r = Max @ Flatten @ nzsc;
+    FusionRing[ 
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+    ]
+  ];

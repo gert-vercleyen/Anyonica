@@ -152,7 +152,8 @@ SortedRing[ r_FusionRing?FusionRingQ, OptionsPattern[] ] :=
         PermVecSDConj[r]//Reverse
         ,
         True,
-        PermVecQD[r]]
+        PermVecQD[r]
+      ]
     },
     PermutedRing[ r, permVec ]
   ];

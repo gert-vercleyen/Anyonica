@@ -31,40 +31,51 @@ PrintLog::usage =
   "PrintLog[code] exports information of intermediate results to a notebook with clickable hyperlinks.";
 
 PrintLog::tempdir =
-  "No option value for \"Directory\" given. Storing log files in a temporary directory at `1`. Note that files "<>
-  "stored here are not persistent!";
+  "No option value for \"Directory\" given. Storing log files in home directory under `1`";
 
 PrintLog::cantcreatedirectory =
   "Directory `1` could not be found and could not be created.";
 
 Options[PrintLog] =
   {
-    "Directory" -> "Temporary",
+    "Directory" -> "Home",
     "FileName" -> "ISODateTime"
   };
 
 SetAttributes[ PrintLog, HoldAllComplete ];
 
 PrintLog[ code_ , opts:OptionsPattern[] ] :=
-  Module[{ dir = OptionValue["Directory"], dataDir },
+  Module[{ dir, dataDir, dateString },
+    dir = OptionValue["Directory"];
+    dateString = 
+      (StringDrop[#,6]&) @
+      (StringDrop[#,-3]&) @ 
+      StringReplace[":"->"-"] @
+      DateString["ISODateTime"];
     Which[
-      dir == "Temporary"
+      dir == "Home"
       ,
-      dir = CreateDirectory[];
+      dir = CreateDirectory @ FileNameJoin[{$HomeDirectory,"LOGFILES_D"<> dateString }];
       dataDir = FileNameJoin[ { dir, "Data" } ];
       CreateDirectory[dataDir];
       Message[ PrintLog::tempdir, dir ]
       ,
       (* Not temporary directory, not an existing directory and can't create directory *)
-      !DirectoryQ[ Evaluate @ dir ] && (Quiet[ CreateDirectory[dir] ] === $Failed)
+      !DirectoryQ[ Evaluate @ dir ] && 
+      (Quiet[ CreateDirectory[dir] ] === $Failed)
       ,
       Message[ PrintLog::cantcreatedirectory, dir ];
       Abort[]
       ,
+      (* Data dir is not temporary directory, not an existing directory and can't create directory *)
+      !DirectoryQ[ Evaluate @ dir ] &&
       Quiet[ CreateDirectory[ dataDir = FileNameJoin[ { dir, "Data" }] ] ] === $Failed
       ,
       Message[ PrintLog::cantcreatedirectory, dataDir ];
       Abort[]
+      ,(* All other cases *)
+      True,
+      dataDir = dir
     ];
     
     Block[{ fileName, ovfn = OptionValue["FileName"], result },
@@ -73,7 +84,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
         If[
           ovfn === "ISODateTime",
           StringReplace[
-            FileNameJoin @ { dir, "WLLOG_" <> DateString["ISODateTime"] <> ".nb" },
+            FileNameJoin @ { dir, "WLLOG_" <> dateString <> ".nb" },
             ":" -> "-"
           ],
           FileNameJoin[ { dir, ovfn } ]
@@ -85,8 +96,7 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
           TextCell["Log created at " <> DateString[], "Chapter"]
         ];
         
-        nbo =
-          NotebookOpen[fileName];
+        nbo = NotebookOpen[fileName];
 
         SetOptions[ nbo, CellGrouping -> Manual ];
         
@@ -132,7 +142,7 @@ ApplyCellGrouping[ notebook_Notebook ] :=
   ];
 
 AddCell[ fileName_, nbo_, cell_ ] :=
-  Module[ {},
+  (
     SelectionMove[ nbo, After, Notebook ];
     NotebookWrite[
       nbo,
@@ -141,7 +151,7 @@ AddCell[ fileName_, nbo_, cell_ ] :=
     SelectionMove[ nbo, After, Notebook ];
 
     NotebookSave[ nbo ];
-  ];
+  );
 
 stringID[ id_ ] :=
   StringDrop[ ToString[id], 1 ];
@@ -150,18 +160,14 @@ dataFileName[ id_, dir_, name_ ] :=
   FileNameJoin[{ dir, name <> "_" <> stringID[id]<>".nb"}];
 
 safeExport[ name_, data_ ] :=
-  If[
-    ByteCount[data] < 10^6
-    ,
-    Block[{ Internal`$ContextMarks = False },
+  Block[{ $ContextPath = Append["System`Dump`"] @ $ContextPath },
+    If[
+      ByteCount[data] < 10^6
+      ,
       Export[ name, data ]
+      ,
+      Export[ name, Iconize[data,"Large amount of data"] ]
     ]
-    ,
-    Block[{ Internal`$ContextMarks = False, cd },
-      cd = Compress[data];
-      Export[ name, Hold[Uncompress][cd] ]
-    ]
-    
   ];
 
 inputStyle[ string_ ] :=
@@ -777,7 +783,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:solutions", {id_,solutions_,___
   ];
   
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SNSBS:constraints_not_satisfied", { id_, preSolutions_, constraints_, invalidPos_ } ] :=
-  Module[{ fn1, fn2, fn3 },
+  Module[{ fn1, fn2 },
     fn1 = dataFileName[ id, dir, "PreSolutions" ];
     safeExport[ fn1, preSolutions ];
     fn2 = dataFileName[ id, dir, "Constraints" ];
@@ -1979,15 +1985,45 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:init", { id_, equations_, vars_, 
     ];
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:results", { id_, results_, time_ } ] :=
+  Module[{fn},
+    fn = dataFileName[ id, dir, "Results" ];
+    safeExport[ fn, results ];
+    AddCell[
+      fileName,
+      nbo,
+      endCell[ id, "Results", fn, time ]
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_ } ] :=
   AddCell[
     fileName,
     nbo,
     Cell[
       TextData[{
         inputStyle[ 
-          "Reducing system of "<>ToString[length] <> " equations via HermiteDecomposition on subsystems with at most " <> 
-          ToString[n] <> " equations.\nThis procedure will be applied at most 5 times." 
+          "Reducing system of "<>ToString[length] <> " equations via HermiteDecomposition"  
+          ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:hermitestart", { id_, var_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Started computing HermiteDecomposition using "<>
+          If[ 
+            var === None, 
+            "Mathematica's built-in method.",
+            "external Julia session with OSCAR."
+           ] 
         ]
       }],
       "Text",
@@ -1995,20 +2031,19 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_, n_ } ] 
     ]
   ];
 
-
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, equations_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:hermitefinish", { id_, time_, decomp_ } ] :=
   Module[ { fn1 },
-    fn1 = dataFileName[ id, dir, "smallerSystem" ];
-    safeExport[ fn1, equations ];
+    fn1 = dataFileName[ id, dir, "hermitedecomp" ];
+    safeExport[ fn1, decomp ];
 
     AddCell[
       fileName,
       nbo,
       Cell[
         TextData[{
-          inputStyle[ "A reduced " ],
-          hyperlinkBox[ "system", fn1 ],
-          inputStyle[ " of "<> ToString[Length@equations]<> " equations was obtained after "<> ToString[time] <> " seconds."]
+          inputStyle[ "Computed " ],
+          hyperlinkBox[ "Hermite decomposition", fn1 ],
+          inputStyle[ " in "<>ToString[time]<>" seconds."]
         }],
         "Text",
         CellTags -> { id, "Info" }
@@ -2017,13 +2052,13 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, time_, equa
   ];
 
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:toric", { id_, length_ } ] :=
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:reduction", { id_, n_ } ] :=
   AddCell[
     fileName,
     nbo,
     Cell[
       TextData[{
-        inputStyle[ "Started reduction of toric subsystem with "<> ToString[length] <> " equations." ]
+        inputStyle[ "Reduced system to one of "<> ToString[n] <> " equations." ]
       }],
       "Text",
       CellTags -> { id, "Info" }
@@ -2052,7 +2087,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:nontoric", { id_, length_ } ] 
     nbo,
     Cell[ 
       TextData[{
-        inputStyle[ "Started reduction of non-toric subsystem with "<> ToString[length] <> " equations." ]
+        inputStyle[ "Started reduction of non-toric subsystem with "<> ToString[length] <> " non-equivalent equations." ]
       }],
       "Text",
       CellTags -> { id, "Info" }
@@ -2093,6 +2128,38 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:intermediatereduction", { id_,
       "Text",
       CellTags -> { id, "Info" }
       ]  
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHDJ:init", { id_, length_, n_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Reducing system of "<>ToString[length] <> 
+          " equations via the hnf function of the julia package OSCAR." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHDJ:intermediatereduction", { id_, nEqns_ } ] :=
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[ 
+          "Reducing combined system of reduced toric and non-toric systems with "<> 
+          ToString[nEqns] <> " equations via the hnf function of the julia package OSCAR." 
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
     ]
   ];
 
