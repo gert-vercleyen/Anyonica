@@ -94,11 +94,9 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         replaceTrivialVars = ReplaceAll[ Dispatch @ Thread[ trivialVars -> 1 ] ];
 
-        reducedMats = 
+        reducedMats =
           WithMinimumDimension[ reducedMats, 2 ] // 
           replaceTrivialVars;
-
-        reducedERules = MapAt[ replaceTrivialVars, simpleERules, {All,2} ];
 
         If[
           MemberQ[False] @ PermanentConditions @ reducedMats,
@@ -106,8 +104,14 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
           Throw @ { }
         ];
 
+        reducedERules = 
+          MapAt[ replaceTrivialVars, simpleERules, {All,2} ];
+
         reducedVars = 
-          DeleteCases[1] @ Union @ Values @ reducedERules;
+          DeleteCases[1] @ 
+          Union @ 
+          replaceTrivialVars @ 
+          (simpleVars/.reducedERules);
 
         If[ 
           Length[reducedVars] === 0
@@ -128,12 +132,12 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         (* Convert the equations to a proposition *)
         preProp = 
           And[
-            EqnsToProp[ ReplaceTrivialVars[ binEqns/.dEquiv] ],
+            EqnsToProp[ replaceTrivialVars[binEqns/.dEquiv] ],
             AddOptions[opts][SumEqnsToProp][ sumEqns, properEquivalences, trivialVars, b ],
             MatsToProposition[b] @ reducedMats/.dEquiv
           ]/.b[i_]:>i;
 
-        If[ preProp =!= True, preProp = DeleteDuplicates[preProp] ];
+        If[ preProp =!= True, preProp = DeleteDuplicates @ preProp ];
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
@@ -159,10 +163,10 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
             }, 
             Select[ Not @* Last ] @ 
             MapAt[ 
-              ReplaceAll[rules], 
+              ReplaceAll[rules],
               Join[ 
                 knowns,
-                properEquivalences
+                Thread[ reducedVars -> (reducedVars/.properEquivalences) ]
               ], 
               { All, 2 } 
             ]
