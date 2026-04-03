@@ -45,7 +45,7 @@ CSPCValue[acc_][ring_FusionRing] :=
       Catch[
         Do[
           If[
-            Re[ Echo @
+            Re[ 
               N[
                 s = Sum[ chars[[ j1, i ]] chars[[ j2, i ]] chars[[ j3, i ]] / chars[[ 1, i ]], { i, r } ] ,
                 { Infinity, acc }
@@ -53,7 +53,7 @@ CSPCValue[acc_][ring_FusionRing] :=
             ] < 0,
 
             (* THEN *)
-            If[ Im[s] == 0, Throw[s] ];
+            If[ Im[s] == 0, Throw @ s ];
           ],
           { j1, r }, { j2, r }, { j3, r }
         ];
