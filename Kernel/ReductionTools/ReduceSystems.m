@@ -267,7 +267,7 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
       ];
 
       session = 
-        If[ sess == None, StartExternalSession["Julia"], sess ];
+        If[ sess == None && ext == "Julia", StartExternalSession["Julia"], sess ];
 
       invalidSys = <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>;
 
@@ -339,7 +339,7 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
     printlog["Gen:results", {procID, result, t }];
 
-    If[ sess == None, DeleteObject @ session ]; 
+    If[ sess == None && ext == "Julia", DeleteObject @ session ]; 
 
     result
     
