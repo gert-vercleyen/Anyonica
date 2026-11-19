@@ -431,7 +431,7 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 				perm === Range @ Rank @ cat,
 				Identity,
 				ReplaceAll[ 
-					If[ pq,  Append[ \[ScriptD][a_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
+					If[ pq,  Append[ \[ScriptD][a_] :> \[ScriptD][ perm[[a]] ] ], Identity ] @ 
 					If[ bq,  Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
 					{ 
 						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
