@@ -213,7 +213,7 @@ CheckFormalCode[c1_,c2_]:=
 
 CheckFusionRing[c1_,c2_] :=
 	With[ { eq=EquivalentFusionRingsQ[FusionRing@c1,FusionRing@c2]},
-		If[ !eq, Throw @ False ]
+		If[ !TrueQ[eq], Throw @ False ]
 	];
 
 
