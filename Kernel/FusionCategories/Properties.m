@@ -241,10 +241,10 @@ Catch[
 
 	eqQDims =
 		Catch[
-		Do[
-			If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
-			, { a, fra }
-		]; Throw @ False
+			Do[
+				If[ Check[PermuteSymbols[qDims1,a] == qDims2], Throw @ True ]
+				, { a, fra }
+			]; Throw @ False
 		];
 
 	If[ !eqQDims, Throw @ False ];
