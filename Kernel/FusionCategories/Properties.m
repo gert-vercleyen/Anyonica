@@ -232,7 +232,9 @@ Catch[
 		OptionValue["UseFormalCode"],
 		CheckFormalCode[c1,c2];
 	];
+
 	CheckFusionRing[c1,c2];
+
 	check = OptionValue["PreEqualCheck"];
 
 	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
@@ -250,8 +252,8 @@ Catch[
 	If[ !eqQDims, Throw @ False ];
 
 	test = OptionValue["PreEqualCheck"];
-		invariants1 = FullInvariants[c1];
-		invariants2 = FullInvariants[c2];
+	invariants1 = FullInvariants[c1];
+	invariants2 = FullInvariants[c2];
 
 
 	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
@@ -276,7 +278,7 @@ Catch[
 		, { a, fra }
 	];
 
-		Throw @ False
+	Throw @ False
 	]
 ];
 
