@@ -61,7 +61,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       result, absTime, proposition, knowns, equivs, reducedVars, AddExtraInfo,
       preProp, binEqns, sumEqns, trivialVars, eRules, reducedMats, reducedEqns,
       simpleERules, remainingVars, FilterSolutions, trivialVarsFromMats, trivialVarsFromEquivalences,
-      properEquivalences, allsatSolutions
+      properEquivalences, allsatSolutions, replaceTrivialVars, reducedERules, dEquiv
     },
     regMats = OptionValue["InvertibleMatrices"];
     eRules  = OptionValue["Equivalences"];
@@ -75,6 +75,9 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       Catch[
         { { simpleEqns, simpleMats, simpleERules }, simpleVars, revertVars } =
           SimplifyVariables[ { eqns, regMats, eRules }, vars, b ];
+
+        (* An equation that is False can never be satisfied *)
+        If[ MemberQ[False] @ simpleEqns, Throw @ { } ];
 
         (* We can use a reduced set of variables by using (tetrahedral) equivalences *)
         (* First we split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
@@ -129,15 +132,20 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         { binEqns, sumEqns } =  BinomialSplit @ simpleEqns;
 
         dEquiv = Dispatch @ properEquivalences;
-        (* Convert the equations to a proposition *)
-        preProp = 
+
+        (* Convert the equations to a proposition. The equivalences only hold up to non-zero
+           factors, so they may never be substituted in the equations themselves: equivalent
+           monomials would then be added together (e.g. 0 == m1 + m2 would become 0 == 2 m,
+           or even 0 == 2), while in an actual solution they can have opposite signs.
+           BinEqnsToProp therefore applies the equivalences to the individual monomials. *)
+        preProp =
           And[
-            EqnsToProp[ replaceTrivialVars[binEqns/.dEquiv] ],
+            BinEqnsToProp[ binEqns, replaceTrivialVars @* ReplaceAll[dEquiv] ],
             AddOptions[opts][SumEqnsToProp][ sumEqns, properEquivalences, trivialVars, b ],
             MatsToProposition[b] @ reducedMats/.dEquiv
           ]/.b[i_]:>i;
 
-        If[ preProp =!= True, preProp = DeleteDuplicates @ preProp ];
+        If[ Head[preProp] === And, preProp = DeleteDuplicates @ preProp ];
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
@@ -150,27 +158,28 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         printlog[ "FZV:reduced_system", { procID, proposition, knowns, equivs, remainingVars } ];
 
+        (* If the proposition can not be satisfied there are no valid configurations *)
+        If[ proposition === False, Throw @ { } ];
+
+        (* Returns the list of ALL variables that are 0 for a given solution of the proposition:
+           every member of an equivalence class takes the value of the representative of
+           that class, not just the representative itself. *)
         AddExtraInfo[ sol_ ] :=
-          SortBy[First] @
           With[
-            { rules = 
-              Dispatch @ 
-                Join[ 
+            { values =
+              Dispatch @
+                Join[
                   sol,
                   knowns,
-                  MapAt[ ReplaceAll[Dispatch @ sol], equivs, { All, 2 } ]  
+                  MapAt[ ReplaceAll[Dispatch @ sol], equivs, { All, 2 } ]
                 ]
-            }, 
-            Select[ Not @* Last ] @ 
-            MapAt[ 
-              ReplaceAll[rules],
-              Join[ 
-                knowns,
-                Thread[ reducedVars -> (reducedVars/.properEquivalences) ]
-              ], 
-              { All, 2 } 
+            },
+            SortBy[First] @
+            Cases[
+              Thread[ simpleVars -> ( replaceTrivialVars[ simpleVars/.dEquiv ]/.values ) ],
+              Rule[ var_, False ] :> Rule[ var, 0 ]
             ]
-          ]/.False -> 0;
+          ];
 
         If[ (* If all variables are known *)
           Length[ remainingVars ] === 0
@@ -235,7 +244,7 @@ Options[SumEqnsToProp] =
     "SumSubsetParameter" -> "Default"
   };
 
-SumEqnsToProp[ { }, equivs_, trivVars_,  x_, opts:OptionsPattern ] := True;
+SumEqnsToProp[ { }, equivs_, trivVars_,  x_, opts:OptionsPattern[] ] := True;
 
 SumEqnsToProp[ eqns_, equivs_, trivVars_, x_, opts:OptionsPattern[] ] :=
   With[
@@ -335,6 +344,30 @@ EqnsToProp[ eqns_, simplifications_ ] :=
     ReduceMonomials @
     eqns
   ]/.simplifications;
+
+(* BinEqnsToProp[ eqns, replace ] returns the proposition that states that none of the equations
+   has exactly one non-zero monomial. The function replace (which typically replaces variables by
+   equivalent ones) is applied to the lists of monomials of the equations, and not to the equations
+   themselves, so different monomials can never be added to, or cancelled against, each other. *)
+BinEqnsToProp[ eqns_, replace_ ] :=
+  And @@
+  Map[
+    TermsToProp,
+    DeleteDuplicates[
+      Sort /@ ReduceMonomials @ replace @ Map[ EqnToTerms, DeleteCases[True] @ eqns ]
+    ]
+  ];
+
+(* List of the monomials that appear in an equation *)
+EqnToTerms[ eqn_ ] :=
+  ( List @@ eqn )/.Plus -> Sequence;
+
+(* An equation can only hold if the number of its non-zero monomials is different from 1 *)
+TermsToProp[ terms_List ] :=
+  BooleanConvert[
+    NotOnlyOne @@ Map[ IntToBool, terms/.Times -> And ],
+    "CNF"
+  ];
 
 SetAttributes[EqnToProp,Listable];
 
@@ -471,6 +504,20 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
         Integer
         ,
         { True, Append[ prop -> True ] @ knowns, equivs/.prop -> True }
+        ,
+        Not (* Only a single negated variable is left: without this case the Switch stays unevaluated *)
+        ,
+        If[
+          IntegerQ @ First @ prop
+          ,
+          { True, Append[ First[prop] -> False ] @ knowns, equivs/.First[prop] -> False }
+          ,
+          { prop, knowns, equivs }
+        ]
+        ,
+        _
+        ,
+        { prop, knowns, equivs }
       ];
 
     (* Find disjunct equivalences *)
