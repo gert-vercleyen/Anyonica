@@ -237,8 +237,6 @@ Catch[
 
 	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
 
-	If[ check[ Sort[qDims1] ] != check[ Sort[ qDims2 ] ], Throw @ False ];
-
 	fra = FRA @ FusionRing @ c1;
 
 	eqQDims =
