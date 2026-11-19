@@ -158,7 +158,7 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
     Which[
       groebnerBasis === { 1 }
       ,
-        { },
+      { },
       groebnerBasis === { }
       ,
       If[ (assumptions/.rules) === False, { }, { rules } ]
@@ -176,7 +176,7 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
             sol_ /; TrueQ[ assumptions/.sol ]
           ]
         },
-        rules/.Dispatch[solutions]
+        ( rules /. Dispatch[#] ) & /@ solutions
       ]
     ]
   ];
