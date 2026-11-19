@@ -161,7 +161,7 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
         { },
       groebnerBasis === { }
       ,
-      If[ TrueQ[ assumptions/.rules ], { rules }, { } ]
+      If[ (assumptions/.rules) === False, { }, { rules } ]
       ,
       True
       ,
