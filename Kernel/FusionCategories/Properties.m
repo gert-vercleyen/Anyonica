@@ -217,7 +217,6 @@ CheckFusionRing[c1_,c2_] :=
 	];
 
 
-
 PackageExport["EquivalentFusionCategoriesQ"]
 
 Options[EquivalentFusionCategoriesQ] = 
