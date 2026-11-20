@@ -577,7 +577,7 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
           { removeRedundantVars = Dispatch[ Thread[ (Intersection @@ (dnfForm/.{ And|Or->List })) -> True ] ] },
           {
             dnfForm /. removeRedundantVars,
-            #[[2]],
+            Join[ #[[2]], Normal @ removeRedundantVars ],
             #[[3]] /. removeRedundantVars
           }
         ],
