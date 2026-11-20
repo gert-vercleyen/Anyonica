@@ -348,7 +348,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       
       (* Check whether inconsistent system *)
       If[
-        !AddOptions[ConsistentQ][opts][ newEqns, ValidEqnQ[symbol] ]
+        !AddOptions[opts][ConsistentQ][ newEqns, ValidEqnQ[symbol] ]
         ,
         printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
         Return @ {}
