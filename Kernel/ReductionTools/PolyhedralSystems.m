@@ -1117,9 +1117,10 @@ Module[{
     reducedSystems1 =
       Flatten[ ReduceSystems /@ systems ];
 
+    detconditions = DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ];
+
     invertibilityConstraints[ rules_ ] :=
-      And @@
-      DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ]/.Dispatch[rules];
+      And @@ detconditions/.Dispatch[rules];
 
     printlog["MFPGS:systems", { procID, reducedSystems1 } ];
 
