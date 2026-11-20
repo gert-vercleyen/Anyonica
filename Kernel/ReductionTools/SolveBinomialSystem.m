@@ -53,6 +53,8 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     InsertZeros, UpdateMultiplicativeSymmetries, updateNonSharedVars, solutions, sharedSymmetries,
     nonSingularQ, zeroValues, newVars, result, absTime
     },
+    CheckArgs[ eqnList, vars ];
+
     symmetries     = OptionValue["Symmetries"];
     nonSingularQ   = OptionValue["NonSingular"];
     invertibleMats = OptionValue["InvertibleMatrices"];
