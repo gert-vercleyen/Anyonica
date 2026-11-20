@@ -1027,7 +1027,14 @@ Module[{
 
     If[ (* Ring is trivial *)
       Rank[ring] == 1,
-      Return[ { { { }, { F[1,1,1,1,1,1] -> 1 } } } ]
+      Return @
+      {
+        <|
+          "GroebnerBasis" -> {  },
+          "Assumptions" -> None,
+          "Rules" -> { F[1,1,1,1,1,1] -> 1 }
+        |>
+      }
     ];
 
     SumBinEqns =
@@ -1204,7 +1211,14 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
   AbsoluteTiming[
     If[
       Rank[ring] == 1,
-      Return[ { { { }, { F[1,1,1,1,1,1] -> 1, R[1,1,1] -> 1 }  } } ]
+      Return @
+      {
+        <|
+          "GroebnerBasis" -> {  },
+          "Assumptions" -> None,
+          "Rules" -> { F[1,1,1,1,1,1] -> 1, R[1,1,1] -> 1 }
+        |>
+      }
     ];
 
     SumBinEqns = Reverse @* BinomialSplit;
