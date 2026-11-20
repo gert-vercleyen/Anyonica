@@ -782,8 +782,8 @@ Module[
 
     If[ 
       MemberQ[ { opts }, x_ /; Keys @ x == "Method" && Values @ x =!= "HermiteDecomposition" ], 
-      Message[ PrepareHexagonSolverInput::notyetsupported ];
-      { opts } = DeleteCases[ { opts }, "Method" -> _ ];
+      Message[ PreparePentagonSolverInput::notyetsupported ];
+      Abort[]
     ];
 
     pentEqns = 
