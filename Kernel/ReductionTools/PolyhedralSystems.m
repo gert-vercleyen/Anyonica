@@ -1190,7 +1190,7 @@ Module[{ equations, variables, symmetries, SumBinEqns, knowns, g, sumSystems,
     Composition[
       OptionValue["SimplifyIntermediateResultsBy"],
       If[
-        OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
+        OptionValue["ReduceRoots"], 
         SafeRootReduce,
         Identity
       ],
@@ -1431,7 +1431,7 @@ Module[ { procID, time, result, bases, z, simplify },
       OptionValue["ReducePowerSums"], PowerSumReduce, Identity
     ],
     If[
-      OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
+      OptionValue["ReduceRoots"], 
       SafeRootReduce,
       Identity
     ],
