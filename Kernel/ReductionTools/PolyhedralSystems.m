@@ -588,7 +588,7 @@ Module[
     unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
     g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
     subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ, newBinEqns, newSumEqns,
-    neverZeroBinEqns
+    neverZeroBinEqns, knowns
   },
   gaugeDemands = OptionValue["GaugeDemands"];
   zeroValues   = OptionValue["ZeroValues"];
