@@ -1195,7 +1195,7 @@ Module[
     MemoryConstrained[
       {
         TrimPolynomialList @ map[ ToPol, pols /. rule ],
-        nonZeroPols /. rule,
+        ToPol /@ (nonZeroPols /. rule),
         Append[rule] @ Expand[ knownRules/.rule ]
       }
       ,
