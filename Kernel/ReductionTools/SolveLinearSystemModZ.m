@@ -63,7 +63,11 @@ SolveModZSpace[ mat_?MatrixQ, vec_List, opts:OptionsPattern[] ] :=
 
         If[
           r == 0,
-          Return[ { {}, {{}}, IdentityMatrix[ Length[vec] ] } ]
+          If[ 
+            MemberQ[ vec, x_/; simplify[x] != 1 ],
+            Return[ { {}, {{}}, {{}} } ],
+            Return[ { {}, {{}}, IdentityMatrix @  Length @ First @ Dimensions @ mat } ]
+          ]
         ];
 
         ZSpace =
@@ -272,7 +276,11 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
       
       If[
         r == 0,
-        Return[{}]
+        If[ 
+          MemberQ[ vec, x_/; simplify[x] != 1 ],
+          Return[{}],
+          Return[param /@ Range @ Length @ First @ Dimenions @ mat ]
+        ]
       ];
 
       expRHS =
