@@ -629,7 +629,7 @@ MatProp[ b_ ][ mat_ ] :=
 ReduceMonomials[ expr_ ] :=
   expr //
   ReplaceAll[ Power[ a_, b_Integer ] :> a ] //
-  ReplaceAll[ Times[ a_Integer, b__ ] :> Times[b] ];
+  ReplaceAll[ Times[ a_?NumericQ, b__ ] :> Times[b] ];
 
 
 PermanentConditions[ mats_List ] :=
