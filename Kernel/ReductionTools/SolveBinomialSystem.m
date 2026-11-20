@@ -404,10 +404,10 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       If[
         StringQ[ First @ preSolutions ],
         printLog["SNSBS:has_false_or_zero_2", { procID, newEqns, preSolutions } ];
-        printlog["SNSBS:no_solutions_log_mon", { procID } ];
+        printLog["SNSBS:no_solutions_log_mon", { procID } ];
         Return @ {}
       ];
-
+      
       constraints =
         Join[
           newPolConstraints,
