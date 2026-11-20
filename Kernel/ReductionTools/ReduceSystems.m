@@ -1067,6 +1067,8 @@ Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
 
 ];
 
+PackageScope["UpdateInvertibleMatrices"]
+
 UpdateInvertibleMatrices[ {}, _ ] :=
 {};
 
