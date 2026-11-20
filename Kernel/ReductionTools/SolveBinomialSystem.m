@@ -304,7 +304,7 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
     {
       newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
       gaugeMat, polConstraints, symmetries, invertibleMats, preEqCheck, symbol, eqnList, procID,
-      internalParam, result, absTime, invalidPos
+      internalParam, result, absTime, invalidPos, reducedSystem, semiLinearSystem
     },
     polConstraints =
       OptionValue["PolynomialConstraints"];
