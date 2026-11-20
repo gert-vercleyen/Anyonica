@@ -33,7 +33,7 @@ Options[SolveBinomialSystem] :=
     }
   ];
 
-CheckArgs[ eqnList_, vars_ ][ code_ ] :=
+CheckArgs[ eqnList_, vars_ ] :=
   Which[
     !BinomialSystemQ[eqnList]
     ,
@@ -44,14 +44,9 @@ CheckArgs[ eqnList_, vars_ ][ code_ ] :=
     ,
     Message[ SolveBinomialSystem::notlistofvars, vars ];
     Abort[]
-    ,
-    True
-    ,
-    code
   ];
 
 SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
-  CheckArgs[ eqnList, vars ] @
   Module[{
     invertibleMats, symmetries, polConstraints, useDataBase, storeDecomps, filteredEqns, preEqCheck, s1, gs,
     procID, zeros, unionZeros, sharedBinomialSystem, sharedVars, sharedSolutions, remainingEquations,
