@@ -228,9 +228,29 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
 
         If[
           OptionValue["Method"] === "HermiteDecomposition",
-          AddOptions[opts][ReduceBinSysHermite][ eqns, vars ]/.revertVars ,
-          Catch @
-          FixedPoint[ UpdateEquivalences[x], { NormalForm @ ToProperBinomialEquation @ eqns, { } } ] /. revertVars
+          AddOptions[opts][ReduceBinSysHermite][ eqns, vars ]/.revertVars,
+          { eqns, equivs } = 
+            Catch @
+            FixedPoint[ 
+              UpdateEquivalences[x], 
+              { NormalForm @ ToProperBinomialEquation @ eqns, { } } 
+            ] /. revertVars;
+          
+          If[ 
+            MemberQ[False] @ eqns
+            ,
+            <|
+              "Polynomials" -> {1},
+              "Assumptions" -> {False},
+              "Values" -> {}
+            |>
+            ,
+            <|
+              "Polynomials" -> ToPolynomial /@ (Subtract @@@ TEL @ eqns),
+              "Assumptions" -> {True},
+              "Values" -> equivs
+            |>
+          ]
         ]
       ];
 
