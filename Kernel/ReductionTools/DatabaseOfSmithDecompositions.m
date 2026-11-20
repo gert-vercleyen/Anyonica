@@ -28,6 +28,8 @@ $SmithDataFileName =
 $DevelopSmithDataFileName =
   FileNameJoin[ {$ReductionToolsDevelopDirectory,"DatabaseOfSmithdecompositions.mx"} ];
 
+PackageScope["LoadData"]
+
 LoadData["SmithDecompositions"] :=
   Module[ {files},
     If[ $SmithDecompositionsLoaded, Return[] ];

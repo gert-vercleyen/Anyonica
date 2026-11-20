@@ -12,6 +12,8 @@ $HermiteDataFileName =
 $DevelopHermiteDataFileName =
   FileNameJoin[ {$ReductionToolsDevelopDirectory,"DatabaseOfHermitedecompositions.mx"} ];
 
+PackageScope["LoadData"]
+
 LoadData["HermiteDecompositions"] :=
   Module[ {files},
     If[ $HermiteDecompositionsLoaded, Return[] ];
