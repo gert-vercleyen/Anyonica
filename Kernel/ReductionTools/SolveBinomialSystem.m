@@ -374,24 +374,25 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       ];
 
       semiLinearSystem = 
-        AddOptions[opts][BinToSemiLin][ reducedSystem, newVars, symbol ];
+        Catch[
+          AddOptions[opts][BinToSemiLin][ reducedSystem, newVars, symbol ],
+          "Inconsistent"
+        ];
 
-      If[ (* system contains a product equal to 0 *)
+      If[
+        semiLinearSystem === "Inconsistent" ||
         MemberQ[0] @ preEqCheck @ semiLinearSystem[[2]], 
         printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
         Return @ {}
       ];
 
       preSolutions = 
-        Catch[
           Thread[ newVars -> # ]& /@
           AddOptions[opts][SolveSemiLinModZ][
             semiLinearSystem,
             internalParam,
             "OrthogonalTo" -> If[ Flatten[gaugeMat] === {}, None, gaugeMat ]
-          ],
-          "Inconsistent"
-        ];
+          ];
       
       (* Check for empty solution set *)
       If[
