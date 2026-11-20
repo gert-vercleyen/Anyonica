@@ -857,11 +857,6 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
 
     { absTime, result } =
     AbsoluteTiming[
-      constraints =
-        Join[
-          polynomialConstraints,
-          DeterminantConditions @ invertibleMatrices
-        ];
 
       SolveRepeatedly[ { {}, nonBinEqns_ }, _, _, prevSols_, _  ] :=
         Sow[ { nonBinEqns, prevSols } ];
