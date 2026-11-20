@@ -403,10 +403,10 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     (* Check for zeros and False *)
     probPos =
-      FirstPosition[ properEqns, n_Equal /; preEqCheck[n] == 0, Missing[], 1 ];
+      FirstPosition[ properEqns, n_Equal /; preEqCheck[Subtract @@ n] == 0, Missing[], 1 ];
     
     If[ 
-      ! MissingQ[probPos], 
+      !MissingQ[probPos], 
       Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
     ];
     
