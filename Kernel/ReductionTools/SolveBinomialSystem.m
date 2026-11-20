@@ -276,7 +276,6 @@ Options[SolveNonSingularBinomialSystem] :=
       "UseDatabaseOfSmithDecompositions" -> False,
       "StoreDecompositions" -> False,
       "SimplifyIntermediateResultsBy" -> Identity,
-      "Parallel" -> False,
       "DivideAndConquer" -> True
     },
     Options[ReduceBinomialSystem]
