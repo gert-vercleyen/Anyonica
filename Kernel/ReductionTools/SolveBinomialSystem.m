@@ -442,8 +442,11 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
 ValidEqnQ[symbol_][ eqn_ ] :=
   Not @ 
   MatchQ[ Expand @ eqn,
-    False | HoldPattern[ 0 == expr_ ] | HoldPattern[ expr_ == 0 ] /;
-    MatchQ[ expr, HoldPattern[Times[__]] | HoldPattern[Power[symbol[_],_]] | symbol[_] ]
+    False | (
+      HoldPattern[ 0 == expr_ ] | 
+      HoldPattern[ expr_ == 0 ] /;
+      MatchQ[ expr, HoldPattern[Times[__]] | HoldPattern[Power[symbol[_],_]] | symbol[_] ]
+    )
   ];
 
 PackageScope["SNSBS"]
