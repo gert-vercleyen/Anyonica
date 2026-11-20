@@ -1043,6 +1043,8 @@ Options[UpdateConstraints] =
   "PreEqualCheck" -> Identity
 };
 
+PackagScope["UpdateConstraints"]
+
 UpdateConstraints[ { polConstr_, invertibleMatrices_ }, solution_, opts:OptionsPattern[] ] :=
 Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
   simplify   = OptionValue["SimplifyIntermediateResultsBy"];
