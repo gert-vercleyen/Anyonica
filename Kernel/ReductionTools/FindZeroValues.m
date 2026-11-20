@@ -464,7 +464,7 @@ Options[ReduceViaLogic] =
 ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
   Module[
     { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv,
-      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences, lSymp, combinedSimplification 
+      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences, lSymp, combinedSimplification, combinedSimplify 
     },
 
     (* TODO: implement error message if lSymp > 4 *)
