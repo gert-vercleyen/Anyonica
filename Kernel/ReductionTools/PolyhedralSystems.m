@@ -773,6 +773,7 @@ Module[
           ]
         ]]
       ];
+    
 
     (* Reduce this system of binomial equations and add it to the non-binomial equations *)
     (* At the moment we only support the HermiteDecomposition because its annoying to 
