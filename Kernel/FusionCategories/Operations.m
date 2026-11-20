@@ -33,16 +33,27 @@ Options[TensorProduct] =
 Protect[TensorProduct];
 
 FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_], opts:OptionsPattern[] ] :=
-  Module[ { sF1, sF2, sR1, sR2, r1, r2, fSymbols, rSymbols, simplify, twists, modQ, sMat },
+  Module[ { a, sF1, sF2, sR1, sR2, r1, r2, fSymbols, rSymbols, pivStruct, simplify, twists, modQ, sMat },
     simplify =
       OptionValue["SimplifyBy"];
 
     r1 = Rank[cat1];
     r2 = Rank[cat2];
 
-    sF1 = SparseArray[ FSymbols[cat1] /. F -> List, { r1, r1, r1, r1, r1, r1 } ];
-    sF2 = SparseArray[ FSymbols[cat2] /. F -> List, { r2, r2, r2, r2, r2, r2 } ];
-    fSymbols = simplify @ MapAt[ Apply[F], Most @ ArrayRules @ KroneckerProduct[ sF1, sF2 ], { All, 1 } ];
+    (* Describing F-symbols using sparse matrix and coming back will remove the non-trivial 0's 
+       Therefore we substitute those for a dummy variable a, which we substitute back for 0 at
+       the end
+    *)
+    a = Unique[x];
+    zerotoa[ fs_ ] := MapAt[ ReplaceAll[ 0 -> a ], fs, {All,2} ];
+    atozero[ fs_ ] := Normal @ fs /. a -> 0;
+
+    sF1 = SparseArray[ subzero @ FSymbols @ cat1 /. F -> List, { r1, r1, r1, r1, r1, r1 } ];
+    sF2 = SparseArray[ subzero @ FSymbols @ cat2 /. F -> List, { r2, r2, r2, r2, r2, r2 } ];
+    fSymbols = 
+      simplify @ 
+      atozero @
+      MapAt[ Apply[F], Most @ ArrayRules @ KroneckerProduct[ sF1, sF2 ], { All, 1 } ];
 
     If[
       BraidedQ[cat1] && BraidedQ[cat2]
@@ -50,13 +61,13 @@ FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_
       sR1      = SparseArray[ RSymbols[cat1] /. R -> List, { r1, r1, r1 } ];
       sR2      = SparseArray[ RSymbols[cat2] /. R -> List, { r2, r2, r2 } ];
       rSymbols = simplify @ MapAt[ Apply[R], Most @ ArrayRules @ KroneckerProduct[ sR1, sR2 ], { All, 1 } ];
-      twists   = Flatten @ KroneckerProduct[Twists[cat1],Twists[cat2]];
+      twists   = Flatten @ KroneckerProduct[ Values @ Twists @ cat1, Values @ Twists @ cat2 ];
       modQ     = TrueQ[ ModularQ[cat1] && ModularQ[cat2] ];
       sMat     = KroneckerProduct[ SMatrix[cat1], SMatrix[cat2] ]
       ,
       rSymbols = Missing["NonBraidedCategory"];
       twists   = Missing["NonBraidedCategory"];
-      modQ     = False,
+      modQ     = False;
       sMat     = Missing["NonBraidedCategory"]
     ];
 
