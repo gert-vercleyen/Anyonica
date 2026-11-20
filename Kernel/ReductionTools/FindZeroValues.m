@@ -430,7 +430,7 @@ BooleanZeroValues[ prop_, remainingVars_, opts:OptionsPattern[] ] :=
         If[
           !MatchQ[ instances, { { __?BooleanQ }.. } ]
           ,
-          Abort[]
+          {} 
         ];
 
         Thread[ remainingVars -> # ]& /@
