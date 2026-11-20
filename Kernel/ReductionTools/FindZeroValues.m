@@ -21,6 +21,8 @@ FindZeroValues::wrongequationsformat =
 
 FindZeroValues::wrongvariablesformat =
   "`1` must be a list of variables of the form _Symbol[i__Integer].";
+FindZeroValues::emptylistofvariables = 
+  "The list of variables must be non-empty";
 
 Options[ FindZeroValues ] :=
   Join[
