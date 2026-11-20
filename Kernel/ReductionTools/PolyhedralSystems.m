@@ -794,6 +794,8 @@ Module[
           GetVariables[neverZeroBinEqns, F ]
         ]["Polynomials"]
         ,
+        Complement[ newBinEqns, neverZeroBinEqns ]
+        ,
         newSumEqns
       ];
 
