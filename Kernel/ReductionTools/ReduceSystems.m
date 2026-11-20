@@ -206,11 +206,21 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
               "Values" -> Thread[ variables -> variables ]
             |>,
           variables === { },
-            Return @ <| 
-              "Polynomials" -> ToPolynomial /@ (Subtract @@@ binomialEqns),
-              "Assumptions" -> True,
-              "Values" -> {} 
-            |>
+            If[ 
+              MemberQ[False] @ binomialEqns
+              ,
+              Return @ <| 
+                "Polynomials" -> 1,
+                "Assumptions" -> True,
+                "Values" -> {} 
+              |>
+              ,
+              Return @ <| 
+                "Polynomials" -> ToPolynomial /@ (Subtract @@@ TEL @ binomialEqns),
+                "Assumptions" -> True,
+                "Values" -> {} 
+              |>
+            ]
         ];
 
         { eqns, vars, revertVars } =
