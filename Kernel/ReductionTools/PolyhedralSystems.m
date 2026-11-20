@@ -778,7 +778,6 @@ Module[
     (* At the moment we only support the HermiteDecomposition because its annoying to 
        merge deduced values of F-symbols at this point. The HermiteDecomposition does 
        not create assumptions, nor does it find values of F-symbols *)
-    (* TODO: this should be implemented in the future!!! *)
 
     If[ 
       MemberQ[ { opts }, x_ /; Keys @ x == "Method" && Values @ x =!= "HermiteDecomposition" ], 
