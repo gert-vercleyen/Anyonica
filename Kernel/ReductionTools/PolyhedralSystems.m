@@ -654,8 +654,6 @@ Module[
 
     pentEqns = PentagonEquations[ ring, "Knowns" -> knowns ];
 
-    { binEqns, sumEqns } = BinomialSplit @ pentEqns;
-
     (* For the inverse matrices we add the condition that removing zigzags is an isomorphism *)
     invMats =
       With[ { 
@@ -744,8 +742,6 @@ Module[
     pentEqns = TEL[ pentEqns/.extraFixedFs ];
 
     { newBinEqns, newSumEqns } =  BinomialSplit[ pentEqns ]; 
-
-    ClearAll[binEqns,sumEqns];
 
     printlog[ "PPSI:fixed_fs", { procID, extraFixedFs } ];
 
