@@ -1029,7 +1029,7 @@ Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
   If[ newPolConstr === { False }, Return @ { False } ];
 
   newInvMats =
-    AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] =!= 0& ];
+    AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] != 0& ];
 
   If[ newInvMats === { False }, Return @ { False } ];
 
