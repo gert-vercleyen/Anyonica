@@ -224,8 +224,6 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     ]
     ];
 
-    Remove[s1,gs];
-    
     printlog["SMS:solutions", { procID, result } ];
     printlog["Gen:results", { procID, result, absTime } ];
     
