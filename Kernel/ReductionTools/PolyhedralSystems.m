@@ -664,7 +664,7 @@ Module[
         Join[
           FMatrices[ ring ],
           Array[ {{F[ #, d[#], #, #, 1, 1 ]}}&, Rank[ring] ] 
-        ] 
+        ] /. knowns
       ];
 
     gaugeSymmetries = GaugeSymmetries[ allFSymbols, g ];
