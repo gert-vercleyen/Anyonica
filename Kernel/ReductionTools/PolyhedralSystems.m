@@ -962,6 +962,10 @@ PentagonGroebnerSystems::usage =
 "fusion ring r, with remaining variables labeled by z.";
 (*Options include all options for solving the pentagon equations and all options for finding groebner bases.";*)
 
+PentagonGroebnerSystems::substitutesolutionwrongformat =
+"\"SubstituteSolution\" should point to a couple { ring, solution } where ring is a fusion ring "<>
+"isomorphic to a subring of `1` and solution is a solution to the pentagon equations for ring.";
+
 Options[PentagonGroebnerSystems] :=
   Union[
     {
