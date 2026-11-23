@@ -1636,7 +1636,7 @@ checkArgsWhichGaugeTransform[ ring_, sol1_, sol2_ ] :=
 
 WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
   Module[
-    { gaugeSymmetries, transforms, u, constraints, newVars, newConstraints, revertVars,
+    { fs, gaugeSymmetries, transforms, u, constraints, newVars, newConstraints, revertVars,
       acc, numericQ, simplify, binomialMat, rhsVec, mU, mD, mV, rankBinomialMat, expRHS, listOfOnesQ, newSol1, newSol2,
       diagonalElements, ZSpace, constVec, useDataBaseQ, preEqCheck, nGaugeVars, nonZeroFs,  trivialSpace, CSpace,
       monomials, time, result, procID, onlyAbsQ, values1, values2, vars, t, z, normSquaredExtraVars, absSol, a, b
