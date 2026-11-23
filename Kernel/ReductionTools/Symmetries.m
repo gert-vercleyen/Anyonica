@@ -1658,7 +1658,9 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
         Map[ simplify, { sol1, sol2 }, { 2 } ]
       ];
 
-    { values1, values2 } = Values /@ { newSol1, newSol2 };
+    fs = FSymbols @ ring;
+
+    { values1, values2 } = fs /. Dispatch @ { newSol1, newSol2 };
 
     nGaugeVars = NNZSC @ ring;
 
