@@ -492,7 +492,7 @@ SymmetryEquivalentQ[ ring_FusionRing, symmetries_Association, opts:OptionsPatter
     Do[
       If[
         GaugeSymmetryEquivalentQ[ symmetries, opts ][
-          PermutedFSymbols[ sol1, auto ],
+          PermuteFSymbols[ sol1, auto ],
           sol2
         ],
         Throw[True]
@@ -505,13 +505,13 @@ SymmetryEquivalentQ[ ring_FusionRing, symmetries_Association, opts:OptionsPatter
 
 
 SymmetryEquivalentQ[ ring_FusionRing, gaugeMat_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
-  SymmteryEquivalentQ[ ring, HermiteDecomposition @ gaugeMat, opts ][ sol1, sol2 ];
+  SymmeteryEquivalentQ[ ring, HermiteDecomposition @ gaugeMat, opts ][ sol1, sol2 ];
 
 SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   Catch[
     Do[
       If[
-        GaugeSymmetryEquivalentQ[ { r, h }, opts ][ PermutedFSymbols[ sol1, auto ], sol2 ],
+        GaugeSymmetryEquivalentQ[ { r, h }, opts ][ PermuteFSymbols[ sol1, auto ], sol2 ],
         Throw[True]
       ],
       { auto, FusionRingAutomorphisms[ring] }
