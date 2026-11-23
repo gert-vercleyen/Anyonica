@@ -120,7 +120,7 @@ PentagonEquationsWithoutMultiplicity[ ring_, opts:OptionsPattern[] ] :=
         { n1, zsc }
       ];
 
-    ][[2]]/.{{x_}}:>{x}
+    ][[2]]/.{{x__}}:>{x}
 
   ];
 
@@ -502,7 +502,7 @@ Module[ {
       };
       , { treeLabels, Keys[ fGroupedLabels ]  }
     ]
-  ][[2]]/.{{x_}}:>{x}
+  ][[2]]/.{{x__}}:>{x}
 
 ];
 
@@ -855,7 +855,7 @@ Module[
           ],
           { z, Normal[zeros] }
         ]
-      ][[2]]/.{{x_}}:>{x}
+      ][[2]]/.{{x__}}:>{x}
       ,
       (* ELSE *)
       printlog[ "PPSI:gauge_freedom_left", { procID } ];
@@ -884,7 +884,7 @@ Module[
           ],
           { z, Normal[zeros] }
         ]
-      ][[2]]/.{{x_}}:>{x}
+      ][[2]]/.{{x__}}:>{x}
     ]
   ];
 
