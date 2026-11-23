@@ -1193,36 +1193,35 @@ ToUnitaryGauge[ ring_FusionRing, FSol_, opts:OptionsPattern[] ] :=
 
 
     varPowers[monomial_] :=
-    Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], Abs[ a ] } ];
+      Cases[ monomial, Power[ g[i__], a_. ] :> { g[i], Abs[ a ] } ];
 
     SimplestVar[ monomial_ ] :=
-    With[{ fList = varPowers @ monomial },
-      If[ fList === {}, Return[ Missing[] ] ];
-      MinimalBy[ fList, Last, 1 ][[1, 1]]
-    ];
+      With[{ fList = varPowers @ monomial },
+        If[ fList === {}, Return[ Missing[] ] ];
+        MinimalBy[ fList, Last, 1 ][[1, 1]]
+      ];
 
     UnitaryValue[ F[ abcd__, e_, f_ ] ] :=
-    simplify @ ReplaceAll[ Sqrt[ F[ abcd, e, f ] FInv[ abcd, f, e ] ], solInvSol ];
+      simplify @ ReplaceAll[ Sqrt[ F[ abcd, e, f ] FInv[ abcd, f, e ] ], solInvSol ];
 
     FixValue[ a_ -> b_ ] :=
-    simplify @ Solve[ b == UnitaryValue @ a, SimplestVar @ b ][[1, 1]];
+      simplify @ Solve[ b == UnitaryValue @ a, SimplestVar @ b ][[1, 1]];
 
     nextTransform[ transf_ ] :=
-    First @ MinimalBy[ transf, Min[ Abs[ varPowers[#[[2]]][[;;,2]] ] ]&, 1 ];
+      First @ MinimalBy[ transf, Min[ Abs[ varPowers[#[[2]]][[;;,2]] ] ]&, 1 ];
 
-    UpdateSystem[ {}, vals_ ] :=
-    vals;
+    UpdateSystem[ {}, vals_ ] := vals;
 
     UpdateSystem[ transf_, vals_ ] :=
-    With[{ gaugeVal = FixValue[ nextTransform @ transf ] },
-      UpdateSystem[
-        DeleteCases[
-          simplify[ Cancel @* Together /@ (transf /. gaugeVal ) ],
-          rule_ /; CountVariables[ rule, g ] === 0
-        ],
-        Append[ vals /. gaugeVal, gaugeVal ]
-      ]
-    ];
+      With[{ gaugeVal = FixValue[ nextTransform @ transf ] },
+        UpdateSystem[
+          DeleteCases[
+            simplify[ Cancel @* Together /@ (transf /. gaugeVal ) ],
+            rule_ /; CountVariables[ rule, g ] === 0
+          ],
+          Append[ vals /. gaugeVal, gaugeVal ]
+        ]
+      ];
 
     { time, result } =
     AbsoluteTiming[
