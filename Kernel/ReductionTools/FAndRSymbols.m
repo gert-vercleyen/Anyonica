@@ -757,7 +757,7 @@ MultFreeFusionRingFromFSymbols[ fSymb_ ] :=
     nzsc = Cases[ Keys @ fSymb, F[ a_, b_, 1, c_, c_, b_ ] :> { a, b, c } ];
     r = Max @ Flatten @ nzsc;
     FusionRing[ 
-      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1 ], { r, r, r } ]
     ]
   ];
 
