@@ -203,7 +203,7 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
           <|
           "Transforms" -> SimplifyVariables[
               DeleteCases[ transforms, HoldPattern[ f_ -> f_ ] /; MemberQ[f] @ vars ],
-              symbols,
+              GetVariables[ transforms, symbols ],
               symbol
             ][[1]],
           "Symbols" -> {symbol}
