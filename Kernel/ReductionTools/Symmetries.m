@@ -600,7 +600,7 @@ DeleteEquivalentSolutions[ soln_List, ring_FusionRing, opts:OptionsPattern[] ] :
         symbols = 
           Switch[ { FilterRRules[soln] =!= {}, FilterPRules[soln] =!= {} },
             { True, True }, { "FSymbols", "RSymbols", "PSymbols" },
-            { True, False }, { "FSymbols", "RSymbols", "PSymbols" },
+            { True, False }, { "FSymbols", "RSymbols" },
             { False, True }, { "FSymbols", "PSymbols" },
             { False, False }, { "FSymbols" }
           ];
