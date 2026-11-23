@@ -110,8 +110,8 @@ SolveModZSpace[ { mat_?MatrixQ, vec_List }, opts:OptionsPattern[] ] :=
 IntegerMatrixQ[ mat_ ] :=
   TrueQ[ MatrixQ[mat] && ( mat === {{}} || FreeQ[ mat, x_ /; !IntegerQ[x], {2} ] ) ];
 
-IntegerMatrixQ[ mat_SparseArray ] :=
-  TrueQ @ FreeQ[ ArrayRules[mat][[;;,2]], x_ /; !IntegerQ[x], {1} ];
+IntegerMatrixQ[mat_SparseArray] := 
+  MatchQ[Values@ArrayRules[mat], {_Integer ...}];
 
 
 PackageExport["SolveModZ"]
