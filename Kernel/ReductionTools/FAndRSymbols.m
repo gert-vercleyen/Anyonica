@@ -128,8 +128,8 @@ If[
           { c, d } = label2[[{ 2, 3 }]];
           mult2 = multTab[[ e, c, d ]];
           Do[
-            mult3 = multTab[[ b, c, f ]];
-            mult4 = multTab[[ a, f, d ]];
+            mult3 = multTab[[ a, f, d ]];
+            mult4 = multTab[[ b, c, f ]];
             If[
               mult3 mult4 != 0,
               Sow@
