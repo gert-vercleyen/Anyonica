@@ -174,44 +174,45 @@ If[
 PackageExport["FMatrices"]
 
 FMatrices::usage =
-"FMatrices[ring] returns a list of symbolic F-matrices.";
+  "FMatrices[ring] returns a list of symbolic F-matrices.";
 
 FMatrices::notmultfree =
-"`1` should have multiplicity 1. Use FTensors for higher multiplicities.";
+  "`1` should have multiplicity 1. Use FTensors for higher multiplicities.";
 
 (* Create symbolic F matrices *)
 FMatrices[ ring_FusionRing?FusionRingQ ] :=
-If[
-  Mult[ ring ] != 1
-  ,
-  Message[ FMatrices::notmultfree, ring ];
-  Abort[]
-  ,
-  Module[{ sparseF, r, newMat, mats },
-    r = Rank[ring];
-    sparseF = SparseFTensor[ring];
-    mats =
-    Reap[
-      Do[
-        If[
-          ( newMat =
-          Normal[sparseF][[a,b,c,d,;;,;;]] //
-          RemoveZeroColumns //
-          RemoveZeroRows
-          )
-          =!= {{}} && newMat =!= {{1}},
-          Sow[ newMat ]
-        ],
-        { a, r }, { b, r }, { c, r }, { d, r }
+  If[
+    Mult[ ring ] != 1
+    ,
+    Message[ FMatrices::notmultfree, ring ];
+    Abort[]
+    ,
+    Module[{ nsparseF, sparseF, r, newMat, mats },
+      r = Rank[ring];
+      sparseF = SparseFTensor[ring];
+      nsparseF = Normal @ sparseF;
+      mats =
+      Reap[
+        Do[
+          If[
+            ( newMat =
+            nsparseF[[a,b,c,d,;;,;;]] //
+            RemoveZeroColumns //
+            RemoveZeroRows
+            )
+            =!= {{}} && newMat =!= {{1}},
+            Sow[ newMat ]
+          ],
+          { a, r }, { b, r }, { c, r }, { d, r }
+        ]
+      ][[2]];
+      If[
+        mats == {},
+        {},
+        Flatten[ mats, 1 ]
       ]
-    ][[2]];
-    If[
-      mats == {},
-      {},
-      Flatten[ mats, 1 ]
     ]
-  ]
-];
+  ];
 
 RemoveZeroRows[ mat_?MatrixQ ] :=
 With[{ newMat = DeleteCases[ { 0 .. } ] @ mat },
