@@ -531,12 +531,9 @@ TwistFactorEquations::usage =
 TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
 Module[
   { t, d, a, b, c, rs },
-  t =
-  Exp[ 2 Pi I twistFactors ][[#]]&;
-  d =
-  QD[ring][[#]]&;
-  rs =
-  RSymbols[ring];
+  t  = Exp[ 2 Pi I twistFactors ][[#]]&;
+  d  = FPDims[ring][[#]]&;
+  rs = RSymbols[ring];
 
   TEL[
     Join[
@@ -557,6 +554,30 @@ Module[
 ];
 
 
+TwistFactorEquations[ cat_FusionCategory, twistFactors_ ] :=
+Module[
+  { t, d, a, b, c, rs },
+  t  = Exp[ 2 Pi I twistFactors ][[#]]&;
+  d  = QuantumDimensions[cat][[#]]&;
+  rs = Keys @ RSymbols[cat];
+
+  TEL[
+    Join[
+      Table[
+        { a, b, c } =
+        List @@ r;
+        R[ a, b, c ] * R[ b, a, c ] == t[c] / ( t[a] t[b] ),
+        { r, rs }
+      ]
+      ,
+      Table[
+        Sum[ d[c] R[ a, a, c ], { c, Cases[ rs, R[ a, a, _ ] ][[;;,3]] } ] == d[a] t[a],
+        { a, Rank[cat] }
+      ]
+    ]/.$VacuumRPattern -> 1
+  ]
+
+];
 (*
 +---------------------------------------------------------------------------+
 |                 PREPARING INPUT FOR POLYHEDRON SOLVERS                    |
