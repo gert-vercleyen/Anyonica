@@ -1860,6 +1860,6 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
 PackageExport["WGT"]
 
 WGT::usage =
-"Shorthand for WhichGaugeTransform.";
+  "Shorthand for WhichGaugeTransform.";
 
 WGT = WhichGaugeTransform;
