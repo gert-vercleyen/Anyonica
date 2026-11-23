@@ -40,15 +40,10 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
         demands, SortTransforms, RemoveUnnecessarySymbols, g, SimplestVar, FixValue, UpdateSystem, procID, time, result,
         excludedVars, AssignValues, unfixedVars
       },
-      procID =
-        ToString @ Unique[];
-      demands =
-        OptionValue["GaugeDemands"];
-      excludedVars =
-        OptionValue["ExcludedVariables"];
-      g =
-        First @
-        symmetries["Symbols"];
+      procID  = ToString @ Unique[];
+      demands = OptionValue["GaugeDemands"];
+      excludedVars = OptionValue["ExcludedVariables"];
+      g = First @ symmetries["Symbols"];
       (* put the demanded vars on top of the list and remove unnecessary symbols *)
 
       SortTransforms[ transforms_ ] :=
@@ -1921,21 +1916,16 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
     simplify = OptionValue["SimplifyBy"];
     useDataBaseQ = OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck =
-    If[
-      numericQ,
-      InfN[acc],
-      OptionValue["PreEqualCheck"]
-    ];
-    unitaryGTQ =
-    OptionValue["UnitaryGaugeTransform"];
-    returnTransformQ =
-    OptionValue["ReturnGaugeTransform"];
-    gaugeDemands =
-    Equal @@@
-    OptionValue["GaugeDemands"];
+      If[
+        numericQ,
+        InfN[acc],
+        OptionValue["PreEqualCheck"]
+      ];
+    unitaryGTQ = OptionValue["UnitaryGaugeTransform"];
+    returnTransformQ = OptionValue["ReturnGaugeTransform"];
+    gaugeDemands = Equal @@@ OptionValue["GaugeDemands"];
 
-    procID =
-    ToString[Unique[]];
+    procID = ToString[Unique[]];
 
     printlog["TSG:init", { procID, ring, FSymb, {opts} } ];
 
@@ -1943,31 +1933,31 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
     AbsoluteTiming[
 
       gaugeSymmetries =
-      GaugeSymmetries[ FSymbols[ring], g ];
+        GaugeSymmetries[ FSymbols[ring], g ];
 
       transforms =
-      gaugeSymmetries["Transforms"];
+        gaugeSymmetries["Transforms"];
 
       vacuumConstraints =
-      If[
-        OptionValue["PreserveTrivialValues"],
-        (* THEN *)
-        Thread[
-          ReplaceAll[
-            Cases[ FSymbols[ring], $VacuumFPattern ]/.transforms,
-            F[__] -> 1
-          ] == 1
-        ],
-        (* ELSE *)
-        {}
-      ];
+        If[
+          OptionValue["PreserveTrivialValues"],
+          (* THEN *)
+          Thread[
+            ReplaceAll[
+              Cases[ FSymbols[ring], $VacuumFPattern ]/.transforms,
+              F[__] -> 1
+            ] == 1
+          ],
+          (* ELSE *)
+          {}
+        ];
 
       newFs =
-      MapAt[
-        If[ numericQ, InfN[2*acc], simplify ],
-        FSymb,
-        { All, 2 }
-      ];
+        MapAt[
+          If[ numericQ, InfN[2*acc], simplify ],
+          FSymb,
+          { All, 2 }
+        ];
 
       Catch[
         symGaugeQ[ symb_ ] :=
@@ -1989,20 +1979,20 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
         *)
 
         constraints =
-        Join[
-          vacuumConstraints,
-          SymmetricGaugeConstraints[g][ring]/.Dispatch[newFs],
-          gaugeDemands
-        ];
+          Join[
+            vacuumConstraints,
+            SymmetricGaugeConstraints[g][ring]/.Dispatch[newFs],
+            gaugeDemands
+          ];
 
         printlog[ "TSG:constraints", { procID, constraints } ];
 
         { newConstraints, newVars, revertVars } =
-        SimplifyVariables[
-          constraints,
-          g @@@ NZSC[ring],
-          u
-        ];
+          SimplifyVariables[
+            constraints,
+            g @@@ NZSC[ring],
+            u
+          ];
 
         { binomialMat, rhsVec } =
         Catch[
@@ -2026,24 +2016,24 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
         ];
 
         { mU, mD, mV } =
-        If[
-          useDataBaseQ,
-          AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
-          SmithDecomposition @ binomialMat
-        ];
+          If[
+            useDataBaseQ,
+            AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
+            SmithDecomposition @ binomialMat
+          ];
 
         printlog["TSG:decomposition",{procID,{mU,mD,mV}}];
 
         rankBinomialMat =
-        Length[
-          diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
-        ];
+          Length[
+            diagonalElements = DeleteCases[0] @ Diagonal @ Normal @ mD
+          ];
 
         expRHS =
-        PowerDot[ rhsVec, mU ];
+          PowerDot[ rhsVec, mU ];
 
         NonOneCoeff[ l_ ] :=
-        FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
+          FirstCase[ l, x_ /; preEqCheck[x] != 1 ];
 
         If[
           (* RHS and LHS are incompatible *)
@@ -2054,26 +2044,26 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           Throw[$Failed],
           (* ELSE *)
           ZSpace =
-          mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
+            mV[[ ;;, ;; rankBinomialMat ]] . DiagonalMatrix[ 1 / diagonalElements ];
           constVec =
-          PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
+            PowerDot[ rhsVec, ZSpace.mU[[;;rankBinomialMat]] ];
         ];
 
         CheckSolution[ sol_ ] :=
-        If[
-          Not @ AddOptions[opts][SymmetricGaugeQ][ ring, sol ],
-          printlog["TSG:sol_not_symmetric", {procID} ];
-        ];
+          If[
+            Not @ AddOptions[opts][SymmetricGaugeQ][ ring, sol ],
+            printlog["TSG:sol_not_symmetric", {procID} ];
+          ];
 
         gauge =
-        If[
-          numericQ,
-          Thread[ newVars -> InfN[ constVec, acc ] ],
-          Thread[ newVars -> constVec ]
-        ]/.revertVars;
+          If[
+            numericQ,
+            Thread[ newVars -> InfN[ constVec, acc ] ],
+            Thread[ newVars -> constVec ]
+          ]/.revertVars;
 
         newFSolution =
-        ApplyGaugeTransform[ FSymb, gauge, g ];
+          ApplyGaugeTransform[ FSymb, gauge, g ];
 
         CheckSolution[ newFSolution ];
 
@@ -2189,20 +2179,13 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
     },
     checkArgsWhichGaugeTransform[ ring, sol1, sol2 ];
 
-    acc =
-      OptionValue["Accuracy"];
-    numericQ =
-      OptionValue["Numeric"];
-    simplify =
-      OptionValue["SimplifyBy"];
-    useDataBaseQ =
-      OptionValue["UseDatabaseOfSmithDecompositions"];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
-    onlyAbsQ =
-      OptionValue["OnlyMatchAbsoluteValues"];
-    procID =
-      ToString[Unique[]];
+    acc          = OptionValue["Accuracy"];
+    numericQ     = OptionValue["Numeric"];
+    simplify     = OptionValue["SimplifyBy"];
+    useDataBaseQ = OptionValue["UseDatabaseOfSmithDecompositions"];
+    preEqCheck   = OptionValue["PreEqualCheck"];
+    onlyAbsQ     = OptionValue["OnlyMatchAbsoluteValues"];
+    procID       = ToString[Unique[]];
 
     { newSol1, newSol2 } =
       If[ 
