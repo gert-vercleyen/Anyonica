@@ -562,9 +562,11 @@ Options[DeleteEquivalentSolutions] :=
     }
   ];
 
-DeleteEquivalentSolutions[ soln_, ring_FusionRing, opts:OptionsPattern[] ] :=
+DeleteEquivalentSolutions[ soln_List, ring_FusionRing, opts:OptionsPattern[] ] :=
   Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits,
     symbols },
+
+    If[ Length @ soln === 0, Return @ soln ];
     (*procID =
       ToString @ Unique[];
 
