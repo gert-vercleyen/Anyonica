@@ -1459,14 +1459,14 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ];
 
         { binomialMat, rhsVec } =
-        Catch[
-          AddOptions[opts][BinToSemiLin][
-            Rationalize[ newConstraints, 10^(-2*acc) ],
-            newVars,
-            u
-          ],
-          "ZeroVariableInNonSingularSystem"
-        ];
+          Catch[
+            AddOptions[opts][BinToSemiLin][
+              Rationalize[ newConstraints, 10^(-2*acc) ],
+              newVars,
+              u
+            ],
+            "Inconsistent"
+          ];
 
         If[
           binomialMat === {} && rhsVec === {},
