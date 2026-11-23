@@ -331,7 +331,7 @@ GaugeSymmetryEquivalentQ[ symmetries_Association, opts:OptionsPattern[] ][ sol1_
 
     If[ (* Gauges are trivial *)
       Times @@ Dimensions[ MultiplicativeGaugeMatrix @ symmetries ] === 0,
-      TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
+      Return @ TrivialGaugeSymmetryEquivalentQ[ opts ][ sol1, sol2 ]
     ];
 
     (* Check whether zeros are at same positions *)
