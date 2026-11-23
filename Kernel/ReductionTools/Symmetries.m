@@ -640,7 +640,14 @@ intersectingQ[ l1_List, l2_List, check_ ] :=
     ]; False
   ];
 
-
+Options[DeleteGaugeEquivalentSolutions] := 
+  {
+    "Accuracy" -> 64, 
+    "Numeric" -> False, 
+    "PreEqualCheck" -> Identity, 
+    "SimplifyBy" -> Identity 
+  }
+    
 DeleteGaugeEquivalentSolutions[ soln_, invariants_, opts:OptionsPattern[] ] :=
   Module[{ inv, indices },
     inv =
