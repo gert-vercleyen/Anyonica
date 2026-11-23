@@ -679,7 +679,7 @@ DES =
 PackageExport["SymmetryEquivalentQ2"]
 
 SymmetryEquivalentQ2::usage =
-  "Experimental version of SymmetryEquivalentQ";
+  "Experimental improved version of SymmetryEquivalentQ";
 
 Options[SymmetryEquivalentQ2] :=
   Options[DeleteGaugeEquivalentSolutions];
