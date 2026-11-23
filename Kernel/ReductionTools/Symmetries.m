@@ -188,12 +188,9 @@ RestrictMultiplicativeSymmetries[ sym_, vars_, symbol_, opts:OptionsPattern[] ] 
       s, gaugeVars, restrictingBinomials, newEqns, newVars, revertVars, CSpace,
       params, newTransforms, reParametrization, transforms, symbols, procID, result, time
       },
-      transforms =
-        sym["Transforms"];
-      symbols =
-        sym["Symbols"];
-      procID =
-        ToString @ Unique[];
+      transforms = sym["Transforms"];
+      symbols    = sym["Symbols"];
+      procID     = ToString @ Unique[];
 
       printlog[ "RMS:init", { procID, sym, vars, symbols, {opts} } ];
 
