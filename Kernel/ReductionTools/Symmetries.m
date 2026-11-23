@@ -770,8 +770,8 @@ MultiplicativeSymmetriesQ[ sym_Association ] :=
     With[{
       removeGauges = #/.Table[ x[__] -> 1, { x, gaugeFuncs } ]&
       },
-      And @@ ( MonomialQ /@ ( transforms/gaugeVars ) )  &&
-      And @@ ( NumericQ /@ removeGauges[transforms] )
+      ( And @@ ( MonomialQ /@ ( transforms/gaugeVars ) ) ) ||
+      ( And @@ ( NumericQ /@ removeGauges[transforms] ) )
     ]
   ];
 
