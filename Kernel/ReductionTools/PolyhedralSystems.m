@@ -397,94 +397,84 @@ Module[ {
   fGroupedLabels, replaceKnowns, matchingLabels, Rt, Ft,
   DS, TP, ID, a, b, c, d, e, g, eLabels, fLabels, gLabels, op,
   SwapOperator, swap, mt
-},
-  mt =
-  MT[ring];
+  },
+  If[ !CommutativeQ[ring], Return @ {} ];
+
+  mt = MT @ ring;
 
   fGroupedLabels =
-  GroupBy[(* Group right 2-vertex trees by equal values of a,b,c,d *)
-    RightOrderedFusionTrees[ ring, 2 ],
-    #[[{1,2,3,5}]]&
-  ];
+    GroupBy[(* Group right 2-vertex trees by equal values of a,b,c,d *)
+      RightOrderedFusionTrees[ ring, 2 ],
+      #[[{1,2,3,5}]]&
+    ];
 
   (* Substitutes known values in F or R tensors *)
   replaceKnowns[ tensors_ ] :=
-  ( SparseArray[ Normal[#]/.Dispatch[ OptionValue["Knowns"] ] ] & ) /@
-  tensors;
+    ( SparseArray[ Normal[#]/.Dispatch[ OptionValue["Knowns"] ] ] & ) /@
+    tensors;
 
   (* Searches for intermediate fusion labels s where the two patterns are vertex labels, each containing 1 s *)
   matchingLabels[ pattern1_, pattern2_, s_ ] :=
-  With[{
-    non0Ns = NZSC[ring],
-    n1 = Flatten @ FirstPosition[ pattern1, s ],
-    n2 = Flatten @ FirstPosition[ pattern2, s ]
-  },
-    Flatten @
-    Intersection[
-      Cases[ non0Ns, ReplaceAll[ pattern1, s->Blank[] ] ][[;;,n1]],
-      Cases[ non0Ns, ReplaceAll[ pattern2, s->Blank[] ] ][[;;,n2]]
-    ]
-  ];
+    With[{
+      non0Ns = NZSC[ring],
+      n1 = Flatten @ FirstPosition[ pattern1, s ],
+      n2 = Flatten @ FirstPosition[ pattern2, s ]
+      },
+      Flatten @
+      Intersection[
+        Cases[ non0Ns, ReplaceAll[ pattern1, s->Blank[] ] ][[;;,n1]],
+        Cases[ non0Ns, ReplaceAll[ pattern2, s->Blank[] ] ][[;;,n2]]
+      ]
+    ];
 
   SwapOperator[ { a_, b_, e_ }, { e_, c_, d_ } ] :=
-  ArrayFlatten[
-    SparseArray[
-      Flatten @
-      Table[
-        { i, j, j, i } -> 1,
-        { i, mt[[a,b,e]] },
-        { j, mt[[e,c,d]] }
+    ArrayFlatten[
+      SparseArray[
+        Flatten @
+        Table[
+          { i, j, j, i } -> 1,
+          { i, mt[[a,b,e]] },
+          { j, mt[[e,c,d]] }
+        ]
       ]
-    ]
-  ];
+    ];
 
-  Rt =
-  replaceKnowns @
-  RTensors[ring];
-  Ft =
-  replaceKnowns @
-  FTensors[ring];
-  DS =
-  MatrixDirectSum;
-  TP =
-  KroneckerProduct;
-  ID =
-  IdentityMatrix[ mt[[##]] ]&;
+  Rt = replaceKnowns @ RTensors[ring];
+  Ft = replaceKnowns @ FTensors[ring];
+  DS = MatrixDirectSum;
+  TP = KroneckerProduct;
+  ID = IdentityMatrix[ mt[[##]] ]&;
 
   DeleteCases[True] @
   Flatten @
   Reap[
     Do[ (* Loop over valid a,b,c,d labels *)
-      { a, b, c, d } =
-      treeLabels;
-      eLabels =
-      matchingLabels[ { a, b, e }, { e, c, d }, e ];
-      fLabels =
-      fGroupedLabels[ treeLabels ][[;;,4]];
-      gLabels =
-      matchingLabels[ { c, a, g }, { g, b, d }, g ];
+      { a, b, c, d } = treeLabels;
+      eLabels = matchingLabels[ { a, b, e }, { e, c, d }, e ];
+      fLabels = fGroupedLabels[ treeLabels ][[;;,4]];
+      gLabels = matchingLabels[ { c, a, g }, { g, b, d }, g ];
 
       op[1,1] =
-      DS @ Table[ TP[ Rt[ { c, a, g } ], ID[ g, b, d ] ], { g, gLabels } ];
+        DS @ Table[ TP[ Rt[ { c, a, g } ], ID[ g, b, d ] ], { g, gLabels } ];
 
       op[1,2] =
-      Ft[ { a, c, b, d } ];
+        Ft[ { a, c, b, d } ];
 
       op[1,3] =
-      DS @ Table[ TP[ ID[ a, f, d ], Rt[ { c, b, f } ] ], { f, fLabels } ];
+        DS @ Table[ TP[ ID[ a, f, d ], Rt[ { c, b, f } ] ], { f, fLabels } ];
 
       op[2,1] =
-      Ft[ { c, a, b, d } ];
+        Ft[ { c, a, b, d } ];
 
       swap =
-      DS @ Table[ SwapOperator[ { a, b, e }, { e, c, d } ], { e, eLabels } ];
+        DS @ Table[ SwapOperator[ { a, b, e }, { e, c, d } ], { e, eLabels } ];
 
       op[2,2] =
-      DS @ Table[ TP[ ID[ a, b, e ], Rt[ { c, e, d } ] ], { e, eLabels } ];
+        DS @ Table[ TP[ ID[ a, b, e ], Rt[ { c, e, d } ] ], { e, eLabels } ];
 
       (* DS @ Table[ ID[ a, b, e ] ~ TP ~ Rt[ { c, e, d } ], { e, eLabels } ]; *)
       op[2,3] =
-      Ft[ { a, b, c, d } ];
+        Ft[ { a, b, c, d } ];
 
       op[3,1] =
         DS @ Table[ TP[ Rt[ { a, c, g } ], ID[ g, b, d ] ], { g, gLabels } ];
