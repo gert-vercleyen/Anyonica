@@ -304,10 +304,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
 
       constVec =
-        map[
-          simplify,
-          PowerDot[ expRHS[[;;r]], ZSpace ]
-        ];
+        simplify /@ PowerDot[ expRHS[[;;r]], ZSpace ];
       
       zVecs =
         Exp[ 2 Pi I * Map[ (ZSpace . #)&, Tuples[ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ] ] ];
@@ -330,7 +327,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
           ]
         ];
       
-      map[ (constVec * monomials) * #&, zVecs ]
+      Map[ (constVec * monomials) * #&, zVecs ]
     ];
     
     printlog["Gen:results", {procID, result, absTime}];
@@ -376,7 +373,7 @@ CheckBinToSemiLinArgs[ eqnList_, nVars_ ] :=
 BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
 (
   CheckBinToSemiLinArgs[ eqns, Length[vars] ];
-  Module[ { map, properEqns, sa, betr, tpbe, simplify, probPos, numeric, accuracy, preEqCheck },
+  Module[ { properEqns, sa, betr, tpbe, simplify, probPos, numeric, accuracy, preEqCheck },
     
     
     simplify   = OptionValue["SimplifyIntermediateResultsBy"];
@@ -396,7 +393,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     (* Make sure the form of the equations is correct *)
     properEqns =
-      map[
+      Map[
         tpbe,
         If[ numeric, Rationalize[ eqns, 10^-accuracy ], eqns ]
       ];
@@ -421,7 +418,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     sa =
       DeleteSparseDuplicates @ 
       SparseArray @ 
-      map[ betr, DeleteCases[True] @  properEqns ];
+      Map[ betr, DeleteCases[True] @  properEqns ];
     
     If[
       numeric,
