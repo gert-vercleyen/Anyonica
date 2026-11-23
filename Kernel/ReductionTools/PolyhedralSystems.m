@@ -486,13 +486,28 @@ Module[ {
       op[2,3] =
       Ft[ { a, b, c, d } ];
 
+      op[3,1] =
+        DS @ Table[ TP[ Rt[ { a, c, g } ], ID[ g, b, d ] ], { g, gLabels } ];
+
+      op[3,2] = op[1,2];
+
+      op[3,3] = 
+        DS @ Table[ TP[ ID[ a, f, d ], Rt[ { b, c, f } ] ], { f, fLabels } ];
+
+      op[4,1] = op[2,1];
+      
+      op[4,2] = 
+        DS @ Table[ TP[ ID[ a, b, e ], Rt[ { e, c, d } ] ], { e, eLabels } ];
+      
+      op[4,3] = op[2,3];
+
       Sow @
       {
         ThreadMatrixEquality[
           op[1,1].op[1,2].op[1,3] == op[2,1].swap.op[2,2].op[2,3]
         ],
         ThreadMatrixEquality[
-          Inverse[op[1,1]].op[1,2].Inverse[op[1,3]] == op[2,1].swap.Inverse[op[2,2]].op[2,3]
+          Inverse[op[3,1]].op[3,2].Inverse[op[3,3]] == op[4,1].swap.Inverse[op[4,2]].op[4,3]
         ]
       };
       , { treeLabels, Keys[ fGroupedLabels ]  }
