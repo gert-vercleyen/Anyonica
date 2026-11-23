@@ -757,12 +757,10 @@ MultiplicativeGaugeMatrix[ sym_Association ] :=
 
 MultiplicativeSymmetriesQ[ sym_Association ] :=
   With[{
-    transforms =
-      sym["Transforms"][[;;,2]],
-    gaugeVars =
-      sym["Transforms"][[;;,1]],
-    gaugeFuncs =
-      sym["Symbols"]},
+    transforms = sym["Transforms"][[;;,2]],
+    gaugeVars  = sym["Transforms"][[;;,1]],
+    gaugeFuncs = sym["Symbols"]},
+
     If[
       transforms === {},
       Return[ True ]
