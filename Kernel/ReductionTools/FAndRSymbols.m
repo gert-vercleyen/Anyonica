@@ -746,7 +746,7 @@ FusionRingFromFSymbols[ fSymb_ ] :=
   Which[
     !PPSQ[ fSymb ], 
     Message[ FusionRingFromFSymbols::invalidsymbols, fSymb ]; Abort[],
-    DeleteDuplicates[ Length /@ Keys @ fSymb ] =!= {6}, 
+    DeleteDuplicates[ Length @ Flatten @ First @ Keys @ fSymb ] =!= 6, 
     Message[ FusionRingFromFSymbols::notimplementedyet ]; Abort[],
     True, 
     MultFreeFusionRingFromFSymbols[ fSymb ]
