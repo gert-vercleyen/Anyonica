@@ -526,7 +526,9 @@ PackageExport["TwistFactorEquations"]
 
 TwistFactorEquations::usage =
 "TwistFactorEquations[ring,twistFactors] returns the equations that relate twist factors to R-symbols for a" <>
-"ribbon fusion category with ring as Grothendieck ring.";
+"possible unitary ribbon fusion category with ring as Grothendieck ring.\n" <>
+"TwistFactorEquations[cat,twistFactors] returns the equations that relate twist factors to R-symbols for a" <>
+"ribbon fusion category cat.";
 
 TwistFactorEquations[ ring_FusionRing, twistFactors_ ] :=
 Module[
