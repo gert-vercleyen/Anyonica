@@ -423,8 +423,6 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
       SparseArray @ 
       map[ betr, DeleteCases[True] @  properEqns ];
     
-    If[ OptionValue["Parallel"], CloseKernels[] ];
-    
     If[
       numeric,
       { sa[[;; , ;; -2]], InfN[ Normal @ sa[[;; , -1]], accuracy ] },
