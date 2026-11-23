@@ -682,7 +682,7 @@ SymmetryEquivalentQ2::usage =
   "Experimental version of SymmetryEquivalentQ";
 
 Options[SymmetryEquivalentQ2] :=
-  Options[DeleteGaugeEquivalentSolutions2];
+  Options[DeleteGaugeEquivalentSolutions];
 
 SymmetryEquivalentQ2[ ring_, invariants_, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   Catch[
