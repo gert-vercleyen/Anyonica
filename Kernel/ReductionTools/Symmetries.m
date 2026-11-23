@@ -131,7 +131,7 @@ BreakMultiplicativeSymmetry[ symmetries_, opts:OptionsPattern[] ] :=
 
       If[
         demands =!= {} &&
-        ( unfixedVars = Complement[ demands[[;;,1]], result[[;;,1]] ] ) =!= {},
+        ( unfixedVars = Complement[ demands[[;;,1]], result[[2,;;,1]] ] ) =!= {},
         printlog[ "BMS:unfixed_demanded_vars", { procID, unfixedVars } ];
       ];
 
