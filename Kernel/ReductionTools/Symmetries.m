@@ -1565,6 +1565,8 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
 
     printlog[ "Gen:results", { procID, result, time }];
 
+    If[ result === $Failed, Return @ $Failed ];
+
     result/.g -> List
 
   ]
