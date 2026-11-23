@@ -545,7 +545,7 @@ Module[
       ]
       ,
       Table[
-        Sum[ ( d[c] / d[a] ) R[ a, a, c ], { c, Cases[ rs, R[ a, a, _ ] ][[;;,3]] } ] == t[a],
+        Sum[ d[c] R[ a, a, c ], { c, Cases[ rs, R[ a, a, _ ] ][[;;,3]] } ] == d[a] t[a],
         { a, Rank[ring] }
       ]
     ]/.$VacuumRPattern -> 1
