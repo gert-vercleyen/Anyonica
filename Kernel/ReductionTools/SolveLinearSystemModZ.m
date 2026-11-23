@@ -229,7 +229,7 @@ Options[SolveSemiLinModZ] =
     "UseDatabaseOfSmithDecompositions" -> False,
     "StoreDecompositions" -> False,
     "PreEqualCheck" -> Identity,
-    "SimplifyIntermediateResultsBy" -> Identity,
+    "SimplifyIntermediateResultsBy" -> Identity
   };
 
 SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
