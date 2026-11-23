@@ -704,7 +704,7 @@ ReduceSemiLinModZ[ mat_, rhs_, s_, opts:OptionsPattern[]  ] :=
         ,
         AddOptions[opts][MemoizedHermiteDecomposition][ mat ]
         ,
-        HermiteDecomposition[mat];
+        HermiteDecomposition[mat]
       ];
 
     (* rank of system *)
