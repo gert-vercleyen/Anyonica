@@ -201,6 +201,10 @@ ToPolynomial::notanequation =
 
 SetAttributes[ ToPolynomial, Listable ];
 
+ToPolynomial[ True ] = 0;
+
+ToPolynomial[ False ] = 1;
+
 ToPolynomial[ eqn_ ] :=
   If[
     Head[eqn] =!= Equal
