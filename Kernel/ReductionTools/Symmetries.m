@@ -517,6 +517,13 @@ SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPa
     False
   ];
 
+PermuteFSymbols[ sol_, p_ ] := 
+  ReplaceAll[ 
+    sol,
+    F[a,b,c,d,e,f] :> F[ p[[a]], p[[b]], p[[c]], p[[d]], p[[e]], p[[f]] ]
+  ];
+
+
 PackageScope["PermuteSymbols"]
 
 PermuteSymbols[ Symb_, perm_List ] :=
