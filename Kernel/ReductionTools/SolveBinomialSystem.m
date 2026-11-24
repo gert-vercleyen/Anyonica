@@ -319,7 +319,7 @@ SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:Op
 
     eqns = TEL @ Map[ Expand @* simplify, preEqns ]; 
 
-    If[ eqns === {}, Return @ Thread[ vars -> Array[ param, Length @ vars ] ] ];
+    If[ eqns === {}, Return @ { Thread[ vars -> Array[ param, Length @ vars ] ] } ];
 
     printlog["SNSBS:init", {procID, eqnList, vars, param, {opts}}];
 
