@@ -1001,8 +1001,8 @@ GaugeSplitTransform[ ring_, opts:OptionsPattern[] ] :=
         If[ zeroPos === {}, Identity, AddZerosToTransform[ zeroPos ] ] @
         Transpose @ 
         Join[
-          Sort[ Transpose[v][[r+1;;]], sortf ],
-          Sort[ Transpose[v][[;;r]], sortf ]
+          Sort[ Normal @ Transpose[v][[r+1;;]], sortf ],
+          Sort[ Normal @ Transpose[v][[;;r]], sortf ]
         ]
         ,
         Length[v] - r + Length[zeroPos]
