@@ -354,13 +354,15 @@ ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] :=
 
       printlog[ "RBSVHD:hermitestart", { procID, ext } ];
 
-     { th, { u, h } }=  AbsoluteTiming @ hnf @ mat; 
+     { th, { u, h } } =  AbsoluteTiming @ hnf @ mat; 
 
       printlog[ "RBSVHD:hermitefinish", { procID, th, {u,h} } ];
 
       newRHS = PowerDot[ rhs, u ];
 
-      rank  = First @ Dimensions @ h; (* all zero-rows have been deleted from h *)
+      rank  = Length @ Union @ SparseArray[h]["NonzeroPositions"][[;;,1]]; (* all zero-rows have been deleted from h *)
+
+      h = h[[ ;; rank ]];
 
       checkValidity[ h, newRHS ];
 
