@@ -81,12 +81,9 @@ Join[
 IncrementalGroebnerBasis[ pols_, vars_, opts : OptionsPattern[] ] :=
 Module[
   { cutoff, weight, ReduceSystem, Slice, RecursiveGroebner, parallelQ, Groebner,simplify },
-  cutoff  =
-    OptionValue["Cutoff"];
-  weight =
-    OptionValue["GroebnerWeightFunction"];
-  parallelQ =
-    OptionValue["Parallel"];
+  cutoff  = OptionValue["Cutoff"];
+  weight = OptionValue["GroebnerWeightFunction"];
+  parallelQ = OptionValue["Parallel"];
 
   simplify =
   Composition[
