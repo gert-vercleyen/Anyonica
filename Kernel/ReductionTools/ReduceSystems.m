@@ -349,7 +349,7 @@ ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] :=
         If[ 
           ext === "Julia", 
           JuliaHNFWithTransform[ session, # ]&, 
-          (SparseArray @* DeleteCases[ { 0 .. } ] /@ HermiteDecomposition[#] )&
+          SparseHermiteDecomposition
         ];
 
       printlog[ "RBSVHD:hermitestart", { procID, ext } ];
