@@ -502,8 +502,6 @@ SymmetryEquivalentQ[ ring_FusionRing, symmetries_Association, opts:OptionsPatter
     False
   ];
   
-
-
 SymmetryEquivalentQ[ ring_FusionRing, gaugeMat_?MatrixQ, opts:OptionsPattern[] ][ sol1_, sol2_ ] :=
   SymmetryEquivalentQ[ ring, SparseHermiteDecomposition @ gaugeMat, opts ][ sol1, sol2 ];
 
