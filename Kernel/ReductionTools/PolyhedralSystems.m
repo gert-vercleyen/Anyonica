@@ -621,8 +621,6 @@ Module[
   nonSingularQ = OptionValue["NonSingular"];
   useSumsQ     = OptionValue["FindZerosUsingSums"];
   preEqCheck   = OptionValue["PreEqualCheck"];
-  useDBQ       = OptionValue["UseDatabaseOfSmithDecompositions"];
-  storeDecompQ = OptionValue["StoreDecompositions"];
   subsSol      = OptionValue["InjectSolution"];
   knowns       = OptionValue["KnownSymbols"];
 
