@@ -186,7 +186,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         If[ (* If all variables are known *)
           Length[ remainingVars ] === 0
           , (* THEN: solution is trivial *) 
-          Throw @ { AddExtraInfo @ {} }
+          Throw @ { AddExtraInfo @ {} /.revertVars }
         ];
 
         FilterSolutions[ soln_ ] :=
