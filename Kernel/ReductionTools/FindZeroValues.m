@@ -450,11 +450,11 @@ ZeroValuesFromReduce[ prop_, reducedVars_ ] :=
     reducedVars,
     Integers
   ]//
-  ReplaceAll[ {Holdpattern[a_->0]:>a->False, HolpPattern[a_->1]:>a->True } ];
+  ReplaceAll[ {Holdpattern[a_->0]:>a->False, HoldpPattern[a_->1]:>a->True } ];
 
 CCodeZeroValues[ prop_, reducedVars_ ] :=
   SolveDiophantineSystem[ PropToEqns @ prop, reducedVars, { 0, 1 } ]//
-  ReplaceAll[ {Holdpattern[a_->0]:>a->False, HolpPattern[a_->1]:>a->True } ];
+  ReplaceAll[ {Holdpattern[a_->0]:>a->False, HoldpPattern[a_->1]:>a->True } ];
 
 Options[ReduceViaLogic] = 
   {
