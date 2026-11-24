@@ -550,7 +550,7 @@ TwistFactorEquations[ cat_FusionCategory, twistFactors_ ] :=
 Module[
   { t, d, a, b, c, rs },
   t  = Exp[ 2 Pi I twistFactors ][[#]]&;
-  d  = QuantumDimensions[cat][[#]]&;
+  d  = Values[QuantumDimensions[cat]][[#]]&;
   rs = Keys @ RSymbols[cat];
 
   TEL[
