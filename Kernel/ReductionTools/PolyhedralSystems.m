@@ -610,9 +610,9 @@ Union[
 PreparePentagonSolverInput[ ring_FusionRing?FusionRingQ, opts:OptionsPattern[] ] :=
 Module[
   {
-    binEqns, gaugeSymmetries, pentEqns, sumEqns, invMats, extraFixedFs, zeros, fSymbols, tower,
+    gaugeSymmetries, pentEqns,  invMats, extraFixedFs, zeros, fSymbols,
     unionZeros, sharedVars, remainingSym, specificSym, specificFixedFs,
-    g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, useDBQ, storeDecompQ,
+    g, dz, solutions, time, procID, gaugeDemands, zeroValues, nonSingularQ, preEqCheck, storeDecompQ,
     subsSol, inject, compatibleSol,sRing, sSol, allFSymbols, vacuumSymbols, useSumsQ, newBinEqns, newSumEqns,
     neverZeroBinEqns, knowns
   },
