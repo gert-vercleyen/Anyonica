@@ -65,7 +65,7 @@ SolveModZSpace[ mat_?MatrixQ, vec_List, opts:OptionsPattern[] ] :=
           If[ 
             MemberQ[ vec, x_/; simplify[x] != 0 ],
             Return[ { {}, {{}}, {{}} } ],
-            Return[ { {}, {{}}, IdentityMatrix @ First @ Dimensions @ mat } ]
+            Return[ { {}, {{}}, IdentityMatrix @ Last @ Dimensions @ mat } ]
           ]
         ];
 
