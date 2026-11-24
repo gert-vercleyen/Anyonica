@@ -290,7 +290,7 @@ ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] :=
     (* Check for trivial system *)
     If[ 
       eqns === {},
-      Return @ <| "Polynomials" -> {0}, "Assumptions" -> True, "Values" -> Thread[vars->vars] |>
+      Return @ <| "Polynomials" -> {}, "Assumptions" -> True, "Values" -> Thread[vars->vars] |>
     ];
 
     { t, result } = 
