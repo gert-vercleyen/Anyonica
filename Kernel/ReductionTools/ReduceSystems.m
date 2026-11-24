@@ -274,15 +274,24 @@ Options[ReduceBinSysHermite] :=
 ReduceBinSysHermite::badopt = 
   "Option \"ExternalEvaluation\" should be either None or \"Julia\"."
 
-ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] := 
+ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] := 
   Module[ { session, invalidSys, semilinsys, procID, rhs, th,  newRHS, 
     u, h, mat, t, result, check, x, sess, ext, checkValidity, neweqns, newvars, revertvars,
     hnf, rank }, 
 
-    procID  = ToString @ Unique[];
-    check   = OptionValue["PreEqualCheck"];
-    sess    = OptionValue["Session"];
-    ext     = OptionValue["ExternalEvaluation"];
+    procID   = ToString @ Unique[];
+    check    = OptionValue["PreEqualCheck"];
+    sess     = OptionValue["Session"];
+    ext      = OptionValue["ExternalEvaluation"];
+    simplify = OptionValue["SimplifyIntermediateResultsBy"]; 
+
+    eqns = TEL @ Map[ simplify, preEqns ]; 
+
+    (* Check for trivial system *)
+    If[ 
+      eqns === {},
+      Return @ <| "Polynomials" -> {0}, "Assumptions" -> True, "Values" -> Thread[vars->vars] |>
+    ];
 
     { t, result } = 
     AbsoluteTiming[
