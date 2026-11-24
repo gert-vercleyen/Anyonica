@@ -589,17 +589,16 @@ SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
 
 PackageExport["PSymbols"]
 
-(* PivotalSymbols *)
-PSymbols[ r_FusionRing ] := 
-  Array[ \[ScriptP], Rank @ r ];
+P = \[ScriptP];
 
-PSymbols[ c_FusionCategory ] :=
-  PivotalStructure[ c ];
+(* PivotalSymbols *)
+PSymbols[ r_FusionRing ] := Array[ P, Rank @ r ];
+
+PSymbols[ c_FusionCategory ] := PivotalStructure[ c ];
 
 PackageExport["FilterPRules"]
 
-FilterPRules[ l_List ] := 
-  Cases[ l, HoldPattern[ \[ScriptP][_] -> _ ] ];
+FilterPRules[ l_List ]  = FilterRules[ #, P[_] ]&;
 
 (* Formatting of symbols *)
 (*
