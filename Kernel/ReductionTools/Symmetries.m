@@ -1597,6 +1597,29 @@ With[
   ]
 ];
 
+mL[g_Symbol][ symFMat_ ] :=
+  With[{
+    a = symFMat[[1,1,1]], b = symFMat[[1,1,2]], c = symFMat[[1,1,3]], d = symFMat[[1,1,4]],
+    eLabels = Diagonal[symFMat][[;;,5]]
+    },
+    DiagonalMatrix @
+    Table[
+      g[a,b,e] g[e,c,d],
+      { e, eLabels }
+    ]
+  ];
+
+mR[g_Symbol][ symFMat_ ] :=
+  With[{
+    a = symFMat[[1,1,1]], b = symFMat[[1,1,2]], c = symFMat[[1,1,3]], d = symFMat[[1,1,4]],
+    fLabels = Diagonal[symFMat][[;;,6]]
+    },
+    DiagonalMatrix @
+    Table[
+      g[a,f,d] g[b,c,f],
+      { f, fLabels }
+    ]
+  ];
 
 PackageExport["WhichGaugeTransform"]
 
