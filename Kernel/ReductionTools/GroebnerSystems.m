@@ -89,7 +89,7 @@ Module[
   Composition[
     OptionValue["SimplifyIntermediateResultsBy"],
     If[
-      OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
+      OptionValue["ReduceRoots"] && MemberQ[ pols, _Root, Infinity ],
       SafeRootReduce,
       Identity
     ],
