@@ -179,9 +179,11 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
       (* Refine shared solutions by using remaining equations with 0-values inserted *)
       Reap[
         With[{
-          ums = UpdateMultiplicativeSymmetries,
-          uim = UpdateInvertibleMatrices,
-          uc  = UpdateConstraints
+           constr =
+            AddOptions[opts][UpdateConstraints][
+              { polConstraints, invertibleMats },
+              Join[ Normal @ z, ss, updateNonSharedVars ]
+            ]
           },
           Do[
             newVars =
@@ -202,8 +204,8 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
                   Join[ newVars, updateNonSharedVars[[;;,2]] ],
                   param,
                   "Symmetries" -> ums[ symmetries, z, newVars, updateNonSharedVars ] ,
-                  "InvertibleMatrices" ->  uim[ uim[ invertibleMats, z ], ss ],
-                  "PolynomialConstraints" -> uc[ uc[ invertibleMats, z ], ss ]
+                  "InvertibleMatrices" -> constr[[1]],
+                  "PolynomialConstraints" -> constr[[2]] 
                 ]
               },
               If[ (* There are solutions *)
