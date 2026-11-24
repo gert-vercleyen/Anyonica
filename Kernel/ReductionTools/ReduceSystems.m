@@ -854,6 +854,9 @@ Module[
       $Aborted
     ];
 
+  AppendAtFirst[x_][l_List] := 
+    { Append[x] @ l[[1]], l[[2]], l[[3]] };
+
   (* Add denominators appearing in the rules to the set of nonzero pols *)
   AddNonZeroPols[ pols_, nonZeroPols_, rules_ ] :=
   With[
@@ -920,7 +923,7 @@ Module[
 
       (* ASSUME DENOMINATOR == 0 *)
       printlog[ "RBL:reduction", { id, denom, s } ];
-      RecursiveReduce @@ ReduceSystem[ Append[denom] @ ps, nzps, rs, denom ]
+      RecursiveReduce @@ AppendAtFirst[ps] @ ReduceSystem[ nzps, rs, denom ]
     ]
   ];
 
