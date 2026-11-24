@@ -48,8 +48,8 @@ FusionCategory /: TensorProduct[ cat1: FusionCategory[_], cat2: FusionCategory[_
     zerotoa[ fs_ ] := MapAt[ ReplaceAll[ 0 -> a ], fs, {All,2} ];
     atozero[ fs_ ] := Normal @ fs /. a -> 0;
 
-    sF1 = SparseArray[ subzero @ FSymbols @ cat1 /. F -> List, { r1, r1, r1, r1, r1, r1 } ];
-    sF2 = SparseArray[ subzero @ FSymbols @ cat2 /. F -> List, { r2, r2, r2, r2, r2, r2 } ];
+    sF1 = SparseArray[ zerotoa @ FSymbols @ cat1 /. F -> List, { r1, r1, r1, r1, r1, r1 } ];
+    sF2 = SparseArray[ zerotoa @ FSymbols @ cat2 /. F -> List, { r2, r2, r2, r2, r2, r2 } ];
     fSymbols = 
       simplify @ 
       atozero @
