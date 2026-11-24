@@ -60,8 +60,6 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     invertibleMats = OptionValue["InvertibleMatrices"];
     polConstraints = OptionValue["PolynomialConstraints"];
     zeroValues     = OptionValue["ZeroValues"];
-    useDataBase    = OptionValue["UseDatabaseOfSmithDecompositions"];
-    storeDecomps   = OptionValue["StoreDecompositions"];
     preEqCheck     = OptionValue["PreEqualCheck"];
     
     filteredEqns = TEL @ eqnList;
@@ -275,8 +273,6 @@ Options[SolveNonSingularBinomialSystem] :=
       "InvertibleMatrices" -> {},
       "PolynomialConstraints" -> {},
       "PreEqualCheck" -> Identity,
-      "UseDatabaseOfSmithDecompositions" -> False,
-      "StoreDecompositions" -> False,
       "SimplifyIntermediateResultsBy" -> Identity,
       "DivideAndConquer" -> True
     },

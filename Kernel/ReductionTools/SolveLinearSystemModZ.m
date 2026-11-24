@@ -51,8 +51,7 @@ SolveModZSpace[ mat_?MatrixQ, vec_List, opts:OptionsPattern[] ] :=
           Return[ { {}, {{}}, {{}} } ]
         ];
 
-        { u, d, v } =
-          SmithDecomposition[ mat ];
+        { u, d, v } = SparseSmithDecomposition @ mat;
 
         printlog["SMZS:decomposition", {procID,{u,d,v}}];
 
@@ -199,7 +198,7 @@ IntegerOrthogonalSpace[ mat1_, mat2_ ] :=
     ,
     True
     ,
-      With[{ HD = HermiteDecomposition[ Transpose[ mat1 ] .  mat2 ] },
+      With[{ HD = SparseHermiteDecomposition[ Transpose[ mat1 ] .  mat2 ] },
           ( mat1 . Transpose[ HD[[1]] ] )[[ ;;, FirstZeroRowPos[ HD[[2]] ];; ]]
       ]
   ];
@@ -226,8 +225,6 @@ SolveSemiLinModZ::nonintegermatrix =
 Options[SolveSemiLinModZ] =
   {
     "OrthogonalTo" -> None,
-    "UseDatabaseOfSmithDecompositions" -> False,
-    "StoreDecompositions" -> False,
     "PreEqualCheck" -> Identity,
     "SimplifyIntermediateResultsBy" -> Identity
   };
@@ -257,13 +254,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
         Return[ {} ]
       ];
 
-      { u, d, v } =
-        If[
-          OptionValue["UseDatabaseOfSmithDecompositions"],
-          LoadData["SmithDecompositions"];
-          AddOptions[opts][MemoizedSmithDecomposition][ mat ],
-          SmithDecomposition[ mat ]
-        ];
+      { u, d, v } = SparseSmithDecomposition @ mat;
 
       printlog["SSES:decomposition", {procID,{u,d,v}}];
 
@@ -683,26 +674,13 @@ FactorListToSparseInput[ list_, i_, s_ ] :=
 PackageExport["ReduceSemiLinModZ"]
 
 Options[ReduceSemiLinModZ] := 
-  Join[
-    Options[ConsistentQ],
-    {
-      "UseDatabaseOfHermiteDecompositions" -> True,
-      "StoreHermiteDecompositions" -> False
-    }
-  ];
+    Options[ConsistentQ];
 
 ReduceSemiLinModZ[ mat_, rhs_, s_, opts:OptionsPattern[]  ] := 
   Module[{ uInv, upperTriang, leftHandSides, rightHandSides },
     
     { uInv, upperTriang  } =
-      Normal @ 
-      If[
-        OptionValue["UseDatabaseOfHermiteDecompositions"]
-        ,
-        AddOptions[opts][MemoizedHermiteDecomposition][ mat ]
-        ,
-        HermiteDecomposition[mat]
-      ];
+      Normal @ SparseHermiteDecomposition[mat];
 
     (* rank of system *)
     r = 

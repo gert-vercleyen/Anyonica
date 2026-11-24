@@ -34,10 +34,6 @@ SolvePolynomialSystem[ eqns_List, vars_List, symbol_, opts:OptionsPattern[] ] :=
       OptionValue["SimplifyIntermediateResultsBy"];
     preEqCheck =
       OptionValue["PreEqualCheck"];
-    useDataBase =
-      OptionValue["UseDatabaseOfSmithDecompositions"];
-    storeDecomps =
-      OptionValue["StoreDecompositions"];
     procID =
       ToString[ Unique[] ];
     s =
@@ -75,9 +71,7 @@ SolvePolynomialSystem[ eqns_List, vars_List, symbol_, opts:OptionsPattern[] ] :=
           "NonSingular" -> nonSingularQ,
           "ZeroValues" -> newZeroVals,
           "SimplifyIntermediateResultsBy" -> simplify,
-          "PreEqualCheck" -> preEqCheck,
-          "UseDatabaseOfSmithDecompositions" -> useDataBase,
-          "StoreDecompositions" -> storeDecomps
+          "PreEqualCheck" -> preEqCheck
         ];
 
       constraints =

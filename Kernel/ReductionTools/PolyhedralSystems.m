@@ -599,8 +599,6 @@ Union[
     "ZeroValues" -> None,
     "NonSingular" -> False,
     "PreEqualCheck" -> Identity,
-    "UseDatabaseOfSmithDecompositions" -> False,
-    "StoreDecompositions" -> True,
     "InjectSolution" -> {},
     "FindZerosUsingSums" -> True,
     "KnownSymbols" -> {} 
