@@ -478,13 +478,11 @@ Protect[ \[ScriptCapitalR] ];
 
 PackageScope["R"]
 
-R =
-\[ScriptCapitalR];
+R = \[ScriptCapitalR];
 
 PackageExport["FilterRRules"]
 
-FilterRRules =
-FilterRules[ #, R[__] ]&;
+FilterRRules = FilterRules[ #, R[__] ]&;
 
 PackageScope["ProperHexagonSolutionQ"]
 
