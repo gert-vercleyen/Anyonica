@@ -1099,7 +1099,7 @@ Options[ConsistentQ] :=
     "PreEqualCheck" -> Identity
   };
 
-ConsistentQ[ r_, rhs_, test_, opts:OptionsPattern[] ] :=
+ConsistentQ[ r_Integer, rhs_List, test_, opts:OptionsPattern[] ] :=
 	Module[ { FirstFailure, firstFail, check, procID, t, problemQ },
 		check = OptionValue["PreEqualCheck"];
 
