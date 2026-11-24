@@ -377,7 +377,7 @@ SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:Op
         ];
 
       If[
-        semiLinearSystem === "Inconsistent" ||
+        First[semiLinearSystem] === "Zero" || First[semiLinearSystem] == "False" ||
         MemberQ[0] @ preEqCheck @ semiLinearSystem[[2]], 
         printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
         Return @ {}
