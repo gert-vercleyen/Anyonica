@@ -735,7 +735,7 @@ Join[
   {
     "SimplifyIntermediateResultsBy" -> Identity,
     "ReduceByLinearityMaxMemoryFactor" -> .9,
-    "Parallel" -> False
+    "PreEqualCheck" -> Identity
   },
   Options[SimplestLinearRule]
 ];
