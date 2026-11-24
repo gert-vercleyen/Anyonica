@@ -748,26 +748,16 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
 Module[
   {
     ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
-    ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, parallelQ, map, maxMemFactor
+    ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, maxMemFactor
   },
   maxMemFactor = OptionValue["ReduceByLinearityMaxMemoryFactor"];
   simplify     = OptionValue["SimplifyIntermediateResultsBy"];
-  parallelQ    = OptionValue["Parallel"];
+  check        = OptionValue["PreEqualCheck"];
   
   procID = ToString @ Unique[];
   id    := ToString @ Unique[];
   vars   = GetVariables[ polList, s ];
   RCF    = RemoveCommonFactors[ #, s ]&;
-
-  If[
-    parallelQ
-    ,
-    Quiet[LaunchKernels[]];
-    map =
-    ParallelMap
-    ,
-    map = Map
-  ];
 
   rootReduce = (* TODO: might want to give user the option to turn this off *)
     If[
@@ -792,9 +782,6 @@ Module[
 
   PolRest[ pol_, ps_ ] :=
     RCF @ PolynomialReduce[ pol, ps, vars ][[2]];
-
-  (* Make sure all Kernels know the definitions of the functions to be mapped *)
-  If[ parallelQ, DistributeDefinitions[ RCF, simplify, ToPol, PolRest, GetVariables ] ];
 
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, rules_  ] :=
@@ -831,8 +818,8 @@ Module[
   UpdateSystem[ pols_, nonZeroPols_, knownRules_, rule_ ] :=
     MemoryConstrained[
       {
-        TrimPolynomialList @ map[ ToPol, pols /. rule ],
-        ToPol /@ (nonZeroPols /. rule),
+        TrimPolynomialList @ Map[ ToPol, pols /. rule ],
+        DeleteCases[ ToPol /@ (nonZeroPols /. rule), c_?NumericQ /; check[c] =!= 0 ],
         Append[rule] @ Expand[ knownRules/.rule ]
       }
       ,
@@ -845,7 +832,7 @@ Module[
   ReduceSystem[ pols_, nonZeroPols_, rules_, pol_ ] :=
     MemoryConstrained[
       {
-        TrimPolynomialList @ map[ RCF[PolRest[ #, pol ]]&, pols ],
+        TrimPolynomialList @ Map[ RCF[PolRest[ #, pol ]]&, pols ],
         nonZeroPols,
         rules
       }
@@ -868,7 +855,7 @@ Module[
       rules[[;;,2]]
     },
     <|
-      "Polynomials" ->  DeleteDuplicates @ map[ Expand, pols ],
+      "Polynomials" ->  DeleteDuplicates @ Map[ Expand, pols ],
       "Assumptions" ->
       LogicalExpand @
       Reduce[
@@ -943,8 +930,6 @@ Module[
 
   printlog["Gen:results", { procID, result, time } ];
 
-  If[ parallelQ, CloseKernels[] ];
-
   result
 
 ];
@@ -999,8 +984,7 @@ Options[ReduceByLinearity2] :=
 Join[
   {
     "SimplifyIntermediateResultsBy" -> Identity,
-    "MaxMemory" -> None,
-    "Parallel" -> False
+    "MaxMemory" -> None
   },
   Options[SimplestLinearRule]
 ];
@@ -1009,39 +993,19 @@ ReduceByLinearity2[ polList_List, s_, opts:OptionsPattern[] ] :=
 Module[
   {
     vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id,
-    ReduceSystem, simplify, rootReduce, maxMemory, MonQ, PolRest,
-    MoldPol, ToAssociation, PolMod, map, parallelQ
+    ReduceSystem, simplify, maxMemory, MonQ, PolRest,
+    MoldPol, ToAssociation, PolMod 
   },
-  simplify =
-  OptionValue["SimplifyIntermediateResultsBy"];
-  maxMemory =
-  OptionValue["MaxMemory"];
-  parallelQ =
-  OptionValue["Parallel"];
+  simplify = OptionValue["SimplifyIntermediateResultsBy"];
+  maxMemory = OptionValue["MaxMemory"];
 
-  If[
-    parallelQ
-    ,
-    Quiet[LaunchKernels[]];
-    map = ParallelMap
-    ,
-    map = Map
-  ];
-
-  procID =
-  ToString @ Unique[];
-  id :=
-  ToString @ Unique[];
-  vars =
-  GetVariables[ polList, s ];
-  RCF =
-  RemoveCommonFactors[ #, s ]&;
-  MoldPol =
-  RCF @* RootReduce @* simplify @* Expand;
-  MonQ[ pol_ ] :=
-  Length[ MonomialList[ pol ] ] === 1;
-  PolRest[ pol_, ps_ ] :=
-  PolynomialReduce[ pol, ps, vars ][[2]];
+  procID =  ToString @ Unique[];
+  id :=     ToString @ Unique[];
+  vars =    GetVariables[ polList, s ];
+  RCF =     RemoveCommonFactors[ #, s ]&;
+  MoldPol = RCF @* RootReduce @* simplify @* Expand;
+  MonQ[ pol_ ] := Length[ MonomialList[ pol ] ] === 1;
+  PolRest[ pol_, ps_ ] := PolynomialReduce[ pol, ps, vars ][[2]];
 
   PolMod :=
   Function[
@@ -1050,8 +1014,6 @@ Module[
       If[ gb === {}, 0, MoldPol @ gb[[1]] ]
     ]
   ];
-
-  If[ parallelQ, DistributeDefinitions[ GetVariables, MoldPol, PolMod ] ];
 
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, linPols_  ] :=
@@ -1081,7 +1043,7 @@ Module[
       {
         DeleteDuplicates @
         DeleteCases[0] @
-        map[
+        Map[
           PolMod[ #, pol, linPol["Var"] ]&,
           pols
         ],
@@ -1103,7 +1065,7 @@ Module[
   ReduceSystem[ pols_, nonZeroPols_, linPols_, denom_ ] :=
   MemoryConstrained[
     {
-      map[ MoldPol[ PolRest[ #, denom ] ]&, pols ],
+      Map[ MoldPol[ PolRest[ #, denom ] ]&, pols ],
       nonZeroPols,
       linPols
     },
@@ -1173,8 +1135,6 @@ Module[
   ];
 
   printlog["Gen:results", { procID, result, time } ];
-
-  If[ parallelQ, CloseKernels[ ] ];
 
   result
 
