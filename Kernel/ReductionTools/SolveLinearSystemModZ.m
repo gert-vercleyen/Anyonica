@@ -272,11 +272,9 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
         ]
       ];
 
-      expRHS =
-        PowerDot[ vec, u ];
+      expRHS = PowerDot[ vec, u ];
 
-      consistent =
-        AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
+      consistent = AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
       
       If[ !consistent, Return @ { } ];
 
@@ -398,8 +396,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
       Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
     ];
     
-    probPos =
-      FirstPosition[ properEqns, False, Missing[], 1 ];
+    probPos = FirstPosition[ properEqns, False, Missing[], 1 ];
     
     If[ 
       ! MissingQ[probPos], 
