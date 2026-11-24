@@ -296,7 +296,7 @@ CheckArgsNonSingularSys[ eqns_, vars_ ][ code_ ] :=
     code
   ];
 
-SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
+SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
   CheckArgsNonSingularSys[ eqns, vars] @
   Module[
     {
@@ -304,23 +304,22 @@ SolveNonSingularBinomialSystem[ eqns_?BinomialSystemQ, vars_, param_, opts:Optio
       gaugeMat, polConstraints, symmetries, invertibleMats, preEqCheck, symbol, eqnList, procID,
       internalParam, result, absTime, invalidPos, reducedSystem, semiLinearSystem
     },
-    polConstraints =
-      OptionValue["PolynomialConstraints"];
-    symmetries =
-      OptionValue["Symmetries"];
-    invertibleMats =
-      OptionValue["InvertibleMatrices"];
-    preEqCheck =
-      OptionValue["PreEqualCheck"];
+    polConstraints = OptionValue["PolynomialConstraints"];
+    symmetries = OptionValue["Symmetries"];
+    invertibleMats = OptionValue["InvertibleMatrices"];
+    preEqCheck = OptionValue["PreEqualCheck"];
+    simplify = OptionValue["SimplifyIntermediateResultsBy"];
 
-    symbol =
-      Unique["x"];
-    internalParam =
-      Unique["z"];
-    eqnList =
-      DeleteCases[True] @ eqns;
-    procID =
-      ToString[Unique[]];
+    symbol = Unique["x"];
+    internalParam = Unique["z"];
+    eqnList = DeleteCases[True] @ eqns;
+    procID = ToString[Unique[]];
+
+    (* Check for trivial system *)
+
+    eqns = TEL @ Map[ Expand @* simplify, preEqns ]; 
+
+    If[ eqns === {}, Return @ Thread[ vars -> Array[ param, Length @ vars ] ] ];
 
     printlog["SNSBS:init", {procID, eqnList, vars, param, {opts}}];
 
