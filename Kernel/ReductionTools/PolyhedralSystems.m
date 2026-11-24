@@ -858,8 +858,7 @@ Module[
 
       Reap[
         Do[
-          dz =
-          Dispatch[z];
+          dz = Dispatch[z];
 
           { specificSym, specificFixedFs } =
             BreakMultiplicativeSymmetry[
@@ -1138,8 +1137,7 @@ Module[{
         ]
       ];
 
-    reducedSystems1 =
-      Flatten[ ReduceSystems /@ systems ];
+    reducedSystems1 = Flatten[ ReduceSystems /@ systems ];
 
     detconditions = DeterminantConditions[ FMatrices[ring] ~ WithMinimumDimension ~ 2 ];
 
@@ -1149,8 +1147,7 @@ Module[{
     printlog["MFPGS:systems", { procID, reducedSystems1 } ];
 
     (* If only 1 variable remains it is often faster to solve the system directly *)
-    reducedSystems2 =
-      Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
+    reducedSystems2 = Flatten[ QuickSolve[ #, var ]& /@ reducedSystems1 ];
 
     printlog["MFPGS:quicksolve", { procID, reducedSystems2 } ];
 
