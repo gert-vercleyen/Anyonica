@@ -388,8 +388,14 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
       ];
     
     (* Check for zeros and False *)
-    probPos =
-      FirstPosition[ properEqns, n_Equal /; preEqCheck[Subtract @@ n] == 0, Missing[], 1 ];
+    probPos = 
+      FirstPosition[ 
+        properEqns, 
+        n_Equal /; 
+        Expand @ preEqCheck[Subtract @@ n] == 0, 
+        Missing[], 
+        1 
+      ];
     
     If[ 
       !MissingQ[probPos], 
