@@ -364,7 +364,6 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
   CheckBinToSemiLinArgs[ eqns, Length[vars] ];
   Module[ { properEqns, sa, betr, tpbe, simplify, probPos, numeric, accuracy, preEqCheck },
     
-    
     simplify   = OptionValue["SimplifyIntermediateResultsBy"];
     numeric    = OptionValue["Numeric"];
     accuracy   = OptionValue["Accuracy"];
