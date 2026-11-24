@@ -1351,7 +1351,6 @@ Options[ToSymmetricGauge] =
   "Accuracy" -> 64,
   "SimplifyBy" -> Identity,
   "ReturnGaugeTransform" -> False,
-  "UseDatabaseOfSmithDecompositions" -> False,
   "PreEqualCheck" -> Identity,
   "UnitaryGaugeTransform" -> False,
   "GaugeDemands" -> {},
@@ -1383,7 +1382,6 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
     acc = OptionValue["Accuracy"];
     numericQ = OptionValue["Numeric"];
     simplify = OptionValue["SimplifyBy"];
-    useDataBaseQ = OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck =
       If[
         numericQ,
