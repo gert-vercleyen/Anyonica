@@ -391,7 +391,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
       FirstPosition[ 
         properEqns, 
         n_Equal /; 
-        Expand @ preEqCheck[Subtract @@ n] == 0, 
+        TrueQ[Expand @ preEqCheck[Subtract @@ n] == 0], 
         Missing[], 
         1 
       ];
