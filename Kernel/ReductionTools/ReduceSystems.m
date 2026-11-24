@@ -275,7 +275,7 @@ ReduceBinSysHermite::badopt =
   "Option \"ExternalEvaluation\" should be either None or \"Julia\"."
 
 ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] := 
-  Module[ { session, invalidSys, semilinsys, procID, rhs, th,  newRHS, 
+  Module[ { eqns, session, invalidSys, semilinsys, procID, rhs, th,  newRHS, 
     u, h, mat, t, result, check, x, sess, ext, checkValidity, neweqns, newvars, revertvars,
     hnf, rank }, 
 

@@ -300,7 +300,7 @@ SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:Op
   CheckArgsNonSingularSys[ eqns, vars] @
   Module[
     {
-      newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
+      eqns, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
       gaugeMat, polConstraints, symmetries, invertibleMats, preEqCheck, symbol, eqnList, procID,
       internalParam, result, absTime, invalidPos, reducedSystem, semiLinearSystem
     },
