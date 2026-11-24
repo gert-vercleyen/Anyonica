@@ -37,7 +37,7 @@ SparseSmithDecomposition[ m_ ] :=
   Module[{ u, d, v },
     { u, d, v } = JAVASparseSmithDecomposition @ m;
     If[ 
-      TrueQ[ u.m.v == d && Abs[Det[v]] == 1 && Abs[Det[u]] == 1 ],
+      TrueQ[ u.m.v == d ],
       Return @ {u,d,v},
       Message @ SparseSmithDecomposition::javafailed;
       Return @ SmithDecomposition[m]
@@ -145,7 +145,7 @@ SparseHermiteDecomposition[ m_ ] :=
   Module[{ u, h },
     { u, h } = JAVASparseHermiteDecomposition @ m;
     If[ 
-      TrueQ[ u.m == h && Abs[Det[u]] == 1 ],
+      TrueQ[ u.m == h ],
       Return @ {u,h},
       Message @ SparseHermiteDecomposition::javafailed;
       Return @ HermiteDecomposition[m]
