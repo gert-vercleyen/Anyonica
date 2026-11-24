@@ -268,7 +268,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
         If[ 
           MemberQ[ vec, x_/; simplify[x] != 1 ],
           Return[{}],
-          Return[param /@ Range @ Length @ First @ Dimensions @ mat ]
+          Return[param /@ Range  @ Last @ Dimensions @ mat ]
         ]
       ];
 
