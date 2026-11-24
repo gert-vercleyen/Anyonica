@@ -400,14 +400,6 @@ SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:Op
         Return @ {}
       ];
       
-      (* Check for inconsistency solution set *)
-      If[
-        StringQ[ First @ preSolutions ],
-        printLog["SNSBS:has_false_or_zero_2", { procID, newEqns, preSolutions } ];
-        printLog["SNSBS:no_solutions_log_mon", { procID } ];
-        Return @ {}
-      ];
-      
       constraints =
         Join[
           newPolConstraints,
