@@ -1482,12 +1482,7 @@ ToSymmetricGauge[ ring_, FSymb_, opts:OptionsPattern[] ] :=
           ]
         ];
 
-        { mU, mD, mV } =
-          If[
-            useDataBaseQ,
-            AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
-            SmithDecomposition @ binomialMat
-          ];
+        { mU, mD, mV } = SparseSmithDecomposition @ binomialMat;
 
         printlog["TSG:decomposition",{procID,{mU,mD,mV}}];
 
@@ -1621,7 +1616,6 @@ Options[WhichGaugeTransform] :=
   "OnlyMatchAbsoluteValues" -> False,
   "Numeric" -> False,
   "Accuracy" -> 64,
-  "UseDatabaseOfSmithDecompositions" -> False,
   "PreEqualCheck" -> Identity,
   "SimplifyBy" -> Identity
 };
@@ -1651,7 +1645,6 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
     acc          = OptionValue["Accuracy"];
     numericQ     = OptionValue["Numeric"];
     simplify     = OptionValue["SimplifyBy"];
-    useDataBaseQ = OptionValue["UseDatabaseOfSmithDecompositions"];
     preEqCheck   = OptionValue["PreEqualCheck"];
     onlyAbsQ     = OptionValue["OnlyMatchAbsoluteValues"];
     procID       = ToString[Unique[]];
@@ -1737,12 +1730,7 @@ WhichGaugeTransform[ ring_, sol1_, sol2_, g_, opts:OptionsPattern[] ] :=
             "SimplifyIntermediateResultsBy" -> simplify
           ];
 
-        { mU, mD, mV } = 
-          If[
-            useDataBaseQ,
-            AddOptions[opts][MemoizedSmithDecomposition][ binomialMat ],
-            SmithDecomposition @ binomialMat
-          ];
+        { mU, mD, mV } = SparseSmithDecomposition @ binomialMat;
 
         printlog["WGT:decomposition",{procID,{mU,mD,mV}}];
 
