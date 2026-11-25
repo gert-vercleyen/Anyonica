@@ -178,49 +178,51 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
 
       (* Refine shared solutions by using remaining equations with 0-values inserted *)
       Reap[
-        With[{
-           constr =
-            AddOptions[opts][UpdateConstraints][
-              { polConstraints, invertibleMats },
-              Join[ Normal @ z, ss, updateNonSharedVars ]
-            ]
-          },
-          Do[
-            newVars =
-              GetVariables[ ss, s1 ];
-            
-            updateNonSharedVars =
-              With[{
-                nonSharedVars = Complement[ vars, sharedVars, Normal[z][[;;,1]] ], (* Variables neither shared, nor 0*)
-                i0 = Length @ newVars (* Amount of new variables in solution shared system*)
-                },
-                Thread[ nonSharedVars -> Table[ s1[i], { i, i0 + 1, i0 + Length[nonSharedVars] } ] ]
-              ];
-            
+        Do[
+          newVars = GetVariables[ ss, s1 ];
+          
+          updateNonSharedVars =
             With[{
-              specificSoln =
-                SolveNonSingularBinomialSystem[
-                  DeleteCases[True] @ ( remainingEquations/.z/.ss/.updateNonSharedVars ),
-                  Join[ newVars, updateNonSharedVars[[;;,2]] ],
-                  param,
-                  "Symmetries" -> ums[ symmetries, z, newVars, updateNonSharedVars ] ,
-                  "InvertibleMatrices" -> constr[[1]],
-                  "PolynomialConstraints" -> constr[[2]] 
-                ]
+              nonSharedVars = Complement[ vars, sharedVars, Normal[z][[;;,1]] ], (* Variables neither shared, nor 0*)
+              i0 = Length @ newVars (* Amount of new variables in solution shared system*)
               },
-              If[ (* There are solutions *)
-                specificSoln =!= {},
-                (* THEN: add zeros, sort solution and throw on stack *)
-                Sow /@
-                ReplaceAll[
-                  InsertZeros[z][ Join[ ss, updateNonSharedVars] ],
-                  specificSoln
+              Thread[ nonSharedVars -> Table[ s1[i], { i, i0 + 1, i0 + Length[nonSharedVars] } ] ]
+            ];
+              
+          With[{
+            constr =
+              AddOptions[opts][UpdateConstraints][
+                { polConstraints, invertibleMats },
+                Join[ Normal @ z, ss, updateNonSharedVars ]
+              ]
+            },
+            If[ 
+              constr =!= {False},
+              With[{
+                specificSoln =
+                  SolveNonSingularBinomialSystem[
+                    DeleteCases[True] @ ( remainingEquations/.z/.ss/.updateNonSharedVars ),
+                    Join[ newVars, updateNonSharedVars[[;;,2]] ],
+                    param,
+                    "Symmetries" -> UpdateMultiplicativeSymmetries[ symmetries, z, newVars, updateNonSharedVars ] ,
+                    "PolynomialConstraints" -> constr[[1]],
+                    "InvertibleMatrices" -> constr[[2]]
+                  ]
+                },
+                If[ (* There are solutions *)
+                  specificSoln =!= {},
+                  (* THEN: add zeros, sort solution and throw on stack *)
+                  Sow /@
+                  ReplaceAll[
+                    InsertZeros[z][ Join[ ss, updateNonSharedVars] ],
+                    specificSoln
+                  ]
                 ]
               ]
-            ],
-            { z, zeros },
-            { ss, sharedSolutions }
-          ]
+            ]
+          ],
+          { z, zeros },
+          { ss, sharedSolutions }
         ]
       ][[2]] // (If[ # != {}, #[[1]], {} ]&)
     ]
