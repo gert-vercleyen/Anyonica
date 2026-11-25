@@ -301,7 +301,7 @@ CheckArgsNonSingularSys[ eqns_, vars_ ][ code_ ] :=
   ];
 
 SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
-  CheckArgsNonSingularSys[ eqns, vars] @
+  CheckArgsNonSingularSys[ preEqns, vars] @
   Module[
     {
       eqns, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
