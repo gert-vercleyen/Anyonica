@@ -747,7 +747,7 @@ Join[
 ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
 Module[
   {
-    ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
+    check, ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
     ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, maxMemFactor
   },
   maxMemFactor = OptionValue["ReduceByLinearityMaxMemoryFactor"];
