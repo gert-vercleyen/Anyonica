@@ -292,8 +292,19 @@ CheckArgsNonSingularSys[ eqns_, vars_ ][ code_ ] :=
     ,
     Length[vars] === 0
     ,
-    Message[ SolveNonSingularBinomialSystem::novars, eqns ];
-    Abort[]
+    Which[
+      TEL @ eqns === {}
+      , 
+      { { } }
+      ,
+      MemberQ[ eqns, False ]
+      ,
+      { }
+      ,
+      True
+      ,
+      Message[ SolveNonSingularBinomialSystem::novars, eqns ]; Abort[]
+    ]
     ,
     True
     ,
