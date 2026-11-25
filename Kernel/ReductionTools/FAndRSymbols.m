@@ -598,7 +598,7 @@ PSymbols[ c_FusionCategory ] := PivotalStructure[ c ];
 
 PackageExport["FilterPRules"]
 
-FilterPRules[ l_List ]  = FilterRules[ #, P[_] ]&;
+FilterPRules = FilterRules[ #, P[_] ]&;
 
 (* Formatting of symbols *)
 (*
