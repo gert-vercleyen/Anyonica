@@ -912,7 +912,7 @@ Module[
 
       (* ASSUME DENOMINATOR == 0 *)
       printlog[ "RBL:reduction", { id, denom, s } ];
-      RecursiveReduce @@ AppendAtFirst[ps] @ ReduceSystem[ ps, nzps, rs, denom ]
+      RecursiveReduce @@ AppendAtFirst[denom] @ ReduceSystem[ ps, nzps, rs, denom ]
     ]
   ];
 
