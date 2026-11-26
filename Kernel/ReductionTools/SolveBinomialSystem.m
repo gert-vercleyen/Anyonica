@@ -35,7 +35,7 @@ Options[SolveBinomialSystem] :=
 
 SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
   Module[{
-    invertibleMats, eqnList, symmetries, polConstraints, filteredEqns, preEqCheck, s1, gs,
+    invertibleMats, eqnList, symmetries, polConstraints, preEqCheck, s1, gs,
     procID, zeros, unionZeros, sharedBinomialSystem, sharedVars, sharedSolutions, remainingEquations,
     InsertZeros, UpdateMultiplicativeSymmetries, updateNonSharedVars, sharedSymmetries,
     nonSingularQ, zeroValues, newVars, result, absTime, simplify
@@ -49,7 +49,6 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
     preEqCheck     = OptionValue["PreEqualCheck"];
     simplify       = OptionValue["SimplifyIntermediateResultsBy"];
     
-    filteredEqns = TEL @ eqnList;
     s1           = Unique["x"];
     gs           = Unique["g"];
     procID       = ToString[Unique[]];
@@ -58,7 +57,7 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
     InsertZeros[zeros_][solution_] :=
       SortBy[First] @ Join[ solution, Normal @ zeros ];
 
-    printlog["SMS:init", {procID,eqnList,vars,param,{opts}}];
+    printlog["SMS:init", {procID,eqns,vars,param,{opts}}];
     
     { absTime, result } =
     AbsoluteTiming[ Catch[ 
@@ -99,7 +98,7 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
       ];
       (* Check for trivial system *)
       If[
-        filteredEqns === {},
+        eqnList === {},
         printlog["Gen:trivial_system", {procID}];
         Return[ { MapIndexed[ #1 -> param @@ #2 &, vars] } ]
       ];
@@ -123,7 +122,7 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
         (* ELSE *)
         zeros =
           ( Dispatch @* DeleteCases[ _ -> x_ /; x =!= 0 ] ) /@
-          FindZeroValues[ filteredEqns, vars,  "InvertibleMatrices" -> invertibleMats ]
+          FindZeroValues[ eqnList, vars,  "InvertibleMatrices" -> invertibleMats ]
       ];
 
       (* If there are no solutions to the Diophantine Equations then the system is inconsistent*)
@@ -140,7 +139,7 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
 
       { sharedBinomialSystem, remainingEquations } =
         BinSplit[
-          filteredEqns,
+          eqnList,
           FreeQ[ Alternatives @@ unionZeros ] @* preEqCheck
         ];
 
