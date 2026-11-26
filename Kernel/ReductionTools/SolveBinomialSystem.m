@@ -23,6 +23,11 @@ SolveBinomialSystem::nonbineqns =
 SolveBinomialSystem::notlistofvars =
   "`1` is not a list of variables.";
 
+SolveBinomialSystem::novars =
+  "Set of equations, `1`, with empty set of variables. Aborting calculations."<>
+  " If equalities are unresolved but True, then adding the option " <>
+  "\"SimplifyIntermediateResultsBy\"-> f (where f is a function that simplifies expressions) can get rid of unresolved equalities.";
+
 (* Solve a set of Binomial equations with possible symmetry *)
 Options[SolveBinomialSystem] :=
   Join[
@@ -65,14 +70,14 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
       (* Check arguments *)
       If[ 
         MemberQ[ eqns, False ], 
-        printlog["SNSBS:has_false_or_zero", {procID, Expand[eqns]}];
+        printlog["Gen:has_False", {procID, Expand[eqns]}];
         Return @ { } 
       ]; 
 
       If[ 
         !BinomialSystemQ[ eqns ]
         ,
-        Message[ SolveNonSingularBinomialSystem::nonbineqns, eqns ];
+        Message[ SolveBinomialSystem::nonbineqns, eqns ];
         Abort[]
       ];
 
@@ -88,12 +93,12 @@ SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
           ,
           MemberQ[ eqnList, False ]
           ,
-          printlog["SNSBS:has_false_or_zero", {procID, Expand @ eqnList }];
+          printlog["Gen:has_False", {procID, Expand @ eqnList }];
           Return @ { }
           ,
           True
           ,
-          Message[ SolveNonSingularBinomialSystem::novars, eqnList ]; Abort[]
+          Message[ SolveBinomialSystem::novars, eqnList ]; Abort[]
         ]
       ];
       (* Check for trivial system *)
