@@ -128,8 +128,8 @@ If[
           { c, d } = label2[[{ 2, 3 }]];
           mult2 = multTab[[ e, c, d ]];
           Do[
-            mult3 = multTab[[ b, c, f ]];
-            mult4 = multTab[[ a, f, d ]];
+            mult3 = multTab[[ a, f, d ]];
+            mult4 = multTab[[ b, c, f ]];
             If[
               mult3 mult4 != 0,
               Sow@
@@ -174,44 +174,45 @@ If[
 PackageExport["FMatrices"]
 
 FMatrices::usage =
-"FMatrices[ring] returns a list of symbolic F-matrices.";
+  "FMatrices[ring] returns a list of symbolic F-matrices.";
 
 FMatrices::notmultfree =
-"`1` should have multiplicity 1. Use FTensors for higher multiplicities.";
+  "`1` should have multiplicity 1. Use FTensors for higher multiplicities.";
 
 (* Create symbolic F matrices *)
 FMatrices[ ring_FusionRing?FusionRingQ ] :=
-If[
-  Mult[ ring ] != 1
-  ,
-  Message[ FMatrices::notmultfree, ring ];
-  Abort[]
-  ,
-  Module[{ sparseF, r, newMat, mats },
-    r = Rank[ring];
-    sparseF = SparseFTensor[ring];
-    mats =
-    Reap[
-      Do[
-        If[
-          ( newMat =
-          Normal[sparseF][[a,b,c,d,;;,;;]] //
-          RemoveZeroColumns //
-          RemoveZeroRows
-          )
-          =!= {{}} && newMat =!= {{1}},
-          Sow[ newMat ]
-        ],
-        { a, r }, { b, r }, { c, r }, { d, r }
+  If[
+    Mult[ ring ] != 1
+    ,
+    Message[ FMatrices::notmultfree, ring ];
+    Abort[]
+    ,
+    Module[{ nsparseF, sparseF, r, newMat, mats },
+      r = Rank[ring];
+      sparseF = SparseFTensor[ring];
+      nsparseF = Normal @ sparseF;
+      mats =
+      Reap[
+        Do[
+          If[
+            ( newMat =
+            nsparseF[[a,b,c,d,;;,;;]] //
+            RemoveZeroColumns //
+            RemoveZeroRows
+            )
+            =!= {{}} && newMat =!= {{1}},
+            Sow[ newMat ]
+          ],
+          { a, r }, { b, r }, { c, r }, { d, r }
+        ]
+      ][[2]];
+      If[
+        mats == {},
+        {},
+        Flatten[ mats, 1 ]
       ]
-    ][[2]];
-    If[
-      mats == {},
-      {},
-      Flatten[ mats, 1 ]
     ]
-  ]
-];
+  ];
 
 RemoveZeroRows[ mat_?MatrixQ ] :=
 With[{ newMat = DeleteCases[ { 0 .. } ] @ mat },
@@ -347,115 +348,6 @@ Module[
   ][[2, 1]]
 ];
 
-(* From: https://journals.aps.org/prb/pdf/10.1103/PhysRevB.102.115154 *)
-
-(* TODO: this one contains a bug: For HI(Z_3) F-symbols appear that don't 
-exist in the first place!!! *)
-TetrahedralSymmetries::usage =
-"TetrahedralSymmetries[r] returns a list of rules that maps each F-symbol of the fusion ring to a "<>
-"representative that is equal via a tetrahedral symmetry.\n"<>
-"TetrahedralSymmetries[r,l] returns a list of rules that maps each F-symbol in the list l to a" <>
-"representative that is equal via a tetrahedral symmetry.";
-
-Options[TetrahedralSymmetries] :=
-{
-  "PreEqualCheck" -> Identity
-};
-
-TetrahedralSymmetries[ r_FusionRing, opts:OptionsPattern[] ] :=
-  TetrahedralSymmetries[ r, FSymbols @ r, opts ];
-
-TetrahedralSymmetries[ r_FusionRing, l_List, opts:OptionsPattern[] ] :=
-  Cases[
-    Sort[
-      FixRule[ OptionValue["PreEqualCheck"] ] /@
-      DeleteCases[ a_ -> a_ ] @
-      BuildSymmetries[ Flatten[ TSOrbit[r] /@ l ], { }, OptionValue["PreEqualCheck"] ]
-    ],
-    ( a_ -> b_ ) /; NumericQ[b] || MemberQ[ l, b ] (* Want symmetry transforms to stay in our list *)
-  ];
-
-TSOrbit[ ring_FusionRing ][ symb:F[j_,k_,l_,i_,m_,n_] ] :=
-With[ { d = CC[ring], qd = FrobeniusPerronDimensions[ring][[#]]& },
-  DeleteDuplicates[
-    (
-      DeleteCases[
-        {
-          symb -> F[ k, j, d[i], d[l], m, d[n] ],
-          symb -> F[ d[i], l, k, d[j], d[m], n ],
-          symb -> F[ d[m], k, d[n], d[i], d[j], d[l] ] Sqrt[ qd[m] qd[n] / ( qd[j] qd[l] ) ]
-        }/.$VacuumFPattern -> 1,
-        1 -> 1
-      ]/.( 1 -> a_?NumericQ ) :> Throw[ 1 -> a ])/. ( 1 -> a_ ) :> FixLHS[ a -> 1 ]
-  ]
-];
-
-BuildSymmetries[ {}, sym_, check_  ] :=
-  sym;
-
-BuildSymmetries[ rules_, sym_, check_ ] :=
-With[{ firstRule = First @ rules, restRules = Rest @ rules },
-  BuildSymmetries[
-    DeleteDuplicates[
-      FixRule[check] /@ DeleteCases[ restRules /. firstRule, a_ -> a_ ]
-    ],
-    Append[firstRule] @ ( sym /. firstRule ),
-    check
-  ]
-];
-
-
-FixRule[ check_ ][ a_ -> b_ ] :=
-Switch[ NumericQ /@ { a, b },
-  { True, True }
-  ,
-  If[ check[ a - b ] =!= 0, Throw[ a -> b ], a -> b ]
-  ,
-  { True, False }
-  ,
-  FixLHS[ b -> a ]
-  ,
-  _
-  ,
-  FixLHS[ a -> b ]
-];
-
-FixLHS[ a_ -> b_ ] :=
-  With[{ f = First @ GetVariables[ { a }, F ] }, f -> b / (a/f) ];
-
-(*
-Options[equivClass] :=
-  {"PreEqualCheck" -> Identity};
-
-equivClass[ring_, OptionsPattern[]][f_] :=
-  With[{ 
-    equivFs = FixedPoint[ expandOrbit[ring], { f } ] /. {$VacuumFPattern -> 1 }, 
-    check = OptionValue["PreEqualCheck"] 
-    },
-    Which[ 
-      MatchQ[ equivFs, { 1 .. } ],
-        { },
-      True,
-        First @ Solve[ Equal @@ equivFs ]
-      ]
-    ]
-
-expandOrbit[ring_][fs_List] :=
-  Union @ 
-  Flatten @ 
-  Join[ { fs }, Flatten @ Values[ miniorbit[ring] /@ fs ] ];
-
-miniorbit[ring_][a_.*(symb : F[j_, k_, l_, i_, m_, n_]) ] :=
-  With[{d = CC[ring], qd = FPDims[ring][[#]] &},
-    {
-      symb -> a F[k, j, d[i], d[l], m, d[n]],
-      symb -> a F[d[i], l, k, d[j], d[m], n],
-      symb -> a F[d[m], k, d[n], d[i], d[j], d[l]] Sqrt[qd[m] qd[n]/(qd[j] qd[l])]
-    }
-  ]
-
-*)
-
 
 PackageExport["ProjectiveTetrahedralSymmetries"]
 
@@ -586,13 +478,11 @@ Protect[ \[ScriptCapitalR] ];
 
 PackageScope["R"]
 
-R =
-\[ScriptCapitalR];
+R = \[ScriptCapitalR];
 
 PackageExport["FilterRRules"]
 
-FilterRRules =
-FilterRules[ #, R[__] ]&;
+FilterRRules = FilterRules[ #, R[__] ]&;
 
 PackageScope["ProperHexagonSolutionQ"]
 
@@ -699,17 +589,16 @@ SparseRTensor[ ring_FusionRing?FusionRingQ ] :=
 
 PackageExport["PSymbols"]
 
-(* PivotalSymbols *)
-PSymbols[ r_FusionRing ] := 
-  Array[ \[ScriptP], Rank @ r ];
+P = \[ScriptP];
 
-PSymbols[ c_FusionCategory ] :=
-  PivotalStructure[ c ];
+(* PivotalSymbols *)
+PSymbols[ r_FusionRing ] := Array[ P, Rank @ r ];
+
+PSymbols[ c_FusionCategory ] := PivotalStructure[ c ];
 
 PackageExport["FilterPRules"]
 
-FilterPRules[ l_List ] := 
-  Cases[ l, HoldPattern[ \[ScriptP][_] -> _ ] ];
+FilterPRules = FilterRules[ #, P[_] ]&;
 
 (* Formatting of symbols *)
 (*
@@ -745,7 +634,7 @@ FusionRingFromFSymbols[ fSymb_ ] :=
   Which[
     !PPSQ[ fSymb ], 
     Message[ FusionRingFromFSymbols::invalidsymbols, fSymb ]; Abort[],
-    DeleteDuplicates[ Length /@ Keys @ fSymb ] =!= {6}, 
+    Length @ Flatten @ First @ Keys @ fSymb =!= 6, 
     Message[ FusionRingFromFSymbols::notimplementedyet ]; Abort[],
     True, 
     MultFreeFusionRingFromFSymbols[ fSymb ]
@@ -756,7 +645,7 @@ MultFreeFusionRingFromFSymbols[ fSymb_ ] :=
     nzsc = Cases[ Keys @ fSymb, F[ a_, b_, 1, c_, c_, b_ ] :> { a, b, c } ];
     r = Max @ Flatten @ nzsc;
     FusionRing[ 
-      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1, { r, r, r } ] ]
+      "MultiplicationTable" -> Normal @ SparseArray[ Thread[ nzsc -> 1 ], { r, r, r } ]
     ]
   ];
 
