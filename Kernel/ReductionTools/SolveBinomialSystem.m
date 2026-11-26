@@ -20,9 +20,6 @@ SolveBinomialSystem::usage =
 SolveBinomialSystem::nonbineqns =
   "`1` is not a system of binomial polynomial equations.";
 
-SolveBinomialSystem::notlistofvars =
-  "`1` is not a list of variables.";
-
 SolveBinomialSystem::novars =
   "Set of equations, `1`, with empty set of variables. Aborting calculations."<>
   " If equalities are unresolved but True, then adding the option " <>
@@ -306,7 +303,7 @@ Options[SolveNonSingularBinomialSystem] :=
 SolveNonSingularBinomialSystem[ preEqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
   Module[
     {
-      eqns, simplify, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
+      simplify, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
       gaugeMat, polConstraints, symmetries, invertibleMats, preEqCheck, symbol, eqnList, procID,
       internalParam, result, absTime, invalidPos, reducedSystem, semiLinearSystem
     },

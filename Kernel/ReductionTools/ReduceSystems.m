@@ -987,63 +987,6 @@ Module[{ nonLinVars, linVars, var },
 ];
 
 
-SimplestPol[ pols_, s_, opts:OptionsPattern[] ] :=
-With[
-  {
-    polsInfo =
-    Select[
-      LinearVarInfo[ s ] /@ pols,
-      Not @* MissingQ
-    ],
-    weightfn =
-    OptionValue["WeightFunction"]
-  },
-
-  If[
-    polsInfo === {},
-    Return @ Missing[]
-  ];
-
-  MinimalBy[
-    polsInfo,
-    weightfn @@ { #["Factor"], #["Term"] }&,
-    1
-  ][[1]]
-];
-
-PolWeight[ f_, t_ ] :=
-If[
-  Length[ MonomialList[f] ] == 1,
-  0,
-  LeafCount[ { f, t } ]
-];
-
-LinearVarInfo[ s_ ][ pol_ ] :=
-Module[{ nonLinVars, linVars, var },
-  nonLinVars =
-  Cases[ { pol }, Power[ s[i__], _ ] :> s[i], { 1, 5 } ] //
-  DeleteDuplicates;
-
-  linVars =
-  Tally @
-  Cases[
-    pol,
-    s[i__] /; FreeQ[s[i]] @ nonLinVars,
-    Infinity
-  ];
-
-  If[
-    linVars === {},
-    Return @ Missing[],
-    var =
-    MinimalBy[ linVars, Last, 1 ][[1,1]];
-    ReplaceAll[
-      Collect[ pol, var ],
-      a_. * var + b_ : 0 :> <| "Var" -> var, "Factor" -> a, "Term" -> b |>
-    ]
-  ]
-];
-
 
 (*
 +---------------------------------------------------------------------------+
