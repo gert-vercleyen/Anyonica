@@ -341,11 +341,11 @@ SolveNonSingularBinomialSystem[ preEqns_List, vars_List, param_, opts:OptionsPat
         Length @ vars === 0
         ,
         Which[
-          eqnsList === {}
+          eqnList === {}
           , 
           Return @ { { } }
           ,
-          MemberQ[ eqns, False ]
+          MemberQ[ eqnList, False ]
           ,
           Return @ { }
           ,
