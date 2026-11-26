@@ -46,14 +46,13 @@ CheckArgs[ eqnList_, vars_ ] :=
     Abort[]
   ];
 
-SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
+SolveBinomialSystem[ eqns_, vars_, param_, opts:OptionsPattern[] ] :=
   Module[{
-    invertibleMats, symmetries, polConstraints, useDataBase, storeDecomps, filteredEqns, preEqCheck, s1, gs,
+    invertibleMats, eqnList, symmetries, polConstraints, filteredEqns, preEqCheck, s1, gs,
     procID, zeros, unionZeros, sharedBinomialSystem, sharedVars, sharedSolutions, remainingEquations,
-    InsertZeros, UpdateMultiplicativeSymmetries, updateNonSharedVars, solutions, sharedSymmetries,
-    nonSingularQ, zeroValues, newVars, result, absTime
+    InsertZeros, UpdateMultiplicativeSymmetries, updateNonSharedVars, sharedSymmetries,
+    nonSingularQ, zeroValues, newVars, result, absTime, simplify
     },
-    CheckArgs[ eqnList, vars ];
 
     symmetries     = OptionValue["Symmetries"];
     nonSingularQ   = OptionValue["NonSingular"];
@@ -61,6 +60,7 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     polConstraints = OptionValue["PolynomialConstraints"];
     zeroValues     = OptionValue["ZeroValues"];
     preEqCheck     = OptionValue["PreEqualCheck"];
+    simplify       = OptionValue["SimplifyIntermediateResultsBy"];
     
     filteredEqns = TEL @ eqnList;
     s1           = Unique["x"];
@@ -75,17 +75,46 @@ SolveBinomialSystem[ eqnList_, vars_, param_, opts:OptionsPattern[] ] :=
     
     { absTime, result } =
     AbsoluteTiming[ Catch[ 
+
+      (* Check arguments *)
+      If[ 
+        MemberQ[ eqns, False ], 
+        printlog["SNSBS:has_false_or_zero", {procID, Expand[eqns]}];
+        Return @ { } 
+      ]; 
+
+      If[ 
+        !BinomialSystemQ[ eqns ]
+        ,
+        Message[ SolveNonSingularBinomialSystem::nonbineqns, eqns ];
+        Abort[]
+      ];
+
+      eqnList = TEL @ Map[ Expand @* simplify, eqns ]; 
+        
+      If[ 
+        Length @ vars === 0
+        ,
+        Which[
+          eqnList === {}
+          , 
+          Return @ { { } }
+          ,
+          MemberQ[ eqnList, False ]
+          ,
+          printlog["SNSBS:has_false_or_zero", {procID, Expand @ eqnList }];
+          Return @ { }
+          ,
+          True
+          ,
+          Message[ SolveNonSingularBinomialSystem::novars, eqnList ]; Abort[]
+        ]
+      ];
       (* Check for trivial system *)
       If[
         filteredEqns === {},
         printlog["Gen:trivial_system", {procID}];
         Return[ { MapIndexed[ #1 -> param @@ #2 &, vars] } ]
-      ];
-
-      (* Check for inconsistent system *)
-      If[
-        MemberQ[False] @ filteredEqns,
-        printlog["Gen:has_False"]; Return @ {} 
       ];
 
       (* Find out which variables could be 0 *)
@@ -283,39 +312,10 @@ Options[SolveNonSingularBinomialSystem] :=
     Options[ReduceBinomialSystem]
   ];
 
-CheckArgsNonSingularSys[ eqns_, vars_ ][ code_ ] :=
-  Which[
-    !BinomialSystemQ[ eqns ]
-    ,
-    Message[ SolveNonSingularBinomialSystem::nonbineqns, eqns ];
-    Abort[]
-    ,
-    Length[vars] === 0
-    ,
-    Which[
-      TEL @ eqns === {}
-      , 
-      { { } }
-      ,
-      MemberQ[ eqns, False ]
-      ,
-      { }
-      ,
-      True
-      ,
-      Message[ SolveNonSingularBinomialSystem::novars, eqns ]; Abort[]
-    ]
-    ,
-    True
-    ,
-    code
-  ];
-
 SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
-  CheckArgsNonSingularSys[ preEqns, vars] @
   Module[
     {
-      eqns, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
+      eqns, simplify, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
       gaugeMat, polConstraints, symmetries, invertibleMats, preEqCheck, symbol, eqnList, procID,
       internalParam, result, absTime, invalidPos, reducedSystem, semiLinearSystem
     },
@@ -327,24 +327,52 @@ SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:Op
 
     symbol = Unique["x"];
     internalParam = Unique["z"];
-    eqnList = DeleteCases[True] @ eqns;
     procID = ToString[Unique[]];
 
-    (* Check for trivial system *)
-
-    eqns = TEL @ Map[ Expand @* simplify, preEqns ]; 
-
-    If[ eqns === {}, Return @ { Thread[ vars -> Array[ param, Length @ vars ] ] } ];
-
-    printlog["SNSBS:init", {procID, eqnList, vars, param, {opts}}];
+    printlog["SNSBS:init", {procID, preEqns, vars, param, {opts}}];
 
     { absTime, result } =
     AbsoluteTiming[
+      (* Check arguments *)
+      (* Need to check this before BinomialSystemQ since False is not binomial equation *)
+      If[ 
+        MemberQ[ preEqns, False ], 
+        printlog["SNSBS:has_false_or_zero", {procID, Expand[preEqns]}];
+        Return @ { } 
+      ]; 
+
+      If[ 
+        !BinomialSystemQ[ preEqns ]
+        ,
+        Message[ SolveNonSingularBinomialSystem::nonbineqns, preEqns ];
+        Abort[]
+      ];
+
+      eqnList = TEL @ Map[ Expand @* simplify, preEqns ]; 
+        
+      If[ 
+        Length @ vars === 0
+        ,
+        Which[
+          eqnsList === {}
+          , 
+          Return @ { { } }
+          ,
+          MemberQ[ eqns, False ]
+          ,
+          Return @ { }
+          ,
+          True
+          ,
+          Message[ SolveNonSingularBinomialSystem::novars, eqnList ]; Abort[]
+        ]
+      ];
+
       (* Check whether trivial system *)
       If[
-        Length[ DeleteCases[True] @ eqnList ] === 0,
+        Length @ eqnList === 0,
         printlog["Gen:trivial_system", {procID}];
-        Return[ { MapIndexed[ #1 -> param @@ #2 &, vars ] } ] (* TODO: use thread *)
+        Return @ { Thread[ vars -> Array[ param, Length @ vars ] ] }
       ];
       
       (* Check whether symmetries are multiplicative *)
