@@ -33,20 +33,7 @@ Options[SolveBinomialSystem] :=
     }
   ];
 
-CheckArgs[ eqnList_, vars_ ] :=
-  Which[
-    !BinomialSystemQ[eqnList]
-    ,
-    Message[ SolveBinomialSystem::nonbineqns, eqnList ];
-    Abort[]
-    ,
-    !ListQ[vars]
-    ,
-    Message[ SolveBinomialSystem::notlistofvars, vars ];
-    Abort[]
-  ];
-
-SolveBinomialSystem[ eqns_, vars_, param_, opts:OptionsPattern[] ] :=
+SolveBinomialSystem[ eqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
   Module[{
     invertibleMats, eqnList, symmetries, polConstraints, filteredEqns, preEqCheck, s1, gs,
     procID, zeros, unionZeros, sharedBinomialSystem, sharedVars, sharedSolutions, remainingEquations,
@@ -312,7 +299,7 @@ Options[SolveNonSingularBinomialSystem] :=
     Options[ReduceBinomialSystem]
   ];
 
-SolveNonSingularBinomialSystem[ preEqns_, vars_, param_, opts:OptionsPattern[] ] :=
+SolveNonSingularBinomialSystem[ preEqns_List, vars_List, param_, opts:OptionsPattern[] ] :=
   Module[
     {
       eqns, simplify, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
