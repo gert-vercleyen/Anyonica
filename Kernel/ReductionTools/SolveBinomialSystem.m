@@ -312,7 +312,7 @@ Options[SolveNonSingularBinomialSystem] :=
     Options[ReduceBinomialSystem]
   ];
 
-SolveNonSingularBinomialSystem[ preEqns_?BinomialSystemQ, vars_, param_, opts:OptionsPattern[] ] :=
+SolveNonSingularBinomialSystem[ preEqns_, vars_, param_, opts:OptionsPattern[] ] :=
   Module[
     {
       eqns, simplify, newInvertibleMats, newPolConstraints, newEqns, newVars, revertVars, constraints, preSolutions,
