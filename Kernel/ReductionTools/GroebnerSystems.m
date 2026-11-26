@@ -81,18 +81,15 @@ Join[
 IncrementalGroebnerBasis[ pols_, vars_, opts : OptionsPattern[] ] :=
 Module[
   { cutoff, weight, ReduceSystem, Slice, RecursiveGroebner, parallelQ, Groebner,simplify },
-  cutoff  =
-    OptionValue["Cutoff"];
-  weight =
-    OptionValue["GroebnerWeightFunction"];
-  parallelQ =
-    OptionValue["Parallel"];
+  cutoff  = OptionValue["Cutoff"];
+  weight = OptionValue["GroebnerWeightFunction"];
+  parallelQ = OptionValue["Parallel"];
 
   simplify =
   Composition[
     OptionValue["SimplifyIntermediateResultsBy"],
     If[
-      OptionValue["ReduceRoots"] && MemberQ[ sumSystems, _Root, Infinity ],
+      OptionValue["ReduceRoots"] && MemberQ[ pols, _Root, Infinity ],
       SafeRootReduce,
       Identity
     ],
@@ -158,10 +155,10 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
     Which[
       groebnerBasis === { 1 }
       ,
-        { },
+      { },
       groebnerBasis === { }
       ,
-      If[ TrueQ[ assumptions/.rules ], { rules }, { } ]
+      If[ (assumptions/.rules) === False, { }, { rules } ]
       ,
       True
       ,
@@ -176,7 +173,7 @@ SolveGroebnerSystem[ system_Association, s_ ] :=
             sol_ /; TrueQ[ assumptions/.sol ]
           ]
         },
-        rules/.Dispatch[solutions]
+        ( rules /. Dispatch[#] ) & /@ solutions
       ]
     ]
   ];

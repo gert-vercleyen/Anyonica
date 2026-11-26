@@ -206,11 +206,21 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
               "Values" -> Thread[ variables -> variables ]
             |>,
           variables === { },
-            Return @ <| 
-              "Polynomials" -> ToPolynomial /@ (Subtract @@@ binomialEqns),
-              "Assumptions" -> True,
-              "Values" -> {} 
-            |>
+            If[ 
+              MemberQ[False] @ binomialEqns
+              ,
+              Return @ <| 
+                "Polynomials" -> 1,
+                "Assumptions" -> True,
+                "Values" -> {} 
+              |>
+              ,
+              Return @ <| 
+                "Polynomials" -> ToPolynomial /@ (Subtract @@@ TEL @ binomialEqns),
+                "Assumptions" -> True,
+                "Values" -> {} 
+              |>
+            ]
         ];
 
         { eqns, vars, revertVars } =
@@ -218,9 +228,29 @@ ReduceBinomialSystem[ binomialEqns_, variables_, opts:OptionsPattern[] ] :=
 
         If[
           OptionValue["Method"] === "HermiteDecomposition",
-          AddOptions[opts][ReduceBinSysHermite][ eqns, vars ]/.revertVars ,
-          Catch @
-          FixedPoint[ UpdateEquivalences[x], { NormalForm @ ToProperBinomialEquation @ eqns, { } } ] /. revertVars
+          AddOptions[opts][ReduceBinSysHermite][ eqns, vars ]/.revertVars,
+          { eqns, equivs } = 
+            Catch @
+            FixedPoint[ 
+              UpdateEquivalences[x], 
+              { NormalForm @ ToProperBinomialEquation @ eqns, { } } 
+            ] /. revertVars;
+          
+          If[ 
+            MemberQ[False] @ eqns
+            ,
+            <|
+              "Polynomials" -> {1},
+              "Assumptions" -> {False},
+              "Values" -> {}
+            |>
+            ,
+            <|
+              "Polynomials" -> ToPolynomial /@ (Subtract @@@ TEL @ eqns),
+              "Assumptions" -> {True},
+              "Values" -> equivs
+            |>
+          ]
         ]
       ];
 
@@ -244,15 +274,24 @@ Options[ReduceBinSysHermite] :=
 ReduceBinSysHermite::badopt = 
   "Option \"ExternalEvaluation\" should be either None or \"Julia\"."
 
-ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] := 
-  Module[ { session, invalidSys, semilinsys, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, th,
-    subMat1, reducedMat1, matSubsys2, reducedMat2, newRHS, reducedrhs2, rhsFinal, 
-    u, h, mat, t, result, trm1, trm2, combinedMat, check, x }, 
+ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] := 
+  Module[ { eqns, simplify, session, invalidSys, semilinsys, procID, rhs, th,  newRHS, 
+    u, h, mat, t, result, check, x, sess, ext, checkValidity, neweqns, newvars, revertvars,
+    hnf, rank }, 
 
-    procID  = ToString @ Unique[];
-    check   = OptionValue["PreEqualCheck"];
-    sess    = OptionValue["Session"];
-    ext     = OptionValue["ExternalEvaluation"];
+    procID   = ToString @ Unique[];
+    check    = OptionValue["PreEqualCheck"];
+    sess     = OptionValue["Session"];
+    ext      = OptionValue["ExternalEvaluation"];
+    simplify = OptionValue["SimplifyIntermediateResultsBy"]; 
+
+    eqns = TEL @ Map[ simplify, preEqns ]; 
+
+    (* Check for trivial system *)
+    If[ 
+      eqns === {},
+      Return @ <| "Polynomials" -> {}, "Assumptions" -> True, "Values" -> Thread[vars->vars] |>
+    ];
 
     { t, result } = 
     AbsoluteTiming[
@@ -267,7 +306,7 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
       ];
 
       session = 
-        If[ sess == None && ext == "Julia", StartExternalSession["Julia"], sess ];
+        If[ sess === None && ext === "Julia", StartExternalSession["Julia"], sess ];
 
       invalidSys = <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>;
 
@@ -310,18 +349,20 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
         If[ 
           ext === "Julia", 
           JuliaHNFWithTransform[ session, # ]&, 
-          (SparseArray @* DeleteCases[ { 0 .. } ] /@ HermiteDecomposition[#] )&
+          SparseHermiteDecomposition
         ];
 
       printlog[ "RBSVHD:hermitestart", { procID, ext } ];
 
-     { th, { u, h } }=  AbsoluteTiming @ hnf @ mat; 
+     { th, { u, h } } =  AbsoluteTiming @ hnf @ mat; 
 
       printlog[ "RBSVHD:hermitefinish", { procID, th, {u,h} } ];
 
       newRHS = PowerDot[ rhs, u ];
 
-      rank  = First @ Dimensions @ h; (* all zero-rows have been deleted from h *)
+      rank  = Length @ Union @ SparseArray[h]["NonzeroPositions"][[;;,1]]; (* all zero-rows have been deleted from h *)
+
+      h = h[[ ;; rank ]];
 
       checkValidity[ h, newRHS ];
 
@@ -344,414 +385,6 @@ ReduceBinSysHermite[ eqns_, vars_, opts:OptionsPattern[] ] :=
     result
     
   ];
-
-(*
-Options[ReduceBinSysHermiteJulia] := 
-  Options[ReduceBinSysHermite];
-
-ReduceBinSysHermiteJulia[ equations_, variables_, opts : OptionsPattern[] ] := 
-  Module[ { session, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
-    subMat1, reducedMat1, matSubsys2, reducedMat2, newRHS, reducedrhs2, rhsFinal, 
-    u, h, mat, t, result, trm1, trm2, combinedMat, check }, 
-
-    procID  = ToString @ Unique[];
-		session = StartExternalSession["Julia"];
-    check   = OptionValue["PreEqualCheck"];
-
-    checkValidity[ h_, rhs_ ] :=
-      With[{ rank = Length @ h },
-        If[ 
-          rank =!= 0 && !MatchQ[ check /@ rhs[[ rank + 1 ;; ]] , { 1 ... } ],
-          printlog["Gen:has_False", { procID, { h, rhs } } ];
-          Throw @ <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>
-        ]
-      ];
-
-    { t, result } = 
-    AbsoluteTiming[
-      Catch[
-
-      printlog["RBSVHDJ:init", { procID, Length @ equations, subsysSize } ];
-
-      (*Transform the system to a matrix equation. This step is expensive 
-        so best to do it only once*)
-      s = Head @ First @ variables;
-
-      { mat, rhs } = 
-        AddOptions[opts][BinToSemiLin][ equations, variables, s ];
-
-      If[ 
-        TrueQ[ MemberQ[ 0 ] @ Map[ check, rhs ] ], 
-        printlog["Gen:has_False", { procID, { mat, rhs } } ];
-        Throw @ 
-        <| 
-          "Polynomials" -> {1}, 
-          "Assumptions" -> False, 
-          "Values" -> {}  
-        |> 
-      ];
-      
-      (* If creating matrix failed we get a string *)
-      If[ Head @ mat === String, Return @ { False } ];
-          
-      (* ================================================= *)
-      (* Reduction of subsystem of eqns who's RHS equals 1 *)
-      (* ================================================= *)
-
-      rhs1Pos = Flatten @ Position[ rhs, 1, 1 ];
-      subMat1 = mat[[rhs1Pos]]; 
-
-      printlog["RBSVHD:toric", { procID, First @ Dimensions @ subMat1 }];
-
-      If[ 
-        subMat1 === {{}}
-        ,
-        { trm1, reducedMat1 } = AbsoluteTiming @ {{}} 
-        ,
-        { trm1, reducedMat1 } =
-          AbsoluteTiming @  
-          JuliaHNF[ session, subMat1 ]
-      ];
-
-      printlog["RBSVHD:toricresults", { procID, trm1, First @ Dimensions @ reducedMat1 }];
-
-      (* ========================================================= *)
-      (* Reduction of subsystem of eqns who's RHS does not equal 1 *)
-      (* ========================================================= *)
-      
-      rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
-      
-      (* Now the RHS matters => need to combine mat with RHS when sorting *) 
-      printlog["RBSVHD:nontoric", { procID, Length @ rhsNon1Pos }];
-
-      { trm2, { reducedMat2, reducedrhs2 } } =
-        AbsoluteTiming @ 
-        If[ 
-          rhsNon1Pos === {}
-          ,
-          { {}, {} }
-          ,
-          subMat2 = mat[[rhsNon1Pos]];
-          non1RHS = rhs[[rhsNon1Pos]];
-          { u, h } =  JuliaHNFWithTransform[ session, subMat2 ]; 
-
-          newRHS = PowerDot[ non1RHS, u ];
-
-          rank  = Length @ h; (* all zero-rows have been deleted from h *)
-
-          checkValidity[ h, newRHS ];
-
-          { h, newRHS[[;; rank ]] }
-        ];
-      
-      printlog["RBSVHD:nontoricresults", { procID, trm2, First @ Dimensions @ reducedMat2 } ];
-
-      combinedMat = 
-        SparseArray @ 
-        Join[ Normal @ reducedMat1, Normal @ reducedMat2 ];
-
-      printlog["RBSVHDJ:intermediatereduction", { procID, First @ Dimensions @ combinedMat } ];
-      (* Final Hermite Decomposition of combination two reduced systems *)
-      { u, h } = 
-        JuliaHNFWithTransform[ session, combinedMat ];
-      
-      (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
-      rhsFinal = 
-        PowerDot[
-          PadLeft[ reducedrhs2, Length[reducedMat1] + Length[reducedMat2], 1 ], 
-          u 
-        ];
-      
-      checkValidity[ h, rhsFinal ];
-      
-      <| 
-        "Polynomials" ->
-          TPL @ ToPolynomial @ TEL @
-          Thread[ PowerDot[ variables, h ] == rhsFinal[[;;Length @ h]] ],
-        "Assumptions" -> And @@ Thread[variables != 0 ],
-        "Values" -> Thread[ variables -> variables ]
-      |>
-    ]
-    ];
-
-    printlog["Gen:results", {procID, result, t }];
-
-    DeleteObject @ session; (* Close julia session *)
-
-    result
-    
-  ];
-
-Options[ReduceBinSysHermiteLocal] := 
-  Options[ReduceBinSysHermite];
-
-ReduceBinSysHermiteLocal[ equations_, variables_, opts : OptionsPattern[] ] := 
-  Module[ { nSubsys, s, procID, subsysSize, rhs, rhs1Pos, rhsNon1Pos, 
-    subMat1, reducedMat1, matSubsys2, mat2, rhs2, reducedMat2, reducedrhs2, rhsFinal, 
-    u, h, mat, t, result, trm1, trm2, combinedMat, preEqCheck }, 
-
-    procID = ToString @ Unique[];
-
-    preEqCheck = OptionValue["PreEqualCheck"];
-
-    { t, result } = 
-    AbsoluteTiming[
-      subsysSize = OptionValue["MaxEquationsPerPartition"];
-
-      (* Quite arbitrary, this resulted in doable partition sizes on my computer*)
-      nSubsys = Quotient[ Length @ equations, subsysSize ] + 1;
-      
-      printlog["RBSVHD:init", { procID, Length @ equations, subsysSize } ];
-
-      (*Transform the system to a matrix equation. This step is expensive 
-        so best to do it only once*)
-      s = Head @ First @ variables;
-
-      { mat, rhs } =
-          Catch @ Normal @ AddOptions[opts][BinToSemiLin][ equations, variables, s ];
-
-      If[ 
-        TrueQ[ MemberQ[ 0 ] @ Map[ preEqCheck, rhs ] ], 
-        printlog["Gen:has_False", { procID, { mat, rhs } } ];
-        Throw @ 
-        <| 
-          "Polynomials" -> {1}, 
-          "Assumptions" -> False, 
-          "Values" -> {}  
-        |> 
-      ];
-      
-      (* If creating matrix failed we get a string *)
-      If[ Head @ mat === String, Return @ { False } ];
-
-      If[ 
-        TrueQ[ subsysSize >= Length[equations] ],
-        { u, h } = HermiteDecomposition[ mat ];
-
-        newEqns = Thread[ PowerDot[ variables, h ] == PowerDot[ rhs, u ] ];
-
-        If[
-            MemberQ[False] @ newEqns,
-            Throw @
-            <| 
-            "Polynomials" -> {1},
-            "Assumptions" -> False,
-            "Values" -> {}
-            |>
-        ];
-        
-        Return @ 
-        <| 
-          "Polynomials" ->
-            TPL @ ToPolynomial @ newEqns,
-          "Assumptions" -> And @@ Thread[ variables != 0 ],
-          "Values" -> Thread[ variables -> variables ]
-        |>
-      ];
-          
-      (* ================================================= *)
-      (* Reduction of subsystem of eqns who's RHS equals 1 *)
-      (* ================================================= *)
-
-      rhs1Pos = Flatten @ Position[ rhs, 1, 1 ];
-
-      (* Sorting rows lexicographically=> groups eqns with equal vars together *)
-      subMat1 = ReverseSortBy[ mat[[rhs1Pos]], Abs ]; 
-
-      printlog["RBSVHD:toric", { procID, First @ Dimensions @ subMat1 }];
-
-      If[ 
-        subMat1 === {{}}
-        ,
-        { trm1, reducedMat1 } = AbsoluteTiming[ {{}} ]
-        ,
-        { trm1, reducedMat1 } =
-          AbsoluteTiming @  
-          Catch @
-          FixedPoint[
-            partitionAndReduce[ #, subsysSize, procID ] &, 
-            subMat1, 
-            5 (*Nest at most 5 times*)
-          ]
-      ];
-
-      printlog["RBSVHD:toricresults", { procID, trm1, First @ Dimensions @ reducedMat1 }];
-
-      (* ========================================================= *)
-      (* Reduction of subsystem of eqns who's RHS does not equal 1 *)
-      (* ========================================================= *)
-      
-      rhsNon1Pos = Complement[ Range @ Length @ rhs, rhs1Pos ];
-      
-      (* Now the RHS matters => need to combine mat with RHS when sorting *) 
-      matSubsys2 = 
-        ReverseSortBy[
-          AppendRHS[ mat[[rhsNon1Pos]], rhs[[rhsNon1Pos]] ],
-          Abs
-        ];
-      
-      printlog["RBSVHD:nontoric", { procID, First @ Dimensions @ matSubsys2 }];
-
-      If[ 
-        matSubsys2 === {{}}
-        ,
-        { trm2, { reducedMat2, reducedrhs2 } } =
-          AbsoluteTiming[ { {}, {} } ]
-        ,
-        { trm2, { reducedMat2, reducedrhs2 } } =
-          AbsoluteTiming[
-            mat2 = matSubsys2[[ ;;, ;;-2 ]];
-            rhs2 = matSubsys2[[ ;;, -1 ]];
-            Catch @
-            FixedPoint[ 
-              partitionAndReduce[ #, subsysSize, procID ]&, 
-              { mat2, rhs2 }, 
-              5 
-            ] 
-          ]
-      ];
-
-      (* Check validity solution *)
-
-      If[
-        reducedMat2 === Missing["InconsistentSystem"],
-        Throw @ <| "Polynomials" -> {1}, "Assumptions" -> False, "Values" -> {} |>
-      ];
-      
-      printlog["RBSVHD:nontoricresults", { procID, trm2, First @ Dimensions @ reducedMat2 } ];
-
-      combinedMat = reducedMat1 ~ Join ~ reducedMat2 ;
-
-      printlog["RBSVHD:intermediatereduction", { procID, combinedMat } ];
-      (* Final Hermite Decomposition of combination two reduced systems *)
-      { u, h } = HermiteDecomposition @ combinedMat;
-      
-      (* Need to add the 1's from the RHS of the first system and act on RHS with u *)
-      rhsFinal = 
-        PowerDot[
-          PadLeft[ reducedrhs2, Length[reducedMat1] + Length[reducedMat2], 1 ], 
-          u 
-        ];
-      
-      <| 
-        "Polynomials" ->
-          TPL @ ToPolynomial @ TEL @
-          Thread[ PowerDot[ variables, h ] == rhsFinal ],
-        "Assumptions" -> And @@ Thread[ variables != 0 ],
-        "Values" -> Thread[ variables -> variables ]
-      |>
-    ];
-
-    printlog["Gen:results", {procID, result, t }];
-
-    result
-  ];
-
-Options[ partitionAndReduce ] = 
-  { "PreEqualCheck" -> Identity };
-
-(* Partition matrix, compute hermite decompositions and combine them for case where 
-  all elements of the RHS equal 1 *)
-partitionAndReduce[ mat_?MatrixQ, subsysSize_Integer, procID_, OptionsPattern[] ] := 
-  Module[{ t, result, partitionPos, reduceMat }, 
-    (* Check for empty matrix *)
-    If[ ByteCount[ mat < 1024 ] && Flatten[mat] === {}, Return @ {{}} ];
-
-    printlog["PAR:init", {procID,Length @ mat,subsysSize} ];
-
-    partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
-
-    reduceMat[ m_ ] := 
-      DeleteCases[ { 0 .. } ] @  (* Delete zero rows *)
-      Last @ (* Only care about reduced matrix *)
-      MemoizedHermiteDecomposition[ m, "StoreHermiteDecompositions" -> True ];
-
-    { t, result } = 
-      AbsoluteTiming @
-      ReverseSortBy[
-        DeleteDuplicates @
-        Flatten[ 
-          Map[ 
-            reduceMat, 
-            Table[ mat[[pos]], { pos, partitionPos } ]
-          ], 
-          { 2, 1 }
-        ],
-        Abs
-      ];
-
-    printlog["PAR:reduction",{procID,t, First @ Dimensions @ result}];
-
-    result
-  ];
-
-(* Partition matrix, compute hermite decompositions and combine them for case where 
-  none of the elements of the RHS equal 1 *)
-partitionAndReduce[ { mat_?MatrixQ, rhs_?VectorQ }, subsysSize_Integer, procID_, OptionsPattern[] ] := 
-  Module[{ t, result, partitionPos, decomps, newMat, newRHS, newSys },  
-
-    check = OptionValue["PreEqualCheck"];
-
-    (* Check for empty system *)
-    If[ ByteCount[ rhs < 1024 ] && Flatten[rhs] === {}, Return @ { {{}}, { } } ];
-
-    printlog["PAR:init", {procID,Length @ mat,subsysSize} ];
-  
-    {t, result} =
-    AbsoluteTiming[
-      partitionPos = Partition[ Range @ Length @ mat, UpTo[subsysSize] ];
-
-      decomps =  
-        Map[ 
-          MemoizedHermiteDecomposition[ #, "StoreHermiteDecompositions" -> True ] &, 
-          Table[ mat[[pos]], { pos, partitionPos } ]
-        ];
-
-      newMat = Join @@ decomps[[;; , 2]];
-
-      newRHS = 
-        Join @@ 
-        MapThread[ 
-          PowerDot, 
-          { 
-            Table[ rhs[[pos]], { pos, partitionPos } ], 
-            decomps[[;; , 1]] 
-          }
-        ];
-      
-      newSys = 
-        DeleteCases[ { 0 .., 1 } ] @
-        ReverseSortBy[
-          AppendRHS[ newMat, newRHS ],
-          Abs
-        ];
-      
-      (* Faster to use reverse indices because problems appear at the bottom *)
-      If[ (* There is a zero row with non-one rhs *)
-        MemberQ[ 
-          Reverse @ Range @ Length @ newSys,  
-          i_ /; 
-          MatchQ[ newSys[[i]], { 0 .., x_ } /; TrueQ[ check[x] != 1 ] ]
-        ],
-        printlog["Gen:has_False", { procID, newSys  } ];
-        Throw @ { Missing["InconsistentSystem"], {}  }
-      ];
-
-      { newSys[[;; , ;; -2]], newSys[[;; , -1]] }
-    ];
-
-    printlog["PAR:reduction",{procID,t, First @ Dimensions @ First @ result}];
-
-    result
-  ];
-
-AppendRHS[ mat_, rhs_ ] := ArrayFlatten[ { { mat, Transpose @ { rhs } } } ];
-
-AppendRHS[ {{}}, _ ] := {{}};
-
-AppendRHS[ _, {} ] := {{}}
-
-*)
 
 FindEquivalences[ eqns_, x_ ] :=
   With[{ eqnVarPairs = { #, LinearVars[#,x], GetVariables[#,x] }& /@ eqns },
@@ -857,11 +490,6 @@ ReduceByBinomials[ sumEqns_, binomialEqns_, vars_, s_, opts:OptionsPattern[] ] :
 
     { absTime, result } =
     AbsoluteTiming[
-      constraints =
-        Join[
-          polynomialConstraints,
-          DeterminantConditions @ invertibleMatrices
-        ];
 
       SolveRepeatedly[ { {}, nonBinEqns_ }, _, _, prevSols_, _  ] :=
         Sow[ { nonBinEqns, prevSols } ];
@@ -1018,6 +646,8 @@ Options[UpdateConstraints] =
   "PreEqualCheck" -> Identity
 };
 
+PackageScope["UpdateConstraints"]
+
 UpdateConstraints[ { polConstr_, invertibleMatrices_ }, solution_, opts:OptionsPattern[] ] :=
 Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
   simplify   = OptionValue["SimplifyIntermediateResultsBy"];
@@ -1029,7 +659,7 @@ Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
   If[ newPolConstr === { False }, Return @ { False } ];
 
   newInvMats =
-    AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] =!= 0& ];
+    AddOptions[opts][UpdateAndCheck][ invertibleMatrices, solution, Det[#] != 0& ];
 
   If[ newInvMats === { False }, Return @ { False } ];
 
@@ -1039,6 +669,8 @@ Module[ { newPolConstr, newInvMats, simplify, preEqCheck },
   }
 
 ];
+
+PackageScope["UpdateInvertibleMatrices"]
 
 UpdateInvertibleMatrices[ {}, _ ] :=
 {};
@@ -1096,14 +728,14 @@ PackageExport["ReduceByLinearity"]
 
 ReduceByLinearity::usage =
 "ReduceByLinearity[polList,s] reduces polList by using polynomials in polList that are linear in one of the "<>
-"variables labeled by s.";
+"variables labeled by s. It assumes none of the variables s[1], ..., s[n] are zero but uses no other assumptions";
 
 Options[ReduceByLinearity] :=
 Join[
   {
     "SimplifyIntermediateResultsBy" -> Identity,
     "ReduceByLinearityMaxMemoryFactor" -> .9,
-    "Parallel" -> False
+    "PreEqualCheck" -> Identity
   },
   Options[SimplestLinearRule]
 ];
@@ -1115,27 +747,17 @@ Join[
 ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
 Module[
   {
-    ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
-    ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, parallelQ, map, maxMemFactor
+    check, ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
+    ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, maxMemFactor, NonZeroByFactorsQ
   },
   maxMemFactor = OptionValue["ReduceByLinearityMaxMemoryFactor"];
   simplify     = OptionValue["SimplifyIntermediateResultsBy"];
-  parallelQ    = OptionValue["Parallel"];
+  check        = OptionValue["PreEqualCheck"];
   
   procID = ToString @ Unique[];
   id    := ToString @ Unique[];
   vars   = GetVariables[ polList, s ];
   RCF    = RemoveCommonFactors[ #, s ]&;
-
-  If[
-    parallelQ
-    ,
-    Quiet[LaunchKernels[]];
-    map =
-    ParallelMap
-    ,
-    map = Map
-  ];
 
   rootReduce = (* TODO: might want to give user the option to turn this off *)
     If[
@@ -1160,9 +782,6 @@ Module[
 
   PolRest[ pol_, ps_ ] :=
     RCF @ PolynomialReduce[ pol, ps, vars ][[2]];
-
-  (* Make sure all Kernels know the definitions of the functions to be mapped *)
-  If[ parallelQ, DistributeDefinitions[ RCF, simplify, ToPol, PolRest, GetVariables ] ];
 
   (* It is assumed that none of the variables are 0 *)
   InvalidPolSystem[ pols_, nonZeroPols_, rules_  ] :=
@@ -1199,8 +818,8 @@ Module[
   UpdateSystem[ pols_, nonZeroPols_, knownRules_, rule_ ] :=
     MemoryConstrained[
       {
-        TrimPolynomialList @ map[ ToPol, pols /. rule ],
-        nonZeroPols /. rule,
+        TrimPolynomialList @ Map[ ToPol, pols /. rule ],
+        DeleteCases[ ToPol /@ (nonZeroPols /. rule), c_?NumericQ /; check[c] =!= 0 ],
         Append[rule] @ Expand[ knownRules/.rule ]
       }
       ,
@@ -1213,7 +832,7 @@ Module[
   ReduceSystem[ pols_, nonZeroPols_, rules_, pol_ ] :=
     MemoryConstrained[
       {
-        TrimPolynomialList @ map[ RCF[PolRest[ #, pol ]]&, pols ],
+        TrimPolynomialList @ Map[ RCF[PolRest[ #, pol ]]&, pols ],
         nonZeroPols,
         rules
       }
@@ -1224,6 +843,9 @@ Module[
       $Aborted
     ];
 
+  AppendAtFirst[x_][l_List] := 
+    { Append[x] @ l[[1]], l[[2]], l[[3]] };
+
   (* Add denominators appearing in the rules to the set of nonzero pols *)
   AddNonZeroPols[ pols_, nonZeroPols_, rules_ ] :=
   With[
@@ -1233,7 +855,7 @@ Module[
       rules[[;;,2]]
     },
     <|
-      "Polynomials" ->  DeleteDuplicates @ map[ Expand, pols ],
+      "Polynomials" ->  DeleteDuplicates @ Map[ Expand, pols ],
       "Assumptions" ->
       LogicalExpand @
       Reduce[
@@ -1245,6 +867,27 @@ Module[
       "Rules" -> SortBy[First] @ rules
     |>
   ];
+
+  (* True if pol is a monomial times factors of the polynomials in nzps *)
+  NonZeroByFactorsQ[ pol_, nzps_List ] :=
+    With[
+      { nonNumNzps = DeleteCases[ nzps, _?NumericQ ] },
+      {
+      rest =
+        FixedPoint[
+          Function[ 
+            p, 
+            Fold[ 
+              Cancel[ #1 / PolynomialGCD[ #1, #2 ] ]&, 
+              p,
+              nonNumNzps 
+            ]
+          ],
+          pol
+        ]
+      },
+      rest =!= 0 && MonQ[ rest ]
+    ];
 
   RecursiveReduce[$Aborted] =
   $Aborted;
@@ -1273,7 +916,7 @@ Module[
       ];
 
       If[ (* Denominator in rule isn't zero *)
-        MonQ @  PolRest[ denom, nzps ]
+        NonZeroByFactorsQ[ denom, nzps ]
         ,
         printlog[ "RBL:nonzero_denominator", { id, lRule } ];
         RecursiveReduce @@
@@ -1290,7 +933,7 @@ Module[
 
       (* ASSUME DENOMINATOR == 0 *)
       printlog[ "RBL:reduction", { id, denom, s } ];
-      RecursiveReduce @@ ReduceSystem[ ps, nzps, rs, denom ]
+      RecursiveReduce @@ AppendAtFirst[denom] @ ReduceSystem[ ps, nzps, rs, denom ]
     ]
   ];
 
@@ -1307,8 +950,6 @@ Module[
   ];
 
   printlog["Gen:results", { procID, result, time } ];
-
-  If[ parallelQ, CloseKernels[] ];
 
   result
 
@@ -1345,262 +986,6 @@ Module[{ nonLinVars, linVars, var },
   ]
 ];
 
-
-(*
-
-  EXPERIMENTAL FUNCTION BELOW
-
-*)
-
-PackageScope["ReduceByLinearity2"]
-
-ReduceByLinearity2::usage =
-"For testing.";
-
-Options[ SimplestPol ] =
-{ "WeightFunction" -> PolWeight };
-
-Options[ReduceByLinearity2] :=
-Join[
-  {
-    "SimplifyIntermediateResultsBy" -> Identity,
-    "MaxMemory" -> None,
-    "Parallel" -> False
-  },
-  Options[SimplestLinearRule]
-];
-
-ReduceByLinearity2[ polList_List, s_, opts:OptionsPattern[] ] :=
-Module[
-  {
-    vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id,
-    ReduceSystem, simplify, rootReduce, maxMemory, MonQ, PolRest,
-    MoldPol, ToAssociation, PolMod, map, parallelQ
-  },
-  simplify =
-  OptionValue["SimplifyIntermediateResultsBy"];
-  maxMemory =
-  OptionValue["MaxMemory"];
-  parallelQ =
-  OptionValue["Parallel"];
-
-  If[
-    parallelQ
-    ,
-    Quiet[LaunchKernels[]];
-    map = ParallelMap
-    ,
-    map = Map
-  ];
-
-  procID =
-  ToString @ Unique[];
-  id :=
-  ToString @ Unique[];
-  vars =
-  GetVariables[ polList, s ];
-  RCF =
-  RemoveCommonFactors[ #, s ]&;
-  MoldPol =
-  RCF @* RootReduce @* simplify @* Expand;
-  MonQ[ pol_ ] :=
-  Length[ MonomialList[ pol ] ] === 1;
-  PolRest[ pol_, ps_ ] :=
-  PolynomialReduce[ pol, ps, vars ][[2]];
-
-  PolMod :=
-  Function[
-    { p1, p2, var },
-    With[{ gb = GroebnerBasis[ { p1, p2 }, GetVariables[ { p1, p2 }, s ], { var }  ] },
-      If[ gb === {}, 0, MoldPol @ gb[[1]] ]
-    ]
-  ];
-
-  If[ parallelQ, DistributeDefinitions[ GetVariables, MoldPol, PolMod ] ];
-
-  (* It is assumed that none of the variables are 0 *)
-  InvalidPolSystem[ pols_, nonZeroPols_, linPols_  ] :=
-  With[
-    {
-      polProblem =
-      MemberQ[ pols, p_ /; MonQ[p] || MemberQ[p] @ nonZeroPols ],
-      nonZeroPolProblem =
-      MemberQ[0] @ nonZeroPols
-    },
-    Which[
-      polProblem,
-      printlog["RBL:pol_problem", { id , pols } ];
-      True,
-      nonZeroPolProblem,
-      printlog["RBL:non_zero_pol_problem"];
-      True,
-      (* ELSE: no problem *)
-      True,
-      False
-    ]
-  ];
-
-  UpdateSystem[ pols_, nonZeroPols_, linPols_, linPol_ ] :=
-  With[{ pol = linPol["Var"] * linPol["Factor"] + linPol["Term"] },
-    MemoryConstrained[
-      {
-        DeleteDuplicates @
-        DeleteCases[0] @
-        map[
-          PolMod[ #, pol, linPol["Var"] ]&,
-          pols
-        ],
-        Map[
-          PolMod[ #, pol, linPol["Var"] ]&,
-          nonZeroPols
-        ],
-        Append[ linPol ] @ linPols
-      },
-      maxMemory,
-      (* When maxMemory is exceeded during calculation,
-         sow non-updated system and stop further operations on this branch *)
-      printlog["RBL:memory_overflow", { procID } ];
-      Sow[ { pols, nonZeroPols, linPols } ];
-      { { 1 }, { }, { } }
-    ]
-  ];
-
-  ReduceSystem[ pols_, nonZeroPols_, linPols_, denom_ ] :=
-  MemoryConstrained[
-    {
-      map[ MoldPol[ PolRest[ #, denom ] ]&, pols ],
-      nonZeroPols,
-      linPols
-    },
-    maxMemory,
-    printlog["RBL:memory_overflow", { procID }];
-    Sow[ { pols, nonZeroPols, linPols } ];
-    { { 1 }, { }, { } }
-  ];
-
-  (* Add denominators appearing in the rules to the set of nonzero polList *)
-  ToAssociation[ pols_, nonZeroPols_, linPols_ ] :=
-  <|
-    "Polynomials" -> DeleteDuplicates @ Map[ MoldPol, pols ],
-    "Assumptions"-> LogicalExpand @
-    Reduce[ Thread[  nonZeroPols != 0 ], Backsubstitution -> True ],
-    "LinearPolynomials" -> linPols
-  |>;
-
-  RecursiveReduce[
-    ps_,    (* Polynomials:          initially RCF /@ pols *)
-    nzps_,  (* Non-zero polynomials: initially { } *)
-    lps_    (* Linear polynomials:   initially { } *)
-  ] :=
-  If[
-    InvalidPolSystem[ ps, nzps, lps ],
-    (* THEN *)
-    Return @ Null,
-    (* ELSE *)
-
-    With[ { linPol = AddOptions[opts][SimplestPol][ ps, s ] },
-
-      If[ (* No linear rules in system *)
-        MissingQ @ linPol,
-        (* THEN *)
-        Sow[ { ps, nzps, lps } ];
-        Return @ Null
-      ];
-
-      If[ (* Denominator in rule isn't zero *)
-        MonQ @  PolRest[ linPol["Factor"], nzps ],
-        (* THEN *)
-        RecursiveReduce @@
-        UpdateSystem[ ps, nzps, lps, linPol ];
-        Return @ Null
-      ];
-
-      (* ASSUME DENOMINATOR != 0 *)
-      RecursiveReduce @@
-      UpdateSystem[ ps, Append[ linPol["Factor"] ] @  nzps, lps, linPol ];
-
-      (* ASSUME DENOMINATOR == 0 *)
-      RecursiveReduce @@
-      ReduceSystem[ ps, nzps, lps, RCF @ linPol["Factor"] ]
-    ]
-  ];
-
-
-  printlog["RBL:init", { procID, polList, s, { opts } } ];
-
-  { time, result } =
-  AbsoluteTiming[
-    ToAssociation @@@
-    DeleteCases[
-      Reap[ RecursiveReduce[ RCF /@ polList, { }, { } ] ][[2]] /. {{x__}} :> {x},
-      { { 1 }, { }, { } }
-    ]
-  ];
-
-  printlog["Gen:results", { procID, result, time } ];
-
-  If[ parallelQ, CloseKernels[ ] ];
-
-  result
-
-];
-
-SimplestPol[ pols_, s_, opts:OptionsPattern[] ] :=
-With[
-  {
-    polsInfo =
-    Select[
-      LinearVarInfo[ s ] /@ pols,
-      Not @* MissingQ
-    ],
-    weightfn =
-    OptionValue["WeightFunction"]
-  },
-
-  If[
-    polsInfo === {},
-    Return @ Missing[]
-  ];
-
-  MinimalBy[
-    polsInfo,
-    weightfn @@ { #["Factor"], #["Term"] }&,
-    1
-  ][[1]]
-];
-
-PolWeight[ f_, t_ ] :=
-If[
-  Length[ MonomialList[f] ] == 1,
-  0,
-  LeafCount[ { f, t } ]
-];
-
-LinearVarInfo[ s_ ][ pol_ ] :=
-Module[{ nonLinVars, linVars, var },
-  nonLinVars =
-  Cases[ { pol }, Power[ s[i__], _ ] :> s[i], { 1, 5 } ] //
-  DeleteDuplicates;
-
-  linVars =
-  Tally @
-  Cases[
-    pol,
-    s[i__] /; FreeQ[s[i]] @ nonLinVars,
-    Infinity
-  ];
-
-  If[
-    linVars === {},
-    Return @ Missing[],
-    var =
-    MinimalBy[ linVars, Last, 1 ][[1,1]];
-    ReplaceAll[
-      Collect[ pol, var ],
-      a_. * var + b_ : 0 :> <| "Var" -> var, "Factor" -> a, "Term" -> b |>
-    ]
-  ]
-];
 
 
 (*

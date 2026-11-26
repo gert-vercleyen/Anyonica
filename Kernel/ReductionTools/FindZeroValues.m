@@ -21,6 +21,8 @@ FindZeroValues::wrongequationsformat =
 
 FindZeroValues::wrongvariablesformat =
   "`1` must be a list of variables of the form _Symbol[i__Integer].";
+FindZeroValues::emptylistofvariables = 
+  "The list of variables must be non-empty";
 
 Options[ FindZeroValues ] :=
   Join[
@@ -61,7 +63,7 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       result, absTime, proposition, knowns, equivs, reducedVars, AddExtraInfo,
       preProp, binEqns, sumEqns, trivialVars, eRules, reducedMats, reducedEqns,
       simpleERules, remainingVars, FilterSolutions, trivialVarsFromMats, trivialVarsFromEquivalences,
-      properEquivalences, allsatSolutions
+      properEquivalences, allsatSolutions, replaceTrivialVars, reducedERules, dEquiv
     },
     regMats = OptionValue["InvertibleMatrices"];
     eRules  = OptionValue["Equivalences"];
@@ -75,6 +77,9 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
       Catch[
         { { simpleEqns, simpleMats, simpleERules }, simpleVars, revertVars } =
           SimplifyVariables[ { eqns, regMats, eRules }, vars, b ];
+
+        (* An equation that is False can never be satisfied *)
+        If[ MemberQ[False] @ simpleEqns, Throw @ { } ];
 
         (* We can use a reduced set of variables by using (tetrahedral) equivalences *)
         (* First we split the tetrahedral equivalences in (1) rules that demand an F-symbol to be non
@@ -129,15 +134,20 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
         { binEqns, sumEqns } =  BinomialSplit @ simpleEqns;
 
         dEquiv = Dispatch @ properEquivalences;
-        (* Convert the equations to a proposition *)
-        preProp = 
+
+        (* Convert the equations to a proposition. The equivalences only hold up to non-zero
+           factors, so they may never be substituted in the equations themselves: equivalent
+           monomials would then be added together (e.g. 0 == m1 + m2 would become 0 == 2 m,
+           or even 0 == 2), while in an actual solution they can have opposite signs.
+           BinEqnsToProp therefore applies the equivalences to the individual monomials. *)
+        preProp =
           And[
-            EqnsToProp[ replaceTrivialVars[binEqns/.dEquiv] ],
+            BinEqnsToProp[ binEqns, replaceTrivialVars @* ReplaceAll[dEquiv] ],
             AddOptions[opts][SumEqnsToProp][ sumEqns, properEquivalences, trivialVars, b ],
             MatsToProposition[b] @ reducedMats/.dEquiv
           ]/.b[i_]:>i;
 
-        If[ preProp =!= True, preProp = DeleteDuplicates @ preProp ];
+        If[ Head[preProp] === And, preProp = DeleteDuplicates @ preProp ];
 
         printlog[ "FZV:preProp", { procID, preProp } ];
 
@@ -150,32 +160,33 @@ FindZeroValues[ eqns_, vars_, opts:OptionsPattern[] ] :=
 
         printlog[ "FZV:reduced_system", { procID, proposition, knowns, equivs, remainingVars } ];
 
+        (* If the proposition can not be satisfied there are no valid configurations *)
+        If[ proposition === False, Throw @ { } ];
+
+        (* Returns the list of ALL variables that are 0 for a given solution of the proposition:
+           every member of an equivalence class takes the value of the representative of
+           that class, not just the representative itself. *)
         AddExtraInfo[ sol_ ] :=
-          SortBy[First] @
           With[
-            { rules = 
-              Dispatch @ 
-                Join[ 
+            { values =
+              Dispatch @
+                Join[
                   sol,
                   knowns,
-                  MapAt[ ReplaceAll[Dispatch @ sol], equivs, { All, 2 } ]  
+                  MapAt[ ReplaceAll[Dispatch @ sol], equivs, { All, 2 } ]
                 ]
-            }, 
-            Select[ Not @* Last ] @ 
-            MapAt[ 
-              ReplaceAll[rules],
-              Join[ 
-                knowns,
-                Thread[ reducedVars -> (reducedVars/.properEquivalences) ]
-              ], 
-              { All, 2 } 
+            },
+            SortBy[First] @
+            Cases[
+              Thread[ simpleVars -> ( replaceTrivialVars[ simpleVars/.dEquiv ]/.values ) ],
+              Rule[ var_, False ] :> Rule[ var, 0 ]
             ]
-          ]/.False -> 0;
+          ];
 
         If[ (* If all variables are known *)
           Length[ remainingVars ] === 0
           , (* THEN: solution is trivial *) 
-          Throw @ { AddExtraInfo @ {} }
+          Throw @ { AddExtraInfo @ {} /.revertVars }
         ];
 
         FilterSolutions[ soln_ ] :=
@@ -235,7 +246,7 @@ Options[SumEqnsToProp] =
     "SumSubsetParameter" -> "Default"
   };
 
-SumEqnsToProp[ { }, equivs_, trivVars_,  x_, opts:OptionsPattern ] := True;
+SumEqnsToProp[ { }, equivs_, trivVars_,  x_, opts:OptionsPattern[] ] := True;
 
 SumEqnsToProp[ eqns_, equivs_, trivVars_, x_, opts:OptionsPattern[] ] :=
   With[
@@ -336,6 +347,30 @@ EqnsToProp[ eqns_, simplifications_ ] :=
     eqns
   ]/.simplifications;
 
+(* BinEqnsToProp[ eqns, replace ] returns the proposition that states that none of the equations
+   has exactly one non-zero monomial. The function replace (which typically replaces variables by
+   equivalent ones) is applied to the lists of monomials of the equations, and not to the equations
+   themselves, so different monomials can never be added to, or cancelled against, each other. *)
+BinEqnsToProp[ eqns_, replace_ ] :=
+  And @@
+  Map[
+    TermsToProp,
+    DeleteDuplicates[
+      Sort /@ ReduceMonomials @ replace @ Map[ EqnToTerms, DeleteCases[True] @ eqns ]
+    ]
+  ];
+
+(* List of the monomials that appear in an equation *)
+EqnToTerms[ eqn_ ] :=
+  ( List @@ eqn )/.Plus -> Sequence;
+
+(* An equation can only hold if the number of its non-zero monomials is different from 1 *)
+TermsToProp[ terms_List ] :=
+  BooleanConvert[
+    NotOnlyOne @@ Map[ IntToBool, terms/.Times -> And ],
+    "CNF"
+  ];
+
 SetAttributes[EqnToProp,Listable];
 
 EqnToProp[eqn_] :=
@@ -395,7 +430,7 @@ BooleanZeroValues[ prop_, remainingVars_, opts:OptionsPattern[] ] :=
         If[
           !MatchQ[ instances, { { __?BooleanQ }.. } ]
           ,
-          Abort[]
+          {} 
         ];
 
         Thread[ remainingVars -> # ]& /@
@@ -414,10 +449,12 @@ ZeroValuesFromReduce[ prop_, reducedVars_ ] :=
     ],
     reducedVars,
     Integers
-  ];
+  ]//
+  ReplaceAll[ {HoldPattern[a_->0]:>a->False, HoldPattern[a_->1]:>a->True } ];
 
 CCodeZeroValues[ prop_, reducedVars_ ] :=
-  SolveDiophantineSystem[ PropToEqns @ prop, reducedVars, { 0, 1 } ];
+  SolveDiophantineSystem[ PropToEqns @ prop, reducedVars, { 0, 1 } ]//
+  ReplaceAll[ {HoldPattern[a_->0]:>a->False, HoldPattern[a_->1]:>a->True } ];
 
 Options[ReduceViaLogic] = 
   {
@@ -427,7 +464,7 @@ Options[ReduceViaLogic] =
 ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
   Module[
     { UpdateKnowns, UpdateEquivalences, SimplifySystem, simplify1, simplify2, simplify3, simplify4, findEquiv,
-      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences, lSymp, combinedSimplification 
+      TransferKnowns, FindEquivs, RepeatedUpdateEquivalences, lSymp, combinedSimplification, combinedSimplify 
     },
 
     (* TODO: implement error message if lSymp > 4 *)
@@ -471,6 +508,20 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
         Integer
         ,
         { True, Append[ prop -> True ] @ knowns, equivs/.prop -> True }
+        ,
+        Not (* Only a single negated variable is left: without this case the Switch stays unevaluated *)
+        ,
+        If[
+          IntegerQ @ First @ prop
+          ,
+          { True, Append[ First[prop] -> False ] @ knowns, equivs/.First[prop] -> False }
+          ,
+          { prop, knowns, equivs }
+        ]
+        ,
+        _
+        ,
+        { prop, knowns, equivs }
       ];
 
     (* Find disjunct equivalences *)
@@ -526,7 +577,7 @@ ReduceViaLogic[ proposition_, OptionsPattern[] ] :=
           { removeRedundantVars = Dispatch[ Thread[ (Intersection @@ (dnfForm/.{ And|Or->List })) -> True ] ] },
           {
             dnfForm /. removeRedundantVars,
-            #[[2]],
+            Join[ #[[2]], Normal @ removeRedundantVars ],
             #[[3]] /. removeRedundantVars
           }
         ],
@@ -578,7 +629,7 @@ MatProp[ b_ ][ mat_ ] :=
 ReduceMonomials[ expr_ ] :=
   expr //
   ReplaceAll[ Power[ a_, b_Integer ] :> a ] //
-  ReplaceAll[ Times[ a_Integer, b__ ] :> Times[b] ];
+  ReplaceAll[ Times[ a_?NumericQ, b__ ] :> Times[b] ];
 
 
 PermanentConditions[ mats_List ] :=
@@ -586,94 +637,3 @@ PermanentConditions[ mats_List ] :=
     ( Expand[Permanent[#]] != 0 )&,
     mats
   ];
-
-PicoSATSolutions[ prop_ ] := 
-  Module[ 
-    { currentdir, scriptdir, dir }, 
-    currentdir = Directory[];
-
-    scriptdir =
-      Quiet[
-        Check[ SetDirectory @ DirectoryName @ $InputFileName,    (* If not using notebook interface *)
-        SetDirectory @ NotebookDirectory[]],SetDirectory::fstr   (* If using notebook interface *)
-      ];
-    scriptfn = FileNameJoin @ { scriptdir, "JuilaPicoSAT.jl" };
-
-    dir    = CreateDirectory[]; 
-    datafn = FileNameJoin @ { dir, "proposition.csv" };
-    solfn  = FileNameJoin @ { dir, "solutions.csv" };
-    (* Export Proposition *) 
-    PicoSATExportProp[ datafn , prop ];
-
-    Run @ StringJoin[ "julia -e \"include(\\\"", scriptfn, "\\\") -- ", datafn ];
-
-    soln = Transpose @ Import @ solfn;
-
-  ];
-
-
-PicoSATExportProp[ fn_, prop_ ] :=
-	Module[
-		{ cscmat },
-		cscmat =
-			SparsetoCSC @
-			ListPropToSparse @ 
-			( Flatten /@ ( List/@( List @@ prop )/.{ Or -> List, Not -> (-1 * #&) } ) );
-			
-		Export[ fn, cscmat, "CSV" ]
-	];
-
-
-PicoSATExportScript[ dir_ ] :=
-	Module[
-		{ cscmat },
-		cscmat =
-			SparsetoCSC @
-			ListPropToSparse @ 
-			( Flatten /@ ( List/@( List @@ prop )/.{ Or -> List, Not -> (-1 * #&) } ) );
-			
-		Export[ fn, cscmat, "CSV" ]
-	];
-
-
-(* Convert list of lists to sparsearray *)
-ListPropToSparse[ lp_List ] := 
-  Reap[ 
-    Do[
-      Sow[ { i, j } -> lp[[i,j]] ]
-      ,
-      { i, Length @ lp },
-      { j, Length @ lp[[i]] }
-    ]
-  ][[2,1]];
-
-(* Convert sparse array to CSC format *)
-SparsetoCSC[ m_SparseArray ] := 
-	With[{ rules = Most @ ArrayRules @ m },
-		Transpose[ Flatten /@ (List @@@ rules) ]
-	];
-
-(*
-PropositionToCNFFile[ prop_, x_ ] :=
-  With[{
-    orProps = List @@ BooleanConvert[ prop, "CNF" ],
-    nVars = CountVariables[ prop, x ]
-    },
-    StringJoin[
-      "p "<>ToString[nVars] <> " " <> ToString[ Length @ orProps ] <>"\n",
-      Sequence @@ Map[ OrToString[x], orProps ]
-    ]
-  ];
-
-
-OrToString[ x_][x[i_]] :=
-  ToString[i] <> " 0";
-
-OrToString[ x_][Not[x[i_]]] :=
-  ToString[-i] <> " 0";
-
-OrToString[ x_ ][ prop_ ] :=
-  StringJoin[ #, " 0\n" ]& @
-  StringRiffle @
-  ReplaceAll[ prop, { Or -> List, x[i_] :> ToString[i], Not[x[i_]] :> ToString[-i] } ];
-*)

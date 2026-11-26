@@ -51,8 +51,7 @@ SolveModZSpace[ mat_?MatrixQ, vec_List, opts:OptionsPattern[] ] :=
           Return[ { {}, {{}}, {{}} } ]
         ];
 
-        { u, d, v } =
-          SmithDecomposition[ mat ];
+        { u, d, v } = SparseSmithDecomposition @ mat;
 
         printlog["SMZS:decomposition", {procID,{u,d,v}}];
 
@@ -63,7 +62,11 @@ SolveModZSpace[ mat_?MatrixQ, vec_List, opts:OptionsPattern[] ] :=
 
         If[
           r == 0,
-          Return[ { {}, {{}}, IdentityMatrix[ Length[vec] ] } ]
+          If[ 
+            MemberQ[ vec, x_/; simplify[x] != 0 ],
+            Return[ { {}, {{}}, {{}} } ],
+            Return[ { {}, {{}}, IdentityMatrix @ Last @ Dimensions @ mat } ]
+          ]
         ];
 
         ZSpace =
@@ -104,10 +107,10 @@ SolveModZSpace[ { mat_?MatrixQ, vec_List }, opts:OptionsPattern[] ] :=
   SolveModZSpace[ mat, vec, opts ];
 
 IntegerMatrixQ[ mat_ ] :=
-  TrueQ[ MatrixQ[mat] && ( mat === {{}} || FreeQ[ mat, x_ /; !IntegerQ[x], {3} ] ) ];
+  TrueQ[ MatrixQ[mat] && ( mat === {{}} || MatchQ[ mat, { {_Integer .. } .. }] ) ];
 
-IntegerMatrixQ[ mat_SparseArray ] :=
-  TrueQ @ FreeQ[ ArrayRules[mat][[;;,2]], x_ /; !IntegerQ[x], {2} ];
+IntegerMatrixQ[mat_SparseArray] := 
+  MatchQ[Values@ArrayRules[mat], {_Integer ...}];
 
 
 PackageExport["SolveModZ"]
@@ -195,7 +198,7 @@ IntegerOrthogonalSpace[ mat1_, mat2_ ] :=
     ,
     True
     ,
-      With[{ HD = HermiteDecomposition[ Transpose[ mat1 ] .  mat2 ] },
+      With[{ HD = SparseHermiteDecomposition[ Transpose[ mat1 ] .  mat2 ] },
           ( mat1 . Transpose[ HD[[1]] ] )[[ ;;, FirstZeroRowPos[ HD[[2]] ];; ]]
       ]
   ];
@@ -222,11 +225,8 @@ SolveSemiLinModZ::nonintegermatrix =
 Options[SolveSemiLinModZ] =
   {
     "OrthogonalTo" -> None,
-    "UseDatabaseOfSmithDecompositions" -> False,
-    "StoreDecompositions" -> False,
     "PreEqualCheck" -> Identity,
-    "SimplifyIntermediateResultsBy" -> Identity,
-    "Parallel" -> False (* TODO: setting Parallel to true creates a wrong structure of solutions. I can't reproduce the bug, even by coppying the whole code. Echo also doesn't show any strange results.*)
+    "SimplifyIntermediateResultsBy" -> Identity
   };
 
 SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
@@ -240,7 +240,6 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
       OptionValue["PreEqualCheck"];
     simplify =
       OptionValue["SimplifyIntermediateResultsBy"];
-    (*If[ OptionValue["Parallel"], LaunchKernels[]; map = ParallelMap, *)map =  Map (*];*);
     
     procID =
       ToString[Unique[]];
@@ -255,13 +254,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
         Return[ {} ]
       ];
 
-      { u, d, v } =
-        If[
-          OptionValue["UseDatabaseOfSmithDecompositions"],
-          LoadData["SmithDecompositions"];
-          AddOptions[opts][MemoizedSmithDecomposition][ mat ],
-          SmithDecomposition[ mat ]
-        ];
+      { u, d, v } = SparseSmithDecomposition @ mat;
 
       printlog["SSES:decomposition", {procID,{u,d,v}}];
 
@@ -272,14 +265,16 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
       
       If[
         r == 0,
-        Return[{}]
+        If[ 
+          MemberQ[ vec, x_/; simplify[x] != 1 ],
+          Return[{}],
+          Return[param /@ Range  @ Last @ Dimensions @ mat ]
+        ]
       ];
 
-      expRHS =
-        PowerDot[ vec, u ];
+      expRHS = PowerDot[ vec, u ];
 
-      consistent =
-        AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
+      consistent = AddOptions[opts][ConsistentQ][ r, expRHS, TrueQ[# == 1]& ];
       
       If[ !consistent, Return @ { } ];
 
@@ -298,10 +293,7 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
         v[[ ;;, ;;r ]] . DiagonalMatrix[ 1 / ld ];
 
       constVec =
-        map[
-          simplify,
-          PowerDot[ expRHS[[;;r]], ZSpace ]
-        ];
+        simplify /@ PowerDot[ expRHS[[;;r]], ZSpace ];
       
       zVecs =
         Exp[ 2 Pi I * Map[ (ZSpace . #)&, Tuples[ Range[ LCM @@ Denominator /@ ZSpace ] - 1 ] ] ];
@@ -324,10 +316,8 @@ SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
           ]
         ];
       
-      map[ (constVec * monomials) * #&, zVecs ]
+      Map[ (constVec * monomials) * #&, zVecs ]
     ];
-    
-    If[ OptionValue["Parallel"], CloseKernels[] ];
     
     printlog["Gen:results", {procID, result, absTime}];
 
@@ -353,7 +343,6 @@ Options[BinToSemiLin] :=
   {
     "SimplifyIntermediateResultsBy" -> Identity,
     "PreEqualCheck" -> Identity,
-    "Parallel" -> False,
     "Numeric" -> False,
     "Accuracy" -> 64
   };
@@ -373,9 +362,7 @@ CheckBinToSemiLinArgs[ eqnList_, nVars_ ] :=
 BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
 (
   CheckBinToSemiLinArgs[ eqns, Length[vars] ];
-  Module[ { map, properEqns, sa, betr, tpbe, simplify, probPos, numeric, accuracy, preEqCheck },
-    
-    If[ OptionValue["Parallel"], Quiet[ LaunchKernels[] ]; map = ParallelMap, map = Map ];
+  Module[ { properEqns, sa, betr, tpbe, simplify, probPos, numeric, accuracy, preEqCheck },
     
     simplify   = OptionValue["SimplifyIntermediateResultsBy"];
     numeric    = OptionValue["Numeric"];
@@ -394,22 +381,27 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     
     (* Make sure the form of the equations is correct *)
     properEqns =
-      map[
+      Map[
         tpbe,
         If[ numeric, Rationalize[ eqns, 10^-accuracy ], eqns ]
       ];
     
     (* Check for zeros and False *)
-    probPos =
-      FirstPosition[ properEqns, n_Equal /; preEqCheck[n] == 0, Missing[], 1 ];
+    probPos = 
+      FirstPosition[ 
+        properEqns, 
+        n_Equal /; 
+        TrueQ[Expand @ preEqCheck[Subtract @@ n] == 0], 
+        Missing[], 
+        1 
+      ];
     
     If[ 
-      ! MissingQ[probPos], 
+      !MissingQ[probPos], 
       Throw[ { "Zero", probPos, eqns[[probPos]], properEqns[[probPos]] }, "Inconsistent"] 
     ];
     
-    probPos =
-      FirstPosition[ properEqns, False, Missing[], 1 ];
+    probPos = FirstPosition[ properEqns, False, Missing[], 1 ];
     
     If[ 
       ! MissingQ[probPos], 
@@ -419,9 +411,7 @@ BinToSemiLin[ eqns_, vars_, x_, opts : OptionsPattern[] ] :=
     sa =
       DeleteSparseDuplicates @ 
       SparseArray @ 
-      map[ betr, DeleteCases[True] @  properEqns ];
-    
-    If[ OptionValue["Parallel"], CloseKernels[] ];
+      Map[ betr, DeleteCases[True] @  properEqns ];
     
     If[
       numeric,
@@ -686,26 +676,13 @@ FactorListToSparseInput[ list_, i_, s_ ] :=
 PackageExport["ReduceSemiLinModZ"]
 
 Options[ReduceSemiLinModZ] := 
-  Join[
-    Options[ConsistentQ],
-    {
-      "UseDatabaseOfHermiteDecompositions" -> True,
-      "StoreHermiteDecompositions" -> False
-    }
-  ];
+    Options[ConsistentQ];
 
 ReduceSemiLinModZ[ mat_, rhs_, s_, opts:OptionsPattern[]  ] := 
   Module[{ uInv, upperTriang, leftHandSides, rightHandSides },
     
     { uInv, upperTriang  } =
-      Normal @ 
-      If[
-        OptionValue["UseDatabaseOfHermiteDecompositions"]
-        ,
-        AddOptions[opts][MemoizedHermiteDecomposition][ mat ]
-        ,
-        HermiteDecomposition[mat];
-      ];
+      Normal @ SparseHermiteDecomposition[mat];
 
     (* rank of system *)
     r = 

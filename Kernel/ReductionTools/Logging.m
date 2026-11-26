@@ -2021,7 +2021,7 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:hermitestart", { id_, var_ } ]
           "Started computing HermiteDecomposition using "<>
           If[ 
             var === None, 
-            "Mathematica's built-in method.",
+            "SparseHermiteDecomposition via JLINK.",
             "external Julia session with OSCAR."
            ] 
         ]

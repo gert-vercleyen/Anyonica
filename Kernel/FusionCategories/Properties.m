@@ -204,7 +204,7 @@ SphericalQ[ cat_FusionCategory ] :=
   ];
 
 conjugatePairs[ cat_ ] := 
-	List @@@ Union @ DeleteCases[ Sort /@ Normal @ CC @ FusionRing @ cat, i_ -> i_ ];
+	List @@@ Union @ DeleteCases[ Sort /@ Normal @ CC @ FusionRing @ cat, i_->i_ ];
 
 CheckFormalCode[c1_,c2_]:=
 	With[{fc1 = FormalCode @ c1, fc2 = FormalCode @ c2 },
@@ -213,9 +213,8 @@ CheckFormalCode[c1_,c2_]:=
 
 CheckFusionRing[c1_,c2_] :=
 	With[ { eq=EquivalentFusionRingsQ[FusionRing@c1,FusionRing@c2]},
-		If[ !eq, Throw @ False ]
+		If[ !TrueQ[eq], Throw @ False ]
 	];
-
 
 
 PackageExport["EquivalentFusionCategoriesQ"]
@@ -233,28 +232,28 @@ Catch[
 		OptionValue["UseFormalCode"],
 		CheckFormalCode[c1,c2];
 	];
+
 	CheckFusionRing[c1,c2];
+
 	check = OptionValue["PreEqualCheck"];
 
 	qDims1 = QuantumDimensions[c1]; qDims2 = QuantumDimensions[c2];
-
-	If[ check[ Sort[qDims1] ] != check[ Sort[ qDims2 ] ], Throw @ False ];
 
 	fra = FRA @ FusionRing @ c1;
 
 	eqQDims =
 		Catch[
-		Do[
-			If[ PermuteSymbols[qDims1,a] == qDims2, Throw @ True ]
-			, { a, fra }
-		]; Throw @ False
+			Do[
+				If[ Check[PermuteSymbols[qDims1,a] == qDims2], Throw @ True ]
+				, { a, fra }
+			]; Throw @ False
 		];
 
 	If[ !eqQDims, Throw @ False ];
 
 	test = OptionValue["PreEqualCheck"];
-		invariants1 = FullInvariants[c1];
-		invariants2 = FullInvariants[c2];
+	invariants1 = FullInvariants[c1];
+	invariants2 = FullInvariants[c2];
 
 
 	fSymb1 = FSymbols[c1]; fSymb2 = FSymbols[c2];
@@ -279,7 +278,7 @@ Catch[
 		, { a, fra }
 	];
 
-		Throw @ False
+	Throw @ False
 	]
 ];
 
@@ -432,7 +431,7 @@ AutomorphismEquations[ cat_, perm_, g_, opts:OptionsPattern[] ] :=
 				perm === Range @ Rank @ cat,
 				Identity,
 				ReplaceAll[ 
-					If[ pq,  Append[ \[ScriptD][a_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
+					If[ pq,  Append[ \[ScriptD][a_] :> \[ScriptD][ perm[[a]] ] ], Identity ] @ 
 					If[ bq,  Append[ R[a_,b_,c_] :> R[ perm[[a]], perm[[b]], perm[[c]] ] ], Identity ] @ 
 					{ 
 						g[a_,b_,c_] :> g[ perm[[a]], perm[[b]], perm[[c]] ],
