@@ -748,7 +748,7 @@ ReduceByLinearity[ polList_List, s_, opts:OptionsPattern[] ] :=
 Module[
   {
     check, ToPol, vars, RCF, InvalidPolSystem, UpdateSystem, RecursiveReduce, time, result, procID, id, RatRule,
-    ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, maxMemFactor
+    ReduceSystem, AddNonZeroPols, simplify, rootReduce, MonQ, PolRest, maxMemFactor, NonZeroByFactorsQ
   },
   maxMemFactor = OptionValue["ReduceByLinearityMaxMemoryFactor"];
   simplify     = OptionValue["SimplifyIntermediateResultsBy"];
@@ -868,6 +868,27 @@ Module[
     |>
   ];
 
+  (* True if pol is a monomial times factors of the polynomials in nzps *)
+  NonZeroByFactorsQ[ pol_, nzps_List ] :=
+    With[
+      { nonNumNzps = DeleteCases[ nzps, _?NumericQ ] },
+      {
+      rest =
+        FixedPoint[
+          Function[ 
+            p, 
+            Fold[ 
+              Cancel[ #1 / PolynomialGCD[ #1, #2 ] ]&, 
+              p,
+              nonNumNzps 
+            ]
+          ],
+          pol
+        ]
+      },
+      rest =!= 0 && MonQ[ rest ]
+    ];
+
   RecursiveReduce[$Aborted] =
   $Aborted;
 
@@ -895,7 +916,7 @@ Module[
       ];
 
       If[ (* Denominator in rule isn't zero *)
-        MonQ @  PolRest[ denom, nzps ]
+        NonZeroByFactorsQ[ denom, nzps ]
         ,
         printlog[ "RBL:nonzero_denominator", { id, lRule } ];
         RecursiveReduce @@
