@@ -728,7 +728,7 @@ PackageExport["ReduceByLinearity"]
 
 ReduceByLinearity::usage =
 "ReduceByLinearity[polList,s] reduces polList by using polynomials in polList that are linear in one of the "<>
-"variables labeled by s.";
+"variables labeled by s. It assumes none of the variables s[1], ..., s[n] are zero but uses no other assumptions";
 
 Options[ReduceByLinearity] :=
 Join[
