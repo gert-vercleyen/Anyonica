@@ -79,7 +79,7 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
     If[
       !skipCheck && 
       !ValidInitalizationDataQ[ ring, fSymbols, rSymbols, pivStruct, preEqualCheck ],
-      Message[ FusionCategory::invaliddata ]
+      Message[ FusionCategory::invaliddata ]; Abort[]
     ];
 
     If[ 
