@@ -495,7 +495,7 @@ CharacterTable[ g_ ] :=
 
 SetAttributes[ToInteger, Listable];
 ToInteger[ x_ ] :=
-  If[ IntegerQ[x], x, Floor[N[ x, { Infinity, 1 }]] ];
+  If[ IntegerQ[x], x, Round[N[ x, { Infinity, 1 }]] ];
 
 (* Haagerup-Izumi *)
 PackageExport["FusionRingHI"]
