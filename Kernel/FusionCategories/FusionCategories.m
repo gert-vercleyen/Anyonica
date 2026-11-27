@@ -294,7 +294,7 @@ CheckHexagonEquations[ ring_, fSymbols_, rSymbols_, opts:OptionsPattern[] ] :=
   If[ 
     Mult @ ring === 1, 
     CheckHexagonEquationsWithoutMultiplicity[ ring, fSymbols, rSymbols, opts ],
-    CheckHexagonEquations::notimplementedyet
+    Message[CheckHexagonEquations::notimplementedyet]; Abort[]
   ];
 
 Options[CheckHexagonEquationsWithoutMultiplicity] = 
