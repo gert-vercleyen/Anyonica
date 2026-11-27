@@ -1996,18 +1996,21 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBS:results", { id_, results_, time_ 
     ]
   ];
 
-MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, length_ } ] :=
-  AddCell[
-    fileName,
-    nbo,
-    Cell[
-      TextData[{
-        inputStyle[ 
-          "Reducing system of "<>ToString[length] <> " equations via HermiteDecomposition"  
-          ]
-      }],
-      "Text",
-      CellTags -> { id, "Info" }
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "RBSVHD:init", { id_, eqns_, vars_, optionlist_ } ] :=
+  Module[{fn},
+    fn = dataFileName[ id, dir, "RBSVHDArguments" ];
+    safeExport[ fn1, { equations, vars, optionList } ];
+    AddCell[
+      fileName,
+      nbo,
+      startCell[
+        id,
+        dir,
+        "ReduceBinSysHermite",
+        { eqns, vars },
+        optionlist,
+        fn
+      ]
     ]
   ];
 

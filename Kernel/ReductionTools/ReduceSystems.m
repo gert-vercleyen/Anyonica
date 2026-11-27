@@ -287,16 +287,17 @@ ReduceBinSysHermite[ preEqns_, vars_, opts:OptionsPattern[] ] :=
 
     eqns = TEL @ Map[ simplify, preEqns ]; 
 
-    (* Check for trivial system *)
-    If[ 
-      eqns === {},
-      Return @ <| "Polynomials" -> {}, "Assumptions" -> True, "Values" -> Thread[vars->vars] |>
-    ];
 
     { t, result } = 
     AbsoluteTiming[
 
-      printlog["RBSVHD:init", { procID, Length @ eqns } ]; 
+      printlog["RBSVHD:init", { procID, eqns, vars } ]; 
+
+      (* Check for trivial system *)
+      If[ 
+        eqns === {},
+        Return @ <| "Polynomials" -> {}, "Assumptions" -> True, "Values" -> Thread[vars->vars] |>
+      ];
 
       Catch[
 
