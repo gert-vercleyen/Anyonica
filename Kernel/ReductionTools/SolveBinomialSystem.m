@@ -381,18 +381,6 @@ SolveNonSingularBinomialSystem[ preEqns_List, vars_List, param_, opts:OptionsPat
         printlog["SNSBS:has_false_or_zero", {procID, Expand[eqnList]}];
         Return @ {}
       ];
-
-      (* Simplify the system using a Hermite decomposition *)
-      reducedSystem = 
-        ( # == 0 )& /@ (* Convert polynomials to equations *)
-        (AddOptions[opts][ReduceBinomialSystem][ newEqns, newVars ])["Polynomials"];
-
-      (* Check whether system is consistent *)
-      If[
-        TrueQ[ MemberQ[False] @ reducedSystem ],
-        printlog["SNSBS:has_false_or_zero", {procID, Expand[reducedSystem]}];
-        Return @ {}
-      ];
       
       (* Solve the logarithm of the binomial equations *)
       If[
