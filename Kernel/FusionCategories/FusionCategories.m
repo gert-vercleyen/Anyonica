@@ -37,6 +37,8 @@ FusionCategory::invalidpsymbols =
   "The pivotal structure is not a valid solution to the pivotal equations. This might be due Mathematica being unable to simplify certain expressions. If so, use the option \"PreEqualCheck\" to force simplification. Invalid equations:\n`1`";
 FusionCategory::invaliddata = 
   "The data provided does not correspond to a fusion category."
+FusionCategory::unknownring = 
+  "The Option \"ReplaceByKnownRing\"-> True was provided but the ring can't be found in the data set."
 
 Options[ FusionCategory ] =
   {
@@ -91,7 +93,13 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
 
     If[ 
       OptionValue["ReplaceRingByKnownRing"], 
-      ring = Hold[FRBC][ FC @ ReplaceByKnownRing @ ring ]
+      knownRing = ReplaceByKnownRing @ ring;
+
+      If[ MissingQ @ knownRing, Message[FusionCategory::unknownring]; Abort[] ];
+
+      perm = WhichPermutation[ ring, knownring ];
+
+      ring = Hold[ PermutedRing[ equivRing, FRBC[#] ]&][ FC @ knownRing ]
     ];
 
     Association[
