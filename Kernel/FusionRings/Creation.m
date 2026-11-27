@@ -661,17 +661,21 @@ FusionRingSON2::notimplemented =
 
 (* TODO: implement modular data for metaplectic categories *)
 FusionRingSON2[ m_ ] :=
-  FusionRing[
-      "MultiplicationTable" -> 
-        Which[ 
-          Mod[ m, 4 ] == 0, 
-            rulesdiv4[m/2], 
-          Mod[ m, 2 ] == 0, 
-            rulesdiv2[m/2], 
-          True, 
-            rulesodd[m] 
-        ],
-      "Names" -> {"SO(" <> ToString[m] <> "\!\(\*SubscriptBox[\()\), \(2\)]\)", "Metaplectic(" <> ToString[m] <> ")"}
+  If[ 
+    m < 4,
+    Message[FusionRingSON2::notimplemented]; Abort[],
+    FusionRing[
+        "MultiplicationTable" -> 
+          Which[ 
+            Mod[ m, 4 ] == 0, 
+              rulesdiv4[m/2], 
+            Mod[ m, 2 ] == 0, 
+              rulesdiv2[m/2], 
+            True, 
+              rulesodd[m] 
+          ],
+        "Names" -> {"SO(" <> ToString[m] <> "\!\(\*SubscriptBox[\()\), \(2\)]\)", "Metaplectic(" <> ToString[m] <> ")"}
+    ]
   ];
 
 rulesodd[m_] :=
