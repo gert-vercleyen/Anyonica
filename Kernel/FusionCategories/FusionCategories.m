@@ -66,24 +66,15 @@ Options[ InitializeFusionCategory ] :=
 InitializeFusionCategory[ ops:OptionsPattern[] ] :=
   Module[
     { ring, fSymbols, rSymbols, preEqualCheck, skipCheck, pivStruct, twists, sMat, modular },
-    ring =
-      OptionValue[ "FusionRing" ];
-    fSymbols =
-      OptionValue[ "FSymbols" ];
-    rSymbols =
-      OptionValue[ "RSymbols" ];
-    preEqualCheck =
-      OptionValue[ "PreEqualCheck" ];
-    skipCheck =
-      OptionValue[ "SkipCheck" ];
-    pivStruct =
-      OptionValue[ "PivotalStructure" ];
-    twists =
-      OptionValue[ "Twists" ];
-    sMat =
-      OptionValue[ "SMatrix" ];
-    modular =
-      OptionValue[ "Modular" ];
+    ring          = OptionValue[ "FusionRing" ];
+    fSymbols      = OptionValue[ "FSymbols" ];
+    rSymbols      = OptionValue[ "RSymbols" ];
+    preEqualCheck = OptionValue[ "PreEqualCheck" ];
+    skipCheck     = OptionValue[ "SkipCheck" ];
+    pivStruct     = OptionValue[ "PivotalStructure" ];
+    twists        = OptionValue[ "Twists" ];
+    sMat          = OptionValue[ "SMatrix" ];
+    modular       = OptionValue[ "Modular" ];
 
     If[
       !skipCheck && 
