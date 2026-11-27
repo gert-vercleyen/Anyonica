@@ -121,7 +121,7 @@ ValidInitalizationDataQ[ ring_, fsymbols_, rsymbols_, psymbols_, preEqualCheck_ 
         Message[ FusionCategory::wrongringformat ]; False,
       !MissingQ[ rsymbols ] && !ProperRSymbolRulesQ[ rsymbols ],
         Message[ FusionCategory::wrongrsymbolsformat ]; False,
-      !TrueQ[(vc = CheckPentagonEquations[ ring, fsymbols, "PreEqualCheck" -> preEqualCheck ])],
+      !TrueQ[vc = CheckPentagonEquations[ ring, fsymbols, "PreEqualCheck" -> preEqualCheck ]],
         Message[ FusionCategory::invalidfsymbols, vc[[2]] ]; False,
       !MissingQ[rsymbols] && 
       !TrueQ[
