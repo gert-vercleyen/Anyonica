@@ -565,7 +565,7 @@ FusionRingHI[ group_, OptionsPattern[] ] :=
   FusionRingHI[
     GroupMultiplicationTable @ group,
     If[
-      OptionValue["Names"] != {""}
+      OptionValue["Names"] != {}
       ,
       "Names" -> OptionValue["Names"]
       ,
