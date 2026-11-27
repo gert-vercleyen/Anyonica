@@ -521,7 +521,7 @@ FusionRingHI[ tab_?MatrixQ, OptionsPattern[] ] :=
     inv = tab // Position[ #, 1 ]& // Transpose // Last
     },
     Which[
-      !GroupTableQ[ tab ], Message[ FusionRingHI::nongrouptable, tab ] ; Abort[]
+      !GroupTableQ[ tab ], Message[ FusionRingHI::notgrouptable, tab ] ; Abort[]
       ,
       !SymmetricMatrixQ[ tab ], Message[ FusionRingHI::nonsymmulttab, tab ]
       ,
