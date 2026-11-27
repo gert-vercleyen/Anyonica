@@ -68,7 +68,7 @@ IncrementalGroebnerBasis::usage =
 Options[IncrementalGroebnerBasis] :=
 Join[
   {
-    "SimplifyIntermediateResultsBy" -> Identity,
+    "SimplifyIntermediateResultsBy" -> RootReduce,
     "ReduceRoots" -> False,
     "ReducePowerSums" -> False,
     "Cutoff" -> .2,

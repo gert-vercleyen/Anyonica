@@ -598,7 +598,7 @@ Union[
     "GaugeDemands" -> {},
     "ZeroValues" -> None,
     "NonSingular" -> False,
-    "PreEqualCheck" -> Identity,
+    "PreEqualCheck" -> RootReduce,
     "InjectSolution" -> {},
     "FindZerosUsingSums" -> True,
     "KnownSymbols" -> {} 
@@ -994,7 +994,7 @@ Options[PentagonGroebnerSystems] :=
     {
       "ReduceRoots" -> False,
       "ReducePowerSums" -> False,
-      "SimplifyIntermediateResultsBy" -> Identity
+      "SimplifyIntermediateResultsBy" -> RootReduce
     },
     Options[ReduceBinomialSystem],
     Options[PreparePentagonSolverInput],
@@ -1088,7 +1088,7 @@ Module[{
             "Symmetries" -> input["Symmetries"],
             "InvertibleMatrices" -> input["InvertibleMatrices"],
             "NonSingular" -> True,
-            "SimplifyIntermediateResultsBy" -> simplify
+            "SimplifyIntermediateResultsBy" -> RootReduce 
           ]
         },
         { input, solverInput }

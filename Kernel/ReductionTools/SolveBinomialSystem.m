@@ -293,8 +293,8 @@ Options[SolveNonSingularBinomialSystem] :=
       "Symmetries" -> None,
       "InvertibleMatrices" -> {},
       "PolynomialConstraints" -> {},
-      "PreEqualCheck" -> Identity,
-      "SimplifyIntermediateResultsBy" -> Identity,
+      "PreEqualCheck" -> RootReduce,
+      "SimplifyIntermediateResultsBy" -> RootReduce,
       "DivideAndConquer" -> True
     },
     Options[ReduceBinomialSystem]

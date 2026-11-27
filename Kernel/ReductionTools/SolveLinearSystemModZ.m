@@ -225,8 +225,8 @@ SolveSemiLinModZ::nonintegermatrix =
 Options[SolveSemiLinModZ] =
   {
     "OrthogonalTo" -> None,
-    "PreEqualCheck" -> Identity,
-    "SimplifyIntermediateResultsBy" -> Identity
+    "PreEqualCheck" -> RootReduce,
+    "SimplifyIntermediateResultsBy" -> RootReduce
   };
 
 SolveSemiLinModZ[ mat_?MatrixQ, vec_List, param_, opts:OptionsPattern[] ] :=
@@ -341,8 +341,8 @@ BinToSemiLin::wrongnumberofvars =
 
 Options[BinToSemiLin] :=
   {
-    "SimplifyIntermediateResultsBy" -> Identity,
-    "PreEqualCheck" -> Identity,
+    "SimplifyIntermediateResultsBy" -> RootReduce,
+    "PreEqualCheck" -> RootReduce,
     "Numeric" -> False,
     "Accuracy" -> 64
   };

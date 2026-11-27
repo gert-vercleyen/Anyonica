@@ -265,7 +265,7 @@ Options[ReduceBinSysHermite] :=
   Join[
     Options[ ReduceSemiLinModZ ],
     { 
-      "SimplifyIntermediateResultsBy" -> Identity,
+      "SimplifyIntermediateResultsBy" -> RootReduce,
       "ExternalEvaluation" -> None,
       "Session" -> None
     }
@@ -642,8 +642,8 @@ SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern
 
 Options[UpdateConstraints] =
 {
-  "SimplifyIntermediateResultsBy" -> Identity,
-  "PreEqualCheck" -> Identity
+  "SimplifyIntermediateResultsBy" -> RootReduce,
+  "PreEqualCheck" -> RootReduce 
 };
 
 PackageScope["UpdateConstraints"]
@@ -733,9 +733,9 @@ ReduceByLinearity::usage =
 Options[ReduceByLinearity] :=
 Join[
   {
-    "SimplifyIntermediateResultsBy" -> Identity,
+    "SimplifyIntermediateResultsBy" -> RootReduce,
     "ReduceByLinearityMaxMemoryFactor" -> .9,
-    "PreEqualCheck" -> Identity
+    "PreEqualCheck" -> RootReduce
   },
   Options[SimplestLinearRule]
 ];
