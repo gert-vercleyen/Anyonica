@@ -538,7 +538,7 @@ FusionCategoryByCode::usage =
 	"FusionCategoryByCode[sevenTuple] returns the fusion category with formal code equal to sevenTuple."<>
   "\nFusionCategoryByCode[sixTuple] returns the multiplicity-free category with formal code equal to sixTuple.";
 
-FusionRingByCode::notsixorseventuple = 
+FusionCategoryByCode::notsixorseventuple = 
 	"The input `1` should be a six or seventuple of natural numbers.";
 
 PackageExport["FCBC"]
