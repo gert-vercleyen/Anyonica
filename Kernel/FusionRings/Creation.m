@@ -83,67 +83,83 @@ FusionRing[ r_ ][ k_ ] :=
 Options[ InitializeFusionRing ] =
   Options[ FusionRing ];
 
+CheckArgs[ops:OptionsPattern[]] := 
+  Which[
+    multTab === Missing
+    ,
+    Message[ FusionRing::nomulttable ]; Abort[]
+    ,
+    !ProperStructureConstantsQ[ multTab ]
+    ,
+    Message[ FusionRing::badcoeff ]; Abort[]
+    ,
+    !ProperDimensionsQ[ multTab ]
+    ,
+    Message[ FusionRing::wrongdim, Dimensions[ multTab ] ]; Abort[]
+    ,
+    !HasUnitQ[ multTab ]
+    ,
+    Message[ FusionRing::nounit ]; Abort[]
+    ,
+    !UniqueInverseQ[ multTab ]
+    ,
+    Message[ FusionRing::multipleinverse ]; Abort[]
+    ,
+    !AllInversesQ[ multTab ]
+    ,
+    Message[ FusionRing::noinverse ]; Abort[]
+    ,
+    !AssociativeQ[ multTab ]
+    ,
+    Message[ FusionRing::notassociative ]; Abort[]
+    ,
+    elNames =!= None && Length[ elNames ] != Length[ multTab ]
+    ,
+    Message[ FusionRing::elnameslength, Length[ elNames ], Length[ multTab ] ]; Abort[]
+    ,
+    !( SameQ @@ Head /@ elNames)
+    ,
+    Message[ FusionRing::elnamesdifferentheads, elNames ]; Abort[]
+    ,
+    !(MemberQ[{String,Integer,Symbol}, Head @* First @ elNames])
+    ,
+    Message[ FusionRing::elnameswrongheads, elNames]; Abort[]
+  ]
+
 InitializeFusionRing[ ops:OptionsPattern[] ] :=
-  With[{
-    multTab =
-      "MultiplicationTable" // OptionValue // Developer`ToPackedArray,
-    names =
-      Which[
-        MissingQ[#], {},
-        StringQ[#], {#},
-        Head[#] === List && And @@ StringQ /@ #, #,
-        True, Message[FusionRing::badargnames, # ]
-      ]& @ OptionValue["Names"],
-    elsName =
-      If[ !MissingQ[#], #, None ]& @ ("ElementsName" // OptionValue)
-    },
-    {
-      elNames = If[ !MissingQ[#], #, elementName/@ Range[Length[multTab]] ]& @ OptionValue["ElementNames"],
-      dualvec = If[ Length[multTab] == 1, {1}, Join[ {1}, multTab[[2;;,2;;,1]] . ( Range[ Length[multTab] - 1 ] + 1 ) ] ]
-    },
-    Which[
-      multTab === None
-      ,
-      Message[ FusionRing::nomulttable ]
-      ,
-      !ProperStructureConstantsQ[ multTab ]
-      ,
-      Message[ FusionRing::badcoeff ]
-      ,
-      !ProperDimensionsQ[ multTab ]
-      ,
-      Message[ FusionRing::wrongdim, Dimensions[ multTab ] ]
-      ,
-      !HasUnitQ[ multTab ]
-      ,
-      Message[ FusionRing::nounit ]
-      ,
-      !UniqueInverseQ[ multTab ]
-      ,
-      Message[ FusionRing::multipleinverse ]
-      ,
-      !AllInversesQ[ multTab ]
-      ,
-      Message[ FusionRing::noinverse ]
-      ,
-      !AssociativeQ[ multTab ]
-      ,
-      Message[ FusionRing::notassociative ]
-      ,
-      elNames =!= None && Length[ elNames ] != Length[ multTab ]
-      ,
-      Message[ FusionRing::elnameslength, Length[ elNames ], Length[ multTab ] ]
-      ,
-      !( Equal @@ Head /@ elNames)
-      ,
-      Message[ FusionRing::elnamesdifferentheads, elNames ]
-      ,
-      !(MemberQ[{String,Integer,Symbol}, Head @* First @ elNames])
-      ,
-      Message[ FusionRing::elnameswrongheads, elNames]
-      ,
-      True
-      ,
+  (
+    CheckArguments[ops];
+    With[{
+      multTab =
+        "MultiplicationTable" // OptionValue // Developer`ToPackedArray,
+      names =
+        Which[
+          MissingQ[#], {},
+          StringQ[#], {#},
+          Head[#] === List && And @@ StringQ /@ #, #,
+          True, Message[FusionRing::badargnames, # ]
+        ]& @ OptionValue["Names"],
+      elsName =
+        If[ !MissingQ[#], #, None ]& @ ("ElementsName" // OptionValue)
+      },
+      {
+        elNames = 
+          If[ 
+            !MissingQ[#], 
+            #, 
+            elementName/@ 
+            Range[Length[multTab]] ]& @ 
+            OptionValue["ElementNames"],
+        dualvec = 
+          If[ 
+            Length @ multTab === 1, 
+            {1}, 
+            Join[ 
+              {1}, 
+              multTab[[2;;,2;;,1]] . ( Range[ Length[multTab] - 1 ] + 1 ) 
+            ] 
+          ]
+      },
       Association[
         "Barcode" -> OptionValue["Barcode"],
         "DirectProductDecompositions" -> OptionValue["DirectProductDecompositions"],
@@ -161,7 +177,7 @@ InitializeFusionRing[ ops:OptionsPattern[] ] :=
         "Characters" -> OptionValue["Characters"]
       ]
     ]
-  ];
+  );
 
 elementName[i_Integer] :=
   With[{
