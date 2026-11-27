@@ -391,7 +391,7 @@ SolveNonSingularBinomialSystem[ preEqns_List, vars_List, param_, opts:OptionsPat
 
       semiLinearSystem = 
         Catch[
-          AddOptions[opts][BinToSemiLin][ reducedSystem, newVars, symbol ],
+          AddOptions[opts][BinToSemiLin][ newEqns, newVars, symbol ],
           "Inconsistent"
         ];
 
