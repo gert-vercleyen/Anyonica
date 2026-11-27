@@ -120,26 +120,83 @@ PrintLog[ code_ , opts:OptionsPattern[] ] :=
     ]
   ];
 
-ApplyCellGrouping[ notebook_Notebook ] :=
-  ReplaceRepeated[
-    notebook,
-    {
-      a__,
-      Longest[
-        PatternSequence[
-          p1 : Cell[__, CellTags -> { x_, "Start" }, ___ ],
-          seq___,
-          p2 : Cell[__, CellTags -> { x_, "End" }, ___ ]
-        ]
+(* Puts the cells of every process, from its Start cell up to and including its End cell,
+   in a cell group. The cells are read once: stack contains the positions of the Start
+   cells whose End cell has not been read yet, so the time is linear in the number of
+   cells. A ReplaceRepeated with a sequence pattern scans the list of cells again for
+   every single group, which becomes very slow for long logs. *)
+ApplyCellGrouping[ Notebook[ cells_List, opts___ ] ] :=
+  Module[
+    { c, n, tags, parent, hasEnd, stack, openIDs, id, type, members, node },
+    c = cells;
+    n = Length @ c;
+
+    (* { id, "Start" } or { id, "End" } for the cells that open or close a process *)
+    tags =
+      Replace[
+        c,
+        {
+          Cell[ __, CellTags -> { x_, t : "Start" | "End" }, ___ ] :> { x, t },
+          _ -> { "", "" }
+        },
+        { 1 }
+      ];
+
+    parent  = ConstantArray[ 0, n ]; (* Position of the Start cell of the innermost open process, 0 if none *)
+    hasEnd  = ConstantArray[ 0, n ]; (* 1 for the Start cells that have an End cell *)
+    stack   = { };                   (* Linked list { position, rest } *)
+    openIDs = <||>;                   (* IDs of the processes on the stack *)
+
+    Do[
+      { id, type } = tags[[i]];
+
+      If[ (* End cell of an open process. Start cells above it on the stack have no End cell *)
+        type === "End" && KeyExistsQ[ openIDs, id ],
+        While[
+          tags[[ First @ stack, 1 ]] =!= id,
+          KeyDropFrom[ openIDs, tags[[ First @ stack, 1 ]] ];
+          stack = Last @ stack
+        ];
+        hasEnd[[ First @ stack ]] = 1
+      ];
+
+      parent[[i]] = If[ stack === { }, 0, First @ stack ];
+
+      Which[
+        type === "Start"
+        ,
+        stack = { i, stack };
+        openIDs[id] = True
+        ,
+        type === "End" && KeyExistsQ[ openIDs, id ]
+        ,
+        stack = Last @ stack;
+        KeyDropFrom[ openIDs, id ]
       ],
-      b__
-    } :>
-    { a, CellGroupData[ { p1, seq, p2 } ], b }
-  ] //
-  ReplaceAll[
-    Notebook[ { firstCell_Cell, a_Cell, b__, c_Cell }, y__ ] :>
-    Notebook[ { firstCell, CellGroupData[ { a, b, c } ] }, y ]
+      { i, n }
+    ];
+    (* members[i] are the positions of the cells directly inside the process that starts at i *)
+    members = PositionIndex @ parent;
+
+    node[ i_ ] :=
+      Which[
+        !KeyExistsQ[ members, i ]
+        ,
+        c[[i]]
+        ,
+        hasEnd[[i]] === 1
+        ,
+        Cell @ CellGroupData[ Prepend[ node /@ members[i], c[[i]] ], Open ]
+        , (* Start cell without End cell: its cells are not grouped *)
+        True
+        ,
+        Sequence @@ Prepend[ node /@ members[i], c[[i]] ]
+      ];
+
+    Notebook[ node /@ Lookup[ members, 0, { } ], opts ]
   ];
+
+$lastLogSave = 0;
 
 AddCell[ fileName_, nbo_, cell_ ] :=
   (
@@ -150,7 +207,11 @@ AddCell[ fileName_, nbo_, cell_ ] :=
     ];
     SelectionMove[ nbo, After, Notebook ];
 
-    NotebookSave[ nbo ];
+    If[ 
+      AbsoluteTime[] - $lastLogSave > 30, 
+      NotebookSave[ nbo ]; 
+      $lastLogSave = AbsoluteTime[] 
+    ];
   );
 
 stringID[ id_ ] :=
