@@ -377,7 +377,7 @@ FusionRingFromGroup[ group_, opts:OptionsPattern[] ] :=
     GroupMultiplicationTable @ group,
     If[ OptionValue[ "Names" ] == { "" },
       "Names" -> { GroupName @ group },
-      OptionValue[ "Names" ]
+      "Names" -> OptionValue[ "Names" ]
     ]
   ];
 
