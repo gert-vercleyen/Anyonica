@@ -591,8 +591,8 @@ FusionCategories::badarg =
 
 FusionCategories[ ring_FusionRing ] :=
   Module[ { fc = FC @ ring, cats },
-    If[ Mult[fc] > 1, Return @ Missing["NoCatsWithMultiplicityInDatabase"] ];
-    If[ Rank[fc] > 7, Return @ Missing["OnlyRingsUpToRank7InDatabase"] ];
+    If[ Mult[ring] > 1, Return @ Missing["NoCatsWithMultiplicityInDatabase"] ];
+    If[ Rank[ring] > 7, Return @ Missing["OnlyRingsUpToRank7InDatabase"] ];
     If[ MissingQ[fc], fc = FC @ ReplaceByKnownRing[ring] ];
     If[ MissingQ[fc], Return @ Missing["RingNotInDB"] ];
 
