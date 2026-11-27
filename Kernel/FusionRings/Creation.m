@@ -362,7 +362,7 @@ FusionRingFromGroup::notgroupmulttab =
 (*Its name will be set to that of the group if the group is a PermutationGroup, SymmetricGroup, AlternatingGroup, CyclicGroup, DihedralGroup or AbelianGroup, or will be the value given by the option \"Names\".*)
 FusionRingFromGroup[ table_?MatrixQ, opts:OptionsPattern[] ] := With[ {
   n = Length[ table ]},
-  If[ !GroupTableQ[table], Message[ FusionRingFromGroup::notgroupmulttab, table ]; Return @ $$Failed ];
+  If[ !GroupTableQ[table], Message[ FusionRingFromGroup::notgroupmulttab, table ]; Return @ $Failed ];
   AddOptions[opts][FusionRing][
       "MultiplicationTable" ->
       Table[
@@ -436,7 +436,7 @@ GroupTableQ[ tab_?MatrixQ ] :=
       ,
       Not[ tab[[;;,1]] == tab[[1,;;]] == Range[n] ]
       ,
-      Message[ Group::noninveribleelement ]; False
+      Message[ Group::noninvertibleelement ]; False
       ,
       True
       ,
