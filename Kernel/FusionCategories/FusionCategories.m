@@ -94,16 +94,16 @@ InitializeFusionCategory[ ops:OptionsPattern[] ] :=
     ];
 
     Association[
-      "FusionRing"                -> ring,
-      "FSymbols"                  -> fSymbols,
-      "RSymbols"                  -> rSymbols,
-      "PivotalStructure"          -> pivStruct,
-      "Twists"                    -> twists,
-      "SMatrix"                   -> sMat,
-      "Modular"                   -> modular,
-      "FormalParameters"          -> OptionValue["FormalParameters"],
-      "Unitary"                   -> OptionValue["Unitary"],
-      "Names"                     -> OptionValue["Names"]
+      "FusionRing"       -> ring,
+      "FSymbols"         -> fSymbols,
+      "RSymbols"         -> rSymbols,
+      "PivotalStructure" -> pivStruct,
+      "Twists"           -> twists,
+      "SMatrix"          -> sMat,
+      "Modular"          -> modular,
+      "FormalParameters" -> OptionValue["FormalParameters"],
+      "Unitary"          -> OptionValue["Unitary"],
+      "Names"            -> OptionValue["Names"]
     ]
   ];
 
