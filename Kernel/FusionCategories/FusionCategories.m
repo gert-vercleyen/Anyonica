@@ -181,7 +181,7 @@ Options[CheckPentagonEquationsWithoutMultiplicity] =
   Options[CheckPentagonEquations];
 
 CheckPentagonEquationsWithoutMultiplicity[ ring_, fSymbols_, opts:OptionsPattern[] ] := 
-  Block[ { a, b, c, d, e, f, g, l, k, r, rr, lFInd, zsc, nzsc, trivVacQ, knowns, matches1, matches2, matches3, eqn, sF },
+  Block[ { a, b, c, d, e, f, g, l, k, r, rr, lFInd, zsc, nzsc, check, matches1, matches2, matches3, eqn, sF },
     check     = OptionValue["PreEqualCheck"];
     r         = Rank[ring];
     rr        = Range @ r;
