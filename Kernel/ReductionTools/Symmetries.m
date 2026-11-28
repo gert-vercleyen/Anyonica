@@ -540,6 +540,43 @@ SEQ =
   SymmetryEquivalentQ;
 
 
+PackageExport["CompleteInvariant"]
+
+CompleteInvariant::usage = 
+  "CompleteInvariant[r] computes a complete invariant of the fusion categories with Grothendieck ring equal to r"<>
+  ", under the assumption that the zero values of the F-symbols of those categories are given by the Option \"Zeros\"."
+
+Options[CompleteInvariant] := Options[GaugeInvariants];
+
+CompleteInvariant[ ring_, ops:OptionsPattern[] ] :=
+  Module[{  result, time, invariants, getSymbols, symbols, io, sr },
+    io = OptionValue["IncludeOnly"];
+
+    { time, result } =
+      AbsoluteTiming[
+
+        invariants = AddOptions[ops][GaugeInvariants][ ring ];
+
+        getSymbols = 
+          Comap[ 
+            { 
+              If[ MemberQ["FSymbols"] @ io, FSymbols, Splice[{}] ], 
+              If[ MemberQ["PSymbols"] @ io, PSymbols, Splice[{}] ], 
+              If[ MemberQ["RSymbols"] @ io, RSymbols, Splice[{}] ] 
+            }
+          ]; 
+
+        symbols = Join @@ getSymbols @ ring;
+
+        sr = Thread[symbols -> symbols ];
+
+        invariants/.Dispatch[ PermuteSymbols[ sr , # ]& /@ FRA @ ring ] 
+      ];
+
+    result
+  ]
+
+
 PackageExport["DeleteEquivalentSolutions"]
 
 DeleteEquivalentSolutions::usage =
