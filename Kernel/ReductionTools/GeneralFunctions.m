@@ -567,13 +567,21 @@ NotInvalidNonZeroSolutionQ[ {}, _ ][ _ ] :=
 NotInvalidNonZeroSolutionQ[ eqns_, preEqCheck_ ][ soln_ ] :=
   With[
     {
-      filledInEqns = Expand[ Map[ preEqCheck, eqns/.Dispatch[soln], {2} ] ]
+      filledInEqns1 = eqns/.Dispatch[soln]
     },
-    FreeQ[
-      filledInEqns,
-      False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ] | 
-      HoldPattern[ Power[__] == 0 ] | HoldPattern[ 0 == Power[__] ]
-    ]
+    If[ MemberQ[False] @ filledInEqns1, Return @ False ];
+    Do[
+      If[
+        MatchQ[ 
+          preEqCheck[eq],
+          False | HoldPattern[ 0 == Times[__] ] | HoldPattern[ Times[__] == 0 ] | 
+          HoldPattern[ Power[__] == 0 ] | HoldPattern[ 0 == Power[__] ]
+        ],
+        Return @ False
+      ],
+      {eq, filledInEqns1}
+    ];
+    Return @ True
   ];
 
 
