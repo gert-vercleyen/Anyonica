@@ -453,7 +453,10 @@ Options[ ReduceByBinomials ] :=
   Join[
     Options[ SolveBinomialSystem ],
     Options[ ReduceBinomialSystem ],
-    { "MaxNumberOfBinomialEquations" -> Infinity }
+    { 
+      "MaxNumberOfBinomialEquations" -> Infinity,
+      "TrimUsingInvariants" -> False
+    }
   ];
 
 CheckArgs[ sumEqns_, binomialEqns_, vars_ ] :=
@@ -568,11 +571,13 @@ Options[SolveAndUpdate] := Options[ReduceByBinomials];
   A list of triples { sumEqns_i, sol_i, constr_i } is returned
 *)
 SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern[] ] :=
-  Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, result, eqnSolConstr, notInvalidPos },
+  Module[{ soln, solve, preEqCheck, simplify, simplifySolutions, procID, absTime, result, eqnSolConstr, notInvalidPos,
+    systems, newSoln, invars, dsoln, nsys, invVals },
     simplify   = OptionValue["SimplifyIntermediateResultsBy"];
     preEqCheck = OptionValue["PreEqualCheck"];
     solve      = If[ OptionValue["NonSingular"], SNSBS, SBS ];
     procID     = ToString[ Unique[] ];
+    invars     = OptionValue @ "TrimUsingInvariants";
 
     simplifySolutions =
       Function[
@@ -597,14 +602,29 @@ SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern
           AddOptions[opts][solve][ binEqns, vars, s ]
         ];
 
+      If[ 
+        invars =!= False
+        ,
+        newSoln = soln
+        ,
+        printlog["SAU:using_invariants", {procID,Length @ soln}];
+        dsoln   = Dispatch @ soln;
+        nsys    = Length @ soln;
+        invVals = preEqCheck[invars/.dsoln];
+
+        newSoln = soln[[ DeleteDuplicatesBy[ Range @ nsys , invVals[[#]]& ] ]];
+
+        printlog["SAU:reduced_systems", {procID, Length @ newSoln }];
+      ];
+
       eqnSolConstr =
         Table[
           {
-            TEL @ AddOptions[opts][UpdateAndCheck][ sumEqns, sol, Identity ],
+            TEL @ AddOptions[opts][UpdateAndCheck][ sumEqns, newSol, Identity ],
             sol,
-            AddOptions[opts][UpdateConstraints][ constraints, sol ]
+            AddOptions[opts][UpdateConstraints][ constraints, newSol ]
           },
-          { sol, soln }
+          { newSol, newSoln }
         ];
 
       printlog["SAU:updated_sys", {procID, eqnSolConstr[[;;,1]], eqnSolConstr[[;;,3]] } ];
@@ -631,7 +651,6 @@ SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern
         |>,
         { i, notInvalidPos }
       ]
-
     ];
 
     printlog["SAU:remainingsol", {procID,soln,result}];
