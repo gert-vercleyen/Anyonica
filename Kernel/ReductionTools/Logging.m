@@ -1181,6 +1181,47 @@ MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:remainingsol", { id_, soln_, vali
     ];
   ];
 
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:using_invariants", { id_, num_,  ___ } ] :=
+Module[{},
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[
+          StringJoin[
+            "Using invariants to get rid of equivalent solutions of solution set containing ",
+            ToString[num],
+            " solutions." 
+          ]
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ]
+];
+
+MyNotebookPrint[ dir_, fileName_, nbo_ ][ "SAU:reduced_systems", { id_, num_,  ___ } ] :=
+Module[{},
+  AddCell[
+    fileName,
+    nbo,
+    Cell[
+      TextData[{
+        inputStyle[
+          StringJoin[
+            ToString[num],
+            " solutions remain after removing equivalent ones."
+          ]
+        ]
+      }],
+      "Text",
+      CellTags -> { id, "Info" }
+    ]
+  ]
+];
+
 (* ToUnitaryGauge *)
 MyNotebookPrint[ dir_, fileName_, nbo_ ][ "TUG:init", { id_, ring_, FSymb_, optionList_,___ } ] :=
   Module[{fn1, fn2},
