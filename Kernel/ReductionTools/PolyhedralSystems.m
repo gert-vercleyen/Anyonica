@@ -1127,8 +1127,8 @@ Module[{
     ];
 
     (* TODO: it would be more optimal to use the invertibilityConstraints
-       as assumptions
-    *)
+       as assumptions *)
+
     AddValues[ { preKnowns_, systems_ } ] :=
       Table[
         <|
