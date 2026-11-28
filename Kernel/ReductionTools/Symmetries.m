@@ -602,7 +602,7 @@ Options[DeleteEquivalentSolutions] :=
   ];
 
 DeleteEquivalentSolutions[ soln_List, ring_FusionRing, opts:OptionsPattern[] ] :=
-  Module[{ zeroPositions, procID, result, time, invariants, zeroFs, braidedCheck, check, orbits,
+  Module[{ zeroPositions, result, time, invariant, zeroFs, braidedCheck, check, dsoln,
     symbols },
 
     If[ Length @ soln === 0, Return @ soln ];
@@ -643,25 +643,18 @@ DeleteEquivalentSolutions[ soln_List, ring_FusionRing, opts:OptionsPattern[] ] :
             { False, True }, { "FSymbols", "PSymbols" },
             { False, False }, { "FSymbols" }
           ];
+        
+        (* Its faster to remove gauge equivalent solutions first and then move on to 
+           tensor equivalent ones *)
 
-        invariants = GaugeInvariants[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> symbols ];
-
-        (* For each solution we will map its index to the evaluated 
-           gauge-invariants over all automorphic solutions *)
-        orbits = 
-          Association @
-          Table[
-            i -> 
-              check[ 
-                invariants/.Dispatch[ PermuteSymbols[ soln[[i]], # ]& /@ FRA @ ring ]
-              ],
-            { i, Length @ soln }
-          ];
+        invariant = CompleteInvariant[ ring, "Zeros" -> zeroFs, "IncludeOnly" -> symbols ];
+        
+        dsoln = Dispatch/@soln;
 
         soln[[ 
           DeleteDuplicates[ 
-            Range @ Length @ orbits, 
-            intersectingQ[ orbits[#1], orbits[#2], check ]& 
+            Range @ Length @ soln, 
+            intersectingQ[ invariant/.dsoln[[#1]], invariant/.dsoln[[#2]], check ]& 
           ] 
         ]]
 
