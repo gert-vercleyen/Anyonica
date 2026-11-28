@@ -1073,14 +1073,23 @@ Module[{
     sumSystems =
       DeleteCases[ { _, {} } ] @
       Table[
-        {
+        knownFs = 
           Union[
             input["Zeros"],
             input["SpecificFs"],
             input["ExtraFixedFs"],
             input["SubSolution"],
             Thread[ Cases[ FSymbols[ring], $VacuumFPattern ] -> 1 ]
-          ],
+          ];
+        
+        gis = 
+          GaugeInvariants[
+            ring,
+            "Zeros" -> input["Zeros"],
+            "IncludeOnly"->{"FSymbols"}
+          ]/.Dispatch[knownFs];
+
+        binReducedSystems = 
           AddOptions[opts][ReduceByBinomials][
             Sequence @@ SumBinEqns[ input["Equations"] ],
             input["Variables"],
@@ -1088,8 +1097,19 @@ Module[{
             "Symmetries" -> input["Symmetries"],
             "InvertibleMatrices" -> input["InvertibleMatrices"],
             "NonSingular" -> True,
-            "SimplifyIntermediateResultsBy" -> RootReduce 
-          ]
+            "SimplifyIntermediateResultsBy" -> RootReduce,
+            "TrimUsingInvariants" -> gis
+          ];
+
+        dsoln = Dispatch /@ binReducedSystems[[;;,2]];
+
+        {
+          binReducedSystems[[
+            DeleteDuplicates[ 
+              Range @ Length @ binReducedSystems,
+              intersectingQ[ gis/.dsoln[[#1]], gis/.dsoln[[#2]], OptionValue @ "PreEqualCheck" ]&
+            ]
+          ]]
         },
         { input, solverInput }
       ];
