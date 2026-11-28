@@ -518,7 +518,10 @@ SymmetryEquivalentQ[ ring_FusionRing, { r_?MatrixQ, h_?MatrixQ }, opts:OptionsPa
   ];
 
 
-PackageScope["PermuteSymbols"]
+PackageExport["PermuteSymbols"]
+
+PermuteSymbols::usage = 
+  "PermuteSymbols[symb,perm] permutes the labels of the symbols given by symb."
 
 PermuteSymbols[ Symb_, perm_List ] :=
   Sort @
