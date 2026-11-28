@@ -634,7 +634,7 @@ SolveAndUpdate[ binEqns_, sumEqns_, constraints_, vars_, s_, opts:OptionsPattern
         Position[
           eqnSolConstr,
           { e_, sl_, c_ } /;
-          NotInvalidNonZeroSolutionQ[e,preEqCheck][sl] && c =!= {False},
+          c =!= {False} && NotInvalidNonZeroSolutionQ[e,preEqCheck][sl],
           {1}
         ];
 
